@@ -13,6 +13,9 @@ const withPWA = withPWAInit({
 });
 
 /** @type {import("next").NextConfig} */
-const config = {};
+const config = {
+  // Turbopack config (Next.js 16+)
+  turbopack: {},
+};
 
 export default withPWA(config);

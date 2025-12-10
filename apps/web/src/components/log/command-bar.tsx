@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useTransition } from "react";
+import { useState, useRef, useEffect, useTransition, useMemo } from "react";
 import { Input } from "~/components/ui/input";
 import { Badge } from "~/components/ui/badge";
 import { Terminal } from "lucide-react";
@@ -30,10 +30,69 @@ type ParsedCommand = {
 const UNITS = ["mg", "mcg", "g", "IU", "ml"] as const;
 const UNIT_PATTERN = new RegExp(`(\\d+(?:\\.\\d+)?)(${UNITS.join("|")})`, "i");
 
+function parseInput(
+  text: string,
+  supps: Supplement[],
+): { command: ParsedCommand; suggestions: Supplement[] } {
+  const trimmed = text.trim().toLowerCase();
+
+  if (!trimmed) {
+    return { command: null, suggestions: [] };
+  }
+
+  const parts = trimmed.split(/\s+/);
+  const searchTerm = parts[0] ?? "";
+  const dosageStr = parts[1] ?? "";
+
+  if (!searchTerm) {
+    return { command: null, suggestions: [] };
+  }
+
+  const matchingSupps = supps.filter(
+    (s) =>
+      s.name.toLowerCase().includes(searchTerm) ||
+      s.name.toLowerCase().startsWith(searchTerm) ||
+      s.form?.toLowerCase().includes(searchTerm),
+  );
+
+  const dosageMatch = UNIT_PATTERN.exec(dosageStr);
+
+  if (matchingSupps.length === 1 && dosageMatch) {
+    const dosageValue = dosageMatch[1];
+    const unitValue = dosageMatch[2];
+    if (!dosageValue || !unitValue) {
+      return { command: null, suggestions: matchingSupps.slice(0, 5) };
+    }
+
+    const dosage = parseFloat(dosageValue);
+    const unitRaw = unitValue.toLowerCase();
+    const normalizedUnit =
+      unitRaw === "iu" ? "IU" : (unitRaw as "mg" | "mcg" | "g" | "ml");
+
+    const supplement = matchingSupps[0];
+    if (!supplement) {
+      return { command: null, suggestions: [] };
+    }
+
+    return {
+      command: {
+        type: "log",
+        supplement,
+        dosage,
+        unit: normalizedUnit,
+      },
+      suggestions: [],
+    };
+  }
+
+  return {
+    command: null,
+    suggestions: matchingSupps.slice(0, 5),
+  };
+}
+
 export function CommandBar({ supplements, onLog }: CommandBarProps) {
   const [input, setInput] = useState("");
-  const [parsed, setParsed] = useState<ParsedCommand>(null);
-  const [suggestions, setSuggestions] = useState<Supplement[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isPending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<{
@@ -42,12 +101,15 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
   } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    const result = parseInput(input, supplements);
-    setParsed(result.command);
-    setSuggestions(result.suggestions);
+  const { command: parsed, suggestions } = useMemo(
+    () => parseInput(input, supplements),
+    [input, supplements],
+  );
+
+  function handleInputChange(value: string) {
+    setInput(value);
     setSelectedIndex(0);
-  }, [input, supplements]);
+  }
 
   useEffect(() => {
     if (feedback) {
@@ -56,69 +118,6 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
     }
   }, [feedback]);
 
-  function parseInput(
-    text: string,
-    supps: Supplement[],
-  ): { command: ParsedCommand; suggestions: Supplement[] } {
-    const trimmed = text.trim().toLowerCase();
-
-    if (!trimmed) {
-      return { command: null, suggestions: [] };
-    }
-
-    const parts = trimmed.split(/\s+/);
-    const searchTerm = parts[0] ?? "";
-    const dosageStr = parts[1] ?? "";
-
-    if (!searchTerm) {
-      return { command: null, suggestions: [] };
-    }
-
-    const matchingSupps = supps.filter(
-      (s) =>
-        s.name.toLowerCase().includes(searchTerm) ||
-        s.name.toLowerCase().startsWith(searchTerm) ||
-        s.form?.toLowerCase().includes(searchTerm),
-    );
-
-    const dosageMatch = UNIT_PATTERN.exec(dosageStr);
-
-    if (matchingSupps.length === 1 && dosageMatch) {
-      const dosageValue = dosageMatch[1];
-      const unitValue = dosageMatch[2];
-      if (!dosageValue || !unitValue) {
-        return { command: null, suggestions: matchingSupps.slice(0, 5) };
-      }
-      
-      const dosage = parseFloat(dosageValue);
-      const unitRaw = unitValue.toLowerCase();
-      const normalizedUnit =
-        unitRaw === "iu"
-          ? "IU"
-          : (unitRaw as "mg" | "mcg" | "g" | "ml");
-
-      const supplement = matchingSupps[0];
-      if (!supplement) {
-        return { command: null, suggestions: [] };
-      }
-
-      return {
-        command: {
-          type: "log",
-          supplement,
-          dosage,
-          unit: normalizedUnit,
-        },
-        suggestions: [],
-      };
-    }
-
-    return {
-      command: null,
-      suggestions: matchingSupps.slice(0, 5),
-    };
-  }
-
   function handleSubmit() {
     if (!parsed) return;
 
@@ -126,7 +125,6 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
       try {
         await onLog(parsed.supplement.id, parsed.dosage, parsed.unit);
         setInput("");
-        setParsed(null);
         setFeedback({
           type: "success",
           message: `Logged ${parsed.dosage}${parsed.unit} ${parsed.supplement.name}`,
@@ -149,7 +147,7 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
         e.preventDefault();
         const selected = suggestions[selectedIndex];
         if (selected) {
-          setInput(selected.name.toLowerCase().split(" ")[0] + " ");
+          handleInputChange(selected.name.toLowerCase().split(" ")[0] + " ");
         }
       }
     } else if (e.key === "ArrowDown") {
@@ -162,7 +160,7 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
       e.preventDefault();
       const selected = suggestions[selectedIndex];
       if (selected) {
-        setInput(selected.name.toLowerCase().split(" ")[0] + " ");
+        handleInputChange(selected.name.toLowerCase().split(" ")[0] + " ");
       }
     }
   }
@@ -174,7 +172,7 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
         <Input
           ref={inputRef}
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={(e) => handleInputChange(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="mag 200mg, zinc 15mg, vitamin d 5000IU..."
           className="pl-10 font-mono"
@@ -220,7 +218,7 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
                 i === selectedIndex ? "bg-accent" : "hover:bg-accent/50"
               }`}
               onClick={() => {
-                setInput(s.name.toLowerCase().split(" ")[0] + " ");
+                handleInputChange(s.name.toLowerCase().split(" ")[0] + " ");
                 inputRef.current?.focus();
               }}
             >
