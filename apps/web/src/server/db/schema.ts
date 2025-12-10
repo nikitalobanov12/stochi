@@ -2,34 +2,37 @@ import { relations } from "drizzle-orm";
 import {
   boolean,
   index,
+  pgEnum,
   pgTable,
-  pgTableCreator,
+  real,
   text,
   timestamp,
+  uuid,
 } from "drizzle-orm/pg-core";
 
-export const createTable = pgTableCreator((name) => `pg-drizzle_${name}`);
+// ============================================================================
+// Enums
+// ============================================================================
 
-export const posts = createTable(
-  "post",
-  (d) => ({
-    id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
-    name: d.varchar({ length: 256 }),
-    createdById: d
-      .varchar({ length: 255 })
-      .notNull()
-      .references(() => user.id),
-    createdAt: d
-      .timestamp({ withTimezone: true })
-      .$defaultFn(() => new Date())
-      .notNull(),
-    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
-  }),
-  (t) => [
-    index("created_by_idx").on(t.createdById),
-    index("name_idx").on(t.name),
-  ],
-);
+export const interactionTypeEnum = pgEnum("interaction_type", [
+  "inhibition",
+  "synergy",
+  "competition",
+]);
+
+export const severityEnum = pgEnum("severity", ["low", "medium", "critical"]);
+
+export const dosageUnitEnum = pgEnum("dosage_unit", [
+  "mg",
+  "mcg",
+  "g",
+  "IU",
+  "ml",
+]);
+
+// ============================================================================
+// Auth Tables (BetterAuth)
+// ============================================================================
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -40,10 +43,10 @@ export const user = pgTable("user", {
     .notNull(),
   image: text("image"),
   createdAt: timestamp("created_at")
-    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .$defaultFn(() => new Date())
     .notNull(),
   updatedAt: timestamp("updated_at")
-    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .$defaultFn(() => new Date())
     .notNull(),
 });
 
@@ -83,17 +86,120 @@ export const verification = pgTable("verification", {
   identifier: text("identifier").notNull(),
   value: text("value").notNull(),
   expiresAt: timestamp("expires_at").notNull(),
-  createdAt: timestamp("created_at").$defaultFn(
-    () => /* @__PURE__ */ new Date(),
-  ),
-  updatedAt: timestamp("updated_at").$defaultFn(
-    () => /* @__PURE__ */ new Date(),
-  ),
+  createdAt: timestamp("created_at").$defaultFn(() => new Date()),
+  updatedAt: timestamp("updated_at").$defaultFn(() => new Date()),
 });
 
+// ============================================================================
+// Stochi Domain Tables
+// ============================================================================
+
+export const supplement = pgTable(
+  "supplement",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    form: text("form"),
+    elementalWeight: real("elemental_weight"),
+    createdAt: timestamp("created_at")
+      .$defaultFn(() => new Date())
+      .notNull(),
+    updatedAt: timestamp("updated_at")
+      .$defaultFn(() => new Date())
+      .notNull(),
+  },
+  (t) => [index("supplement_name_idx").on(t.name)],
+);
+
+export const interaction = pgTable(
+  "interaction",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    sourceId: uuid("source_id")
+      .notNull()
+      .references(() => supplement.id, { onDelete: "cascade" }),
+    targetId: uuid("target_id")
+      .notNull()
+      .references(() => supplement.id, { onDelete: "cascade" }),
+    type: interactionTypeEnum("type").notNull(),
+    mechanism: text("mechanism"),
+    severity: severityEnum("severity").notNull(),
+    createdAt: timestamp("created_at")
+      .$defaultFn(() => new Date())
+      .notNull(),
+  },
+  (t) => [
+    index("interaction_source_idx").on(t.sourceId),
+    index("interaction_target_idx").on(t.targetId),
+  ],
+);
+
+export const stack = pgTable(
+  "stack",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    createdAt: timestamp("created_at")
+      .$defaultFn(() => new Date())
+      .notNull(),
+    updatedAt: timestamp("updated_at")
+      .$defaultFn(() => new Date())
+      .notNull(),
+  },
+  (t) => [index("stack_user_idx").on(t.userId)],
+);
+
+export const stackItem = pgTable(
+  "stack_item",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    stackId: uuid("stack_id")
+      .notNull()
+      .references(() => stack.id, { onDelete: "cascade" }),
+    supplementId: uuid("supplement_id")
+      .notNull()
+      .references(() => supplement.id, { onDelete: "cascade" }),
+    dosage: real("dosage").notNull(),
+    unit: dosageUnitEnum("unit").notNull(),
+  },
+  (t) => [index("stack_item_stack_idx").on(t.stackId)],
+);
+
+export const log = pgTable(
+  "log",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    supplementId: uuid("supplement_id")
+      .notNull()
+      .references(() => supplement.id, { onDelete: "cascade" }),
+    dosage: real("dosage").notNull(),
+    unit: dosageUnitEnum("unit").notNull(),
+    loggedAt: timestamp("logged_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at")
+      .$defaultFn(() => new Date())
+      .notNull(),
+  },
+  (t) => [
+    index("log_user_idx").on(t.userId),
+    index("log_logged_at_idx").on(t.loggedAt),
+  ],
+);
+
+// ============================================================================
+// Relations
+// ============================================================================
+
 export const userRelations = relations(user, ({ many }) => ({
-  account: many(account),
-  session: many(session),
+  accounts: many(account),
+  sessions: many(session),
+  stacks: many(stack),
+  logs: many(log),
 }));
 
 export const accountRelations = relations(account, ({ one }) => ({
@@ -102,4 +208,45 @@ export const accountRelations = relations(account, ({ one }) => ({
 
 export const sessionRelations = relations(session, ({ one }) => ({
   user: one(user, { fields: [session.userId], references: [user.id] }),
+}));
+
+export const supplementRelations = relations(supplement, ({ many }) => ({
+  sourceInteractions: many(interaction, { relationName: "source" }),
+  targetInteractions: many(interaction, { relationName: "target" }),
+  stackItems: many(stackItem),
+  logs: many(log),
+}));
+
+export const interactionRelations = relations(interaction, ({ one }) => ({
+  source: one(supplement, {
+    fields: [interaction.sourceId],
+    references: [supplement.id],
+    relationName: "source",
+  }),
+  target: one(supplement, {
+    fields: [interaction.targetId],
+    references: [supplement.id],
+    relationName: "target",
+  }),
+}));
+
+export const stackRelations = relations(stack, ({ one, many }) => ({
+  user: one(user, { fields: [stack.userId], references: [user.id] }),
+  items: many(stackItem),
+}));
+
+export const stackItemRelations = relations(stackItem, ({ one }) => ({
+  stack: one(stack, { fields: [stackItem.stackId], references: [stack.id] }),
+  supplement: one(supplement, {
+    fields: [stackItem.supplementId],
+    references: [supplement.id],
+  }),
+}));
+
+export const logRelations = relations(log, ({ one }) => ({
+  user: one(user, { fields: [log.userId], references: [user.id] }),
+  supplement: one(supplement, {
+    fields: [log.supplementId],
+    references: [supplement.id],
+  }),
 }));
