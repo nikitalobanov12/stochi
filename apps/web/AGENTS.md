@@ -1,0 +1,163 @@
+# AGENTS.md - Stochi Project
+
+This file provides guidance for AI agents working on the Stochi codebase.
+
+## Project Overview
+
+**Stochi** is a "stoichiometric engine for bio-optimization" - a PWA for tracking supplements, detecting molecular interactions, and optimizing supplement stacks.
+
+**Target Users**: Biohackers who value precision, speed, privacy, and high data density.
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router, Turbopack)
+- **Runtime**: Bun
+- **Database**: PostgreSQL (local Docker for dev, Neon for production)
+- **ORM**: Drizzle
+- **Auth**: BetterAuth with `@daveyplate/better-auth-ui`
+- **Styling**: Tailwind CSS + shadcn/ui
+- **PWA**: `@ducanh2912/next-pwa`
+
+## Project Structure
+
+```
+apps/web/
+├── src/
+│   ├── app/
+│   │   ├── (auth)/auth/[...path]/     # Auth pages (sign-in, sign-up, etc.)
+│   │   ├── (dashboard)/               # Protected dashboard routes
+│   │   │   ├── log/                   # Logging interface
+│   │   │   ├── stacks/                # Stack management
+│   │   │   │   └── [id]/              # Individual stack detail
+│   │   │   ├── layout.tsx             # Dashboard shell with nav
+│   │   │   └── page.tsx               # Dashboard home
+│   │   ├── api/auth/[...all]/         # BetterAuth API routes
+│   │   ├── layout.tsx                 # Root layout
+│   │   └── page.tsx                   # Landing page
+│   ├── components/
+│   │   ├── log/                       # Log-specific components
+│   │   │   └── command-bar.tsx        # Natural language input
+│   │   ├── ui/                        # shadcn components
+│   │   └── providers.tsx              # Client providers (AuthUI)
+│   ├── lib/
+│   │   └── utils.ts                   # Utility functions (cn)
+│   └── server/
+│       ├── actions/                   # Server Actions
+│       │   ├── logs.ts                # Log CRUD operations
+│       │   └── stacks.ts              # Stack CRUD operations
+│       ├── better-auth/               # Auth configuration
+│       │   ├── client.ts              # Client-side auth
+│       │   ├── config.ts              # Server auth config
+│       │   ├── index.ts               # Auth exports
+│       │   └── server.ts              # Server-side session
+│       └── db/
+│           ├── index.ts               # Database connection
+│           ├── schema.ts              # Drizzle schema
+│           └── seed.ts                # Seed data script
+├── public/
+│   ├── icons/                         # PWA icons (SVG)
+│   └── manifest.json                  # PWA manifest
+└── drizzle.config.ts                  # Drizzle configuration
+```
+
+## Database Schema
+
+### Core Tables
+
+- **supplement**: Master list of supplements (name, form, elemental weight)
+- **interaction**: Supplement interactions (source, target, type, severity)
+- **stack**: User's supplement bundles
+- **stackItem**: Items within a stack (supplement, dosage, unit)
+- **log**: User's supplement intake logs
+
+### Auth Tables (managed by BetterAuth)
+
+- **user**, **session**, **account**, **verification**
+
+### Enums
+
+- `interactionTypeEnum`: inhibition, synergy, competition
+- `severityEnum`: low, medium, critical
+- `dosageUnitEnum`: mg, mcg, g, IU, ml
+
+## Commands
+
+```bash
+# Development
+bun dev                  # Start database + dev server (auto-stops DB on exit)
+bun dev:next             # Start dev server only (no database management)
+bun check                # Lint + TypeCheck (use SKIP_ENV_VALIDATION=1 if env vars missing)
+
+# Database
+./start-database.sh      # Start local Postgres container manually
+./scripts/stop-db.sh     # Stop Postgres container manually
+bun db:push              # Push schema to database
+bun db:studio            # Open Drizzle Studio
+bun db:seed              # Seed supplements and interactions
+```
+
+## Design Guidelines
+
+### "Terminal Chic" Aesthetic
+
+- **Background**: #0D1117 (near-black)
+- **Primary**: #39FF14 (neon green)
+- **Accent**: #00F0FF (cyan)
+- **Fonts**: JetBrains Mono (headers/data), Inter (body)
+- **Theme**: Dark mode only
+
+### UI Principles
+
+- High data density
+- No gamification (no streaks, badges, etc.)
+- Privacy-first (local-first where possible)
+- Fast interactions (command bar, one-click logging)
+
+## Key Implementation Details
+
+### Auth Flow
+
+1. OAuth only (Google + GitHub) - no email/password
+2. Auth UI provided by `@daveyplate/better-auth-ui`
+3. Protected routes check session in layout.tsx
+
+### Server Actions
+
+All mutations use Next.js Server Actions:
+- Always call `getSession()` to verify auth
+- Use `revalidatePath()` after mutations
+- Return void from form actions (not data)
+
+### Command Bar
+
+Natural language input for quick logging:
+- Type `mag 200mg` to log 200mg of Magnesium
+- Fuzzy matching on supplement names
+- Tab/Enter to autocomplete suggestions
+
+## Environment Variables
+
+Required:
+- `DATABASE_URL` - PostgreSQL connection string
+- `BETTER_AUTH_SECRET` - Auth secret key (generate with: `openssl rand -base64 32`)
+- At least ONE OAuth provider must be configured:
+  - GitHub: `BETTER_AUTH_GITHUB_CLIENT_ID` + `BETTER_AUTH_GITHUB_CLIENT_SECRET`
+  - Google: `BETTER_AUTH_GOOGLE_CLIENT_ID` + `BETTER_AUTH_GOOGLE_CLIENT_SECRET`
+
+### OAuth Redirect URLs
+
+For local development:
+- GitHub: `http://localhost:3000/api/auth/callback/github`
+- Google: `http://localhost:3000/api/auth/callback/google`
+
+For production (replace with your domain):
+- GitHub: `https://yourdomain.com/api/auth/callback/github`
+- Google: `https://yourdomain.com/api/auth/callback/google`
+
+## Next Steps / TODO
+
+1. **Interaction Detection**: Query interactions based on logged supplements
+2. **PWA Testing**: Verify installability and offline support
+3. **Data Export**: Allow users to export their logs
+4. **Supplement Database Expansion**: Add more supplements and interactions
+5. **Analytics Dashboard**: Visualize intake patterns over time
