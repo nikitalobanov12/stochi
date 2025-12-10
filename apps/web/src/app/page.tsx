@@ -1,88 +1,88 @@
-import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { auth } from "~/server/better-auth";
+import { Button } from "~/components/ui/button";
 import { getSession } from "~/server/better-auth/server";
 
 export default async function Home() {
   const session = await getSession();
 
+  if (session) {
+    redirect("/dashboard");
+  }
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-background">
       <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-        <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-          Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
-        </h1>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-          <Link
-            className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-            href="https://create.t3.gg/en/usage/first-steps"
-            target="_blank"
-          >
-            <h3 className="text-2xl font-bold">First Steps →</h3>
-            <div className="text-lg">
-              Just the basics - Everything you need to know to set up your
-              database and authentication.
-            </div>
-          </Link>
-          <Link
-            className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-            href="https://create.t3.gg/en/introduction"
-            target="_blank"
-          >
-            <h3 className="text-2xl font-bold">Documentation →</h3>
-            <div className="text-lg">
-              Learn more about Create T3 App, the libraries it uses, and how to
-              deploy it.
-            </div>
-          </Link>
+        <div className="text-center">
+          <h1 className="font-mono text-6xl font-bold tracking-tight text-primary sm:text-7xl">
+            stochi
+            <span className="animate-pulse">_</span>
+          </h1>
+          <p className="mt-4 text-xl text-muted-foreground">
+            Balance your chemistry.
+          </p>
         </div>
-        <div className="flex flex-col items-center gap-2">
-          <div className="flex flex-col items-center justify-center gap-4">
-            <p className="text-center text-2xl text-white">
-              {session && <span>Logged in as {session.user?.name}</span>}
-            </p>
-            {!session ? (
-              <form>
-                <button
-                  className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
-                  formAction={async () => {
-                    "use server";
-                    const res = await auth.api.signInSocial({
-                      body: {
-                        provider: "github",
-                        callbackURL: "/",
-                      },
-                    });
-                    if (!res.url) {
-                      throw new Error("No URL returned from signInSocial");
-                    }
-                    redirect(res.url);
-                  }}
-                >
-                  Sign in with Github
-                </button>
-              </form>
-            ) : (
-              <form>
-                <button
-                  className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
-                  formAction={async () => {
-                    "use server";
-                    await auth.api.signOut({
-                      headers: await headers(),
-                    });
-                    redirect("/");
-                  }}
-                >
-                  Sign out
-                </button>
-              </form>
-            )}
-          </div>
+
+        <div className="max-w-2xl text-center">
+          <p className="text-lg text-foreground/80">
+            The stoichiometric engine for bio-optimization. Track your
+            supplements, detect molecular interactions, and optimize your stack
+            with precision.
+          </p>
         </div>
+
+        <div className="flex flex-col items-center gap-4 sm:flex-row">
+          <Button asChild size="lg" className="font-mono">
+            <Link href="/auth/sign-in">Sign In</Link>
+          </Button>
+          <Button asChild variant="outline" size="lg" className="font-mono">
+            <Link href="/auth/sign-up">Create Account</Link>
+          </Button>
+        </div>
+
+        <div className="mt-8 grid max-w-4xl grid-cols-1 gap-6 md:grid-cols-3">
+          <FeatureCard
+            title="Fast Logging"
+            description="Log your entire stack in under 3 seconds with Stack Bundles and command-line input."
+            icon=">"
+          />
+          <FeatureCard
+            title="Interaction Detection"
+            description="Detect stoichiometric imbalances, absorption blocks, and pharmacokinetic conflicts."
+            icon="!"
+          />
+          <FeatureCard
+            title="Offline Ready"
+            description="Your data stays with you. Works offline, syncs when connected."
+            icon="*"
+          />
+        </div>
+
+        <footer className="mt-16 text-center text-sm text-muted-foreground">
+          <p className="font-mono">
+            {"// "}No social feeds. No gamification. Just data.
+          </p>
+        </footer>
       </div>
     </main>
+  );
+}
+
+function FeatureCard({
+  title,
+  description,
+  icon,
+}: {
+  title: string;
+  description: string;
+  icon: string;
+}) {
+  return (
+    <div className="rounded-lg border border-border bg-card p-6">
+      <div className="mb-3 font-mono text-2xl text-primary">{icon}</div>
+      <h3 className="mb-2 font-mono text-lg font-semibold">{title}</h3>
+      <p className="text-sm text-muted-foreground">{description}</p>
+    </div>
   );
 }
