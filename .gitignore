@@ -32,5 +32,3 @@ engine
 *.out
 vendor/
 go.work
-
-AGENTS.md
