@@ -3,26 +3,12 @@ import { z } from "zod";
 
 export const env = createEnv({
   server: {
-    BETTER_AUTH_SECRET:
-      process.env.NODE_ENV === "production"
-        ? z.string()
-        : z.string().optional(),
-    BETTER_AUTH_GITHUB_CLIENT_ID:
-      process.env.NODE_ENV === "production"
-        ? z.string()
-        : z.string().optional(),
-    BETTER_AUTH_GITHUB_CLIENT_SECRET:
-      process.env.NODE_ENV === "production"
-        ? z.string()
-        : z.string().optional(),
-    BETTER_AUTH_GOOGLE_CLIENT_ID:
-      process.env.NODE_ENV === "production"
-        ? z.string()
-        : z.string().optional(),
-    BETTER_AUTH_GOOGLE_CLIENT_SECRET:
-      process.env.NODE_ENV === "production"
-        ? z.string()
-        : z.string().optional(),
+    BETTER_AUTH_SECRET: z.string().min(1),
+    // OAuth credentials - at least one provider pair must be configured
+    BETTER_AUTH_GITHUB_CLIENT_ID: z.string().optional(),
+    BETTER_AUTH_GITHUB_CLIENT_SECRET: z.string().optional(),
+    BETTER_AUTH_GOOGLE_CLIENT_ID: z.string().optional(),
+    BETTER_AUTH_GOOGLE_CLIENT_SECRET: z.string().optional(),
     DATABASE_URL: z.string().url(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
@@ -47,3 +33,17 @@ export const env = createEnv({
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
   emptyStringAsUndefined: true,
 });
+
+// Runtime validation: ensure at least one OAuth provider is configured
+const hasGitHub =
+  env.BETTER_AUTH_GITHUB_CLIENT_ID && env.BETTER_AUTH_GITHUB_CLIENT_SECRET;
+const hasGoogle =
+  env.BETTER_AUTH_GOOGLE_CLIENT_ID && env.BETTER_AUTH_GOOGLE_CLIENT_SECRET;
+
+if (!process.env.SKIP_ENV_VALIDATION && !hasGitHub && !hasGoogle) {
+  throw new Error(
+    "At least one OAuth provider must be configured. " +
+      "Set BETTER_AUTH_GITHUB_CLIENT_ID + BETTER_AUTH_GITHUB_CLIENT_SECRET " +
+      "or BETTER_AUTH_GOOGLE_CLIENT_ID + BETTER_AUTH_GOOGLE_CLIENT_SECRET",
+  );
+}
