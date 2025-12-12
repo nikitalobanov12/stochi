@@ -49,6 +49,7 @@ export function SelectConfigModal({ open }: SelectConfigModalProps) {
     <Dialog open={open}>
       <DialogContent
         className="max-w-lg border-border bg-background sm:max-w-xl"
+        showCloseButton={false}
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
