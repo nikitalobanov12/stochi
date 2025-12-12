@@ -1,7 +1,7 @@
 import { eq, and } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Play, Trash2, Plus } from "lucide-react";
+import { ArrowLeft, Play, Trash2, Plus, AlertTriangle, Zap, CheckCircle2 } from "lucide-react";
 
 import { db } from "~/server/db";
 import { stack } from "~/server/db/schema";
@@ -13,13 +13,16 @@ import {
   removeStackItem,
   logStack,
 } from "~/server/actions/stacks";
+import { checkInteractions, type InteractionWarning } from "~/server/actions/interactions";
 import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { Badge } from "~/components/ui/badge";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import {
@@ -73,6 +76,12 @@ export default async function StackDetailPage({
   const allSupplements = await db.query.supplement.findMany({
     orderBy: (s, { asc }) => [asc(s.name)],
   });
+
+  // Check for interactions in this stack
+  const supplementIds = userStack.items.map((item) => item.supplementId);
+  const interactions = await checkInteractions(supplementIds);
+  const warnings = interactions.filter((i) => i.type !== "synergy");
+  const synergies = interactions.filter((i) => i.type === "synergy");
 
   const logStackWithId = logStack.bind(null, userStack.id);
   const deleteStackWithId = deleteStack.bind(null, userStack.id);
@@ -192,6 +201,9 @@ export default async function StackDetailPage({
         </div>
 
         <div className="space-y-4">
+          {/* Interactions Card */}
+          <InteractionsCard warnings={warnings} synergies={synergies} />
+
           <Card>
             <CardHeader>
               <CardTitle className="font-mono text-base">Settings</CardTitle>
@@ -315,5 +327,125 @@ function AddSupplementForm({
         Add to Stack
       </Button>
     </form>
+  );
+}
+
+function InteractionsCard({
+  warnings,
+  synergies,
+}: {
+  warnings: InteractionWarning[];
+  synergies: InteractionWarning[];
+}) {
+  const hasInteractions = warnings.length > 0 || synergies.length > 0;
+  const criticalCount = warnings.filter((w) => w.severity === "critical").length;
+  const mediumCount = warnings.filter((w) => w.severity === "medium").length;
+
+  if (!hasInteractions) {
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 font-mono text-base">
+            <CheckCircle2 className="h-4 w-4 text-green-500" />
+            Interactions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            No interactions detected in this stack.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className={criticalCount > 0 ? "border-destructive/50" : mediumCount > 0 ? "border-yellow-500/50" : ""}>
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 font-mono text-base">
+          {warnings.length > 0 ? (
+            <AlertTriangle className={`h-4 w-4 ${
+              criticalCount > 0 ? "text-destructive" : "text-yellow-500"
+            }`} />
+          ) : (
+            <Zap className="h-4 w-4 text-green-500" />
+          )}
+          Interactions
+        </CardTitle>
+        <CardDescription>
+          {warnings.length > 0 && `${warnings.length} warning${warnings.length > 1 ? "s" : ""}`}
+          {warnings.length > 0 && synergies.length > 0 && ", "}
+          {synergies.length > 0 && `${synergies.length} synerg${synergies.length > 1 ? "ies" : "y"}`}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {warnings.map((warning) => (
+          <div
+            key={warning.id}
+            className={`rounded-md p-2 text-xs ${
+              warning.severity === "critical"
+                ? "bg-destructive/10"
+                : warning.severity === "medium"
+                  ? "bg-yellow-500/10"
+                  : "bg-muted"
+            }`}
+          >
+            <div className="flex items-center gap-2 font-medium">
+              <Badge
+                variant={warning.severity === "critical" ? "destructive" : "secondary"}
+                className={`text-[10px] ${
+                  warning.severity === "medium" ? "bg-yellow-500/20 text-yellow-600" : ""
+                }`}
+              >
+                {warning.severity}
+              </Badge>
+              <span className={
+                warning.severity === "critical"
+                  ? "text-destructive"
+                  : warning.severity === "medium"
+                    ? "text-yellow-600"
+                    : ""
+              }>
+                {warning.type === "competition" ? "Competition" : "Inhibition"}
+              </span>
+            </div>
+            <p className="mt-1 text-muted-foreground">
+              <span className="font-medium text-foreground">{warning.source.name}</span>
+              {" → "}
+              <span className="font-medium text-foreground">{warning.target.name}</span>
+            </p>
+            {warning.mechanism && (
+              <p className="mt-1 text-[10px] text-muted-foreground">
+                {warning.mechanism}
+              </p>
+            )}
+          </div>
+        ))}
+
+        {synergies.map((synergy) => (
+          <div
+            key={synergy.id}
+            className="rounded-md bg-green-500/10 p-2 text-xs"
+          >
+            <div className="flex items-center gap-2 font-medium">
+              <Badge className="bg-green-500/20 text-green-600 text-[10px]">
+                synergy
+              </Badge>
+              <Zap className="h-3 w-3 text-green-500" />
+            </div>
+            <p className="mt-1 text-muted-foreground">
+              <span className="font-medium text-foreground">{synergy.source.name}</span>
+              {" + "}
+              <span className="font-medium text-foreground">{synergy.target.name}</span>
+            </p>
+            {synergy.mechanism && (
+              <p className="mt-1 text-[10px] text-muted-foreground">
+                {synergy.mechanism}
+              </p>
+            )}
+          </div>
+        ))}
+      </CardContent>
+    </Card>
   );
 }
