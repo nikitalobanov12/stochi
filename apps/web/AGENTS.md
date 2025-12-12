@@ -25,7 +25,7 @@ apps/web/
 ├── src/
 │   ├── app/
 │   │   ├── (auth)/auth/[...path]/     # Auth pages (sign-in, sign-up, etc.)
-│   │   ├── (dashboard)/               # Protected dashboard routes
+│   │   ├── dashboard/                  # Protected dashboard routes
 │   │   │   ├── log/                   # Logging interface
 │   │   │   ├── settings/              # User settings & data export
 │   │   │   ├── stacks/                # Stack management
@@ -38,6 +38,9 @@ apps/web/
 │   ├── components/
 │   │   ├── log/                       # Log-specific components
 │   │   │   └── command-bar.tsx        # Natural language input
+│   │   ├── onboarding/                # Onboarding components
+│   │   │   ├── select-config-modal.tsx # CLI-styled template picker
+│   │   │   └── template-banner.tsx    # Fork/Clear banner for templates
 │   │   ├── ui/                        # shadcn components
 │   │   ├── nav-links.tsx              # Navigation link components
 │   │   └── providers.tsx              # Client providers (AuthUI)
@@ -47,12 +50,15 @@ apps/web/
 │       ├── actions/                   # Server Actions
 │       │   ├── interactions.ts        # Interaction checking engine
 │       │   ├── logs.ts                # Log CRUD operations
+│       │   ├── onboarding.ts          # Template instantiation, fork, clear
 │       │   └── stacks.ts              # Stack CRUD operations
 │       ├── better-auth/               # Auth configuration
 │       │   ├── client.ts              # Client-side auth
 │       │   ├── config.ts              # Server auth config
 │       │   ├── index.ts               # Auth exports
 │       │   └── server.ts              # Server-side session
+│       ├── data/                       # Static data definitions
+│       │   └── stack-templates.ts     # Template stack definitions
 │       └── db/
 │           ├── index.ts               # Database connection
 │           ├── schema.ts              # Drizzle schema
@@ -165,6 +171,7 @@ For production (replace with your domain):
 - [x] **Dashboard**: Real-time interaction warnings, quick stack logging
 - [x] **Stack Detail**: Show interaction warnings/synergies per stack
 - [x] **Log Page**: Today's interactions sidebar
+- [x] **Onboarding Flow**: Template stack selection for new users ("git clone strategy")
 
 ### In Progress
 1. **Enhanced Logging**: Time-of-day awareness, notes field
@@ -192,3 +199,32 @@ The interaction checking system (`server/actions/interactions.ts`) provides:
 - **critical** (red): Potentially dangerous, should avoid
 - **medium** (yellow): Worth noting, consider timing
 - **low** (muted): Minor effect, informational
+
+## Onboarding System ("Git Clone Strategy")
+
+New users with 0 stacks see a CLI-styled modal to select a template stack. This demonstrates the interaction engine immediately.
+
+### Templates Available
+
+| Template | Supplements | Interactions |
+|----------|-------------|--------------|
+| **Focus Protocol** | Caffeine 100mg, L-Theanine 200mg, L-Tyrosine 500mg | 1 synergy |
+| **Mineral Balance** | Magnesium Glycinate 400mg, Zinc Picolinate 30mg, Iron Bisglycinate 18mg | 2 conflicts |
+| **Daily Essentials** | Vitamin D3 5000 IU, Vitamin K2 MK-7 100mcg, Magnesium Glycinate 400mg | 1 synergy |
+
+### Server Actions (`server/actions/onboarding.ts`)
+
+- `instantiateTemplate(templateKey)`: Creates stack + items + logs for today @ 8am
+- `createEmptyStack()`: Creates blank "My Stack" for power users
+- `forkStack(stackId)`: Renames stack to "(Custom)" to remove template detection
+- `clearTemplateData(stackId)`: Deletes stack + today's logs (nuclear reset)
+
+### Template Detection
+
+Templates are detected by exact name match. If user renames the stack, the template banner disappears (they've "forked" it).
+
+### Files
+
+- `server/data/stack-templates.ts`: Template definitions
+- `components/onboarding/select-config-modal.tsx`: CLI-styled picker modal
+- `components/onboarding/template-banner.tsx`: Fork/Clear banner

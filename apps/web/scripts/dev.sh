@@ -27,15 +27,6 @@ DB_PORT=$(echo "$DATABASE_URL" | awk -F':' '{print $4}' | awk -F'/' '{print $1}'
 DB_NAME=$(echo "$DATABASE_URL" | awk -F'/' '{print $4}')
 DB_CONTAINER_NAME="$DB_NAME-postgres"
 
-# Detect docker/podman
-if [ -x "$(command -v docker)" ]; then
-  DOCKER_CMD="docker"
-elif [ -x "$(command -v podman)" ]; then
-  DOCKER_CMD="podman"
-else
-  echo "Error: Docker or Podman is not installed"
-  exit 1
-fi
 
 # Check if docker daemon is running
 if ! $DOCKER_CMD info > /dev/null 2>&1; then
