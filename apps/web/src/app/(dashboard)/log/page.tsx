@@ -2,10 +2,11 @@ import { db } from "~/server/db";
 import { log, stack } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
 import { eq, desc } from "drizzle-orm";
-import { Trash2, Clock, Zap, Terminal } from "lucide-react";
+import { Trash2, Clock, Zap, Terminal, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 import { createLog, deleteLog } from "~/server/actions/logs";
 import { logStack } from "~/server/actions/stacks";
+import { checkInteractions, type InteractionWarning } from "~/server/actions/interactions";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -67,6 +68,12 @@ export default async function LogPage() {
   ]);
 
   const todaysLogs = recentLogs.filter((l) => new Date(l.loggedAt) >= today);
+
+  // Check interactions for today's logged supplements
+  const todaySupplementIds = [...new Set(todaysLogs.map((l) => l.supplement.id))];
+  const todayInteractions = await checkInteractions(todaySupplementIds);
+  const warnings = todayInteractions.filter((i) => i.type !== "synergy");
+  const synergies = todayInteractions.filter((i) => i.type === "synergy");
 
   return (
     <div className="space-y-6">
@@ -214,8 +221,12 @@ export default async function LogPage() {
           </Card>
         </div>
 
-        {/* Recent History */}
-        <div>
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Today's Interactions */}
+          <TodayInteractionsCard warnings={warnings} synergies={synergies} />
+
+          {/* Recent History */}
           <Card>
             <CardHeader>
               <CardTitle className="font-mono text-base">
@@ -223,7 +234,7 @@ export default async function LogPage() {
               </CardTitle>
               <CardDescription>Last 7 days</CardDescription>
             </CardHeader>
-            <CardContent className="max-h-[600px] overflow-y-auto">
+            <CardContent className="max-h-[400px] overflow-y-auto">
               <RecentLogsGrouped logs={recentLogs} />
             </CardContent>
           </Card>
@@ -420,4 +431,108 @@ function formatDate(date: Date): string {
     month: "short",
     day: "numeric",
   });
+}
+
+function TodayInteractionsCard({
+  warnings,
+  synergies,
+}: {
+  warnings: InteractionWarning[];
+  synergies: InteractionWarning[];
+}) {
+  const hasInteractions = warnings.length > 0 || synergies.length > 0;
+  const criticalCount = warnings.filter((w) => w.severity === "critical").length;
+  const mediumCount = warnings.filter((w) => w.severity === "medium").length;
+
+  return (
+    <Card className={criticalCount > 0 ? "border-destructive/50" : mediumCount > 0 ? "border-yellow-500/50" : ""}>
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 font-mono text-base">
+          {!hasInteractions ? (
+            <CheckCircle2 className="h-4 w-4 text-green-500" />
+          ) : warnings.length > 0 ? (
+            <AlertTriangle className={`h-4 w-4 ${
+              criticalCount > 0 ? "text-destructive" : "text-yellow-500"
+            }`} />
+          ) : (
+            <Zap className="h-4 w-4 text-green-500" />
+          )}
+          Today&apos;s Interactions
+        </CardTitle>
+        {hasInteractions && (
+          <CardDescription>
+            {warnings.length > 0 && `${warnings.length} warning${warnings.length > 1 ? "s" : ""}`}
+            {warnings.length > 0 && synergies.length > 0 && ", "}
+            {synergies.length > 0 && `${synergies.length} synerg${synergies.length > 1 ? "ies" : "y"}`}
+          </CardDescription>
+        )}
+      </CardHeader>
+      <CardContent>
+        {!hasInteractions ? (
+          <p className="text-sm text-muted-foreground">
+            No interactions detected in today&apos;s logs.
+          </p>
+        ) : (
+          <div className="space-y-2 max-h-[300px] overflow-y-auto">
+            {warnings.map((warning) => (
+              <div
+                key={warning.id}
+                className={`rounded-md p-2 text-xs ${
+                  warning.severity === "critical"
+                    ? "bg-destructive/10"
+                    : warning.severity === "medium"
+                      ? "bg-yellow-500/10"
+                      : "bg-muted"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Badge
+                    variant={warning.severity === "critical" ? "destructive" : "secondary"}
+                    className={`text-[10px] ${
+                      warning.severity === "medium" ? "bg-yellow-500/20 text-yellow-600" : ""
+                    }`}
+                  >
+                    {warning.severity}
+                  </Badge>
+                </div>
+                <p className="mt-1">
+                  <span className="font-medium">{warning.source.name}</span>
+                  {" → "}
+                  <span className="font-medium">{warning.target.name}</span>
+                </p>
+                {warning.mechanism && (
+                  <p className="mt-0.5 text-[10px] text-muted-foreground line-clamp-2">
+                    {warning.mechanism}
+                  </p>
+                )}
+              </div>
+            ))}
+
+            {synergies.map((synergy) => (
+              <div
+                key={synergy.id}
+                className="rounded-md bg-green-500/10 p-2 text-xs"
+              >
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-green-500/20 text-green-600 text-[10px]">
+                    synergy
+                  </Badge>
+                </div>
+                <p className="mt-1">
+                  <span className="font-medium">{synergy.source.name}</span>
+                  {" + "}
+                  <span className="font-medium">{synergy.target.name}</span>
+                </p>
+                {synergy.mechanism && (
+                  <p className="mt-0.5 text-[10px] text-muted-foreground line-clamp-2">
+                    {synergy.mechanism}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
 }
