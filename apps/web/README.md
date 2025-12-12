@@ -1,29 +1,89 @@
-# Create T3 App
+# Stochi Web App
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+The main web application for Stochi - a supplement tracking PWA.
 
-## What's next? How do I make an app with this?
+## Development
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+### Prerequisites
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+- [Bun](https://bun.sh/)
+- Docker
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+### Quick Start
 
-## Learn More
+```bash
+# Install dependencies
+bun install
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+# Copy environment file
+cp .env.example .env
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+# Start dev server (auto-starts database)
+bun dev
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+# Push schema and seed data
+bun db:push
+bun db:seed
+```
 
-## How do I deploy this?
+### Commands
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+```bash
+bun dev              # Start dev server with database
+bun check            # Lint + typecheck
+bun run format:write # Format code
+bun db:push          # Push schema to database
+bun db:seed          # Seed supplements and interactions
+```
+
+## Project Structure
+
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── (auth)/             # Auth routes (sign-in, sign-up)
+│   ├── api/                # API routes
+│   └── dashboard/          # Main app pages
+│       ├── log/            # Supplement logging
+│       ├── stacks/         # Stack management
+│       └── settings/       # User settings
+├── components/
+│   ├── ui/                 # shadcn/ui components
+│   ├── onboarding/         # Onboarding flow
+│   ├── stacks/             # Stack components
+│   └── log/                # Log components
+├── server/
+│   ├── actions/            # Server actions
+│   ├── db/                 # Drizzle schema & queries
+│   ├── better-auth/        # Auth configuration
+│   └── data/               # Static data (templates)
+└── styles/                 # Global CSS
+```
+
+## Key Features
+
+### Onboarding Flow
+New users see a "Select Config" modal with starter templates:
+- Focus Protocol (Caffeine + L-Theanine + L-Tyrosine)
+- Mineral Balance (Magnesium + Zinc + Iron)  
+- Daily Essentials (Vitamin D3 + K2 + Magnesium)
+
+Templates create a stack with items and logs to demonstrate the interaction engine.
+
+### Interaction Detection
+The app detects supplement interactions:
+- **Synergies** - beneficial combinations (e.g., Vitamin D3 + K2)
+- **Conflicts** - potentially harmful combinations with severity levels
+
+### Stack Templates
+Users can create stacks from templates or start empty. Templates pre-populate supplements with recommended dosages.
+
+## Tech Stack
+
+- **Next.js 15** - App Router, Server Actions
+- **Bun** - Runtime & package manager
+- **PostgreSQL** - Database
+- **Drizzle ORM** - Type-safe database queries
+- **BetterAuth** - Authentication
+- **Tailwind CSS** - Styling
+- **shadcn/ui** - UI components
