@@ -2,17 +2,33 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  LayoutDashboard,
+  Layers,
+  PlusCircle,
+  Settings,
+  type LucideIcon,
+} from "lucide-react";
 import { cn } from "~/lib/utils";
+
+// Map icon names to components - icons must be defined in the client component
+const iconMap: Record<string, LucideIcon> = {
+  dashboard: LayoutDashboard,
+  stacks: Layers,
+  log: PlusCircle,
+  settings: Settings,
+};
 
 type NavLinkProps = {
   href: string;
   children: React.ReactNode;
-  icon: React.ComponentType<{ className?: string }>;
+  iconName: keyof typeof iconMap;
 };
 
-export function NavLink({ href, children, icon: Icon }: NavLinkProps) {
+export function NavLink({ href, children, iconName }: NavLinkProps) {
   const pathname = usePathname();
-  const isActive = pathname === href || pathname.startsWith(`${href}/`);
+  const isActive = pathname === href || (href !== "/dashboard" && pathname.startsWith(`${href}/`));
+  const Icon = iconMap[iconName];
 
   return (
     <Link
@@ -22,7 +38,7 @@ export function NavLink({ href, children, icon: Icon }: NavLinkProps) {
         isActive ? "text-foreground" : "text-muted-foreground",
       )}
     >
-      <Icon className={cn("h-4 w-4", isActive && "text-primary")} />
+      {Icon && <Icon className={cn("h-4 w-4", isActive && "text-primary")} />}
       {children}
     </Link>
   );
@@ -30,13 +46,14 @@ export function NavLink({ href, children, icon: Icon }: NavLinkProps) {
 
 type MobileNavLinkProps = {
   href: string;
-  icon: React.ComponentType<{ className?: string }>;
+  iconName: keyof typeof iconMap;
   label: string;
 };
 
-export function MobileNavLink({ href, icon: Icon, label }: MobileNavLinkProps) {
+export function MobileNavLink({ href, iconName, label }: MobileNavLinkProps) {
   const pathname = usePathname();
-  const isActive = pathname === href || pathname.startsWith(`${href}/`);
+  const isActive = pathname === href || (href !== "/dashboard" && pathname.startsWith(`${href}/`));
+  const Icon = iconMap[iconName];
 
   return (
     <Link
@@ -46,7 +63,7 @@ export function MobileNavLink({ href, icon: Icon, label }: MobileNavLinkProps) {
         isActive ? "text-foreground" : "text-muted-foreground",
       )}
     >
-      <Icon className={cn("h-5 w-5", isActive && "text-primary")} />
+      {Icon && <Icon className={cn("h-5 w-5", isActive && "text-primary")} />}
       {label}
     </Link>
   );

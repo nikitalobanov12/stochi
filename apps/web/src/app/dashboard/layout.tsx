@@ -1,12 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import {
-  LayoutDashboard,
-  Layers,
-  PlusCircle,
-  Settings,
-  LogOut,
-} from "lucide-react";
+import { Settings, LogOut } from "lucide-react";
 
 import { getSession } from "~/server/better-auth/server";
 import { auth } from "~/server/better-auth";
@@ -47,13 +41,13 @@ export default async function DashboardLayout({
             </Link>
 
             <nav className="hidden items-center gap-4 md:flex">
-              <NavLink href="/dashboard" icon={LayoutDashboard}>
+              <NavLink href="/dashboard" iconName="dashboard">
                 Dashboard
               </NavLink>
-              <NavLink href="/dashboard/stacks" icon={Layers}>
+              <NavLink href="/dashboard/stacks" iconName="stacks">
                 Stacks
               </NavLink>
-              <NavLink href="/dashboard/log" icon={PlusCircle}>
+              <NavLink href="/dashboard/log" iconName="log">
                 Log
               </NavLink>
             </nav>
@@ -127,10 +121,10 @@ export default async function DashboardLayout({
 
       <nav className="fixed bottom-0 left-0 right-0 border-t border-border bg-background pb-safe md:hidden">
         <div className="flex items-center justify-around py-2">
-          <MobileNavLink href="/dashboard" icon={LayoutDashboard} label="Home" />
-          <MobileNavLink href="/dashboard/stacks" icon={Layers} label="Stacks" />
-          <MobileNavLink href="/dashboard/log" icon={PlusCircle} label="Log" />
-          <MobileNavLink href="/dashboard/settings" icon={Settings} label="Settings" />
+          <MobileNavLink href="/dashboard" iconName="dashboard" label="Home" />
+          <MobileNavLink href="/dashboard/stacks" iconName="stacks" label="Stacks" />
+          <MobileNavLink href="/dashboard/log" iconName="log" label="Log" />
+          <MobileNavLink href="/dashboard/settings" iconName="settings" label="Settings" />
         </div>
       </nav>
     </div>
