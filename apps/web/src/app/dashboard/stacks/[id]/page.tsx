@@ -14,6 +14,7 @@ import {
   logStack,
 } from "~/server/actions/stacks";
 import { checkInteractions, type InteractionWarning } from "~/server/actions/interactions";
+import { isTemplateStack } from "~/server/data/stack-templates";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -48,6 +49,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { TemplateBanner } from "~/components/onboarding/template-banner";
 
 export default async function StackDetailPage({
   params,
@@ -87,8 +89,19 @@ export default async function StackDetailPage({
   const deleteStackWithId = deleteStack.bind(null, userStack.id);
   const updateStackWithId = updateStack.bind(null, userStack.id);
 
+  // Check if this is a template stack
+  const isTemplate = isTemplateStack(userStack.name);
+
   return (
     <div className="space-y-6">
+      {/* Template Banner */}
+      {isTemplate && (
+        <TemplateBanner
+          stackId={userStack.id}
+          stackName={userStack.name}
+        />
+      )}
+
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/dashboard/stacks">

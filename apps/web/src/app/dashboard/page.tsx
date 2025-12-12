@@ -7,6 +7,7 @@ import { stack, log } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
 import { logStack } from "~/server/actions/stacks";
 import { getTodayInteractionSummary } from "~/server/actions/interactions";
+import { isTemplateStack } from "~/server/data/stack-templates";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -16,6 +17,8 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
+import { SelectConfigModal } from "~/components/onboarding/select-config-modal";
+import { TemplateBanner } from "~/components/onboarding/template-banner";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -53,193 +56,214 @@ export default async function DashboardPage() {
   // Get interaction summary for today's logs
   const interactionSummary = await getTodayInteractionSummary(session.user.id);
 
+  // Check if user needs onboarding (no stacks)
+  const needsOnboarding = userStacks.length === 0;
+
+  // Check if showing a template stack (exactly 1 stack with template name)
+  const templateStack = userStacks.length === 1 && isTemplateStack(userStacks[0]!.name)
+    ? userStacks[0]
+    : null;
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-mono text-2xl font-bold">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">
-            Welcome back, {session.user.name.split(" ")[0]}
-          </p>
+    <>
+      {/* Onboarding Modal - shown when user has no stacks */}
+      <SelectConfigModal open={needsOnboarding} />
+
+      <div className="space-y-6">
+        {/* Template Banner - shown when viewing template data */}
+        {templateStack && (
+          <TemplateBanner
+            stackId={templateStack.id}
+            stackName={templateStack.name}
+          />
+        )}
+
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="font-mono text-2xl font-bold">Dashboard</h1>
+            <p className="text-sm text-muted-foreground">
+              Welcome back, {session.user.name.split(" ")[0]}
+            </p>
+          </div>
+          <Button asChild>
+            <Link href="/dashboard/log">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Quick Log
+            </Link>
+          </Button>
         </div>
-        <Button asChild>
-          <Link href="/dashboard/log">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Quick Log
-          </Link>
-        </Button>
-      </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today&apos;s Logs</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold font-mono">{todayLogs.length}</div>
-            <p className="text-xs text-muted-foreground">
-              supplements logged today
-            </p>
-          </CardContent>
-        </Card>
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Today&apos;s Logs</CardTitle>
+              <Activity className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold font-mono">{todayLogs.length}</div>
+              <p className="text-xs text-muted-foreground">
+                supplements logged today
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Stacks</CardTitle>
-            <Layers className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold font-mono">{userStacks.length}</div>
-            <p className="text-xs text-muted-foreground">
-              configured stack bundles
-            </p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Active Stacks</CardTitle>
+              <Layers className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold font-mono">{userStacks.length}</div>
+              <p className="text-xs text-muted-foreground">
+                configured stack bundles
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Interactions</CardTitle>
-            {interactionSummary.total > 0 ? (
-              <AlertTriangle className={`h-4 w-4 ${
-                interactionSummary.critical > 0 
-                  ? "text-destructive" 
-                  : interactionSummary.medium > 0 
-                    ? "text-yellow-500" 
-                    : "text-muted-foreground"
-              }`} />
-            ) : (
-              <CheckCircle2 className="h-4 w-4 text-green-500" />
-            )}
-          </CardHeader>
-          <CardContent>
-            {interactionSummary.total === 0 && interactionSummary.synergies === 0 ? (
-              <>
-                <div className="text-2xl font-bold font-mono text-green-500">Clear</div>
-                <p className="text-xs text-muted-foreground">
-                  No warnings in today&apos;s stack
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="flex items-baseline gap-2">
-                  {interactionSummary.total > 0 && (
-                    <span className={`text-2xl font-bold font-mono ${
-                      interactionSummary.critical > 0 
-                        ? "text-destructive" 
-                        : interactionSummary.medium > 0 
-                          ? "text-yellow-500" 
-                          : "text-muted-foreground"
-                    }`}>
-                      {interactionSummary.total}
-                    </span>
-                  )}
-                  {interactionSummary.synergies > 0 && (
-                    <span className="text-lg font-mono text-green-500">
-                      +{interactionSummary.synergies}
-                    </span>
-                  )}
-                </div>
-                <div className="flex gap-2 text-xs">
-                  {interactionSummary.critical > 0 && (
-                    <Badge variant="destructive" className="font-mono text-[10px]">
-                      {interactionSummary.critical} critical
-                    </Badge>
-                  )}
-                  {interactionSummary.medium > 0 && (
-                    <Badge className="bg-yellow-500/10 text-yellow-500 font-mono text-[10px]">
-                      {interactionSummary.medium} medium
-                    </Badge>
-                  )}
-                  {interactionSummary.synergies > 0 && (
-                    <Badge className="bg-green-500/10 text-green-500 font-mono text-[10px]">
-                      {interactionSummary.synergies} synergies
-                    </Badge>
-                  )}
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="font-mono">Quick Actions</CardTitle>
-            </div>
-            <CardDescription>
-              Log your stacks with one click
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {userStacks.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <Layers className="mb-4 h-12 w-12 text-muted-foreground/50" />
-                <p className="mb-4 text-sm text-muted-foreground">
-                  No stacks configured yet
-                </p>
-                <Button asChild variant="outline" size="sm">
-                  <Link href="/dashboard/stacks">Create your first stack</Link>
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {userStacks.map((s) => (
-                  <QuickStackButton key={s.id} stack={s} />
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="font-mono">Recent Activity</CardTitle>
-              <Button asChild variant="ghost" size="sm">
-                <Link href="/dashboard/log">View all</Link>
-              </Button>
-            </div>
-            <CardDescription>Your latest supplement logs</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {recentLogs.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <Activity className="mb-4 h-12 w-12 text-muted-foreground/50" />
-                <p className="mb-4 text-sm text-muted-foreground">
-                  No logs yet
-                </p>
-                <Button asChild variant="outline" size="sm">
-                  <Link href="/dashboard/log">Log your first supplement</Link>
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {recentLogs.slice(0, 5).map((l) => (
-                  <div
-                    key={l.id}
-                    className="flex items-center justify-between text-sm"
-                  >
-                    <div>
-                      <span className="font-medium">{l.supplement.name}</span>
-                      <span className="ml-2 text-muted-foreground">
-                        {l.dosage}
-                        {l.unit}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Interactions</CardTitle>
+              {interactionSummary.total > 0 ? (
+                <AlertTriangle className={`h-4 w-4 ${
+                  interactionSummary.critical > 0 
+                    ? "text-destructive" 
+                    : interactionSummary.medium > 0 
+                      ? "text-yellow-500" 
+                      : "text-muted-foreground"
+                }`} />
+              ) : (
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+              )}
+            </CardHeader>
+            <CardContent>
+              {interactionSummary.total === 0 && interactionSummary.synergies === 0 ? (
+                <>
+                  <div className="text-2xl font-bold font-mono text-green-500">Clear</div>
+                  <p className="text-xs text-muted-foreground">
+                    No warnings in today&apos;s stack
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-baseline gap-2">
+                    {interactionSummary.total > 0 && (
+                      <span className={`text-2xl font-bold font-mono ${
+                        interactionSummary.critical > 0 
+                          ? "text-destructive" 
+                          : interactionSummary.medium > 0 
+                            ? "text-yellow-500" 
+                            : "text-muted-foreground"
+                      }`}>
+                        {interactionSummary.total}
                       </span>
-                    </div>
-                    <time className="text-xs text-muted-foreground font-mono">
-                      {formatRelativeTime(l.loggedAt)}
-                    </time>
+                    )}
+                    {interactionSummary.synergies > 0 && (
+                      <span className="text-lg font-mono text-green-500">
+                        +{interactionSummary.synergies}
+                      </span>
+                    )}
                   </div>
-                ))}
+                  <div className="flex gap-2 text-xs">
+                    {interactionSummary.critical > 0 && (
+                      <Badge variant="destructive" className="font-mono text-[10px]">
+                        {interactionSummary.critical} critical
+                      </Badge>
+                    )}
+                    {interactionSummary.medium > 0 && (
+                      <Badge className="bg-yellow-500/10 text-yellow-500 font-mono text-[10px]">
+                        {interactionSummary.medium} medium
+                      </Badge>
+                    )}
+                    {interactionSummary.synergies > 0 && (
+                      <Badge className="bg-green-500/10 text-green-500 font-mono text-[10px]">
+                        {interactionSummary.synergies} synergies
+                      </Badge>
+                    )}
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="font-mono">Quick Actions</CardTitle>
               </div>
-            )}
-          </CardContent>
-        </Card>
+              <CardDescription>
+                Log your stacks with one click
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {userStacks.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <Layers className="mb-4 h-12 w-12 text-muted-foreground/50" />
+                  <p className="mb-4 text-sm text-muted-foreground">
+                    No stacks configured yet
+                  </p>
+                  <Button asChild variant="outline" size="sm">
+                    <Link href="/dashboard/stacks">Create your first stack</Link>
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {userStacks.map((s) => (
+                    <QuickStackButton key={s.id} stack={s} />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="font-mono">Recent Activity</CardTitle>
+                <Button asChild variant="ghost" size="sm">
+                  <Link href="/dashboard/log">View all</Link>
+                </Button>
+              </div>
+              <CardDescription>Your latest supplement logs</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {recentLogs.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <Activity className="mb-4 h-12 w-12 text-muted-foreground/50" />
+                  <p className="mb-4 text-sm text-muted-foreground">
+                    No logs yet
+                  </p>
+                  <Button asChild variant="outline" size="sm">
+                    <Link href="/dashboard/log">Log your first supplement</Link>
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {recentLogs.slice(0, 5).map((l) => (
+                    <div
+                      key={l.id}
+                      className="flex items-center justify-between text-sm"
+                    >
+                      <div>
+                        <span className="font-medium">{l.supplement.name}</span>
+                        <span className="ml-2 text-muted-foreground">
+                          {l.dosage}
+                          {l.unit}
+                        </span>
+                      </div>
+                      <time className="text-xs text-muted-foreground font-mono">
+                        {formatRelativeTime(l.loggedAt)}
+                      </time>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

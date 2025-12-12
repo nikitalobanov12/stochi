@@ -131,7 +131,7 @@ export default async function StacksPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {userStacks.map((s) => (
-            <Link key={s.id} href={`/stacks/${s.id}`}>
+            <Link key={s.id} href={`/dashboard/stacks/${s.id}`}>
               <Card className="h-full transition-colors hover:border-primary/50">
                 <CardHeader>
                   <div className="flex items-center justify-between">
