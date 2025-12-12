@@ -1,11 +1,12 @@
 import { eq, desc } from "drizzle-orm";
 import Link from "next/link";
-import { Layers, PlusCircle, Activity, AlertTriangle } from "lucide-react";
+import { Layers, PlusCircle, Activity, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 import { db } from "~/server/db";
 import { stack, log } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
 import { logStack } from "~/server/actions/stacks";
+import { getTodayInteractionSummary } from "~/server/actions/interactions";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -48,6 +49,9 @@ export default async function DashboardPage() {
   const todayLogs = recentLogs.filter(
     (l) => new Date(l.loggedAt) >= todayStart,
   );
+
+  // Get interaction summary for today's logs
+  const interactionSummary = await getTodayInteractionSummary(session.user.id);
 
   return (
     <div className="space-y-6">
@@ -96,13 +100,65 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Interactions</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            {interactionSummary.total > 0 ? (
+              <AlertTriangle className={`h-4 w-4 ${
+                interactionSummary.critical > 0 
+                  ? "text-destructive" 
+                  : interactionSummary.medium > 0 
+                    ? "text-yellow-500" 
+                    : "text-muted-foreground"
+              }`} />
+            ) : (
+              <CheckCircle2 className="h-4 w-4 text-green-500" />
+            )}
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold font-mono text-primary">0</div>
-            <p className="text-xs text-muted-foreground">
-              warnings detected
-            </p>
+            {interactionSummary.total === 0 && interactionSummary.synergies === 0 ? (
+              <>
+                <div className="text-2xl font-bold font-mono text-green-500">Clear</div>
+                <p className="text-xs text-muted-foreground">
+                  No warnings in today&apos;s stack
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="flex items-baseline gap-2">
+                  {interactionSummary.total > 0 && (
+                    <span className={`text-2xl font-bold font-mono ${
+                      interactionSummary.critical > 0 
+                        ? "text-destructive" 
+                        : interactionSummary.medium > 0 
+                          ? "text-yellow-500" 
+                          : "text-muted-foreground"
+                    }`}>
+                      {interactionSummary.total}
+                    </span>
+                  )}
+                  {interactionSummary.synergies > 0 && (
+                    <span className="text-lg font-mono text-green-500">
+                      +{interactionSummary.synergies}
+                    </span>
+                  )}
+                </div>
+                <div className="flex gap-2 text-xs">
+                  {interactionSummary.critical > 0 && (
+                    <Badge variant="destructive" className="font-mono text-[10px]">
+                      {interactionSummary.critical} critical
+                    </Badge>
+                  )}
+                  {interactionSummary.medium > 0 && (
+                    <Badge className="bg-yellow-500/10 text-yellow-500 font-mono text-[10px]">
+                      {interactionSummary.medium} medium
+                    </Badge>
+                  )}
+                  {interactionSummary.synergies > 0 && (
+                    <Badge className="bg-green-500/10 text-green-500 font-mono text-[10px]">
+                      {interactionSummary.synergies} synergies
+                    </Badge>
+                  )}
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
