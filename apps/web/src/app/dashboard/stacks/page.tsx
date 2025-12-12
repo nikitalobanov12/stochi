@@ -6,6 +6,7 @@ import { db } from "~/server/db";
 import { stack } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
 import { createStack } from "~/server/actions/stacks";
+import { createStackFromTemplate } from "~/server/actions/onboarding";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -15,16 +16,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "~/components/ui/dialog";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
+import { CreateStackDialog } from "~/components/stacks/create-stack-dialog";
 
 export default async function StacksPage() {
   const session = await getSession();
@@ -51,37 +43,10 @@ export default async function StacksPage() {
             Create and manage your supplement bundles
           </p>
         </div>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              New Stack
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle className="font-mono">Create Stack</DialogTitle>
-              <DialogDescription>
-                Create a new supplement bundle for quick logging
-              </DialogDescription>
-            </DialogHeader>
-            <form action={createStack} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Stack Name</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  placeholder="e.g., Morning Protocol"
-                  required
-                  className="font-mono"
-                />
-              </div>
-              <Button type="submit" className="w-full">
-                Create Stack
-              </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <CreateStackDialog
+          createStack={createStack}
+          createStackFromTemplate={createStackFromTemplate}
+        />
       </div>
 
       {userStacks.length === 0 ? (
@@ -95,37 +60,15 @@ export default async function StacksPage() {
               Create your first stack to quickly log multiple supplements at
               once
             </p>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create your first stack
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle className="font-mono">Create Stack</DialogTitle>
-                  <DialogDescription>
-                    Create a new supplement bundle for quick logging
-                  </DialogDescription>
-                </DialogHeader>
-                <form action={createStack} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name-empty">Stack Name</Label>
-                    <Input
-                      id="name-empty"
-                      name="name"
-                      placeholder="e.g., Morning Protocol"
-                      required
-                      className="font-mono"
-                    />
-                  </div>
-                  <Button type="submit" className="w-full">
-                    Create Stack
-                  </Button>
-                </form>
-              </DialogContent>
-            </Dialog>
+            <CreateStackDialog
+              createStack={createStack}
+              createStackFromTemplate={createStackFromTemplate}
+            >
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Create your first stack
+              </Button>
+            </CreateStackDialog>
           </CardContent>
         </Card>
       ) : (

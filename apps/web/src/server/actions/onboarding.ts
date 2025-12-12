@@ -210,3 +210,61 @@ export async function checkNeedsOnboarding(): Promise<boolean> {
 
   return userStacks.length === 0;
 }
+
+/**
+ * Create a stack from template WITHOUT creating logs.
+ * Used for the "New Stack" dialog on the stacks page.
+ */
+export async function createStackFromTemplate(templateKey: string): Promise<{ success: boolean; stackId?: string; error?: string }> {
+  const session = await getSession();
+  if (!session) {
+    return { success: false, error: "Not authenticated" };
+  }
+
+  const template = getTemplateByKey(templateKey);
+  if (!template) {
+    return { success: false, error: "Template not found" };
+  }
+
+  // Get supplement IDs by name
+  const supplementNames = template.supplements.map((s) => s.supplementName);
+  const supplements = await db.query.supplement.findMany({
+    where: inArray(supplement.name, supplementNames),
+  });
+
+  const supplementMap = new Map(supplements.map((s) => [s.name, s.id]));
+
+  // Verify all supplements exist
+  const missingSupplements = supplementNames.filter((name) => !supplementMap.has(name));
+  if (missingSupplements.length > 0) {
+    return { success: false, error: `Missing supplements: ${missingSupplements.join(", ")}` };
+  }
+
+  // Create stack
+  const [newStack] = await db
+    .insert(stack)
+    .values({
+      userId: session.user.id,
+      name: template.name,
+    })
+    .returning();
+
+  if (!newStack) {
+    return { success: false, error: "Failed to create stack" };
+  }
+
+  // Create stack items
+  const stackItems = template.supplements.map((s) => ({
+    stackId: newStack.id,
+    supplementId: supplementMap.get(s.supplementName)!,
+    dosage: s.dosage,
+    unit: s.unit,
+  }));
+
+  await db.insert(stackItem).values(stackItems);
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/stacks");
+
+  return { success: true, stackId: newStack.id };
+}
