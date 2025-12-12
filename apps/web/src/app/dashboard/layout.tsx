@@ -50,10 +50,10 @@ export default async function DashboardLayout({
               <NavLink href="/dashboard" icon={LayoutDashboard}>
                 Dashboard
               </NavLink>
-              <NavLink href="/stacks" icon={Layers}>
+              <NavLink href="/dashboard/stacks" icon={Layers}>
                 Stacks
               </NavLink>
-              <NavLink href="/log" icon={PlusCircle}>
+              <NavLink href="/dashboard/log" icon={PlusCircle}>
                 Log
               </NavLink>
             </nav>
@@ -91,7 +91,7 @@ export default async function DashboardLayout({
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/settings" className="cursor-pointer">
+                  <Link href="/dashboard/settings" className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4" />
                     Settings
                   </Link>
@@ -128,9 +128,9 @@ export default async function DashboardLayout({
       <nav className="fixed bottom-0 left-0 right-0 border-t border-border bg-background pb-safe md:hidden">
         <div className="flex items-center justify-around py-2">
           <MobileNavLink href="/dashboard" icon={LayoutDashboard} label="Home" />
-          <MobileNavLink href="/stacks" icon={Layers} label="Stacks" />
-          <MobileNavLink href="/log" icon={PlusCircle} label="Log" />
-          <MobileNavLink href="/settings" icon={Settings} label="Settings" />
+          <MobileNavLink href="/dashboard/stacks" icon={Layers} label="Stacks" />
+          <MobileNavLink href="/dashboard/log" icon={PlusCircle} label="Log" />
+          <MobileNavLink href="/dashboard/settings" icon={Settings} label="Settings" />
         </div>
       </nav>
     </div>

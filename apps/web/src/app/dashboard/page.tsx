@@ -63,7 +63,7 @@ export default async function DashboardPage() {
           </p>
         </div>
         <Button asChild>
-          <Link href="/log">
+          <Link href="/dashboard/log">
             <PlusCircle className="mr-2 h-4 w-4" />
             Quick Log
           </Link>
@@ -181,7 +181,7 @@ export default async function DashboardPage() {
                   No stacks configured yet
                 </p>
                 <Button asChild variant="outline" size="sm">
-                  <Link href="/stacks">Create your first stack</Link>
+                  <Link href="/dashboard/stacks">Create your first stack</Link>
                 </Button>
               </div>
             ) : (
@@ -199,7 +199,7 @@ export default async function DashboardPage() {
             <div className="flex items-center justify-between">
               <CardTitle className="font-mono">Recent Activity</CardTitle>
               <Button asChild variant="ghost" size="sm">
-                <Link href="/log">View all</Link>
+                <Link href="/dashboard/log">View all</Link>
               </Button>
             </div>
             <CardDescription>Your latest supplement logs</CardDescription>
@@ -212,7 +212,7 @@ export default async function DashboardPage() {
                   No logs yet
                 </p>
                 <Button asChild variant="outline" size="sm">
-                  <Link href="/log">Log your first supplement</Link>
+                  <Link href="/dashboard/log">Log your first supplement</Link>
                 </Button>
               </div>
             ) : (
