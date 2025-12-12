@@ -20,6 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { NavLink, MobileNavLink } from "~/components/nav-links";
 import { headers } from "next/headers";
 
 export default async function DashboardLayout({
@@ -124,7 +125,7 @@ export default async function DashboardLayout({
         <div className="container py-6">{children}</div>
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 border-t border-border bg-background md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 border-t border-border bg-background pb-safe md:hidden">
         <div className="flex items-center justify-around py-2">
           <MobileNavLink href="/dashboard" icon={LayoutDashboard} label="Home" />
           <MobileNavLink href="/stacks" icon={Layers} label="Stacks" />
@@ -133,45 +134,5 @@ export default async function DashboardLayout({
         </div>
       </nav>
     </div>
-  );
-}
-
-function NavLink({
-  href,
-  children,
-  icon: Icon,
-}: {
-  href: string;
-  children: React.ReactNode;
-  icon: React.ComponentType<{ className?: string }>;
-}) {
-  return (
-    <Link
-      href={href}
-      className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-    >
-      <Icon className="h-4 w-4" />
-      {children}
-    </Link>
-  );
-}
-
-function MobileNavLink({
-  href,
-  icon: Icon,
-  label,
-}: {
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="flex flex-col items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-    >
-      <Icon className="h-5 w-5" />
-      {label}
-    </Link>
   );
 }
