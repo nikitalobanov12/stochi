@@ -5,6 +5,7 @@ import { Layers, PlusCircle, Activity, AlertTriangle } from "lucide-react";
 import { db } from "~/server/db";
 import { stack, log } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
+import { logStack } from "~/server/actions/stacks";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -199,15 +200,15 @@ function QuickStackButton({
     }>;
   };
 }) {
+  const logStackWithId = logStack.bind(null, stack.id);
+
   return (
-    <form>
+    <form action={logStackWithId}>
       <Button
+        type="submit"
         variant="outline"
         className="w-full justify-between"
-        formAction={async () => {
-          "use server";
-          // TODO: Implement stack logging
-        }}
+        disabled={stack.items.length === 0}
       >
         <span className="font-mono">{stack.name}</span>
         <Badge variant="secondary" className="font-mono">
