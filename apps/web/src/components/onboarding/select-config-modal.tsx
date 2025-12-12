@@ -13,7 +13,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
-import { Badge } from "~/components/ui/badge";
 import { cn } from "~/lib/utils";
 
 type SelectConfigModalProps = {
@@ -113,43 +112,21 @@ function TemplateCard({
       onClick={onSelect}
       disabled={isDisabled}
       className={cn(
-        "group w-full rounded-lg border border-border bg-card p-4 text-left transition-all",
-        "hover:border-primary/50 hover:bg-accent/50",
+        "group w-full rounded-md border-2 border-muted-foreground/20 p-4 text-left transition-colors",
+        "hover:border-primary hover:bg-primary/5",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         isDisabled && "cursor-not-allowed opacity-50",
-        isLoading && "border-primary"
+        isLoading && "border-primary bg-primary/5"
       )}
     >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1 space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-sm text-primary group-hover:text-primary">
-              {isLoading ? "" : ">"}
-            </span>
-            <h3 className="font-mono font-medium">{template.name}</h3>
-            {isLoading && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
-          </div>
-          <p className="pl-4 text-sm text-muted-foreground">{template.description}</p>
-        </div>
+      <div className="flex items-center gap-2">
+        <span className="font-mono text-sm text-primary">
+          {isLoading ? "" : ">"}
+        </span>
+        <h3 className="font-mono font-medium">{template.name}</h3>
+        {isLoading && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
       </div>
-
-      <div className="mt-3 flex flex-wrap gap-2 pl-4">
-        {template.interactions.map((interaction, idx) => (
-          <Badge
-            key={idx}
-            variant="secondary"
-            className={cn(
-              "font-mono text-[10px]",
-              interaction.type === "synergy"
-                ? "bg-green-500/10 text-green-500"
-                : "bg-destructive/10 text-destructive"
-            )}
-          >
-            {interaction.count} {interaction.type}
-            {interaction.count > 1 ? "s" : ""}
-          </Badge>
-        ))}
-      </div>
+      <p className="mt-1 pl-5 text-sm text-muted-foreground">{template.description}</p>
     </button>
   );
 }
