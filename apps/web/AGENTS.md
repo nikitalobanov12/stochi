@@ -27,6 +27,7 @@ apps/web/
 │   │   ├── (auth)/auth/[...path]/     # Auth pages (sign-in, sign-up, etc.)
 │   │   ├── (dashboard)/               # Protected dashboard routes
 │   │   │   ├── log/                   # Logging interface
+│   │   │   ├── settings/              # User settings & data export
 │   │   │   ├── stacks/                # Stack management
 │   │   │   │   └── [id]/              # Individual stack detail
 │   │   │   ├── layout.tsx             # Dashboard shell with nav
@@ -38,11 +39,13 @@ apps/web/
 │   │   ├── log/                       # Log-specific components
 │   │   │   └── command-bar.tsx        # Natural language input
 │   │   ├── ui/                        # shadcn components
+│   │   ├── nav-links.tsx              # Navigation link components
 │   │   └── providers.tsx              # Client providers (AuthUI)
 │   ├── lib/
 │   │   └── utils.ts                   # Utility functions (cn)
 │   └── server/
 │       ├── actions/                   # Server Actions
+│       │   ├── interactions.ts        # Interaction checking engine
 │       │   ├── logs.ts                # Log CRUD operations
 │       │   └── stacks.ts              # Stack CRUD operations
 │       ├── better-auth/               # Auth configuration
@@ -156,8 +159,36 @@ For production (replace with your domain):
 
 ## Next Steps / TODO
 
-1. **Interaction Detection**: Query interactions based on logged supplements
-2. **PWA Testing**: Verify installability and offline support
-3. **Data Export**: Allow users to export their logs
-4. **Supplement Database Expansion**: Add more supplements and interactions
-5. **Analytics Dashboard**: Visualize intake patterns over time
+### Completed
+- [x] **Interaction Detection**: Query interactions based on logged supplements
+- [x] **Data Export**: Allow users to export their logs (JSON/CSV in Settings)
+- [x] **Dashboard**: Real-time interaction warnings, quick stack logging
+- [x] **Stack Detail**: Show interaction warnings/synergies per stack
+- [x] **Log Page**: Today's interactions sidebar
+
+### In Progress
+1. **Enhanced Logging**: Time-of-day awareness, notes field
+2. **Analytics Dashboard**: Visualize intake patterns over time
+
+### Future
+1. **PWA Testing**: Verify installability and offline support
+2. **Supplement Database Expansion**: Add more supplements and interactions
+3. **Go Engine Integration**: High-performance graph traversal for complex stacks
+
+## Interaction Engine
+
+The interaction checking system (`server/actions/interactions.ts`) provides:
+
+- `checkInteractions(supplementIds)`: Find interactions between a set of supplements
+- `getTodayInteractionSummary(userId)`: Dashboard stats (warnings/synergies count)
+- `getUserInteractions(userId)`: Detailed interactions for user's stacks
+
+### Interaction Types
+- **competition**: Supplements compete for absorption (e.g., Zinc vs Copper)
+- **inhibition**: One supplement reduces effect of another (e.g., Caffeine depletes Magnesium)
+- **synergy**: Supplements enhance each other (e.g., Vitamin D + K2)
+
+### Severity Levels
+- **critical** (red): Potentially dangerous, should avoid
+- **medium** (yellow): Worth noting, consider timing
+- **low** (muted): Minor effect, informational
