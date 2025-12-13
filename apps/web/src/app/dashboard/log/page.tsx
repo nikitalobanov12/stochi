@@ -6,7 +6,7 @@ import { Trash2, Clock, Zap, Terminal, AlertTriangle, CheckCircle2 } from "lucid
 
 import { createLog, deleteLog } from "~/server/actions/logs";
 import { logStack } from "~/server/actions/stacks";
-import { checkInteractions, type InteractionWarning } from "~/server/actions/interactions";
+import { checkInteractions, checkTimingWarnings, type InteractionWarning, type TimingWarning } from "~/server/actions/interactions";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -74,6 +74,23 @@ export default async function LogPage() {
   const todayInteractions = await checkInteractions(todaySupplementIds);
   const warnings = todayInteractions.filter((i) => i.type !== "synergy");
   const synergies = todayInteractions.filter((i) => i.type === "synergy");
+
+  // Check timing warnings for today's logs
+  const timingWarningsPromises = todaysLogs.map((logEntry) =>
+    checkTimingWarnings(session.user.id, logEntry.supplement.id, new Date(logEntry.loggedAt))
+  );
+  const timingWarningsArrays = await Promise.all(timingWarningsPromises);
+  // Flatten and dedupe timing warnings (same pair might be flagged from both sides)
+  const timingWarningsMap = new Map<string, TimingWarning>();
+  for (const warnings of timingWarningsArrays) {
+    for (const warning of warnings) {
+      const key = [warning.source.id, warning.target.id].sort().join("-");
+      if (!timingWarningsMap.has(key)) {
+        timingWarningsMap.set(key, warning);
+      }
+    }
+  }
+  const timingWarnings = Array.from(timingWarningsMap.values());
 
   return (
     <div className="space-y-6">
@@ -224,7 +241,7 @@ export default async function LogPage() {
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Today's Interactions */}
-          <TodayInteractionsCard warnings={warnings} synergies={synergies} />
+          <TodayInteractionsCard warnings={warnings} synergies={synergies} timingWarnings={timingWarnings} />
 
           {/* Recent History */}
           <Card>
@@ -436,13 +453,18 @@ function formatDate(date: Date): string {
 function TodayInteractionsCard({
   warnings,
   synergies,
+  timingWarnings,
 }: {
   warnings: InteractionWarning[];
   synergies: InteractionWarning[];
+  timingWarnings: TimingWarning[];
 }) {
-  const hasInteractions = warnings.length > 0 || synergies.length > 0;
-  const criticalCount = warnings.filter((w) => w.severity === "critical").length;
-  const mediumCount = warnings.filter((w) => w.severity === "medium").length;
+  const hasInteractions = warnings.length > 0 || synergies.length > 0 || timingWarnings.length > 0;
+  const criticalCount = warnings.filter((w) => w.severity === "critical").length +
+    timingWarnings.filter((w) => w.severity === "critical").length;
+  const mediumCount = warnings.filter((w) => w.severity === "medium").length +
+    timingWarnings.filter((w) => w.severity === "medium").length;
+  const totalWarnings = warnings.length + timingWarnings.length;
 
   return (
     <Card className={criticalCount > 0 ? "border-destructive/50" : mediumCount > 0 ? "border-yellow-500/50" : ""}>
@@ -450,7 +472,7 @@ function TodayInteractionsCard({
         <CardTitle className="flex items-center gap-2 font-mono text-base">
           {!hasInteractions ? (
             <CheckCircle2 className="h-4 w-4 text-green-500" />
-          ) : warnings.length > 0 ? (
+          ) : totalWarnings > 0 ? (
             <AlertTriangle className={`h-4 w-4 ${
               criticalCount > 0 ? "text-destructive" : "text-yellow-500"
             }`} />
@@ -461,8 +483,8 @@ function TodayInteractionsCard({
         </CardTitle>
         {hasInteractions && (
           <CardDescription>
-            {warnings.length > 0 && `${warnings.length} warning${warnings.length > 1 ? "s" : ""}`}
-            {warnings.length > 0 && synergies.length > 0 && ", "}
+            {totalWarnings > 0 && `${totalWarnings} warning${totalWarnings > 1 ? "s" : ""}`}
+            {totalWarnings > 0 && synergies.length > 0 && ", "}
             {synergies.length > 0 && `${synergies.length} synerg${synergies.length > 1 ? "ies" : "y"}`}
           </CardDescription>
         )}
@@ -474,6 +496,46 @@ function TodayInteractionsCard({
           </p>
         ) : (
           <div className="space-y-2 max-h-[300px] overflow-y-auto">
+            {/* Timing Warnings */}
+            {timingWarnings.map((warning) => (
+              <div
+                key={warning.id}
+                className={`rounded-md p-2 text-xs ${
+                  warning.severity === "critical"
+                    ? "bg-destructive/10"
+                    : warning.severity === "medium"
+                      ? "bg-yellow-500/10"
+                      : "bg-muted"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Badge
+                    variant={warning.severity === "critical" ? "destructive" : "secondary"}
+                    className={`text-[10px] ${
+                      warning.severity === "medium" ? "bg-yellow-500/20 text-yellow-600" : ""
+                    }`}
+                  >
+                    {warning.severity}
+                  </Badge>
+                  <Clock className="h-3 w-3 text-muted-foreground" />
+                  <span className="text-[10px] text-muted-foreground">
+                    timing
+                  </span>
+                </div>
+                <p className="mt-1">
+                  <span className="font-medium">{warning.source.name}</span>
+                  {" ↔ "}
+                  <span className="font-medium">{warning.target.name}</span>
+                  <span className="ml-2 font-mono text-muted-foreground">
+                    ({warning.actualHoursApart}h apart, need {warning.minHoursApart}h+)
+                  </span>
+                </p>
+                <p className="mt-0.5 text-[10px] text-muted-foreground line-clamp-2">
+                  {warning.reason}
+                </p>
+              </div>
+            ))}
+
             {warnings.map((warning) => (
               <div
                 key={warning.id}
