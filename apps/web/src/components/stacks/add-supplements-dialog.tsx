@@ -38,6 +38,7 @@ type Supplement = {
   id: string;
   name: string;
   form: string | null;
+  defaultUnit: "mg" | "mcg" | "g" | "IU" | "ml" | null;
 };
 
 type PendingItem = {
@@ -93,6 +94,7 @@ export function AddSupplementsDialog({
   function handleSelectSupplement(supplement: Supplement) {
     setSelectedSupplement(supplement);
     setSearchQuery(supplement.name);
+    setUnit(supplement.defaultUnit ?? "mg");
     setShowDropdown(false);
   }
 

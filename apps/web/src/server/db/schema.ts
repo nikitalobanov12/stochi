@@ -123,6 +123,7 @@ export const supplement = pgTable(
     name: text("name").notNull().unique(),
     form: text("form"),
     elementalWeight: real("elemental_weight"),
+    defaultUnit: dosageUnitEnum("default_unit").default("mg"),
     createdAt: timestamp("created_at")
       .$defaultFn(() => new Date())
       .notNull(),

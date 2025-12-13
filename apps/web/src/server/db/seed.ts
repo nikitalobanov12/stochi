@@ -2,43 +2,49 @@ import { db } from "./index";
 import { supplement, interaction, ratioRule, timingRule } from "./schema";
 
 const supplements = [
-  // Magnesium forms
+  // Magnesium forms (mg)
   {
     name: "Magnesium Glycinate",
     form: "Magnesium Bisglycinate",
     elementalWeight: 14.1,
+    defaultUnit: "mg" as const,
     aliases: ["mag glycinate", "magnesium bisgly", "mag bisgly", "calm magnesium"],
   },
   {
     name: "Magnesium Citrate",
     form: "Magnesium Citrate",
     elementalWeight: 16.2,
+    defaultUnit: "mg" as const,
     aliases: ["mag citrate", "natural calm"],
   },
   {
     name: "Magnesium L-Threonate",
     form: "Magnesium L-Threonate",
     elementalWeight: 7.2,
+    defaultUnit: "mg" as const,
     aliases: ["mag threonate", "magtein", "brain magnesium"],
   },
   {
     name: "Magnesium Oxide",
     form: "Magnesium Oxide",
     elementalWeight: 60.3,
+    defaultUnit: "mg" as const,
     aliases: ["mag oxide", "magox"],
   },
 
-  // Zinc forms
+  // Zinc forms (mg)
   {
     name: "Zinc Picolinate",
     form: "Zinc Picolinate",
     elementalWeight: 21.0,
+    defaultUnit: "mg" as const,
     aliases: ["zinc", "zn picolinate"],
   },
   {
     name: "Zinc Gluconate",
     form: "Zinc Gluconate",
     elementalWeight: 14.3,
+    defaultUnit: "mg" as const,
     aliases: ["zinc gluconate", "zn gluconate"],
   },
 
@@ -47,24 +53,28 @@ const supplements = [
     name: "Vitamin D3",
     form: "Cholecalciferol",
     elementalWeight: 100,
+    defaultUnit: "IU" as const,
     aliases: ["d3", "vit d", "vitamin d", "sunshine vitamin", "cholecalciferol"],
   },
   {
     name: "Vitamin K2 MK-7",
     form: "Menaquinone-7",
     elementalWeight: 100,
+    defaultUnit: "mcg" as const,
     aliases: ["k2", "mk7", "mk-7", "vitamin k", "vit k2", "menaquinone"],
   },
   {
     name: "Vitamin C",
     form: "Ascorbic Acid",
     elementalWeight: 100,
+    defaultUnit: "mg" as const,
     aliases: ["vit c", "ascorbic acid", "c"],
   },
   {
     name: "Vitamin B12",
     form: "Methylcobalamin",
     elementalWeight: 100,
+    defaultUnit: "mcg" as const,
     aliases: ["b12", "methylcobalamin", "cobalamin", "vit b12"],
   },
 
@@ -73,84 +83,97 @@ const supplements = [
     name: "Iron Bisglycinate",
     form: "Ferrous Bisglycinate",
     elementalWeight: 20.0,
+    defaultUnit: "mg" as const,
     aliases: ["iron", "ferrous", "fe", "gentle iron"],
   },
   {
     name: "Copper Bisglycinate",
     form: "Copper Bisglycinate",
     elementalWeight: 25.0,
+    defaultUnit: "mg" as const,
     aliases: ["copper", "cu"],
   },
   {
     name: "Selenium",
     form: "Selenomethionine",
     elementalWeight: 100,
+    defaultUnit: "mcg" as const,
     aliases: ["se", "selenomethionine"],
   },
 
-  // Omega-3
+  // Omega-3 (mg)
   {
     name: "Fish Oil (EPA)",
     form: "Eicosapentaenoic Acid",
     elementalWeight: 100,
+    defaultUnit: "mg" as const,
     aliases: ["epa", "omega 3", "omega-3", "fish oil", "omega3"],
   },
   {
     name: "Fish Oil (DHA)",
     form: "Docosahexaenoic Acid",
     elementalWeight: 100,
+    defaultUnit: "mg" as const,
     aliases: ["dha", "omega 3", "omega-3", "fish oil", "omega3", "brain omega"],
   },
 
-  // Amino Acids
+  // Amino Acids (mg)
   {
     name: "L-Tyrosine",
     form: "L-Tyrosine",
     elementalWeight: 100,
+    defaultUnit: "mg" as const,
     aliases: ["tyrosine", "l tyrosine"],
   },
   {
     name: "L-Theanine",
     form: "L-Theanine",
     elementalWeight: 100,
+    defaultUnit: "mg" as const,
     aliases: ["theanine", "l theanine", "suntheanine"],
   },
   {
     name: "5-HTP",
     form: "5-Hydroxytryptophan",
     elementalWeight: 100,
+    defaultUnit: "mg" as const,
     aliases: ["5htp", "hydroxytryptophan", "serotonin precursor"],
   },
 
-  // Other
+  // Other (mg)
   {
     name: "Caffeine",
     form: "Caffeine Anhydrous",
     elementalWeight: 100,
+    defaultUnit: "mg" as const,
     aliases: ["coffee", "caff"],
   },
   {
     name: "Curcumin",
     form: "Curcuminoids",
     elementalWeight: 100,
+    defaultUnit: "mg" as const,
     aliases: ["turmeric", "curcuminoids"],
   },
   {
     name: "Piperine",
     form: "Black Pepper Extract",
     elementalWeight: 100,
+    defaultUnit: "mg" as const,
     aliases: ["black pepper", "bioperine"],
   },
   {
     name: "Ashwagandha",
     form: "KSM-66 Extract",
     elementalWeight: 100,
+    defaultUnit: "mg" as const,
     aliases: ["ash", "ksm-66", "ksm66", "withania", "ashwa"],
   },
   {
     name: "Creatine Monohydrate",
     form: "Creatine Monohydrate",
     elementalWeight: 100,
+    defaultUnit: "g" as const,
     aliases: ["creatine", "creapure"],
   },
 ];
@@ -171,6 +194,7 @@ async function seed() {
         set: {
           form: supp.form,
           elementalWeight: supp.elementalWeight,
+          defaultUnit: supp.defaultUnit,
           updatedAt: new Date(),
         },
       })
