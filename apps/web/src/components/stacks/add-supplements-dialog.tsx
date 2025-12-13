@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Loader2, Search, Check } from "lucide-react";
+import { Plus, Trash2, Loader2, Search, Check, AlertTriangle } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -69,6 +69,7 @@ export function AddSupplementsDialog({
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [pendingItems, setPendingItems] = useState<PendingItem[]>([]);
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
 
   // Form state
   const [searchQuery, setSearchQuery] = useState("");
@@ -151,6 +152,11 @@ export function AddSupplementsDialog({
   }
 
   function handleOpenChange(newOpen: boolean) {
+    if (!newOpen && pendingItems.length > 0) {
+      // User trying to close with pending items - show confirmation
+      setShowDiscardConfirm(true);
+      return;
+    }
     setOpen(newOpen);
     if (!newOpen) {
       // Reset state when closing
@@ -160,7 +166,19 @@ export function AddSupplementsDialog({
       setDosage("");
       setUnit("mg");
       setShowDropdown(false);
+      setShowDiscardConfirm(false);
     }
+  }
+
+  function handleConfirmDiscard() {
+    setShowDiscardConfirm(false);
+    setPendingItems([]);
+    setSelectedSupplement(null);
+    setSearchQuery("");
+    setDosage("");
+    setUnit("mg");
+    setShowDropdown(false);
+    setOpen(false);
   }
 
   function handleSearchChange(value: string) {
@@ -179,7 +197,44 @@ export function AddSupplementsDialog({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-w-lg">
+      <DialogContent
+        className="max-w-lg"
+        onEscapeKeyDown={(e) => {
+          if (pendingItems.length > 0) {
+            e.preventDefault();
+            setShowDiscardConfirm(true);
+          }
+        }}
+        onPointerDownOutside={(e) => {
+          if (pendingItems.length > 0) {
+            e.preventDefault();
+            setShowDiscardConfirm(true);
+          }
+        }}
+      >
+        {/* Discard confirmation overlay */}
+        {showDiscardConfirm && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center rounded-lg bg-background/95">
+            <div className="flex flex-col items-center gap-4 p-6 text-center">
+              <AlertTriangle className="h-10 w-10 text-yellow-500" />
+              <div>
+                <p className="font-medium">Discard unsaved changes?</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  You have {pendingItems.length} supplement{pendingItems.length !== 1 ? "s" : ""} not yet added to the stack.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setShowDiscardConfirm(false)}>
+                  Keep Editing
+                </Button>
+                <Button variant="destructive" onClick={handleConfirmDiscard}>
+                  Discard
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <DialogHeader>
           <DialogTitle className="font-mono">Add Supplements</DialogTitle>
           <DialogDescription>
