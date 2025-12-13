@@ -10,6 +10,7 @@
 
 ## Completed
 
+- [x] Dashboard: Redesign with actual interaction details and cleaner layout
 - [x] Dashboard: Add command bar for <3s logging
 - [x] UX Overhaul: New onboarding flow with goal selection
 - [x] Fix TimeoutNegativeWarning in dev server
