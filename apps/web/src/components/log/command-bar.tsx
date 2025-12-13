@@ -217,8 +217,10 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
             <button
               key={s.id}
               type="button"
-              className={`w-full rounded px-3 py-2 text-left text-sm ${
-                i === selectedIndex ? "bg-accent" : "hover:bg-accent/50"
+              className={`w-full rounded px-3 py-2 text-left text-sm transition-colors ${
+                i === selectedIndex
+                  ? "bg-muted"
+                  : "hover:bg-muted/50"
               }`}
               onClick={() => {
                 handleInputChange(s.name.toLowerCase().split(" ")[0] + " ");
