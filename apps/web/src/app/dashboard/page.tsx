@@ -3,11 +3,10 @@ import Link from "next/link";
 import { Layers, PlusCircle, Activity, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 import { db } from "~/server/db";
-import { stack, log } from "~/server/db/schema";
+import { stack, log, supplement } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
 import { logStack } from "~/server/actions/stacks";
 import { getTodayInteractionSummary } from "~/server/actions/interactions";
-import { isTemplateStack } from "~/server/data/stack-templates";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -17,8 +16,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
-import { SelectConfigModal } from "~/components/onboarding/select-config-modal";
-import { TemplateBanner } from "~/components/onboarding/template-banner";
+import { WelcomeFlow } from "~/components/onboarding/welcome-flow";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -59,25 +57,25 @@ export default async function DashboardPage() {
   // Check if user needs onboarding (no stacks)
   const needsOnboarding = userStacks.length === 0;
 
-  // Check if showing a template stack (exactly 1 stack with template name)
-  const templateStack = userStacks.length === 1 && isTemplateStack(userStacks[0]!.name)
-    ? userStacks[0]
-    : null;
+  // Fetch all supplements for the onboarding flow
+  const allSupplements = needsOnboarding
+    ? await db.query.supplement.findMany({
+        columns: {
+          id: true,
+          name: true,
+          form: true,
+          defaultUnit: true,
+        },
+        orderBy: [supplement.name],
+      })
+    : [];
 
   return (
     <>
-      {/* Onboarding Modal - shown when user has no stacks */}
-      <SelectConfigModal open={needsOnboarding} />
+      {/* Onboarding Flow - shown when user has no stacks */}
+      <WelcomeFlow open={needsOnboarding} supplements={allSupplements} />
 
       <div className="space-y-6">
-        {/* Template Banner - shown when viewing template data */}
-        {templateStack && (
-          <TemplateBanner
-            stackId={templateStack.id}
-            stackName={templateStack.name}
-          />
-        )}
-
         <div className="flex items-center justify-between">
           <div>
             <h1 className="font-mono text-2xl font-bold">Dashboard</h1>
