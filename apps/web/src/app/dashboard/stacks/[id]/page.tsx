@@ -13,7 +13,7 @@ import {
   removeStackItem,
   logStack,
 } from "~/server/actions/stacks";
-import { checkInteractions, type InteractionWarning } from "~/server/actions/interactions";
+import { checkInteractions, checkRatioWarnings, type InteractionWarning, type RatioWarning } from "~/server/actions/interactions";
 import { isTemplateStack } from "~/server/data/stack-templates";
 import { Button } from "~/components/ui/button";
 import {
@@ -84,6 +84,14 @@ export default async function StackDetailPage({
   const interactions = await checkInteractions(supplementIds);
   const warnings = interactions.filter((i) => i.type !== "synergy");
   const synergies = interactions.filter((i) => i.type === "synergy");
+
+  // Check for ratio warnings (e.g., Zn:Cu ratio)
+  const supplementsWithDosage = userStack.items.map((item) => ({
+    id: item.supplementId,
+    dosage: item.dosage,
+    unit: item.unit,
+  }));
+  const ratioWarnings = await checkRatioWarnings(supplementsWithDosage);
 
   const logStackWithId = logStack.bind(null, userStack.id);
   const deleteStackWithId = deleteStack.bind(null, userStack.id);
@@ -215,7 +223,7 @@ export default async function StackDetailPage({
 
         <div className="space-y-4">
           {/* Interactions Card */}
-          <InteractionsCard warnings={warnings} synergies={synergies} />
+          <InteractionsCard warnings={warnings} synergies={synergies} ratioWarnings={ratioWarnings} />
 
           <Card>
             <CardHeader>
@@ -346,13 +354,17 @@ function AddSupplementForm({
 function InteractionsCard({
   warnings,
   synergies,
+  ratioWarnings,
 }: {
   warnings: InteractionWarning[];
   synergies: InteractionWarning[];
+  ratioWarnings: RatioWarning[];
 }) {
-  const hasInteractions = warnings.length > 0 || synergies.length > 0;
-  const criticalCount = warnings.filter((w) => w.severity === "critical").length;
-  const mediumCount = warnings.filter((w) => w.severity === "medium").length;
+  const hasInteractions = warnings.length > 0 || synergies.length > 0 || ratioWarnings.length > 0;
+  const criticalCount = warnings.filter((w) => w.severity === "critical").length + 
+    ratioWarnings.filter((w) => w.severity === "critical").length;
+  const mediumCount = warnings.filter((w) => w.severity === "medium").length +
+    ratioWarnings.filter((w) => w.severity === "medium").length;
 
   if (!hasInteractions) {
     return (
@@ -376,7 +388,7 @@ function InteractionsCard({
     <Card className={criticalCount > 0 ? "border-destructive/50" : mediumCount > 0 ? "border-yellow-500/50" : ""}>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 font-mono text-base">
-          {warnings.length > 0 ? (
+          {(warnings.length > 0 || ratioWarnings.length > 0) ? (
             <AlertTriangle className={`h-4 w-4 ${
               criticalCount > 0 ? "text-destructive" : "text-yellow-500"
             }`} />
@@ -386,12 +398,57 @@ function InteractionsCard({
           Interactions
         </CardTitle>
         <CardDescription>
-          {warnings.length > 0 && `${warnings.length} warning${warnings.length > 1 ? "s" : ""}`}
-          {warnings.length > 0 && synergies.length > 0 && ", "}
+          {(warnings.length + ratioWarnings.length) > 0 && `${warnings.length + ratioWarnings.length} warning${(warnings.length + ratioWarnings.length) > 1 ? "s" : ""}`}
+          {(warnings.length + ratioWarnings.length) > 0 && synergies.length > 0 && ", "}
           {synergies.length > 0 && `${synergies.length} synerg${synergies.length > 1 ? "ies" : "y"}`}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
+        {/* Ratio Warnings */}
+        {ratioWarnings.map((warning) => (
+          <div
+            key={warning.id}
+            className={`rounded-md p-2 text-xs ${
+              warning.severity === "critical"
+                ? "bg-destructive/10"
+                : warning.severity === "medium"
+                  ? "bg-yellow-500/10"
+                  : "bg-muted"
+            }`}
+          >
+            <div className="flex items-center gap-2 font-medium">
+              <Badge
+                variant={warning.severity === "critical" ? "destructive" : "secondary"}
+                className={`text-[10px] ${
+                  warning.severity === "medium" ? "bg-yellow-500/20 text-yellow-600" : ""
+                }`}
+              >
+                {warning.severity}
+              </Badge>
+              <span className={
+                warning.severity === "critical"
+                  ? "text-destructive"
+                  : warning.severity === "medium"
+                    ? "text-yellow-600"
+                    : ""
+              }>
+                Ratio Imbalance
+              </span>
+            </div>
+            <p className="mt-1 text-muted-foreground">
+              <span className="font-medium text-foreground">{warning.source.name}</span>
+              {" : "}
+              <span className="font-medium text-foreground">{warning.target.name}</span>
+              <span className="ml-2 font-mono">
+                ({warning.currentRatio}:1 vs {warning.minRatio}-{warning.maxRatio}:1)
+              </span>
+            </p>
+            <p className="mt-1 text-[10px] text-muted-foreground">
+              {warning.message}
+            </p>
+          </div>
+        ))}
+
         {warnings.map((warning) => (
           <div
             key={warning.id}
