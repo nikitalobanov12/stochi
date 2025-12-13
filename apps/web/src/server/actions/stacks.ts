@@ -104,6 +104,45 @@ export async function addStackItem(
   revalidatePath("/dashboard");
 }
 
+export async function addStackItems(
+  stackId: string,
+  items: Array<{ supplementId: string; dosage: number; unit: string }>,
+) {
+  const session = await getSession();
+  if (!session) {
+    redirect("/auth/sign-in");
+  }
+
+  const userStack = await db.query.stack.findFirst({
+    where: and(eq(stack.id, stackId), eq(stack.userId, session.user.id)),
+  });
+
+  if (!userStack) {
+    throw new Error("Stack not found");
+  }
+
+  if (items.length === 0) {
+    return;
+  }
+
+  await db.insert(stackItem).values(
+    items.map((item) => ({
+      stackId,
+      supplementId: item.supplementId,
+      dosage: item.dosage,
+      unit: item.unit as "mg" | "mcg" | "g" | "IU" | "ml",
+    })),
+  );
+
+  await db
+    .update(stack)
+    .set({ updatedAt: new Date() })
+    .where(eq(stack.id, stackId));
+
+  revalidatePath(`/stacks/${stackId}`);
+  revalidatePath("/dashboard");
+}
+
 export async function removeStackItem(itemId: string) {
   const session = await getSession();
   if (!session) {
