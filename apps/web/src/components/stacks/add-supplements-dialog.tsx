@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Loader2 } from "lucide-react";
+import { Plus, Trash2, Loader2, Search, Check } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -31,6 +31,8 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { Badge } from "~/components/ui/badge";
+import { fuzzySearchSupplements } from "~/server/data/supplement-aliases";
+import { cn } from "~/lib/utils";
 
 type Supplement = {
   id: string;
@@ -68,36 +70,56 @@ export function AddSupplementsDialog({
   const [pendingItems, setPendingItems] = useState<PendingItem[]>([]);
 
   // Form state
-  const [selectedSupplementId, setSelectedSupplementId] = useState<string>("");
-  const [dosage, setDosage] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedSupplement, setSelectedSupplement] = useState<Supplement | null>(null);
+  const [dosage, setDosage] = useState("");
   const [unit, setUnit] = useState<"mg" | "mcg" | "g" | "IU" | "ml">("mg");
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  // Filter out supplements already in pending list
+  const availableSupplements = useMemo(
+    () => supplements.filter((s) => !pendingItems.some((item) => item.supplementId === s.id)),
+    [supplements, pendingItems]
+  );
+
+  // Fuzzy search results
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return availableSupplements.slice(0, 8); // Show first 8 when no query
+    }
+    return fuzzySearchSupplements(availableSupplements, searchQuery).slice(0, 8);
+  }, [availableSupplements, searchQuery]);
+
+  function handleSelectSupplement(supplement: Supplement) {
+    setSelectedSupplement(supplement);
+    setSearchQuery(supplement.name);
+    setShowDropdown(false);
+  }
 
   function handleAddToList() {
-    if (!selectedSupplementId || !dosage || isNaN(parseFloat(dosage))) {
+    if (!selectedSupplement || !dosage || isNaN(parseFloat(dosage))) {
       return;
     }
 
-    const supplement = supplements.find((s) => s.id === selectedSupplementId);
-    if (!supplement) return;
-
     // Check if already in list
-    if (pendingItems.some((item) => item.supplementId === selectedSupplementId)) {
+    if (pendingItems.some((item) => item.supplementId === selectedSupplement.id)) {
       return;
     }
 
     setPendingItems((prev) => [
       ...prev,
       {
-        supplementId: selectedSupplementId,
-        supplementName: supplement.name,
-        supplementForm: supplement.form,
+        supplementId: selectedSupplement.id,
+        supplementName: selectedSupplement.name,
+        supplementForm: selectedSupplement.form,
         dosage: parseFloat(dosage),
         unit,
       },
     ]);
 
     // Reset form
-    setSelectedSupplementId("");
+    setSelectedSupplement(null);
+    setSearchQuery("");
     setDosage("");
     setUnit("mg");
   }
@@ -131,16 +153,19 @@ export function AddSupplementsDialog({
     if (!newOpen) {
       // Reset state when closing
       setPendingItems([]);
-      setSelectedSupplementId("");
+      setSelectedSupplement(null);
+      setSearchQuery("");
       setDosage("");
       setUnit("mg");
+      setShowDropdown(false);
     }
   }
 
-  // Filter out supplements already in pending list
-  const availableSupplements = supplements.filter(
-    (s) => !pendingItems.some((item) => item.supplementId === s.id)
-  );
+  function handleSearchChange(value: string) {
+    setSearchQuery(value);
+    setSelectedSupplement(null);
+    setShowDropdown(true);
+  }
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -156,37 +181,65 @@ export function AddSupplementsDialog({
         <DialogHeader>
           <DialogTitle className="font-mono">Add Supplements</DialogTitle>
           <DialogDescription>
-            Build your list then add all at once
+            Search by name or alias (e.g., &quot;k2&quot;, &quot;omega 3&quot;, &quot;mag&quot;)
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* Add to list form */}
           <div className="space-y-3 rounded-md border p-3">
+            {/* Searchable supplement input */}
             <div className="space-y-2">
-              <Label htmlFor="supplement" className="text-xs">
+              <Label htmlFor="supplement-search" className="text-xs">
                 Supplement
               </Label>
-              <Select
-                value={selectedSupplementId}
-                onValueChange={setSelectedSupplementId}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a supplement" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableSupplements.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>
-                      {s.name}
-                      {s.form && (
-                        <span className="ml-2 text-muted-foreground">
-                          ({s.form})
-                        </span>
-                      )}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="supplement-search"
+                  placeholder="Search supplements..."
+                  value={searchQuery}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  onFocus={() => setShowDropdown(true)}
+                  className="pl-9 font-mono"
+                  autoComplete="off"
+                />
+                {/* Dropdown */}
+                {showDropdown && searchResults.length > 0 && (
+                  <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-lg">
+                    <div className="max-h-[200px] overflow-y-auto py-1">
+                      {searchResults.map((supplement) => (
+                        <button
+                          key={supplement.id}
+                          type="button"
+                          onClick={() => handleSelectSupplement(supplement)}
+                          className={cn(
+                            "flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-accent",
+                            selectedSupplement?.id === supplement.id && "bg-accent"
+                          )}
+                        >
+                          <div>
+                            <div className="font-medium">{supplement.name}</div>
+                            {supplement.form && (
+                              <div className="text-xs text-muted-foreground">
+                                {supplement.form}
+                              </div>
+                            )}
+                          </div>
+                          {selectedSupplement?.id === supplement.id && (
+                            <Check className="h-4 w-4 text-primary" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {showDropdown && searchQuery && searchResults.length === 0 && (
+                  <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover p-3 text-center text-sm text-muted-foreground shadow-lg">
+                    No supplements found
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -202,6 +255,7 @@ export function AddSupplementsDialog({
                   placeholder="200"
                   value={dosage}
                   onChange={(e) => setDosage(e.target.value)}
+                  onFocus={() => setShowDropdown(false)}
                   className="font-mono"
                 />
               </div>
@@ -210,7 +264,7 @@ export function AddSupplementsDialog({
                   Unit
                 </Label>
                 <Select value={unit} onValueChange={(v) => setUnit(v as typeof unit)}>
-                  <SelectTrigger>
+                  <SelectTrigger onFocus={() => setShowDropdown(false)}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -230,7 +284,7 @@ export function AddSupplementsDialog({
               size="sm"
               className="w-full"
               onClick={handleAddToList}
-              disabled={!selectedSupplementId || !dosage}
+              disabled={!selectedSupplement || !dosage}
             >
               <Plus className="mr-2 h-3 w-3" />
               Add to List
