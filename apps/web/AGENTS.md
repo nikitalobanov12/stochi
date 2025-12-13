@@ -2,6 +2,40 @@
 
 This file provides guidance for AI agents working on the Stochi codebase.
 
+## Commit Guidelines
+
+**Make small, encapsulated commits along the way** - don't batch all changes into one large commit.
+
+### Commit Message Format
+```
+<type>(<scope>): <description>
+
+[optional body with details]
+```
+
+### Types
+- `feat`: New feature
+- `fix`: Bug fix
+- `refactor`: Code restructuring without behavior change
+- `docs`: Documentation only
+- `style`: Formatting, no code change
+- `test`: Adding tests
+- `chore`: Maintenance tasks
+
+### Examples
+```bash
+git commit -m "feat(schema): add ratio rule table for stoichiometric warnings"
+git commit -m "feat(log): display timing warnings in sidebar"
+git commit -m "fix(auth): handle expired session redirect"
+git commit -m "refactor(settings): extract export button to client component"
+```
+
+### When to Commit
+- After completing a logical unit of work
+- Schema changes separate from seed data
+- Backend functions separate from UI integration
+- Each feature/fix should be independently revertable
+
 ## Project Overview
 
 **Stochi** is a "stoichiometric engine for bio-optimization" - a PWA for tracking supplements, detecting molecular interactions, and optimizing supplement stacks.
@@ -75,6 +109,8 @@ apps/web/
 
 - **supplement**: Master list of supplements (name, form, elemental weight)
 - **interaction**: Supplement interactions (source, target, type, severity)
+- **ratioRule**: Stoichiometric ratio rules (e.g., Zn:Cu 8-15:1)
+- **timingRule**: Time-spacing rules (e.g., Tyrosine and 5-HTP 4h apart)
 - **stack**: User's supplement bundles
 - **stackItem**: Items within a stack (supplement, dosage, unit)
 - **log**: User's supplement intake logs
@@ -169,9 +205,11 @@ For production (replace with your domain):
 - [x] **Interaction Detection**: Query interactions based on logged supplements
 - [x] **Data Export**: Allow users to export their logs (JSON/CSV in Settings)
 - [x] **Dashboard**: Real-time interaction warnings, quick stack logging
-- [x] **Stack Detail**: Show interaction warnings/synergies per stack
-- [x] **Log Page**: Today's interactions sidebar
+- [x] **Stack Detail**: Show interaction warnings/synergies + ratio warnings per stack
+- [x] **Log Page**: Today's interactions sidebar with timing warnings
 - [x] **Onboarding Flow**: Template stack selection for new users ("git clone strategy")
+- [x] **Ratio Rules**: Stoichiometric balance warnings (Zn:Cu etc.)
+- [x] **Timing Rules**: Transporter competition warnings (supplements too close together)
 
 ### In Progress
 1. **Enhanced Logging**: Time-of-day awareness, notes field
@@ -186,7 +224,12 @@ For production (replace with your domain):
 
 The interaction checking system (`server/actions/interactions.ts`) provides:
 
+### Core Functions
+
 - `checkInteractions(supplementIds)`: Find interactions between a set of supplements
+- `checkRatioWarnings(supplements)`: Check stoichiometric ratio imbalances (e.g., Zn:Cu ratio)
+- `checkTimingWarnings(userId, supplementId, loggedAt)`: Check timing conflicts for logged supplements
+- `checkLogWarnings(userId, supplementId, dosage, unit, loggedAt)`: Comprehensive check for new log entry
 - `getTodayInteractionSummary(userId)`: Dashboard stats (warnings/synergies count)
 - `getUserInteractions(userId)`: Detailed interactions for user's stacks
 
@@ -195,10 +238,41 @@ The interaction checking system (`server/actions/interactions.ts`) provides:
 - **inhibition**: One supplement reduces effect of another (e.g., Caffeine depletes Magnesium)
 - **synergy**: Supplements enhance each other (e.g., Vitamin D + K2)
 
+### Warning Types
+
+#### Basic Interactions
+Standard supplement interactions stored in the `interaction` table.
+
+#### Ratio Warnings (ratioRule table)
+Stoichiometric imbalance detection based on dosage ratios:
+- **Example**: Zn:Cu ratio should be 8-15:1. Taking 50mg Zinc with 2mg Copper = 25:1 ratio triggers warning.
+- Displayed on stack detail page when adding supplements to a stack.
+
+#### Timing Warnings (timingRule table)
+Time-spacing rules for transporter competition:
+- **Example**: L-Tyrosine and 5-HTP compete for LNAAT transporter - need 4h apart.
+- Displayed on log page when supplements are logged too close together.
+
 ### Severity Levels
 - **critical** (red): Potentially dangerous, should avoid
 - **medium** (yellow): Worth noting, consider timing
 - **low** (muted): Minor effect, informational
+
+### Seeded Rules
+
+#### Ratio Rules
+| Source | Target | Min Ratio | Max Ratio | 
+|--------|--------|-----------|-----------|
+| Zinc Picolinate | Copper Bisglycinate | 8:1 | 15:1 |
+| Zinc Gluconate | Copper Bisglycinate | 8:1 | 15:1 |
+
+#### Timing Rules
+| Source | Target | Min Hours Apart | Reason |
+|--------|--------|-----------------|--------|
+| L-Tyrosine | 5-HTP | 4h | LNAAT transporter saturation |
+| Iron Bisglycinate | Zinc Picolinate | 2h | DMT1 transporter competition |
+| Caffeine | Magnesium Glycinate | 2h | Caffeine increases Mg excretion |
+| Vitamin B12 | Magnesium Glycinate | 8h | B12 can suppress melatonin |
 
 ## Onboarding System ("Git Clone Strategy")
 
