@@ -120,7 +120,7 @@ export const supplement = pgTable(
   "supplement",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    name: text("name").notNull(),
+    name: text("name").notNull().unique(),
     form: text("form"),
     elementalWeight: real("elemental_weight"),
     createdAt: timestamp("created_at")
