@@ -1,11 +1,12 @@
 import { eq, desc } from "drizzle-orm";
 import Link from "next/link";
-import { Layers, PlusCircle, Activity, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Layers, Activity, AlertTriangle, CheckCircle2, Terminal } from "lucide-react";
 
 import { db } from "~/server/db";
 import { stack, log, supplement } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
 import { logStack } from "~/server/actions/stacks";
+import { createLog } from "~/server/actions/logs";
 import { getTodayInteractionSummary } from "~/server/actions/interactions";
 import { Button } from "~/components/ui/button";
 import {
@@ -17,6 +18,7 @@ import {
 } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { WelcomeFlow } from "~/components/onboarding/welcome-flow";
+import { CommandBar } from "~/components/log/command-bar";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -57,18 +59,16 @@ export default async function DashboardPage() {
   // Check if user needs onboarding (no stacks)
   const needsOnboarding = userStacks.length === 0;
 
-  // Fetch all supplements for the onboarding flow
-  const allSupplements = needsOnboarding
-    ? await db.query.supplement.findMany({
-        columns: {
-          id: true,
-          name: true,
-          form: true,
-          defaultUnit: true,
-        },
-        orderBy: [supplement.name],
-      })
-    : [];
+  // Fetch all supplements for command bar and onboarding flow
+  const allSupplements = await db.query.supplement.findMany({
+    columns: {
+      id: true,
+      name: true,
+      form: true,
+      defaultUnit: true,
+    },
+    orderBy: [supplement.name],
+  });
 
   return (
     <>
@@ -83,13 +83,23 @@ export default async function DashboardPage() {
               Welcome back, {session.user.name.split(" ")[0]}
             </p>
           </div>
-          <Button asChild>
-            <Link href="/dashboard/log">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Quick Log
-            </Link>
-          </Button>
         </div>
+
+        {/* Quick Log Command Bar */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 font-mono text-base">
+              <Terminal className="h-4 w-4" />
+              Quick Log
+            </CardTitle>
+            <CardDescription>
+              Type supplement name and dosage (e.g., &quot;mag 200mg&quot;)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DashboardCommandBar supplements={allSupplements} />
+          </CardContent>
+        </Card>
 
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
@@ -310,4 +320,21 @@ function formatRelativeTime(date: Date): string {
   if (days < 7) return `${days}d ago`;
 
   return new Date(date).toLocaleDateString();
+}
+
+function DashboardCommandBar({
+  supplements,
+}: {
+  supplements: Array<{ id: string; name: string; form: string | null }>;
+}) {
+  async function handleLog(
+    supplementId: string,
+    dosage: number,
+    unit: "mg" | "mcg" | "g" | "IU" | "ml",
+  ) {
+    "use server";
+    await createLog(supplementId, dosage, unit);
+  }
+
+  return <CommandBar supplements={supplements} onLog={handleLog} />;
 }
