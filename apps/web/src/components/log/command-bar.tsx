@@ -2,7 +2,9 @@
 
 import { useState, useRef, useEffect, useTransition, useMemo } from "react";
 import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 import { Terminal, X } from "lucide-react";
+import { getServingPresets, type ServingPreset } from "~/server/data/serving-presets";
 
 type Supplement = {
   id: string;
@@ -70,6 +72,12 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
     return parseDosageInput(input);
   }, [input, selectedSupplement]);
 
+  // Get serving presets for the selected supplement
+  const servingPresets = useMemo(() => {
+    if (!selectedSupplement) return [];
+    return getServingPresets(selectedSupplement.name);
+  }, [selectedSupplement]);
+
   const canSubmit = selectedSupplement && parsedDosage;
 
   useEffect(() => {
@@ -107,6 +115,27 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
         setFeedback({
           type: "success",
           message: `Logged ${parsedDosage.dosage}${parsedDosage.unit} ${selectedSupplement.name}`,
+        });
+      } catch {
+        setFeedback({
+          type: "error",
+          message: "Failed to log supplement",
+        });
+      }
+    });
+  }
+
+  function handlePresetClick(preset: ServingPreset) {
+    if (!selectedSupplement) return;
+
+    startTransition(async () => {
+      try {
+        await onLog(selectedSupplement.id, preset.dosage, preset.unit);
+        setSelectedSupplement(null);
+        setInput("");
+        setFeedback({
+          type: "success",
+          message: `Logged ${preset.label} (${preset.dosage}${preset.unit}) ${selectedSupplement.name}`,
         });
       } catch {
         setFeedback({
@@ -201,6 +230,31 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
             Press Enter to log {parsedDosage.dosage}
             {parsedDosage.unit} of {selectedSupplement.name}
           </span>
+        </div>
+      )}
+
+      {/* Serving presets - show when supplement is selected and no dosage entered yet */}
+      {selectedSupplement && !parsedDosage && servingPresets.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-xs text-muted-foreground">Quick servings:</p>
+          <div className="flex flex-wrap gap-1.5">
+            {servingPresets.map((preset) => (
+              <Button
+                key={preset.label}
+                variant="outline"
+                size="sm"
+                className="h-auto px-2 py-1 text-xs"
+                onClick={() => handlePresetClick(preset)}
+                disabled={isPending}
+              >
+                {preset.label}
+                <span className="ml-1 text-muted-foreground">
+                  ({preset.dosage}
+                  {preset.unit})
+                </span>
+              </Button>
+            ))}
+          </div>
         </div>
       )}
 
