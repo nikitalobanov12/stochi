@@ -7,21 +7,25 @@ const supplements = [
     name: "Magnesium Glycinate",
     form: "Magnesium Bisglycinate",
     elementalWeight: 14.1,
+    aliases: ["mag glycinate", "magnesium bisgly", "mag bisgly", "calm magnesium"],
   },
   {
     name: "Magnesium Citrate",
     form: "Magnesium Citrate",
     elementalWeight: 16.2,
+    aliases: ["mag citrate", "natural calm"],
   },
   {
     name: "Magnesium L-Threonate",
     form: "Magnesium L-Threonate",
     elementalWeight: 7.2,
+    aliases: ["mag threonate", "magtein", "brain magnesium"],
   },
   {
     name: "Magnesium Oxide",
     form: "Magnesium Oxide",
     elementalWeight: 60.3,
+    aliases: ["mag oxide", "magox"],
   },
 
   // Zinc forms
@@ -29,11 +33,13 @@ const supplements = [
     name: "Zinc Picolinate",
     form: "Zinc Picolinate",
     elementalWeight: 21.0,
+    aliases: ["zinc", "zn picolinate"],
   },
   {
     name: "Zinc Gluconate",
     form: "Zinc Gluconate",
     elementalWeight: 14.3,
+    aliases: ["zinc gluconate", "zn gluconate"],
   },
 
   // Vitamins
@@ -41,21 +47,25 @@ const supplements = [
     name: "Vitamin D3",
     form: "Cholecalciferol",
     elementalWeight: 100,
+    aliases: ["d3", "vit d", "vitamin d", "sunshine vitamin", "cholecalciferol"],
   },
   {
     name: "Vitamin K2 MK-7",
     form: "Menaquinone-7",
     elementalWeight: 100,
+    aliases: ["k2", "mk7", "mk-7", "vitamin k", "vit k2", "menaquinone"],
   },
   {
     name: "Vitamin C",
     form: "Ascorbic Acid",
     elementalWeight: 100,
+    aliases: ["vit c", "ascorbic acid", "c"],
   },
   {
     name: "Vitamin B12",
     form: "Methylcobalamin",
     elementalWeight: 100,
+    aliases: ["b12", "methylcobalamin", "cobalamin", "vit b12"],
   },
 
   // Minerals
@@ -63,16 +73,19 @@ const supplements = [
     name: "Iron Bisglycinate",
     form: "Ferrous Bisglycinate",
     elementalWeight: 20.0,
+    aliases: ["iron", "ferrous", "fe", "gentle iron"],
   },
   {
     name: "Copper Bisglycinate",
     form: "Copper Bisglycinate",
     elementalWeight: 25.0,
+    aliases: ["copper", "cu"],
   },
   {
     name: "Selenium",
     form: "Selenomethionine",
     elementalWeight: 100,
+    aliases: ["se", "selenomethionine"],
   },
 
   // Omega-3
@@ -80,11 +93,13 @@ const supplements = [
     name: "Fish Oil (EPA)",
     form: "Eicosapentaenoic Acid",
     elementalWeight: 100,
+    aliases: ["epa", "omega 3", "omega-3", "fish oil", "omega3"],
   },
   {
     name: "Fish Oil (DHA)",
     form: "Docosahexaenoic Acid",
     elementalWeight: 100,
+    aliases: ["dha", "omega 3", "omega-3", "fish oil", "omega3", "brain omega"],
   },
 
   // Amino Acids
@@ -92,16 +107,19 @@ const supplements = [
     name: "L-Tyrosine",
     form: "L-Tyrosine",
     elementalWeight: 100,
+    aliases: ["tyrosine", "l tyrosine"],
   },
   {
     name: "L-Theanine",
     form: "L-Theanine",
     elementalWeight: 100,
+    aliases: ["theanine", "l theanine", "suntheanine"],
   },
   {
     name: "5-HTP",
     form: "5-Hydroxytryptophan",
     elementalWeight: 100,
+    aliases: ["5htp", "hydroxytryptophan", "serotonin precursor"],
   },
 
   // Other
@@ -109,42 +127,62 @@ const supplements = [
     name: "Caffeine",
     form: "Caffeine Anhydrous",
     elementalWeight: 100,
+    aliases: ["coffee", "caff"],
   },
   {
     name: "Curcumin",
     form: "Curcuminoids",
     elementalWeight: 100,
+    aliases: ["turmeric", "curcuminoids"],
   },
   {
     name: "Piperine",
     form: "Black Pepper Extract",
     elementalWeight: 100,
+    aliases: ["black pepper", "bioperine"],
   },
   {
     name: "Ashwagandha",
     form: "KSM-66 Extract",
     elementalWeight: 100,
+    aliases: ["ash", "ksm-66", "ksm66", "withania", "ashwa"],
   },
   {
     name: "Creatine Monohydrate",
     form: "Creatine Monohydrate",
     elementalWeight: 100,
+    aliases: ["creatine", "creapure"],
   },
 ];
 
 async function seed() {
   console.log("Seeding supplements...");
 
-  const insertedSupplements = await db
-    .insert(supplement)
-    .values(supplements)
-    .returning();
+  // Upsert supplements (insert or update on conflict)
+  const supplementsToInsert = supplements.map(({ aliases: _aliases, ...rest }) => rest);
+  
+  let insertedCount = 0;
+  for (const supp of supplementsToInsert) {
+    const result = await db
+      .insert(supplement)
+      .values(supp)
+      .onConflictDoUpdate({
+        target: supplement.name,
+        set: {
+          form: supp.form,
+          elementalWeight: supp.elementalWeight,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    if (result.length > 0) insertedCount++;
+  }
 
-  console.log(`Inserted ${insertedSupplements.length} supplements`);
+  console.log(`Upserted ${insertedCount} supplements`);
 
-  const supplementMap = new Map(
-    insertedSupplements.map((s) => [s.name, s.id]),
-  );
+  // Get all supplements to build the map
+  const allSupplements = await db.query.supplement.findMany();
+  const supplementMap = new Map(allSupplements.map((s) => [s.name, s.id]));
 
   const interactions = [
     // Zinc-Copper competition (critical for biohackers)
@@ -254,6 +292,9 @@ async function seed() {
 
   console.log("Seeding interactions...");
 
+  // Clear existing interactions and re-insert (interactions are based on supplement IDs)
+  // eslint-disable-next-line drizzle/enforce-delete-with-where
+  await db.delete(interaction);
   const insertedInteractions = await db
     .insert(interaction)
     .values(interactions)
@@ -285,6 +326,8 @@ async function seed() {
   ];
 
   console.log("Seeding ratio rules...");
+  // eslint-disable-next-line drizzle/enforce-delete-with-where
+  await db.delete(ratioRule);
   const insertedRatioRules = await db
     .insert(ratioRule)
     .values(ratioRules)
@@ -328,6 +371,8 @@ async function seed() {
   ];
 
   console.log("Seeding timing rules...");
+  // eslint-disable-next-line drizzle/enforce-delete-with-where
+  await db.delete(timingRule);
   const insertedTimingRules = await db
     .insert(timingRule)
     .values(timingRules)
@@ -343,3 +388,8 @@ seed()
     console.error("Seed failed:", error);
     process.exit(1);
   });
+
+// Export aliases for use in fuzzy search
+export const supplementAliases: Record<string, string[]> = Object.fromEntries(
+  supplements.map((s) => [s.name, s.aliases])
+);
