@@ -1,0 +1,165 @@
+import { type dosageUnitEnum } from "~/server/db/schema";
+
+type DosageUnit = (typeof dosageUnitEnum.enumValues)[number];
+
+export type GoalSupplement = {
+  name: string;
+  reason: string;
+  dosage: number;
+  unit: DosageUnit;
+};
+
+export type Goal = {
+  key: string;
+  name: string;
+  icon: string;
+  description: string;
+  supplements: GoalSupplement[];
+  synergies: string[];
+};
+
+export const goals: Goal[] = [
+  {
+    key: "focus",
+    name: "Focus & Productivity",
+    icon: "🎯",
+    description: "Enhance mental clarity and concentration",
+    supplements: [
+      {
+        name: "L-Tyrosine",
+        reason: "Dopamine precursor for mental clarity",
+        dosage: 500,
+        unit: "mg",
+      },
+      {
+        name: "Caffeine",
+        reason: "Alertness and concentration",
+        dosage: 100,
+        unit: "mg",
+      },
+      {
+        name: "L-Theanine",
+        reason: "Smooth focus without jitters",
+        dosage: 200,
+        unit: "mg",
+      },
+    ],
+    synergies: ["Caffeine + L-Theanine reduces jitters while maintaining alertness"],
+  },
+  {
+    key: "sleep",
+    name: "Sleep & Recovery",
+    icon: "😴",
+    description: "Improve sleep quality and recovery",
+    supplements: [
+      {
+        name: "Magnesium Glycinate",
+        reason: "Promotes relaxation and sleep quality",
+        dosage: 400,
+        unit: "mg",
+      },
+      {
+        name: "L-Theanine",
+        reason: "Calming without sedation",
+        dosage: 200,
+        unit: "mg",
+      },
+    ],
+    synergies: [],
+  },
+  {
+    key: "energy",
+    name: "Energy & Performance",
+    icon: "⚡",
+    description: "Boost physical energy and endurance",
+    supplements: [
+      {
+        name: "Creatine Monohydrate",
+        reason: "ATP regeneration for strength",
+        dosage: 5,
+        unit: "g",
+      },
+      {
+        name: "Caffeine",
+        reason: "Pre-workout energy",
+        dosage: 200,
+        unit: "mg",
+      },
+      {
+        name: "Vitamin B12",
+        reason: "Energy metabolism",
+        dosage: 1000,
+        unit: "mcg",
+      },
+    ],
+    synergies: [],
+  },
+  {
+    key: "stress",
+    name: "Stress & Mood",
+    icon: "🧘",
+    description: "Support stress resilience and balanced mood",
+    supplements: [
+      {
+        name: "Ashwagandha",
+        reason: "Adaptogen for stress resilience",
+        dosage: 600,
+        unit: "mg",
+      },
+      {
+        name: "Magnesium Glycinate",
+        reason: "Calms nervous system",
+        dosage: 400,
+        unit: "mg",
+      },
+      {
+        name: "L-Theanine",
+        reason: "Promotes calm alertness",
+        dosage: 200,
+        unit: "mg",
+      },
+    ],
+    synergies: [],
+  },
+  {
+    key: "health",
+    name: "General Health",
+    icon: "💪",
+    description: "Foundation supplements for overall wellness",
+    supplements: [
+      {
+        name: "Vitamin D3",
+        reason: "Immune function, bone health",
+        dosage: 5000,
+        unit: "IU",
+      },
+      {
+        name: "Vitamin K2 MK-7",
+        reason: "Works with D3 for calcium metabolism",
+        dosage: 100,
+        unit: "mcg",
+      },
+      {
+        name: "Magnesium Glycinate",
+        reason: "Supports 300+ enzymatic reactions",
+        dosage: 400,
+        unit: "mg",
+      },
+      {
+        name: "Fish Oil (EPA)",
+        reason: "Omega-3 for inflammation",
+        dosage: 1000,
+        unit: "mg",
+      },
+    ],
+    synergies: ["Vitamin D3 + K2 directs calcium to bones, not arteries"],
+  },
+];
+
+export function getGoalByKey(key: string): Goal | undefined {
+  return goals.find((g) => g.key === key);
+}
+
+export function getGoalSupplements(key: string): GoalSupplement[] {
+  return getGoalByKey(key)?.supplements ?? [];
+}
