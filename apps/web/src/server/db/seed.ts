@@ -1,5 +1,5 @@
 import { db } from "./index";
-import { supplement, interaction } from "./schema";
+import { supplement, interaction, ratioRule, timingRule } from "./schema";
 
 const supplements = [
   // Magnesium forms
@@ -260,6 +260,79 @@ async function seed() {
     .returning();
 
   console.log(`Inserted ${insertedInteractions.length} interactions`);
+
+  // Ratio rules for stoichiometric balance
+  const ratioRules = [
+    // Zinc:Copper ratio (optimal 8-15:1, danger above 15:1)
+    {
+      sourceSupplementId: supplementMap.get("Zinc Picolinate")!,
+      targetSupplementId: supplementMap.get("Copper Bisglycinate")!,
+      minRatio: 8,
+      maxRatio: 15,
+      optimalRatio: 10,
+      warningMessage: "Zn:Cu ratio outside optimal range (8-15:1). High zinc without copper causes copper deficiency.",
+      severity: "critical" as const,
+    },
+    {
+      sourceSupplementId: supplementMap.get("Zinc Gluconate")!,
+      targetSupplementId: supplementMap.get("Copper Bisglycinate")!,
+      minRatio: 8,
+      maxRatio: 15,
+      optimalRatio: 10,
+      warningMessage: "Zn:Cu ratio outside optimal range (8-15:1). High zinc without copper causes copper deficiency.",
+      severity: "critical" as const,
+    },
+  ];
+
+  console.log("Seeding ratio rules...");
+  const insertedRatioRules = await db
+    .insert(ratioRule)
+    .values(ratioRules)
+    .returning();
+  console.log(`Inserted ${insertedRatioRules.length} ratio rules`);
+
+  // Timing rules for supplement spacing
+  const timingRules = [
+    // Tyrosine and 5-HTP compete for LNAAT transporter
+    {
+      sourceSupplementId: supplementMap.get("L-Tyrosine")!,
+      targetSupplementId: supplementMap.get("5-HTP")!,
+      minHoursApart: 4,
+      reason: "LNAAT transporter saturation - space apart for optimal absorption across BBB",
+      severity: "medium" as const,
+    },
+    // Iron and Zinc compete for DMT1
+    {
+      sourceSupplementId: supplementMap.get("Iron Bisglycinate")!,
+      targetSupplementId: supplementMap.get("Zinc Picolinate")!,
+      minHoursApart: 2,
+      reason: "DMT1 transporter competition - take at different meals for better absorption",
+      severity: "medium" as const,
+    },
+    // Caffeine and Magnesium
+    {
+      sourceSupplementId: supplementMap.get("Caffeine")!,
+      targetSupplementId: supplementMap.get("Magnesium Glycinate")!,
+      minHoursApart: 2,
+      reason: "Caffeine increases magnesium excretion - space apart for retention",
+      severity: "low" as const,
+    },
+    // Vitamin B12 at night disrupts sleep
+    {
+      sourceSupplementId: supplementMap.get("Vitamin B12")!,
+      targetSupplementId: supplementMap.get("Magnesium Glycinate")!, // proxy for "evening/sleep supplements"
+      minHoursApart: 8,
+      reason: "B12 can suppress melatonin - take in morning, not evening",
+      severity: "low" as const,
+    },
+  ];
+
+  console.log("Seeding timing rules...");
+  const insertedTimingRules = await db
+    .insert(timingRule)
+    .values(timingRules)
+    .returning();
+  console.log(`Inserted ${insertedTimingRules.length} timing rules`);
 
   console.log("Seed completed!");
 }
