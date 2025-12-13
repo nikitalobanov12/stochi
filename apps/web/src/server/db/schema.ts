@@ -31,6 +31,28 @@ export const dosageUnitEnum = pgEnum("dosage_unit", [
 ]);
 
 // ============================================================================
+// Ratio Rules (for stoichiometric imbalance detection)
+// ============================================================================
+
+export const ratioRule = pgTable("ratio_rule", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  sourceSupplementId: uuid("source_supplement_id")
+    .notNull()
+    .references(() => supplement.id, { onDelete: "cascade" }),
+  targetSupplementId: uuid("target_supplement_id")
+    .notNull()
+    .references(() => supplement.id, { onDelete: "cascade" }),
+  minRatio: real("min_ratio"), // source:target min (e.g., 8:1 for Zn:Cu)
+  maxRatio: real("max_ratio"), // source:target max (e.g., 15:1 for Zn:Cu)
+  optimalRatio: real("optimal_ratio"), // optimal ratio (e.g., 10:1 for Zn:Cu)
+  warningMessage: text("warning_message").notNull(),
+  severity: severityEnum("severity").notNull(),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+});
+
+// ============================================================================
 // Auth Tables (BetterAuth)
 // ============================================================================
 
@@ -191,6 +213,23 @@ export const log = pgTable(
   ],
 );
 
+// Timing rules for spacing warnings (e.g., Tyrosine and 5-HTP need 4h apart)
+export const timingRule = pgTable("timing_rule", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  sourceSupplementId: uuid("source_supplement_id")
+    .notNull()
+    .references(() => supplement.id, { onDelete: "cascade" }),
+  targetSupplementId: uuid("target_supplement_id")
+    .notNull()
+    .references(() => supplement.id, { onDelete: "cascade" }),
+  minHoursApart: real("min_hours_apart").notNull(), // minimum hours between doses
+  reason: text("reason").notNull(),
+  severity: severityEnum("severity").notNull(),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+});
+
 // ============================================================================
 // Relations
 // ============================================================================
@@ -213,6 +252,10 @@ export const sessionRelations = relations(session, ({ one }) => ({
 export const supplementRelations = relations(supplement, ({ many }) => ({
   sourceInteractions: many(interaction, { relationName: "source" }),
   targetInteractions: many(interaction, { relationName: "target" }),
+  sourceRatioRules: many(ratioRule, { relationName: "ratioSource" }),
+  targetRatioRules: many(ratioRule, { relationName: "ratioTarget" }),
+  sourceTimingRules: many(timingRule, { relationName: "timingSource" }),
+  targetTimingRules: many(timingRule, { relationName: "timingTarget" }),
   stackItems: many(stackItem),
   logs: many(log),
 }));
@@ -248,5 +291,31 @@ export const logRelations = relations(log, ({ one }) => ({
   supplement: one(supplement, {
     fields: [log.supplementId],
     references: [supplement.id],
+  }),
+}));
+
+export const ratioRuleRelations = relations(ratioRule, ({ one }) => ({
+  sourceSupplement: one(supplement, {
+    fields: [ratioRule.sourceSupplementId],
+    references: [supplement.id],
+    relationName: "ratioSource",
+  }),
+  targetSupplement: one(supplement, {
+    fields: [ratioRule.targetSupplementId],
+    references: [supplement.id],
+    relationName: "ratioTarget",
+  }),
+}));
+
+export const timingRuleRelations = relations(timingRule, ({ one }) => ({
+  sourceSupplement: one(supplement, {
+    fields: [timingRule.sourceSupplementId],
+    references: [supplement.id],
+    relationName: "timingSource",
+  }),
+  targetSupplement: one(supplement, {
+    fields: [timingRule.targetSupplementId],
+    references: [supplement.id],
+    relationName: "timingTarget",
   }),
 }));
