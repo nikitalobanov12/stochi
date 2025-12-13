@@ -12,6 +12,7 @@ import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { WelcomeFlow } from "~/components/onboarding/welcome-flow";
 import { CommandBar } from "~/components/log/command-bar";
+import { TodayLogList } from "~/components/log/today-log-list";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -151,38 +152,7 @@ export default async function DashboardPage() {
                   </Link>
                 </Button>
               </div>
-              <div className="rounded-lg border bg-card">
-                {todaysLogs.slice(0, 8).map((entry, i) => (
-                  <div
-                    key={entry.id}
-                    className={`flex items-center justify-between px-4 py-2.5 ${
-                      i !== 0 ? "border-t" : ""
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="font-mono text-xs text-muted-foreground">
-                        {formatTime(new Date(entry.loggedAt))}
-                      </span>
-                      <span className="text-sm font-medium">
-                        {entry.supplement.name}
-                      </span>
-                    </div>
-                    <span className="font-mono text-sm text-muted-foreground">
-                      {entry.dosage}{entry.unit}
-                    </span>
-                  </div>
-                ))}
-                {todaysLogs.length > 8 && (
-                  <div className="border-t px-4 py-2 text-center">
-                    <Link
-                      href="/dashboard/log"
-                      className="text-xs text-muted-foreground hover:text-foreground"
-                    >
-                      +{todaysLogs.length - 8} more
-                    </Link>
-                  </div>
-                )}
-              </div>
+              <TodayLogList logs={todaysLogs} maxVisible={8} />
             </div>
           </div>
         )}
@@ -273,14 +243,6 @@ function InteractionCard({ interaction }: { interaction: InteractionWarning }) {
       </div>
     </div>
   );
-}
-
-function formatTime(date: Date): string {
-  return date.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
 }
 
 function DashboardCommandBar({
