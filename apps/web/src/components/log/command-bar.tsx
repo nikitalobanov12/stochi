@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect, useTransition, useMemo } from "react";
-import { Input } from "~/components/ui/input";
-import { Terminal } from "lucide-react";
+import { Badge } from "~/components/ui/badge";
+import { Terminal, X } from "lucide-react";
 
 type Supplement = {
   id: string;
@@ -20,61 +20,39 @@ type CommandBarProps = {
 };
 
 const UNITS = ["mg", "mcg", "g", "IU", "ml"] as const;
-const UNIT_PATTERN = new RegExp(`(\\d+(?:\\.\\d+)?)(${UNITS.join("|")})`, "i");
+const UNIT_PATTERN = new RegExp(`^(\\d+(?:\\.\\d+)?)(${UNITS.join("|")})$`, "i");
 
-type ParseResult = {
-  suggestions: Supplement[];
-  dosage: number | null;
-  unit: "mg" | "mcg" | "g" | "IU" | "ml" | null;
-};
+function searchSupplements(query: string, supps: Supplement[]): Supplement[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
 
-function parseInput(text: string, supps: Supplement[]): ParseResult {
-  const trimmed = text.trim().toLowerCase();
+  return supps
+    .filter(
+      (s) =>
+        s.name.toLowerCase().includes(q) ||
+        s.name.toLowerCase().startsWith(q) ||
+        s.form?.toLowerCase().includes(q),
+    )
+    .slice(0, 5);
+}
 
-  if (!trimmed) {
-    return { suggestions: [], dosage: null, unit: null };
-  }
+function parseDosageInput(
+  text: string,
+): { dosage: number; unit: "mg" | "mcg" | "g" | "IU" | "ml" } | null {
+  const match = UNIT_PATTERN.exec(text.trim());
+  if (!match?.[1] || !match[2]) return null;
 
-  const parts = trimmed.split(/\s+/);
-  const searchTerm = parts[0] ?? "";
-  const dosageStr = parts[1] ?? "";
+  const dosage = parseFloat(match[1]);
+  const unitRaw = match[2].toLowerCase();
+  const unit = unitRaw === "iu" ? "IU" : (unitRaw as "mg" | "mcg" | "g" | "ml");
 
-  if (!searchTerm) {
-    return { suggestions: [], dosage: null, unit: null };
-  }
-
-  const matchingSupps = supps.filter(
-    (s) =>
-      s.name.toLowerCase().includes(searchTerm) ||
-      s.name.toLowerCase().startsWith(searchTerm) ||
-      s.form?.toLowerCase().includes(searchTerm),
-  );
-
-  // Parse dosage if provided
-  let dosage: number | null = null;
-  let unit: "mg" | "mcg" | "g" | "IU" | "ml" | null = null;
-
-  const dosageMatch = UNIT_PATTERN.exec(dosageStr);
-  if (dosageMatch) {
-    const dosageValue = dosageMatch[1];
-    const unitValue = dosageMatch[2];
-    if (dosageValue && unitValue) {
-      dosage = parseFloat(dosageValue);
-      const unitRaw = unitValue.toLowerCase();
-      unit = unitRaw === "iu" ? "IU" : (unitRaw as "mg" | "mcg" | "g" | "ml");
-    }
-  }
-
-  return {
-    suggestions: matchingSupps.slice(0, 5),
-    dosage,
-    unit,
-  };
+  return { dosage, unit };
 }
 
 export function CommandBar({ supplements, onLog }: CommandBarProps) {
   const [input, setInput] = useState("");
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedSupplement, setSelectedSupplement] = useState<Supplement | null>(null);
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [isPending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
@@ -82,19 +60,17 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
   } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { suggestions, dosage, unit } = useMemo(
-    () => parseInput(input, supplements),
-    [input, supplements],
-  );
+  const suggestions = useMemo(() => {
+    if (selectedSupplement) return [];
+    return searchSupplements(input, supplements);
+  }, [input, supplements, selectedSupplement]);
 
-  // Can submit if we have suggestions, a selected one, and valid dosage
-  const selectedSupplement = suggestions[selectedIndex];
-  const canSubmit = selectedSupplement && dosage !== null && unit !== null;
+  const parsedDosage = useMemo(() => {
+    if (!selectedSupplement) return null;
+    return parseDosageInput(input);
+  }, [input, selectedSupplement]);
 
-  function handleInputChange(value: string) {
-    setInput(value);
-    setSelectedIndex(0);
-  }
+  const canSubmit = selectedSupplement && parsedDosage;
 
   useEffect(() => {
     if (feedback) {
@@ -103,16 +79,34 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
     }
   }, [feedback]);
 
+  function handleInputChange(value: string) {
+    setInput(value);
+    setHighlightedIndex(0);
+  }
+
+  function selectSupplement(supp: Supplement) {
+    setSelectedSupplement(supp);
+    setInput("");
+    inputRef.current?.focus();
+  }
+
+  function clearSelection() {
+    setSelectedSupplement(null);
+    setInput("");
+    inputRef.current?.focus();
+  }
+
   function handleSubmit() {
-    if (!canSubmit || !selectedSupplement || dosage === null || unit === null) return;
+    if (!canSubmit || !parsedDosage) return;
 
     startTransition(async () => {
       try {
-        await onLog(selectedSupplement.id, dosage, unit);
+        await onLog(selectedSupplement.id, parsedDosage.dosage, parsedDosage.unit);
+        setSelectedSupplement(null);
         setInput("");
         setFeedback({
           type: "success",
-          message: `Logged ${dosage}${unit} ${selectedSupplement.name}`,
+          message: `Logged ${parsedDosage.dosage}${parsedDosage.unit} ${selectedSupplement.name}`,
         });
       } catch {
         setFeedback({
@@ -128,19 +122,32 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
       e.preventDefault();
       if (canSubmit) {
         void handleSubmit();
-      } else if (suggestions.length > 0 && selectedSupplement) {
-        // Auto-complete the supplement name
-        handleInputChange(selectedSupplement.name.toLowerCase().split(" ")[0] + " ");
+      } else if (!selectedSupplement && suggestions.length > 0) {
+        const selected = suggestions[highlightedIndex];
+        if (selected) {
+          selectSupplement(selected);
+        }
       }
-    } else if (e.key === "ArrowDown") {
+    } else if (e.key === "Backspace" && input === "" && selectedSupplement) {
       e.preventDefault();
-      setSelectedIndex((i) => Math.min(i + 1, suggestions.length - 1));
-    } else if (e.key === "ArrowUp") {
+      clearSelection();
+    } else if (e.key === "Escape" && selectedSupplement) {
       e.preventDefault();
-      setSelectedIndex((i) => Math.max(i - 1, 0));
-    } else if (e.key === "Tab" && suggestions.length > 0 && selectedSupplement) {
-      e.preventDefault();
-      handleInputChange(selectedSupplement.name.toLowerCase().split(" ")[0] + " ");
+      clearSelection();
+    } else if (!selectedSupplement) {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setHighlightedIndex((i) => Math.min(i + 1, suggestions.length - 1));
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setHighlightedIndex((i) => Math.max(i - 1, 0));
+      } else if (e.key === "Tab" && suggestions.length > 0) {
+        e.preventDefault();
+        const selected = suggestions[highlightedIndex];
+        if (selected) {
+          selectSupplement(selected);
+        }
+      }
     }
   }
 
@@ -151,26 +158,49 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
       </p>
       <div className="relative">
         <Terminal className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          ref={inputRef}
-          value={input}
-          onChange={(e) => handleInputChange(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="mag 200mg, zinc 15mg, vitamin d 5000IU..."
-          className="pl-10 font-mono"
-          disabled={isPending}
-        />
+        <div className="flex items-center gap-1 rounded-md border bg-background pl-10 pr-3">
+          {selectedSupplement && (
+            <Badge
+              variant="secondary"
+              className="shrink-0 cursor-pointer gap-1 font-mono hover:bg-secondary/80"
+              onClick={clearSelection}
+            >
+              {selectedSupplement.name}
+              <X className="h-3 w-3" />
+            </Badge>
+          )}
+          <input
+            ref={inputRef}
+            value={input}
+            onChange={(e) => handleInputChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={
+              selectedSupplement ? "200mg, 5000IU..." : "Search supplement..."
+            }
+            className="flex-1 bg-transparent py-2 font-mono text-sm outline-none placeholder:text-muted-foreground"
+            disabled={isPending}
+          />
+        </div>
       </div>
 
       {feedback && (
         <div
-          className={`rounded-md px-3 py-2 text-sm font-mono ${
+          className={`rounded-md px-3 py-2 font-mono text-sm ${
             feedback.type === "success"
               ? "bg-green-500/10 text-green-500"
               : "bg-destructive/10 text-destructive"
           }`}
         >
           {feedback.message}
+        </div>
+      )}
+
+      {selectedSupplement && parsedDosage && (
+        <div className="flex items-center gap-2 rounded-md bg-primary/10 px-3 py-2">
+          <span className="text-xs text-muted-foreground">
+            Press Enter to log {parsedDosage.dosage}
+            {parsedDosage.unit} of {selectedSupplement.name}
+          </span>
         </div>
       )}
 
@@ -181,49 +211,14 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
               key={s.id}
               type="button"
               className={`w-full rounded px-3 py-2 text-left text-sm transition-colors ${
-                i === selectedIndex
-                  ? "bg-muted"
-                  : "hover:bg-muted/50"
+                i === highlightedIndex ? "bg-muted" : "hover:bg-muted/50"
               }`}
-              onClick={() => {
-                if (dosage !== null && unit !== null) {
-                  // If dosage already entered, submit directly
-                  setSelectedIndex(i);
-                  startTransition(async () => {
-                    try {
-                      await onLog(s.id, dosage, unit);
-                      setInput("");
-                      setFeedback({
-                        type: "success",
-                        message: `Logged ${dosage}${unit} ${s.name}`,
-                      });
-                    } catch {
-                      setFeedback({
-                        type: "error",
-                        message: "Failed to log supplement",
-                      });
-                    }
-                  });
-                } else {
-                  // Auto-complete the name
-                  handleInputChange(s.name.toLowerCase().split(" ")[0] + " ");
-                  inputRef.current?.focus();
-                }
-              }}
+              onClick={() => selectSupplement(s)}
             >
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="font-medium">{s.name}</span>
-                  {s.form && (
-                    <span className="ml-2 text-muted-foreground">({s.form})</span>
-                  )}
-                </div>
-                {i === selectedIndex && canSubmit && (
-                  <span className="text-xs text-muted-foreground">
-                    Press Enter to log {dosage}{unit}
-                  </span>
-                )}
-              </div>
+              <span className="font-medium">{s.name}</span>
+              {s.form && (
+                <span className="ml-2 text-muted-foreground">({s.form})</span>
+              )}
             </button>
           ))}
         </div>
