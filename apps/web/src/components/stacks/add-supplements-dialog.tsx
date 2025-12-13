@@ -216,14 +216,18 @@ export function AddSupplementsDialog({
                           type="button"
                           onClick={() => handleSelectSupplement(supplement)}
                           className={cn(
-                            "flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-accent",
-                            selectedSupplement?.id === supplement.id && "bg-accent"
+                            "flex w-full items-center justify-between px-3 py-2 text-left text-sm transition-colors",
+                            "hover:bg-muted",
+                            selectedSupplement?.id === supplement.id && "bg-primary/10 text-primary"
                           )}
                         >
                           <div>
                             <div className="font-medium">{supplement.name}</div>
                             {supplement.form && (
-                              <div className="text-xs text-muted-foreground">
+                              <div className={cn(
+                                "text-xs text-muted-foreground",
+                                selectedSupplement?.id === supplement.id && "text-primary/70"
+                              )}>
                                 {supplement.form}
                               </div>
                             )}
@@ -258,6 +262,12 @@ export function AddSupplementsDialog({
                   value={dosage}
                   onChange={(e) => setDosage(e.target.value)}
                   onFocus={() => setShowDropdown(false)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddToList();
+                    }
+                  }}
                   className="font-mono"
                 />
               </div>
