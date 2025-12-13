@@ -80,4 +80,5 @@ start_db
 
 echo "Starting Next.js dev server..."
 echo ""
-bun next dev --turbo
+# Suppress TimeoutNegativeWarning from Next.js 16 internal scheduler (cosmetic issue)
+NODE_OPTIONS="--no-warnings=TimeoutNegativeWarning" bun next dev --turbo

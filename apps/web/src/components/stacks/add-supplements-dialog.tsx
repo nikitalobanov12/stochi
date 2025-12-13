@@ -266,6 +266,7 @@ export function AddSupplementsDialog({
                     if (e.key === "Enter") {
                       e.preventDefault();
                       handleAddToList();
+                      document.getElementById("supplement-search")?.focus();
                     }
                   }}
                   className="font-mono"

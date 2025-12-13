@@ -32,3 +32,6 @@ engine
 *.out
 vendor/
 go.work
+
+
+GEMINI.md
