@@ -167,6 +167,9 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
 
   return (
     <div className="space-y-2">
+      <p className="text-sm text-muted-foreground">
+        Quick log: type a supplement name and dosage
+      </p>
       <div className="relative">
         <Terminal className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
