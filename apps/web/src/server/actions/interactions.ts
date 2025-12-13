@@ -1,8 +1,8 @@
 "use server";
 
-import { inArray, or } from "drizzle-orm";
+import { inArray, or, and, eq, gte, lte } from "drizzle-orm";
 import { db } from "~/server/db";
-import { interaction } from "~/server/db/schema";
+import { interaction, ratioRule, timingRule, log } from "~/server/db/schema";
 
 export type InteractionWarning = {
   id: string;
@@ -18,6 +18,46 @@ export type InteractionWarning = {
     id: string;
     name: string;
     form: string | null;
+  };
+};
+
+export type RatioWarning = {
+  id: string;
+  severity: "low" | "medium" | "critical";
+  message: string;
+  currentRatio: number;
+  optimalRatio: number | null;
+  minRatio: number | null;
+  maxRatio: number | null;
+  source: {
+    id: string;
+    name: string;
+    dosage: number;
+    unit: string;
+  };
+  target: {
+    id: string;
+    name: string;
+    dosage: number;
+    unit: string;
+  };
+};
+
+export type TimingWarning = {
+  id: string;
+  severity: "low" | "medium" | "critical";
+  reason: string;
+  minHoursApart: number;
+  actualHoursApart: number;
+  source: {
+    id: string;
+    name: string;
+    loggedAt: Date;
+  };
+  target: {
+    id: string;
+    name: string;
+    loggedAt: Date;
   };
 };
 
@@ -70,6 +110,172 @@ export async function checkInteractions(
 }
 
 /**
+ * Check ratio-based warnings for a set of supplements with dosages.
+ * Used for stoichiometric imbalance detection (e.g., Zn:Cu ratio).
+ */
+export async function checkRatioWarnings(
+  supplements: Array<{ id: string; dosage: number; unit: string }>,
+): Promise<RatioWarning[]> {
+  if (supplements.length < 2) {
+    return [];
+  }
+
+  const supplementIds = supplements.map((s) => s.id);
+  const dosageMap = new Map(supplements.map((s) => [s.id, s]));
+
+  // Get all ratio rules involving these supplements
+  const rules = await db.query.ratioRule.findMany({
+    where: or(
+      inArray(ratioRule.sourceSupplementId, supplementIds),
+      inArray(ratioRule.targetSupplementId, supplementIds),
+    ),
+    with: {
+      sourceSupplement: true,
+      targetSupplement: true,
+    },
+  });
+
+  const warnings: RatioWarning[] = [];
+
+  for (const rule of rules) {
+    const sourceDosage = dosageMap.get(rule.sourceSupplementId);
+    const targetDosage = dosageMap.get(rule.targetSupplementId);
+
+    // Both supplements must be present
+    if (!sourceDosage || !targetDosage) continue;
+
+    // Calculate ratio (source:target)
+    // Note: This is simplified - real implementation would normalize units
+    const ratio = sourceDosage.dosage / targetDosage.dosage;
+
+    // Check if ratio is outside acceptable range
+    const isBelowMin = rule.minRatio !== null && ratio < rule.minRatio;
+    const isAboveMax = rule.maxRatio !== null && ratio > rule.maxRatio;
+
+    if (isBelowMin || isAboveMax) {
+      warnings.push({
+        id: rule.id,
+        severity: rule.severity,
+        message: rule.warningMessage,
+        currentRatio: Math.round(ratio * 10) / 10,
+        optimalRatio: rule.optimalRatio,
+        minRatio: rule.minRatio,
+        maxRatio: rule.maxRatio,
+        source: {
+          id: rule.sourceSupplement.id,
+          name: rule.sourceSupplement.name,
+          dosage: sourceDosage.dosage,
+          unit: sourceDosage.unit,
+        },
+        target: {
+          id: rule.targetSupplement.id,
+          name: rule.targetSupplement.name,
+          dosage: targetDosage.dosage,
+          unit: targetDosage.unit,
+        },
+      });
+    }
+  }
+
+  return warnings;
+}
+
+/**
+ * Check timing-based warnings for supplements logged within a time window.
+ * Used for transporter competition (e.g., Tyrosine and 5-HTP need 4h apart).
+ */
+export async function checkTimingWarnings(
+  userId: string,
+  supplementId: string,
+  loggedAt: Date,
+): Promise<TimingWarning[]> {
+  // Get timing rules for this supplement
+  const rules = await db.query.timingRule.findMany({
+    where: or(
+      eq(timingRule.sourceSupplementId, supplementId),
+      eq(timingRule.targetSupplementId, supplementId),
+    ),
+    with: {
+      sourceSupplement: true,
+      targetSupplement: true,
+    },
+  });
+
+  if (rules.length === 0) return [];
+
+  const warnings: TimingWarning[] = [];
+
+  for (const rule of rules) {
+    // Find the other supplement in the rule
+    const otherSupplementId =
+      rule.sourceSupplementId === supplementId
+        ? rule.targetSupplementId
+        : rule.sourceSupplementId;
+
+    // Define time window to check (minHoursApart in both directions)
+    const windowMs = rule.minHoursApart * 60 * 60 * 1000;
+    const windowStart = new Date(loggedAt.getTime() - windowMs);
+    const windowEnd = new Date(loggedAt.getTime() + windowMs);
+
+    // Check for logs of the other supplement within the window
+    const conflictingLogs = await db.query.log.findMany({
+      where: and(
+        eq(log.userId, userId),
+        eq(log.supplementId, otherSupplementId),
+        gte(log.loggedAt, windowStart),
+        lte(log.loggedAt, windowEnd),
+      ),
+      with: {
+        supplement: true,
+      },
+      limit: 1,
+    });
+
+    for (const conflictLog of conflictingLogs) {
+      const hoursDiff =
+        Math.abs(loggedAt.getTime() - conflictLog.loggedAt.getTime()) /
+        (1000 * 60 * 60);
+
+      if (hoursDiff < rule.minHoursApart) {
+        const isSource = rule.sourceSupplementId === supplementId;
+        
+        warnings.push({
+          id: rule.id,
+          severity: rule.severity,
+          reason: rule.reason,
+          minHoursApart: rule.minHoursApart,
+          actualHoursApart: Math.round(hoursDiff * 10) / 10,
+          source: isSource
+            ? {
+                id: supplementId,
+                name: rule.sourceSupplement.name,
+                loggedAt,
+              }
+            : {
+                id: conflictLog.supplementId,
+                name: conflictLog.supplement.name,
+                loggedAt: conflictLog.loggedAt,
+              },
+          target: isSource
+            ? {
+                id: conflictLog.supplementId,
+                name: conflictLog.supplement.name,
+                loggedAt: conflictLog.loggedAt,
+              }
+            : {
+                id: supplementId,
+                name: rule.targetSupplement.name,
+                loggedAt,
+              },
+        });
+      }
+    }
+  }
+
+  return warnings;
+}
+
+/**
  * Get interaction count and severity breakdown for today's logged supplements.
  * Used for the dashboard summary card.
  */
@@ -80,9 +286,6 @@ export async function getTodayInteractionSummary(userId: string): Promise<{
   low: number;
   synergies: number;
 }> {
-  const { log } = await import("~/server/db/schema");
-  const { eq, gte, and } = await import("drizzle-orm");
-
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -126,8 +329,7 @@ export async function getUserInteractions(userId: string): Promise<{
     interactions: InteractionWarning[];
   }>;
 }> {
-  const { log, stack } = await import("~/server/db/schema");
-  const { eq, gte, and } = await import("drizzle-orm");
+  const { stack } = await import("~/server/db/schema");
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -166,5 +368,64 @@ export async function getUserInteractions(userId: string): Promise<{
   return {
     today: todayInteractions,
     inStacks: stackInteractions.filter((s) => s.interactions.length > 0),
+  };
+}
+
+/**
+ * Comprehensive check for a new log entry.
+ * Returns all relevant warnings (interactions, ratios, timing).
+ */
+export async function checkLogWarnings(
+  userId: string,
+  supplementId: string,
+  dosage: number,
+  unit: string,
+  loggedAt: Date,
+): Promise<{
+  interactions: InteractionWarning[];
+  ratioWarnings: RatioWarning[];
+  timingWarnings: TimingWarning[];
+}> {
+  const today = new Date(loggedAt);
+  today.setHours(0, 0, 0, 0);
+
+  // Get today's other logged supplements
+  const todayLogs = await db.query.log.findMany({
+    where: and(
+      eq(log.userId, userId),
+      gte(log.loggedAt, today),
+    ),
+    with: {
+      supplement: true,
+    },
+  });
+
+  // Include the new supplement in the check
+  const allSupplements = [
+    ...todayLogs.map((l) => ({
+      id: l.supplementId,
+      dosage: l.dosage,
+      unit: l.unit,
+    })),
+    { id: supplementId, dosage, unit },
+  ];
+
+  const uniqueIds = [...new Set(allSupplements.map((s) => s.id))];
+
+  const [interactions, ratioWarnings, timingWarnings] = await Promise.all([
+    checkInteractions(uniqueIds),
+    checkRatioWarnings(allSupplements),
+    checkTimingWarnings(userId, supplementId, loggedAt),
+  ]);
+
+  // Filter to only interactions involving the new supplement
+  const relevantInteractions = interactions.filter(
+    (i) => i.source.id === supplementId || i.target.id === supplementId,
+  );
+
+  return {
+    interactions: relevantInteractions,
+    ratioWarnings,
+    timingWarnings,
   };
 }
