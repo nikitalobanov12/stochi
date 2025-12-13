@@ -2,17 +2,16 @@
 
 ## In Progress
 
-- [ ] UX Overhaul: New onboarding flow with goal selection
-
 ## Up Next
 
 - [ ] AI: Smarter NLP input parsing for command bar
-- [ ] Dashboard: Add command bar for <3s logging
 - [ ] Stacks: Inline dosage editing
 - [ ] Pre-log interaction warnings (warn BEFORE logging conflicting supplements)
 
 ## Completed
 
+- [x] Dashboard: Add command bar for <3s logging
+- [x] UX Overhaul: New onboarding flow with goal selection
 - [x] Fix TimeoutNegativeWarning in dev server
 
 ## Ideas / Future
