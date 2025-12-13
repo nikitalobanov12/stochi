@@ -1,7 +1,7 @@
 import { eq, and } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Play, Trash2, Plus, AlertTriangle, Zap, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Play, Trash2, AlertTriangle, Zap, CheckCircle2 } from "lucide-react";
 
 import { db } from "~/server/db";
 import { stack } from "~/server/db/schema";
@@ -9,7 +9,7 @@ import { getSession } from "~/server/better-auth/server";
 import {
   updateStack,
   deleteStack,
-  addStackItem,
+  addStackItems,
   removeStackItem,
   logStack,
 } from "~/server/actions/stacks";
@@ -27,21 +27,6 @@ import { Badge } from "~/components/ui/badge";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "~/components/ui/dialog";
-import {
   Table,
   TableBody,
   TableCell,
@@ -50,6 +35,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { TemplateBanner } from "~/components/onboarding/template-banner";
+import { AddSupplementsDialog } from "~/components/stacks/add-supplements-dialog";
 
 export default async function StackDetailPage({
   params,
@@ -140,28 +126,11 @@ export default async function StackDetailPage({
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="font-mono">Supplements</CardTitle>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button size="sm">
-                      <Plus className="mr-2 h-4 w-4" />
-                      Add Supplement
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle className="font-mono">
-                        Add Supplement
-                      </DialogTitle>
-                      <DialogDescription>
-                        Add a supplement to this stack
-                      </DialogDescription>
-                    </DialogHeader>
-                    <AddSupplementForm
-                      stackId={userStack.id}
-                      supplements={allSupplements}
-                    />
-                  </DialogContent>
-                </Dialog>
+                <AddSupplementsDialog
+                  stackId={userStack.id}
+                  supplements={allSupplements}
+                  addStackItems={addStackItems}
+                />
               </div>
             </CardHeader>
             <CardContent>
@@ -269,85 +238,6 @@ export default async function StackDetailPage({
         </div>
       </div>
     </div>
-  );
-}
-
-function AddSupplementForm({
-  stackId,
-  supplements,
-}: {
-  stackId: string;
-  supplements: Array<{ id: string; name: string; form: string | null }>;
-}) {
-  async function handleSubmit(formData: FormData) {
-    "use server";
-    const supplementId = formData.get("supplementId") as string;
-    const dosage = parseFloat(formData.get("dosage") as string);
-    const unit = formData.get("unit") as "mg" | "mcg" | "g" | "IU" | "ml";
-
-    if (!supplementId || isNaN(dosage) || !unit) {
-      throw new Error("Invalid form data");
-    }
-
-    await addStackItem(stackId, supplementId, dosage, unit);
-  }
-
-  return (
-    <form action={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="supplementId">Supplement</Label>
-        <Select name="supplementId" required>
-          <SelectTrigger>
-            <SelectValue placeholder="Select a supplement" />
-          </SelectTrigger>
-          <SelectContent>
-            {supplements.map((s) => (
-              <SelectItem key={s.id} value={s.id}>
-                {s.name}
-                {s.form && (
-                  <span className="ml-2 text-muted-foreground">({s.form})</span>
-                )}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="dosage">Dosage</Label>
-          <Input
-            id="dosage"
-            name="dosage"
-            type="number"
-            step="0.01"
-            min="0"
-            placeholder="200"
-            required
-            className="font-mono"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="unit">Unit</Label>
-          <Select name="unit" defaultValue="mg">
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="mg">mg</SelectItem>
-              <SelectItem value="mcg">mcg</SelectItem>
-              <SelectItem value="g">g</SelectItem>
-              <SelectItem value="IU">IU</SelectItem>
-              <SelectItem value="ml">ml</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <Button type="submit" className="w-full">
-        Add to Stack
-      </Button>
-    </form>
   );
 }
 
