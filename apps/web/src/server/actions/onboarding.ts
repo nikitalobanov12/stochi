@@ -212,6 +212,70 @@ export async function checkNeedsOnboarding(): Promise<boolean> {
 }
 
 /**
+ * Create a stack from onboarding flow data.
+ * Takes user-selected supplements with dosages and creates a new stack.
+ */
+export async function createStackFromOnboarding(data: {
+  stackName: string;
+  supplements: Array<{
+    supplementId: string;
+    dosage: number;
+    unit: "mg" | "mcg" | "g" | "IU" | "ml";
+  }>;
+}): Promise<{ success: boolean; stackId?: string; error?: string }> {
+  const session = await getSession();
+  if (!session) {
+    return { success: false, error: "Not authenticated" };
+  }
+
+  if (!data.stackName.trim()) {
+    return { success: false, error: "Stack name is required" };
+  }
+
+  if (data.supplements.length === 0) {
+    return { success: false, error: "At least one supplement is required" };
+  }
+
+  // Verify all supplements exist
+  const supplementIds = data.supplements.map((s) => s.supplementId);
+  const existingSupplements = await db.query.supplement.findMany({
+    where: inArray(supplement.id, supplementIds),
+  });
+
+  if (existingSupplements.length !== supplementIds.length) {
+    return { success: false, error: "Some supplements not found" };
+  }
+
+  // Create stack
+  const [newStack] = await db
+    .insert(stack)
+    .values({
+      userId: session.user.id,
+      name: data.stackName.trim(),
+    })
+    .returning();
+
+  if (!newStack) {
+    return { success: false, error: "Failed to create stack" };
+  }
+
+  // Create stack items
+  const stackItems = data.supplements.map((s) => ({
+    stackId: newStack.id,
+    supplementId: s.supplementId,
+    dosage: s.dosage,
+    unit: s.unit,
+  }));
+
+  await db.insert(stackItem).values(stackItems);
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/stacks");
+
+  return { success: true, stackId: newStack.id };
+}
+
+/**
  * Create a stack from template WITHOUT creating logs.
  * Used for the "New Stack" dialog on the stacks page.
  */
