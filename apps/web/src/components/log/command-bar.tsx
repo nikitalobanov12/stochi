@@ -228,18 +228,6 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
               )}
             </button>
           ))}
-          <div className="mt-1 border-t px-3 py-1.5 text-xs text-muted-foreground">
-            Type supplement name + dosage (e.g., &quot;mag 200mg&quot;)
-          </div>
-        </div>
-      )}
-
-      {!input && (
-        <div className="text-xs text-muted-foreground">
-          Examples:{" "}
-          <code className="rounded bg-muted px-1">mag 200mg</code>{" "}
-          <code className="rounded bg-muted px-1">zinc 15mg</code>{" "}
-          <code className="rounded bg-muted px-1">d3 5000IU</code>
         </div>
       )}
     </div>
