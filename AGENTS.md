@@ -9,6 +9,37 @@ bun db:push                # Push schema to database
 bun db:seed                # Seed supplements and interactions
 ```
 
+## Workflow Requirements
+
+### Always Run Before Committing
+- **`bun run check`** must pass with 0 errors AND 0 warnings before any commit
+- Fix all warnings (unused vars, etc.) - don't leave them for later
+
+### Incremental Commits
+- Make small, logical commits as you work - not one big commit at the end
+- Commit after each completed unit of work (e.g., new component, server action, bug fix)
+- Use conventional commit format: `type(scope): description`
+- Types: `feat`, `fix`, `refactor`, `docs`, `style`, `test`, `chore`
+
+### Example Workflow
+```bash
+# After creating a new component
+bun run check              # Verify no errors/warnings
+git add src/components/onboarding/welcome-step.tsx
+git commit -m "feat(onboarding): add welcome step component"
+
+# After adding server action
+bun run check
+git add src/server/actions/onboarding.ts
+git commit -m "feat(onboarding): add createStackFromOnboarding action"
+```
+
+## Task Tracking
+- Track features and bugs in `BACKLOG.md` at repository root
+- Format: `- [ ]` pending, `- [x]` completed
+- Sections: In Progress, Up Next, Completed, Ideas/Future
+- Use this for anything outside current sprint scope
+
 ## Code Style
 - **Imports**: Use `~/` alias for src imports. Use `import { type X }` for type-only imports
 - **Env vars**: Always access via `import { env } from "~/env"` - never use `process.env` directly

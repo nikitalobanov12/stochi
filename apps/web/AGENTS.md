@@ -2,9 +2,41 @@
 
 This file provides guidance for AI agents working on the Stochi codebase.
 
-## Commit Guidelines
+## CRITICAL: Workflow Requirements
 
-**Make small, encapsulated commits along the way** - don't batch all changes into one large commit.
+### Before Every Commit
+```bash
+bun run check  # Must pass with 0 errors AND 0 warnings
+```
+- Fix ALL warnings (unused vars, imports, etc.) before committing
+- Never leave warnings for "later" - they must be resolved immediately
+
+### Incremental Commits (REQUIRED)
+Make small, encapsulated commits **as you work** - not one large commit at the end.
+
+**Commit after each logical unit:**
+- New component created → commit
+- Server action added → commit  
+- Bug fixed → commit
+- Refactor completed → commit
+
+**Example session:**
+```bash
+# 1. Create step component
+bun run check
+git add src/components/onboarding/welcome-step.tsx
+git commit -m "feat(onboarding): add welcome step component"
+
+# 2. Create server action
+bun run check
+git add src/server/actions/onboarding.ts
+git commit -m "feat(onboarding): add createStackFromOnboarding action"
+
+# 3. Wire up in page
+bun run check
+git add src/app/dashboard/page.tsx
+git commit -m "feat(onboarding): integrate welcome flow in dashboard"
+```
 
 ### Commit Message Format
 ```
@@ -72,9 +104,15 @@ apps/web/
 │   ├── components/
 │   │   ├── log/                       # Log-specific components
 │   │   │   └── command-bar.tsx        # Natural language input
-│   │   ├── onboarding/                # Onboarding components
-│   │   │   ├── select-config-modal.tsx # CLI-styled template picker
-│   │   │   └── template-banner.tsx    # Fork/Clear banner for templates
+│   │   ├── onboarding/                # Onboarding flow components
+│   │   │   ├── welcome-flow.tsx       # Main orchestrator with animations
+│   │   │   ├── step-indicator.tsx     # Progress dots
+│   │   │   └── steps/                 # Individual step components
+│   │   │       ├── welcome-step.tsx
+│   │   │       ├── goal-step.tsx
+│   │   │       ├── supplements-step.tsx
+│   │   │       ├── interactions-step.tsx
+│   │   │       └── save-stack-step.tsx
 │   │   ├── ui/                        # shadcn components
 │   │   ├── nav-links.tsx              # Navigation link components
 │   │   └── providers.tsx              # Client providers (AuthUI)
@@ -92,7 +130,8 @@ apps/web/
 │       │   ├── index.ts               # Auth exports
 │       │   └── server.ts              # Server-side session
 │       ├── data/                       # Static data definitions
-│       │   └── stack-templates.ts     # Template stack definitions
+│       │   ├── stack-templates.ts     # Legacy template definitions
+│       │   └── goal-recommendations.ts # Goal-based supplement suggestions
 │       └── db/
 │           ├── index.ts               # Database connection
 │           ├── schema.ts              # Drizzle schema
@@ -274,31 +313,37 @@ Time-spacing rules for transporter competition:
 | Caffeine | Magnesium Glycinate | 2h | Caffeine increases Mg excretion |
 | Vitamin B12 | Magnesium Glycinate | 8h | B12 can suppress melatonin |
 
-## Onboarding System ("Git Clone Strategy")
+## Onboarding System (Multi-Step Flow)
 
-New users with 0 stacks see a CLI-styled modal to select a template stack. This demonstrates the interaction engine immediately.
+New users with 0 stacks see a full-screen onboarding flow with 5 steps:
 
-### Templates Available
+### Onboarding Steps
 
-| Template | Supplements | Interactions |
-|----------|-------------|--------------|
-| **Focus Protocol** | Caffeine 100mg, L-Theanine 200mg, L-Tyrosine 500mg | 1 synergy |
-| **Mineral Balance** | Magnesium Glycinate 400mg, Zinc Picolinate 30mg, Iron Bisglycinate 18mg | 2 conflicts |
-| **Daily Essentials** | Vitamin D3 5000 IU, Vitamin K2 MK-7 100mcg, Magnesium Glycinate 400mg | 1 synergy |
+1. **Welcome** - Introduction to Stochi features
+2. **Goal Selection** - Pick a health goal (Focus, Sleep, Energy, Stress, Health) or skip
+3. **Add Supplements** - Search/add supplements with goal-based suggestions
+4. **Interactions Review** - See warnings, synergies, and smart suggestions
+5. **Save Stack** - Name and save with explanation of what "Stacks" are
+
+### Components (`components/onboarding/`)
+
+- `welcome-flow.tsx` - Main orchestrator with framer-motion animations
+- `step-indicator.tsx` - Dot indicators showing current step
+- `steps/welcome-step.tsx` - Step 1: Feature introduction
+- `steps/goal-step.tsx` - Step 2: Goal picker (skippable)
+- `steps/supplements-step.tsx` - Step 3: Supplement search + goal suggestions
+- `steps/interactions-step.tsx` - Step 4: Interaction warnings + suggestions
+- `steps/save-stack-step.tsx` - Step 5: Name stack + concept explainer
 
 ### Server Actions (`server/actions/onboarding.ts`)
 
-- `instantiateTemplate(templateKey)`: Creates stack + items + logs for today @ 8am
-- `createEmptyStack()`: Creates blank "My Stack" for power users
-- `forkStack(stackId)`: Renames stack to "(Custom)" to remove template detection
-- `clearTemplateData(stackId)`: Deletes stack + today's logs (nuclear reset)
+- `createStackFromOnboarding(data)` - Creates stack + items from onboarding flow
+- `instantiateTemplate(templateKey)` - Legacy: Creates stack from template
+- `createEmptyStack()` - Creates blank "My Stack"
+- `forkStack(stackId)` - Renames stack to break template detection
+- `clearTemplateData(stackId)` - Deletes stack + today's logs
 
-### Template Detection
+### Data Files
 
-Templates are detected by exact name match. If user renames the stack, the template banner disappears (they've "forked" it).
-
-### Files
-
-- `server/data/stack-templates.ts`: Template definitions
-- `components/onboarding/select-config-modal.tsx`: CLI-styled picker modal
-- `components/onboarding/template-banner.tsx`: Fork/Clear banner
+- `server/data/goal-recommendations.ts` - Goal-based supplement suggestions
+- `server/data/stack-templates.ts` - Legacy template definitions
