@@ -1,10 +1,9 @@
 import { eq, desc } from "drizzle-orm";
-import { Download, User, Shield, Database } from "lucide-react";
+import { User, Shield, Database } from "lucide-react";
 
 import { db } from "~/server/db";
 import { log, stack } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
-import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
@@ -12,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { ExportButton } from "~/components/settings/export-button";
 
 export default async function SettingsPage() {
   const session = await getSession();
@@ -35,6 +35,26 @@ export default async function SettingsPage() {
       },
     }),
   ]);
+
+  // Serialize dates for client component
+  const serializedData = {
+    logs: userLogs.map((l) => ({
+      id: l.id,
+      dosage: l.dosage,
+      unit: l.unit,
+      loggedAt: l.loggedAt.toISOString(),
+      supplement: { name: l.supplement.name, form: l.supplement.form },
+    })),
+    stacks: userStacks.map((s) => ({
+      id: s.id,
+      name: s.name,
+      items: s.items.map((i) => ({
+        dosage: i.dosage,
+        unit: i.unit,
+        supplement: { name: i.supplement.name, form: i.supplement.form },
+      })),
+    })),
+  };
 
   return (
     <div className="space-y-6">
@@ -117,104 +137,12 @@ export default async function SettingsPage() {
               applications.
             </p>
             <div className="flex flex-wrap gap-2">
-              <ExportButton
-                data={{ logs: userLogs, stacks: userStacks }}
-                format="json"
-              />
-              <ExportButton
-                data={{ logs: userLogs, stacks: userStacks }}
-                format="csv"
-              />
+              <ExportButton data={serializedData} format="json" />
+              <ExportButton data={serializedData} format="csv" />
             </div>
           </CardContent>
         </Card>
       </div>
     </div>
-  );
-}
-
-type ExportData = {
-  logs: Array<{
-    id: string;
-    dosage: number;
-    unit: string;
-    loggedAt: Date;
-    supplement: { name: string; form: string | null };
-  }>;
-  stacks: Array<{
-    id: string;
-    name: string;
-    items: Array<{
-      dosage: number;
-      unit: string;
-      supplement: { name: string; form: string | null };
-    }>;
-  }>;
-};
-
-function ExportButton({
-  data,
-  format,
-}: {
-  data: ExportData;
-  format: "json" | "csv";
-}) {
-  const exportData = () => {
-    if (format === "json") {
-      return JSON.stringify(
-        {
-          exportedAt: new Date().toISOString(),
-          logs: data.logs.map((l) => ({
-            supplement: l.supplement.name,
-            form: l.supplement.form,
-            dosage: l.dosage,
-            unit: l.unit,
-            loggedAt: l.loggedAt,
-          })),
-          stacks: data.stacks.map((s) => ({
-            name: s.name,
-            items: s.items.map((i) => ({
-              supplement: i.supplement.name,
-              form: i.supplement.form,
-              dosage: i.dosage,
-              unit: i.unit,
-            })),
-          })),
-        },
-        null,
-        2,
-      );
-    }
-
-    // CSV format
-    const logLines = [
-      "type,name,form,dosage,unit,logged_at",
-      ...data.logs.map(
-        (l) =>
-          `log,"${l.supplement.name}","${l.supplement.form ?? ""}",${l.dosage},${l.unit},${new Date(l.loggedAt).toISOString()}`,
-      ),
-    ];
-
-    const stackLines = data.stacks.flatMap((s) =>
-      s.items.map(
-        (i) =>
-          `stack_item,"${i.supplement.name}","${i.supplement.form ?? ""}",${i.dosage},${i.unit},"${s.name}"`,
-      ),
-    );
-
-    return [...logLines, ...stackLines].join("\n");
-  };
-
-  const content = exportData();
-  const blob = `data:${format === "json" ? "application/json" : "text/csv"};charset=utf-8,${encodeURIComponent(content)}`;
-  const filename = `stochi-export-${new Date().toISOString().split("T")[0]}.${format}`;
-
-  return (
-    <a href={blob} download={filename}>
-      <Button variant="outline" className="font-mono">
-        <Download className="mr-2 h-4 w-4" />
-        Export {format.toUpperCase()}
-      </Button>
-    </a>
   );
 }
