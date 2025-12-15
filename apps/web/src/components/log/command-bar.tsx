@@ -1,10 +1,13 @@
 "use client";
 
-import { useState, useRef, useEffect, useTransition, useMemo } from "react";
+import { useState, useRef, useEffect, useTransition, useMemo, useCallback } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Terminal, X } from "lucide-react";
+import { Terminal, X, Sparkles, Loader2 } from "lucide-react";
 import { getServingPresets, type ServingPreset } from "~/server/data/serving-presets";
+import { parseCommand, type ParsedDosage } from "~/lib/ai/command-parser";
+import { useSemanticSearch, type SearchResult } from "~/lib/ai/use-semantic-search";
+import { fuzzySearchSupplements } from "~/server/data/supplement-aliases";
 
 type Supplement = {
   id: string;
@@ -24,31 +27,17 @@ type CommandBarProps = {
 const UNITS = ["mg", "mcg", "g", "IU", "ml"] as const;
 const UNIT_PATTERN = new RegExp(`^(\\d+(?:\\.\\d+)?)(${UNITS.join("|")})$`, "i");
 
-function searchSupplements(query: string, supps: Supplement[]): Supplement[] {
-  const q = query.trim().toLowerCase();
-  if (!q) return [];
-
-  return supps
-    .filter(
-      (s) =>
-        s.name.toLowerCase().includes(q) ||
-        s.name.toLowerCase().startsWith(q) ||
-        s.form?.toLowerCase().includes(q),
-    )
-    .slice(0, 5);
-}
-
 function parseDosageInput(
   text: string,
-): { dosage: number; unit: "mg" | "mcg" | "g" | "IU" | "ml" } | null {
+): ParsedDosage | null {
   const match = UNIT_PATTERN.exec(text.trim());
   if (!match?.[1] || !match[2]) return null;
 
-  const dosage = parseFloat(match[1]);
+  const value = parseFloat(match[1]);
   const unitRaw = match[2].toLowerCase();
   const unit = unitRaw === "iu" ? "IU" : (unitRaw as "mg" | "mcg" | "g" | "ml");
 
-  return { dosage, unit };
+  return { value, unit };
 }
 
 export function CommandBar({ supplements, onLog }: CommandBarProps) {
@@ -62,15 +51,105 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
   } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Semantic search integration
+  const { search: semanticSearch, isReady: isAIReady, status: aiStatus } = useSemanticSearch(supplements);
+  const [aiSuggestions, setAiSuggestions] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Parse the full input for natural language commands
+  const parsedCommand = useMemo(() => parseCommand(input), [input]);
+
+  // Hybrid search: combine fuzzy (instant) with AI semantic (debounced)
+  const fuzzySuggestions = useMemo(() => {
+    if (selectedSupplement) return [];
+    const query = parsedCommand.supplementQuery || input;
+    if (!query.trim()) return [];
+    return fuzzySearchSupplements(supplements, query).slice(0, 5);
+  }, [input, supplements, selectedSupplement, parsedCommand.supplementQuery]);
+
+  // Merge fuzzy and AI suggestions, prioritizing AI scores when available
   const suggestions = useMemo(() => {
     if (selectedSupplement) return [];
-    return searchSupplements(input, supplements);
-  }, [input, supplements, selectedSupplement]);
+
+    // If no AI suggestions yet, use fuzzy
+    if (aiSuggestions.length === 0) {
+      return fuzzySuggestions;
+    }
+
+    // Merge: AI suggestions first (sorted by score), then any fuzzy matches not in AI results
+    const aiIds = new Set(aiSuggestions.map((s) => s.id));
+    const fuzzyOnly = fuzzySuggestions.filter((s) => !aiIds.has(s.id));
+
+    const merged = [
+      ...aiSuggestions.slice(0, 3).map((ai) => {
+        const original = supplements.find((s) => s.id === ai.id);
+        return original ?? { id: ai.id, name: ai.name, form: ai.form };
+      }),
+      ...fuzzyOnly.slice(0, 2),
+    ];
+
+    return merged.slice(0, 5);
+  }, [aiSuggestions, fuzzySuggestions, selectedSupplement, supplements]);
+
+  // Trigger semantic search with debounce
+  const triggerSemanticSearch = useCallback(
+    async (query: string) => {
+      if (!isAIReady || !query.trim() || query.length < 2) {
+        setAiSuggestions([]);
+        return;
+      }
+
+      setIsSearching(true);
+      try {
+        const results = await semanticSearch(query);
+        setAiSuggestions(results);
+      } catch {
+        // Silently fail - fuzzy search is the fallback
+      } finally {
+        setIsSearching(false);
+      }
+    },
+    [isAIReady, semanticSearch]
+  );
+
+  // Debounced semantic search
+  useEffect(() => {
+    if (selectedSupplement) {
+      setAiSuggestions([]);
+      return;
+    }
+
+    const query = parsedCommand.supplementQuery || input;
+    if (!query.trim() || query.length < 2) {
+      setAiSuggestions([]);
+      return;
+    }
+
+    // Clear previous timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // Debounce: wait 150ms before triggering AI search
+    searchTimeoutRef.current = setTimeout(() => {
+      void triggerSemanticSearch(query);
+    }, 150);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [input, selectedSupplement, parsedCommand.supplementQuery, triggerSemanticSearch]);
 
   const parsedDosage = useMemo(() => {
-    if (!selectedSupplement) return null;
+    if (!selectedSupplement) {
+      // Check if dosage is in the parsed command (natural language mode)
+      return parsedCommand.dosage;
+    }
     return parseDosageInput(input);
-  }, [input, selectedSupplement]);
+  }, [input, selectedSupplement, parsedCommand.dosage]);
 
   // Get serving presets for the selected supplement
   const servingPresets = useMemo(() => {
@@ -79,6 +158,16 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
   }, [selectedSupplement]);
 
   const canSubmit = selectedSupplement && parsedDosage;
+
+  // Check if we can do a one-shot log (supplement + dosage in one input)
+  const canOneShotLog = useMemo(() => {
+    if (selectedSupplement) return false;
+    return (
+      parsedCommand.dosage &&
+      parsedCommand.supplementQuery &&
+      suggestions.length > 0
+    );
+  }, [selectedSupplement, parsedCommand, suggestions]);
 
   useEffect(() => {
     if (feedback) {
@@ -92,29 +181,39 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
     setHighlightedIndex(0);
   }
 
-  function selectSupplement(supp: Supplement) {
+  function selectSupplement(supp: Supplement, dosage?: ParsedDosage | null) {
     setSelectedSupplement(supp);
-    setInput("");
+    // If dosage was parsed from natural language, pre-fill it
+    if (dosage) {
+      setInput(`${dosage.value}${dosage.unit}`);
+    } else {
+      setInput("");
+    }
     inputRef.current?.focus();
   }
 
   function clearSelection() {
     setSelectedSupplement(null);
     setInput("");
+    setAiSuggestions([]);
     inputRef.current?.focus();
   }
 
-  function handleSubmit() {
-    if (!canSubmit || !parsedDosage) return;
+  function handleSubmit(supplement?: Supplement, dosage?: ParsedDosage | null) {
+    const targetSupplement = supplement ?? selectedSupplement;
+    const targetDosage = dosage ?? parsedDosage;
+
+    if (!targetSupplement || !targetDosage) return;
 
     startTransition(async () => {
       try {
-        await onLog(selectedSupplement.id, parsedDosage.dosage, parsedDosage.unit);
+        await onLog(targetSupplement.id, targetDosage.value, targetDosage.unit);
         setSelectedSupplement(null);
         setInput("");
+        setAiSuggestions([]);
         setFeedback({
           type: "success",
-          message: `Logged ${parsedDosage.dosage}${parsedDosage.unit} ${selectedSupplement.name}`,
+          message: `Logged ${targetDosage.value}${targetDosage.unit} ${targetSupplement.name}`,
         });
       } catch {
         setFeedback({
@@ -150,11 +249,17 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
     if (e.key === "Enter") {
       e.preventDefault();
       if (canSubmit) {
-        void handleSubmit();
+        handleSubmit();
+      } else if (canOneShotLog && suggestions.length > 0) {
+        // One-shot log: "200mg mag" -> log directly
+        const selected = suggestions[highlightedIndex];
+        if (selected) {
+          handleSubmit(selected, parsedCommand.dosage);
+        }
       } else if (!selectedSupplement && suggestions.length > 0) {
         const selected = suggestions[highlightedIndex];
         if (selected) {
-          selectSupplement(selected);
+          selectSupplement(selected, parsedCommand.dosage);
         }
       }
     } else if (e.key === "Backspace" && input === "" && selectedSupplement) {
@@ -174,7 +279,7 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
         e.preventDefault();
         const selected = suggestions[highlightedIndex];
         if (selected) {
-          selectSupplement(selected);
+          selectSupplement(selected, parsedCommand.dosage);
         }
       }
     }
@@ -182,9 +287,23 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
 
   return (
     <div className="space-y-2">
-      <p className="text-sm text-muted-foreground">
-        Quick log: type a supplement name and dosage
-      </p>
+      <div className="flex items-center gap-2">
+        <p className="text-sm text-muted-foreground">
+          Quick log: type a supplement name and dosage
+        </p>
+        {aiStatus === "loading" && (
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            Loading AI...
+          </span>
+        )}
+        {isAIReady && (
+          <span className="flex items-center gap-1 text-xs text-primary/70">
+            <Sparkles className="h-3 w-3" />
+            AI ready
+          </span>
+        )}
+      </div>
       <div className="relative">
         <Terminal className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <div className="flex items-center gap-1 rounded-md border bg-background pl-10 pr-3">
@@ -204,11 +323,16 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
             onChange={(e) => handleInputChange(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={
-              selectedSupplement ? "200mg, 5000IU..." : "Search supplement..."
+              selectedSupplement
+                ? "200mg, 5000IU..."
+                : "200mg mag, vitamin d 5000iu..."
             }
             className="flex-1 bg-transparent py-2 font-mono text-sm outline-none placeholder:text-muted-foreground"
             disabled={isPending}
           />
+          {isSearching && (
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          )}
         </div>
       </div>
 
@@ -224,10 +348,24 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
         </div>
       )}
 
+      {/* One-shot log hint */}
+      {canOneShotLog && suggestions.length > 0 && (
+        <div className="flex items-center gap-2 rounded-md bg-primary/10 px-3 py-2">
+          <Sparkles className="h-3 w-3 text-primary" />
+          <span className="text-xs text-muted-foreground">
+            Press Enter to log {parsedCommand.dosage?.value}
+            {parsedCommand.dosage?.unit} of{" "}
+            <span className="font-medium text-foreground">
+              {suggestions[highlightedIndex]?.name}
+            </span>
+          </span>
+        </div>
+      )}
+
       {selectedSupplement && parsedDosage && (
         <div className="flex items-center gap-2 rounded-md bg-primary/10 px-3 py-2">
           <span className="text-xs text-muted-foreground">
-            Press Enter to log {parsedDosage.dosage}
+            Press Enter to log {parsedDosage.value}
             {parsedDosage.unit} of {selectedSupplement.name}
           </span>
         </div>
@@ -258,23 +396,36 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
         </div>
       )}
 
-      {suggestions.length > 0 && (
+      {suggestions.length > 0 && !selectedSupplement && (
         <div className="rounded-md border bg-popover p-1">
-          {suggestions.map((s, i) => (
-            <button
-              key={s.id}
-              type="button"
-              className={`w-full rounded px-3 py-2 text-left text-sm transition-colors ${
-                i === highlightedIndex ? "bg-muted" : "hover:bg-muted/50"
-              }`}
-              onClick={() => selectSupplement(s)}
-            >
-              <span className="font-medium">{s.name}</span>
-              {s.form && (
-                <span className="ml-2 text-muted-foreground">({s.form})</span>
-              )}
-            </button>
-          ))}
+          {suggestions.map((s, i) => {
+            const aiMatch = aiSuggestions.find((ai) => ai.id === s.id);
+            return (
+              <button
+                key={s.id}
+                type="button"
+                className={`w-full rounded px-3 py-2 text-left text-sm transition-colors ${
+                  i === highlightedIndex ? "bg-muted" : "hover:bg-muted/50"
+                }`}
+                onClick={() => selectSupplement(s, parsedCommand.dosage)}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="font-medium">{s.name}</span>
+                    {s.form && (
+                      <span className="ml-2 text-muted-foreground">({s.form})</span>
+                    )}
+                  </div>
+                  {aiMatch && aiMatch.score > 0.5 && (
+                    <span className="flex items-center gap-1 text-xs text-primary/70">
+                      <Sparkles className="h-3 w-3" />
+                      {Math.round(aiMatch.score * 100)}%
+                    </span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

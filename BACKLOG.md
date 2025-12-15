@@ -4,12 +4,12 @@
 
 ## Up Next
 
-- [ ] AI: Smarter NLP input parsing for command bar
 - [ ] Stacks: Inline dosage editing
 - [ ] Pre-log interaction warnings (warn BEFORE logging conflicting supplements)
 
 ## Completed
 
+- [x] AI: Client-side hybrid NLP parsing for command bar (Transformers.js + regex)
 - [x] Dashboard: Redesign with actual interaction details and cleaner layout
 - [x] Dashboard: Add command bar for <3s logging
 - [x] UX Overhaul: New onboarding flow with goal selection
