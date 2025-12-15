@@ -25,7 +25,7 @@ type CommandBarProps = {
 };
 
 const UNITS = ["mg", "mcg", "g", "IU", "ml"] as const;
-const UNIT_PATTERN = new RegExp(`^(\\d+(?:\\.\\d+)?)(${UNITS.join("|")})$`, "i");
+const UNIT_PATTERN = new RegExp(`^(\\d+(?:\\.\\d+)?)\\s*(${UNITS.join("|")})$`, "i");
 
 function parseDosageInput(
   text: string,
