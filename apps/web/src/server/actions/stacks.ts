@@ -8,14 +8,31 @@ import { db } from "~/server/db";
 import { stack, stackItem, log } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
 
+const VALID_UNITS = ["mg", "mcg", "g", "IU", "ml"] as const;
+type DosageUnit = (typeof VALID_UNITS)[number];
+
+function validateFormDataString(
+  formData: FormData,
+  key: string,
+): string | null {
+  const value = formData.get(key);
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function isValidUnit(unit: unknown): unit is DosageUnit {
+  return typeof unit === "string" && VALID_UNITS.includes(unit as DosageUnit);
+}
+
 export async function createStack(formData: FormData) {
   const session = await getSession();
   if (!session) {
     redirect("/auth/sign-in");
   }
 
-  const name = formData.get("name") as string;
-  if (!name || name.trim().length === 0) {
+  const name = validateFormDataString(formData, "name");
+  if (!name) {
     throw new Error("Stack name is required");
   }
 
@@ -23,7 +40,7 @@ export async function createStack(formData: FormData) {
     .insert(stack)
     .values({
       userId: session.user.id,
-      name: name.trim(),
+      name,
     });
 
   revalidatePath("/stacks");
@@ -36,15 +53,15 @@ export async function updateStack(stackId: string, formData: FormData) {
     redirect("/auth/sign-in");
   }
 
-  const name = formData.get("name") as string;
-  if (!name || name.trim().length === 0) {
+  const name = validateFormDataString(formData, "name");
+  if (!name) {
     throw new Error("Stack name is required");
   }
 
   await db
     .update(stack)
     .set({
-      name: name.trim(),
+      name,
       updatedAt: new Date(),
     })
     .where(and(eq(stack.id, stackId), eq(stack.userId, session.user.id)));
@@ -73,7 +90,7 @@ export async function addStackItem(
   stackId: string,
   supplementId: string,
   dosage: number,
-  unit: "mg" | "mcg" | "g" | "IU" | "ml",
+  unit: DosageUnit,
 ) {
   const session = await getSession();
   if (!session) {
@@ -125,14 +142,41 @@ export async function addStackItems(
     return;
   }
 
-  await db.insert(stackItem).values(
-    items.map((item) => ({
+  // Validate all items before inserting
+  const validatedItems: Array<{
+    stackId: string;
+    supplementId: string;
+    dosage: number;
+    unit: DosageUnit;
+  }> = [];
+
+  for (const item of items) {
+    if (!isValidUnit(item.unit)) {
+      throw new Error(`Invalid unit: ${item.unit}`);
+    }
+    if (!Number.isFinite(item.dosage) || item.dosage <= 0) {
+      throw new Error("Dosage must be a positive number");
+    }
+    validatedItems.push({
       stackId,
       supplementId: item.supplementId,
       dosage: item.dosage,
-      unit: item.unit as "mg" | "mcg" | "g" | "IU" | "ml",
-    })),
-  );
+      unit: item.unit,
+    });
+  }
+
+  // Verify all supplements exist
+  const supplementIds = validatedItems.map((i) => i.supplementId);
+  const existingSupplements = await db.query.supplement.findMany({
+    where: (s, { inArray }) => inArray(s.id, supplementIds),
+    columns: { id: true },
+  });
+
+  if (existingSupplements.length !== supplementIds.length) {
+    throw new Error("One or more supplements not found");
+  }
+
+  await db.insert(stackItem).values(validatedItems);
 
   await db
     .update(stack)
@@ -156,7 +200,7 @@ export async function removeStackItem(itemId: string) {
     },
   });
 
-  if (!item || item.stack.userId !== session.user.id) {
+  if (!item?.stack || item.stack.userId !== session.user.id) {
     throw new Error("Item not found");
   }
 
