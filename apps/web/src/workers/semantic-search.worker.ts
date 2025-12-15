@@ -5,11 +5,10 @@
  * Uses the quantized all-MiniLM-L6-v2 model (~23MB) for fast similarity search.
  */
 
-import { pipeline, env, type FeatureExtractionPipeline } from "@xenova/transformers";
+import { pipeline, env, type FeatureExtractionPipeline, type ProgressInfo } from "@huggingface/transformers";
 
 // Configure transformers.js for browser environment
 env.allowLocalModels = false;
-env.useBrowserCache = true;
 
 // Types for worker messages
 type WorkerMessage =
@@ -32,59 +31,63 @@ type SearchResult = {
   score: number;
 };
 
-// Singleton for the pipeline
-let extractor: FeatureExtractionPipeline | null = null;
-let initPromise: Promise<FeatureExtractionPipeline> | null = null;
-
-// Cache for precomputed embeddings
-const embeddingCache = new Map<string, number[]>();
-
-/**
- * Initialize the feature extraction pipeline
- */
-async function initializePipeline(
-  progressCallback?: (progress: number) => void
-): Promise<FeatureExtractionPipeline> {
-  if (extractor) return extractor;
-
-  // If already initializing, wait for the existing promise
-  if (initPromise) {
-    return initPromise;
-  }
-
-  initPromise = (async () => {
-    extractor = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
-      progress_callback: (data: { progress?: number }) => {
-        if (data.progress !== undefined && progressCallback) {
-          progressCallback(data.progress);
-        }
-      },
-    });
-    return extractor;
-  })();
-
-  return initPromise;
-}
-
-/**
- * Generate embedding for a text string
- */
-async function generateEmbedding(text: string): Promise<number[]> {
-  const model = await initializePipeline();
-  const output = await model(text, { pooling: "mean", normalize: true });
-  return Array.from(output.data as Float32Array);
-}
-
 /**
  * Calculate cosine similarity between two vectors
  * (Vectors are already normalized, so dot product = cosine similarity)
  */
-function cosineSimilarity(a: number[], b: number[]): number {
+function cosineSimilarity(a: Float32Array, b: Float32Array): number {
   let sum = 0;
   for (let i = 0; i < a.length; i++) {
     sum += a[i]! * b[i]!;
   }
   return sum;
+}
+
+// Singleton pattern for pipeline
+class PipelineSingleton {
+  static instance: FeatureExtractionPipeline | null = null;
+  static initPromise: Promise<FeatureExtractionPipeline> | null = null;
+
+  static async getInstance(
+    progressCallback?: (progress: number) => void
+  ): Promise<FeatureExtractionPipeline> {
+    if (this.instance) return this.instance;
+
+    // If already initializing, wait for the existing promise
+    if (this.initPromise) {
+      return this.initPromise;
+    }
+
+    this.initPromise = (async () => {
+      const extractor = await pipeline(
+        "feature-extraction",
+        "Xenova/all-MiniLM-L6-v2",
+        {
+          progress_callback: (data: ProgressInfo) => {
+            if ("progress" in data && data.progress !== undefined && progressCallback) {
+              progressCallback(data.progress);
+            }
+          },
+        }
+      );
+      this.instance = extractor;
+      return extractor;
+    })();
+
+    return this.initPromise;
+  }
+}
+
+// Cache for precomputed embeddings
+const embeddingCache = new Map<string, Float32Array>();
+
+/**
+ * Generate embedding for a text string
+ */
+async function generateEmbedding(text: string): Promise<Float32Array> {
+  const model = await PipelineSingleton.getInstance();
+  const output = await model(text, { pooling: "mean", normalize: true });
+  return output.data as Float32Array;
 }
 
 /**
@@ -118,6 +121,7 @@ async function searchSupplements(
         embeddingCache.set(cacheKey, embedding);
       }
 
+      // Use our cosine similarity function
       const score = cosineSimilarity(queryEmbedding, embedding);
       maxScore = Math.max(maxScore, score);
     }
@@ -167,7 +171,7 @@ self.addEventListener("message", (event: MessageEvent<WorkerMessage>) => {
     try {
       switch (type) {
         case "init": {
-          await initializePipeline((progress) => {
+          await PipelineSingleton.getInstance((progress) => {
             self.postMessage({ type: "progress", progress });
           });
           self.postMessage({ type: "ready" });
@@ -177,7 +181,7 @@ self.addEventListener("message", (event: MessageEvent<WorkerMessage>) => {
         case "embed": {
           const { id, text } = event.data;
           const embedding = await generateEmbedding(text);
-          self.postMessage({ type: "embedding", id, embedding });
+          self.postMessage({ type: "embedding", id, embedding: Array.from(embedding) });
           break;
         }
 
