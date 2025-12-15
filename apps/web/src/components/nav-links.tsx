@@ -59,7 +59,7 @@ export function MobileNavLink({ href, iconName, label }: MobileNavLinkProps) {
     <Link
       href={href}
       className={cn(
-        "flex flex-col items-center gap-1 text-xs transition-colors hover:text-foreground",
+        "flex min-h-[44px] flex-col items-center justify-center gap-1 px-3 text-xs transition-colors hover:text-foreground",
         isActive ? "text-foreground" : "text-muted-foreground",
       )}
     >
