@@ -54,7 +54,7 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Semantic search integration
-  const { search: semanticSearch, isReady: isAIReady, status: aiStatus } = useSemanticSearch(supplements);
+  const { search: semanticSearch, isReady: isAIReady } = useSemanticSearch(supplements);
   const [aiSuggestions, setAiSuggestions] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -310,23 +310,9 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
 
   return (
     <div className="space-y-2" ref={containerRef}>
-      <div className="flex items-center gap-2">
-        <p className="text-sm text-muted-foreground">
-          Quick log: type a supplement name and dosage
-        </p>
-        {aiStatus === "loading" && (
-          <span className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Loader2 className="h-3 w-3 animate-spin" />
-            Loading AI...
-          </span>
-        )}
-        {isAIReady && (
-          <span className="flex items-center gap-1 text-xs text-primary/70">
-            <Sparkles className="h-3 w-3" />
-            AI ready
-          </span>
-        )}
-      </div>
+      <p className="text-sm text-muted-foreground">
+        Quick log: type a supplement name and dosage
+      </p>
       <div className="relative">
         <Terminal className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <div className="flex items-center gap-1 rounded-md border bg-background pl-10 pr-3">

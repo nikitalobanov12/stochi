@@ -9,6 +9,7 @@
 
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { getSupplementsWithAliases } from "./command-parser";
+import { logger } from "~/lib/logger";
 
 export type SearchResult = {
   id: string;
@@ -78,16 +79,21 @@ export function useSemanticSearch(supplements: SupplementCandidate[]) {
       switch (type) {
         case "loaded":
           // Worker script loaded, initialize the model
+          logger.info("Worker loaded, initializing model...", { context: "SemanticSearch" });
           worker.postMessage({ type: "init" });
           break;
 
         case "progress":
           setLoadProgress(event.data.progress);
+          if (event.data.progress % 25 === 0) {
+            logger.debug(`Model loading: ${event.data.progress}%`, { context: "SemanticSearch" });
+          }
           break;
 
         case "ready":
           setStatus("ready");
           setLoadProgress(100);
+          logger.info("AI semantic search ready", { context: "SemanticSearch" });
           break;
 
         case "searchResults": {
@@ -103,22 +109,24 @@ export function useSemanticSearch(supplements: SupplementCandidate[]) {
             callback(results);
             searches.delete(id);
           }
+          logger.debug(`Search completed: ${results.length} results`, { context: "SemanticSearch" });
           break;
         }
 
         case "precomputeComplete":
           setIsPrecomputed(true);
+          logger.info("Supplement embeddings precomputed", { context: "SemanticSearch" });
           break;
 
         case "error":
-          console.error("Semantic search worker error:", event.data.error);
+          logger.error("Semantic search worker error", { context: "SemanticSearch", data: event.data.error });
           setStatus("error");
           break;
       }
     };
 
     worker.onerror = (error) => {
-      console.error("Worker error:", error);
+      logger.error("Worker initialization error", { context: "SemanticSearch", data: error.message });
       setStatus("error");
     };
 
