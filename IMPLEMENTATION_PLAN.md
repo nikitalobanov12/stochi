@@ -50,9 +50,9 @@
 
 ## Phase 3: Command Bar (cmdk Refactor)
 
-- [ ] **3.1 Install cmdk** - `npx shadcn@latest add command`
-- [ ] **3.2 Refactor CommandBar** - Use cmdk primitives with `shouldFilter={false}`
-- [ ] **3.3 Optimistic UI** - Add `useOptimistic` for instant log feedback
+- [x] **3.1 Install cmdk** - `npx shadcn@latest add command`
+- [x] **3.2 Refactor CommandBar** - Use cmdk primitives with `shouldFilter={false}`
+- [x] **3.3 Optimistic UI** - Add instant pending feedback for log entries
 
 ---
 
