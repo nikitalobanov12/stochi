@@ -31,23 +31,27 @@ export type SelectedSupplement = {
   unit: "mg" | "mcg" | "g" | "IU" | "ml";
 };
 
-type SupplementsStepProps = {
+type BuildStackStepProps = {
   supplements: Supplement[];
   selectedGoal: string | null;
   selected: SelectedSupplement[];
-  onChange: (supplements: SelectedSupplement[]) => void;
+  stackName: string;
+  onChangeSupplements: (supplements: SelectedSupplement[]) => void;
+  onChangeStackName: (name: string) => void;
   onNext: () => void;
   onBack: () => void;
 };
 
-export function SupplementsStep({
+export function BuildStackStep({
   supplements,
   selectedGoal,
   selected,
-  onChange,
+  stackName,
+  onChangeSupplements,
+  onChangeStackName,
   onNext,
   onBack,
-}: SupplementsStepProps) {
+}: BuildStackStepProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [pendingDosage, setPendingDosage] = useState("");
@@ -83,6 +87,12 @@ export function SupplementsStep({
       .filter(Boolean) as Array<Supplement & { recommended: { dosage: number; unit: string; reason: string } }>;
   }, [goalRecommendations, selected, supplements]);
 
+  // Get serving presets for pending supplement
+  const servingPresets = useMemo(() => {
+    if (!pendingSupplement) return [];
+    return getServingPresets(pendingSupplement.name);
+  }, [pendingSupplement]);
+
   function handleSelectSupplement(supplement: Supplement) {
     setPendingSupplement(supplement);
     setSearchQuery(supplement.name);
@@ -101,13 +111,23 @@ export function SupplementsStep({
       unit: pendingUnit,
     };
 
-    onChange([...selected, newSupplement]);
+    onChangeSupplements([...selected, newSupplement]);
+    resetForm();
+  }
 
-    // Reset form
-    setPendingSupplement(null);
-    setSearchQuery("");
-    setPendingDosage("");
-    setPendingUnit("mg");
+  function handleAddWithPreset(dosage: number, unit: "mg" | "mcg" | "g" | "IU" | "ml") {
+    if (!pendingSupplement) return;
+
+    const newSupplement: SelectedSupplement = {
+      id: pendingSupplement.id,
+      name: pendingSupplement.name,
+      form: pendingSupplement.form,
+      dosage,
+      unit,
+    };
+
+    onChangeSupplements([...selected, newSupplement]);
+    resetForm();
   }
 
   function handleAddSuggestion(
@@ -120,21 +140,42 @@ export function SupplementsStep({
       dosage: supplement.recommended.dosage,
       unit: supplement.recommended.unit as "mg" | "mcg" | "g" | "IU" | "ml",
     };
-    onChange([...selected, newSupplement]);
+    onChangeSupplements([...selected, newSupplement]);
   }
 
   function handleRemove(id: string) {
-    onChange(selected.filter((s) => s.id !== id));
+    onChangeSupplements(selected.filter((s) => s.id !== id));
+  }
+
+  function resetForm() {
+    setPendingSupplement(null);
+    setSearchQuery("");
+    setPendingDosage("");
+    setPendingUnit("mg");
   }
 
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1 space-y-4 overflow-y-auto">
         <div className="space-y-1">
-          <h2 className="font-mono text-xl font-bold">Add your supplements</h2>
+          <h2 className="font-mono text-xl font-bold">Build your stack</h2>
           <p className="text-sm text-muted-foreground">
-            What supplements are you currently taking?
+            Add supplements you take together. You&apos;ll be able to log them all with one tap.
           </p>
+        </div>
+
+        {/* Stack name input */}
+        <div className="space-y-1.5">
+          <label htmlFor="stack-name" className="text-xs font-medium text-muted-foreground">
+            Stack name
+          </label>
+          <Input
+            id="stack-name"
+            value={stackName}
+            onChange={(e) => onChangeStackName(e.target.value)}
+            placeholder="e.g., Morning Protocol"
+            className="font-mono text-sm"
+          />
         </div>
 
         {/* Search and add form */}
@@ -180,44 +221,27 @@ export function SupplementsStep({
           {pendingSupplement && (
             <div className="space-y-2">
               {/* Serving presets */}
-              {(() => {
-                const presets = getServingPresets(pendingSupplement.name);
-                if (presets.length === 0) return null;
-                return (
-                  <div className="space-y-1.5">
-                    <p className="text-xs text-muted-foreground">Quick servings:</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {presets.slice(0, 4).map((preset) => (
-                        <Button
-                          key={preset.label}
-                          variant="outline"
-                          size="sm"
-                          className="h-auto px-2 py-1 text-xs"
-                          onClick={() => {
-                            const newSupplement: SelectedSupplement = {
-                              id: pendingSupplement.id,
-                              name: pendingSupplement.name,
-                              form: pendingSupplement.form,
-                              dosage: preset.dosage,
-                              unit: preset.unit,
-                            };
-                            onChange([...selected, newSupplement]);
-                            setPendingSupplement(null);
-                            setSearchQuery("");
-                            setPendingDosage("");
-                            setPendingUnit("mg");
-                          }}
-                        >
-                          {preset.label}
-                          <span className="ml-1 text-muted-foreground">
-                            ({preset.dosage}{preset.unit})
-                          </span>
-                        </Button>
-                      ))}
-                    </div>
+              {servingPresets.length > 0 && (
+                <div className="space-y-1.5">
+                  <p className="text-xs text-muted-foreground">Quick servings:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {servingPresets.slice(0, 4).map((preset) => (
+                      <Button
+                        key={preset.label}
+                        variant="outline"
+                        size="sm"
+                        className="h-auto px-2 py-1 text-xs"
+                        onClick={() => handleAddWithPreset(preset.dosage, preset.unit)}
+                      >
+                        {preset.label}
+                        <span className="ml-1 text-muted-foreground">
+                          ({preset.dosage}{preset.unit})
+                        </span>
+                      </Button>
+                    ))}
                   </div>
-                );
-              })()}
+                </div>
+              )}
 
               {/* Manual dosage input */}
               <div className="flex items-center gap-2">
@@ -292,7 +316,7 @@ export function SupplementsStep({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">
-              Your supplements
+              Supplements in stack
             </span>
             {selected.length > 0 && (
               <Badge variant="secondary" className="font-mono text-xs">
@@ -338,7 +362,11 @@ export function SupplementsStep({
           Back
         </Button>
         <div className="flex-1" />
-        <Button onClick={onNext} disabled={selected.length === 0} size="sm">
+        <Button 
+          onClick={onNext} 
+          disabled={selected.length === 0 || !stackName.trim()} 
+          size="sm"
+        >
           Continue
           <ArrowRight className="ml-1 h-4 w-4" />
         </Button>

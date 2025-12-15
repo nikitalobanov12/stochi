@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { ArrowRight, ArrowLeft, AlertTriangle, Sparkles, Plus, CheckCircle2, Lightbulb } from "lucide-react";
+import { useEffect, useState, useTransition } from "react";
+import { ArrowLeft, AlertTriangle, Sparkles, Plus, CheckCircle2, Lightbulb, Loader2 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
-import { type SelectedSupplement } from "./supplements-step";
+import { type SelectedSupplement } from "./build-stack-step";
 import { checkInteractions, type InteractionWarning } from "~/server/actions/interactions";
 import { getSuggestions, type Suggestion } from "~/server/actions/suggestions";
 
@@ -12,7 +12,7 @@ type InteractionsStepProps = {
   supplements: SelectedSupplement[];
   allSupplements: Array<{ id: string; name: string; form: string | null; defaultUnit: "mg" | "mcg" | "g" | "IU" | "ml" | null }>;
   onAddSupplement: (supplement: SelectedSupplement) => void;
-  onNext: () => void;
+  onComplete: () => Promise<void>;
   onBack: () => void;
 };
 
@@ -20,12 +20,13 @@ export function InteractionsStep({
   supplements,
   allSupplements,
   onAddSupplement,
-  onNext,
+  onComplete,
   onBack,
 }: InteractionsStepProps) {
   const [interactions, setInteractions] = useState<InteractionWarning[]>([]);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     async function loadData() {
@@ -203,14 +204,28 @@ export function InteractionsStep({
       </div>
 
       <div className="flex gap-2 pt-4">
-        <Button variant="ghost" onClick={onBack} size="sm">
+        <Button variant="ghost" onClick={onBack} size="sm" disabled={isPending}>
           <ArrowLeft className="mr-1 h-4 w-4" />
           Back
         </Button>
         <div className="flex-1" />
-        <Button onClick={onNext} size="sm">
-          Continue
-          <ArrowRight className="ml-1 h-4 w-4" />
+        <Button
+          onClick={() => {
+            startTransition(async () => {
+              await onComplete();
+            });
+          }}
+          disabled={isPending}
+          className="min-w-[140px]"
+        >
+          {isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Creating...
+            </>
+          ) : (
+            "Complete Setup"
+          )}
         </Button>
       </div>
     </div>

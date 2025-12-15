@@ -9,9 +9,8 @@ import { Button } from "~/components/ui/button";
 import { StepIndicator } from "./step-indicator";
 import { WelcomeStep } from "./steps/welcome-step";
 import { GoalStep } from "./steps/goal-step";
-import { SupplementsStep, type SelectedSupplement } from "./steps/supplements-step";
+import { BuildStackStep, type SelectedSupplement } from "./steps/build-stack-step";
 import { InteractionsStep } from "./steps/interactions-step";
-import { SaveStackStep } from "./steps/save-stack-step";
 import { createStackFromOnboarding } from "~/server/actions/onboarding";
 
 type Supplement = {
@@ -26,7 +25,7 @@ type WelcomeFlowProps = {
   supplements: Supplement[];
 };
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 4;
 
 const slideVariants = {
   enter: (direction: number) => ({
@@ -49,6 +48,7 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
   const [direction, setDirection] = useState(0);
   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
   const [selectedSupplements, setSelectedSupplements] = useState<SelectedSupplement[]>([]);
+  const [stackName, setStackName] = useState("Morning Stack");
 
   const goNext = useCallback(() => {
     setDirection(1);
@@ -74,7 +74,7 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
     setSelectedSupplements((prev) => [...prev, supplement]);
   }, []);
 
-  const handleComplete = useCallback(async (stackName: string) => {
+  const handleComplete = useCallback(async () => {
     const result = await createStackFromOnboarding({
       stackName,
       supplements: selectedSupplements.map((s) => ({
@@ -87,7 +87,7 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
     if (result.success) {
       router.refresh();
     }
-  }, [selectedSupplements, router]);
+  }, [stackName, selectedSupplements, router]);
 
   if (!open) return null;
 
@@ -137,11 +137,13 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
                 />
               )}
               {step === 2 && (
-                <SupplementsStep
+                <BuildStackStep
                   supplements={supplements}
                   selectedGoal={selectedGoal}
                   selected={selectedSupplements}
-                  onChange={setSelectedSupplements}
+                  stackName={stackName}
+                  onChangeSupplements={setSelectedSupplements}
+                  onChangeStackName={setStackName}
                   onNext={goNext}
                   onBack={goBack}
                 />
@@ -151,13 +153,6 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
                   supplements={selectedSupplements}
                   allSupplements={supplements}
                   onAddSupplement={handleAddSupplement}
-                  onNext={goNext}
-                  onBack={goBack}
-                />
-              )}
-              {step === 4 && (
-                <SaveStackStep
-                  supplements={selectedSupplements}
                   onComplete={handleComplete}
                   onBack={goBack}
                 />
