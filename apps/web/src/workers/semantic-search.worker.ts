@@ -34,7 +34,7 @@ type SearchResult = {
 
 // Singleton for the pipeline
 let extractor: FeatureExtractionPipeline | null = null;
-let isInitializing = false;
+let initPromise: Promise<FeatureExtractionPipeline> | null = null;
 
 // Cache for precomputed embeddings
 const embeddingCache = new Map<string, number[]>();
@@ -46,17 +46,13 @@ async function initializePipeline(
   progressCallback?: (progress: number) => void
 ): Promise<FeatureExtractionPipeline> {
   if (extractor) return extractor;
-  if (isInitializing) {
-    // Wait for initialization to complete
-    while (isInitializing) {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
-    return extractor!;
+
+  // If already initializing, wait for the existing promise
+  if (initPromise) {
+    return initPromise;
   }
 
-  isInitializing = true;
-
-  try {
+  initPromise = (async () => {
     extractor = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
       progress_callback: (data: { progress?: number }) => {
         if (data.progress !== undefined && progressCallback) {
@@ -65,9 +61,9 @@ async function initializePipeline(
       },
     });
     return extractor;
-  } finally {
-    isInitializing = false;
-  }
+  })();
+
+  return initPromise;
 }
 
 /**
@@ -185,26 +181,26 @@ self.addEventListener("message", (event: MessageEvent<WorkerMessage>) => {
           break;
         }
 
-      case "search": {
-        const { id, query, candidates } = event.data;
-        const results = await searchSupplements(query, candidates);
-        self.postMessage({ type: "searchResults", id, results });
-        break;
-      }
+        case "search": {
+          const { id, query, candidates } = event.data;
+          const results = await searchSupplements(query, candidates);
+          self.postMessage({ type: "searchResults", id, results });
+          break;
+        }
 
-      case "precompute": {
-        const { id, supplements } = event.data;
-        await precomputeEmbeddings(supplements);
-        self.postMessage({ type: "precomputeComplete", id });
-        break;
+        case "precompute": {
+          const { id, supplements } = event.data;
+          await precomputeEmbeddings(supplements);
+          self.postMessage({ type: "precomputeComplete", id });
+          break;
+        }
       }
+    } catch (error) {
+      self.postMessage({
+        type: "error",
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
     }
-  } catch (error) {
-    self.postMessage({
-      type: "error",
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
-  }
   })();
 });
 

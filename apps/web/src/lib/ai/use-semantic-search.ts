@@ -43,6 +43,7 @@ export function useSemanticSearch(supplements: SupplementCandidate[]) {
   const pendingSearches = useRef<
     Map<string, (results: SearchResult[]) => void>
   >(new Map());
+  const pendingTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map());
   const searchIdCounter = useRef(0);
 
   // Initialize worker
@@ -51,6 +52,10 @@ export function useSemanticSearch(supplements: SupplementCandidate[]) {
     if (typeof window === "undefined") {
       return;
     }
+
+    // Capture refs for cleanup
+    const timeouts = pendingTimeouts.current;
+    const searches = pendingSearches.current;
 
     // Create worker
     const worker = new Worker(
@@ -81,10 +86,16 @@ export function useSemanticSearch(supplements: SupplementCandidate[]) {
 
         case "searchResults": {
           const { id, results } = event.data;
-          const callback = pendingSearches.current.get(id);
+          // Clear the timeout for this search
+          const timeout = timeouts.get(id);
+          if (timeout) {
+            clearTimeout(timeout);
+            timeouts.delete(id);
+          }
+          const callback = searches.get(id);
           if (callback) {
             callback(results);
-            pendingSearches.current.delete(id);
+            searches.delete(id);
           }
           break;
         }
@@ -108,6 +119,10 @@ export function useSemanticSearch(supplements: SupplementCandidate[]) {
     return () => {
       worker.terminate();
       workerRef.current = null;
+      // Clear all pending timeouts on unmount
+      timeouts.forEach((timeout) => clearTimeout(timeout));
+      timeouts.clear();
+      searches.clear();
     };
   }, []);
 
@@ -130,7 +145,8 @@ export function useSemanticSearch(supplements: SupplementCandidate[]) {
   // Search function
   const search = useCallback(
     async (query: string): Promise<SearchResult[]> => {
-      if (status !== "ready" || !workerRef.current || !query.trim()) {
+      const worker = workerRef.current;
+      if (status !== "ready" || !worker || !query.trim()) {
         return [];
       }
 
@@ -139,20 +155,22 @@ export function useSemanticSearch(supplements: SupplementCandidate[]) {
 
       return new Promise((resolve) => {
         pendingSearches.current.set(id, resolve);
-        workerRef.current!.postMessage({
+        worker.postMessage({
           type: "search",
           id,
           query: query.trim(),
           candidates: supplementsWithAliases,
         });
 
-        // Timeout after 5 seconds
-        setTimeout(() => {
+        // Timeout after 5 seconds - tracked for cleanup
+        const timeout = setTimeout(() => {
+          pendingTimeouts.current.delete(id);
           if (pendingSearches.current.has(id)) {
             pendingSearches.current.delete(id);
             resolve([]);
           }
         }, 5000);
+        pendingTimeouts.current.set(id, timeout);
       });
     },
     [status, supplements]
