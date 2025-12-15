@@ -1,0 +1,18 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M256 468L64 368V144L160 96L236 136V236L300 270L256 468Z" fill="url(#grad_green)"/>
+  
+  <path d="M256 44L448 144V368L352 416L276 376V276L212 242L256 44Z" stroke="url(#grad_cyan)" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <circle cx="360" cy="256" r="24" fill="#00F0FF"/>
+
+  <defs>
+    <linearGradient id="grad_green" x1="64" y1="368" x2="300" y2="136" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#39FF14"/>
+      <stop offset="1" stop-color="#28CC0F"/>
+    </linearGradient>
+    <linearGradient id="grad_cyan" x1="448" y1="144" x2="212" y2="376" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#00F0FF"/>
+      <stop offset="1" stop-color="#00A3FF"/>
+    </linearGradient>
+  </defs>
+</svg>

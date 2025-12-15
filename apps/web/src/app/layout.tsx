@@ -56,8 +56,8 @@ export const metadata: Metadata = {
     description: APP_DESCRIPTION,
   },
   icons: [
-    { rel: "icon", url: "/favicon.ico" },
-    { rel: "apple-touch-icon", url: "/icons/icon-192.svg" },
+    { rel: "icon", url: "/logo.svg", type: "image/svg+xml" },
+    { rel: "apple-touch-icon", url: "/logo.svg" },
   ],
 };
 
@@ -77,7 +77,7 @@ export default function RootLayout({
       lang="en"
       className={`${jetbrainsMono.variable} ${inter.variable} dark`}
     >
-      <body className="min-h-screen bg-background font-sans antialiased">
+      <body className="bg-background min-h-screen font-sans antialiased">
         <Providers>{children}</Providers>
         <Toaster />
       </body>
