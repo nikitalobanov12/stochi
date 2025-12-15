@@ -15,15 +15,6 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
 import {
   Table,
   TableBody,
@@ -159,21 +150,6 @@ export default async function LogPage() {
             </Card>
           )}
 
-          {/* Manual Entry */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-mono text-base">
-                Log Supplement
-              </CardTitle>
-              <CardDescription>
-                Add a single supplement entry (use Quick Entry above for faster input)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <LogSupplementForm supplements={allSupplements} />
-            </CardContent>
-          </Card>
-
           {/* Today's Logs */}
           <Card>
             <CardHeader>
@@ -282,83 +258,6 @@ function CommandBarWrapper({
   }
 
   return <CommandBar supplements={supplements} onLog={handleLog} />;
-}
-
-function LogSupplementForm({
-  supplements,
-}: {
-  supplements: Array<{ id: string; name: string; form: string | null }>;
-}) {
-  async function handleSubmit(formData: FormData) {
-    "use server";
-    const supplementId = formData.get("supplementId") as string;
-    const dosage = parseFloat(formData.get("dosage") as string);
-    const unit = formData.get("unit") as "mg" | "mcg" | "g" | "IU" | "ml";
-
-    if (!supplementId || isNaN(dosage) || !unit) {
-      throw new Error("Invalid form data");
-    }
-
-    await createLog(supplementId, dosage, unit);
-  }
-
-  return (
-    <form action={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="supplementId">Supplement</Label>
-        <Select name="supplementId" required>
-          <SelectTrigger>
-            <SelectValue placeholder="Select a supplement" />
-          </SelectTrigger>
-          <SelectContent>
-            {supplements.map((s) => (
-              <SelectItem key={s.id} value={s.id}>
-                {s.name}
-                {s.form && (
-                  <span className="ml-2 text-muted-foreground">({s.form})</span>
-                )}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="dosage">Dosage</Label>
-          <Input
-            id="dosage"
-            name="dosage"
-            type="number"
-            step="0.01"
-            min="0"
-            placeholder="200"
-            required
-            className="font-mono"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="unit">Unit</Label>
-          <Select name="unit" defaultValue="mg">
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="mg">mg</SelectItem>
-              <SelectItem value="mcg">mcg</SelectItem>
-              <SelectItem value="g">g</SelectItem>
-              <SelectItem value="IU">IU</SelectItem>
-              <SelectItem value="ml">ml</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <Button type="submit" className="w-full font-mono">
-        Log Supplement
-      </Button>
-    </form>
-  );
 }
 
 type LogEntry = {

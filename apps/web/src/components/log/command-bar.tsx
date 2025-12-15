@@ -49,7 +49,9 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
     type: "success" | "error";
     message: string;
   } | null>(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Semantic search integration
   const { search: semanticSearch, isReady: isAIReady, status: aiStatus } = useSemanticSearch(supplements);
@@ -176,13 +178,31 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
     }
   }, [feedback]);
 
+  // Click-outside handler to close suggestions
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   function handleInputChange(value: string) {
     setInput(value);
     setHighlightedIndex(0);
+    setShowSuggestions(true);
+  }
+
+  function handleInputFocus() {
+    setShowSuggestions(true);
   }
 
   function selectSupplement(supp: Supplement, dosage?: ParsedDosage | null) {
     setSelectedSupplement(supp);
+    setShowSuggestions(false);
     // If dosage was parsed from natural language, pre-fill it
     if (dosage) {
       setInput(`${dosage.value}${dosage.unit}`);
@@ -268,6 +288,9 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
     } else if (e.key === "Escape" && selectedSupplement) {
       e.preventDefault();
       clearSelection();
+    } else if (e.key === "Escape" && showSuggestions) {
+      e.preventDefault();
+      setShowSuggestions(false);
     } else if (!selectedSupplement) {
       if (e.key === "ArrowDown") {
         e.preventDefault();
@@ -286,7 +309,7 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" ref={containerRef}>
       <div className="flex items-center gap-2">
         <p className="text-sm text-muted-foreground">
           Quick log: type a supplement name and dosage
@@ -322,6 +345,7 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
             value={input}
             onChange={(e) => handleInputChange(e.target.value)}
             onKeyDown={handleKeyDown}
+            onFocus={handleInputFocus}
             placeholder={
               selectedSupplement
                 ? "200mg, 5000IU..."
@@ -349,7 +373,7 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
       )}
 
       {/* One-shot log hint */}
-      {canOneShotLog && suggestions.length > 0 && (
+      {canOneShotLog && suggestions.length > 0 && showSuggestions && (
         <div className="flex items-center gap-2 rounded-md bg-primary/10 px-3 py-2">
           <Sparkles className="h-3 w-3 text-primary" />
           <span className="text-xs text-muted-foreground">
@@ -396,7 +420,7 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
         </div>
       )}
 
-      {suggestions.length > 0 && !selectedSupplement && (
+      {suggestions.length > 0 && !selectedSupplement && showSuggestions && (
         <div className="rounded-md border bg-popover p-1">
           {suggestions.map((s, i) => {
             const aiMatch = aiSuggestions.find((ai) => ai.id === s.id);
