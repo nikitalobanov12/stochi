@@ -15,14 +15,6 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "~/components/ui/table";
 import { Badge } from "~/components/ui/badge";
 import { CommandBar } from "~/components/log/command-bar";
 import {
@@ -90,7 +82,7 @@ export default async function LogPage() {
   const timingWarnings = Array.from(timingWarningsMap.values());
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-hidden">
       <div>
         <h1 className="font-mono text-2xl font-bold">Log</h1>
         <p className="text-sm text-muted-foreground">
@@ -170,51 +162,46 @@ export default async function LogPage() {
                   </p>
                 </div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Time</TableHead>
-                      <TableHead>Supplement</TableHead>
-                      <TableHead>Dosage</TableHead>
-                      <TableHead className="w-[50px]"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {todaysLogs.map((entry) => (
-                      <TableRow key={entry.id}>
-                        <TableCell className="font-mono text-muted-foreground">
-                          {formatTime(new Date(entry.loggedAt))}
-                        </TableCell>
-                        <TableCell>
-                          <div className="font-medium">
+                <div className="space-y-2">
+                  {todaysLogs.map((entry) => (
+                    <div
+                      key={entry.id}
+                      className="flex items-center justify-between rounded-md bg-muted/50 px-3 py-2"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-xs text-muted-foreground">
+                            {formatTime(new Date(entry.loggedAt))}
+                          </span>
+                          <span className="truncate font-medium">
                             {entry.supplement.name}
+                          </span>
+                        </div>
+                        {entry.supplement.form && (
+                          <div className="text-xs text-muted-foreground">
+                            {entry.supplement.form}
                           </div>
-                          {entry.supplement.form && (
-                            <div className="text-xs text-muted-foreground">
-                              {entry.supplement.form}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell className="font-mono">
+                        )}
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <span className="font-mono text-sm">
                           {entry.dosage}
                           {entry.unit}
-                        </TableCell>
-                        <TableCell>
-                          <form action={deleteLog.bind(null, entry.id)}>
-                            <Button
-                              type="submit"
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </form>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                        </span>
+                        <form action={deleteLog.bind(null, entry.id)}>
+                          <Button
+                            type="submit"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </form>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </CardContent>
           </Card>
@@ -302,15 +289,15 @@ function RecentLogsGrouped({ logs }: { logs: LogEntry[] }) {
             {entries.map((entry) => (
               <div
                 key={entry.id}
-                className="flex items-center justify-between rounded-md bg-muted/50 px-3 py-2 text-sm"
+                className="flex items-center justify-between gap-2 rounded-md bg-muted/50 px-3 py-2 text-sm"
               >
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs text-muted-foreground">
+                <div className="flex min-w-0 flex-1 items-center gap-2">
+                  <span className="shrink-0 font-mono text-xs text-muted-foreground">
                     {formatTime(new Date(entry.loggedAt))}
                   </span>
-                  <span>{entry.supplement.name}</span>
+                  <span className="truncate">{entry.supplement.name}</span>
                 </div>
-                <span className="font-mono text-xs">
+                <span className="shrink-0 font-mono text-xs">
                   {entry.dosage}
                   {entry.unit}
                 </span>
@@ -382,13 +369,13 @@ function TodayInteractionsCard({
                     timing
                   </span>
                 </div>
-                <p className="mt-1">
+                <p className="mt-1 flex flex-wrap items-center gap-x-1">
                   <span className="font-medium">{warning.source.name}</span>
-                  {" ↔ "}
+                  <span>↔</span>
                   <span className="font-medium">{warning.target.name}</span>
-                  <span className="ml-2 font-mono text-muted-foreground">
-                    ({warning.actualHoursApart}h apart, need {warning.minHoursApart}h+)
-                  </span>
+                </p>
+                <p className="font-mono text-[10px] text-muted-foreground">
+                  {warning.actualHoursApart}h apart, need {warning.minHoursApart}h+
                 </p>
                 <p className="mt-0.5 text-[10px] text-muted-foreground line-clamp-2">
                   {warning.reason}
@@ -404,9 +391,9 @@ function TodayInteractionsCard({
                 <div className="flex items-center gap-2">
                   <SeverityBadge severity={warning.severity} />
                 </div>
-                <p className="mt-1">
+                <p className="mt-1 flex flex-wrap items-center gap-x-1">
                   <span className="font-medium">{warning.source.name}</span>
-                  {" → "}
+                  <span>→</span>
                   <span className="font-medium">{warning.target.name}</span>
                 </p>
                 {warning.mechanism && (
@@ -427,9 +414,9 @@ function TodayInteractionsCard({
                     synergy
                   </Badge>
                 </div>
-                <p className="mt-1">
+                <p className="mt-1 flex flex-wrap items-center gap-x-1">
                   <span className="font-medium">{synergy.source.name}</span>
-                  {" + "}
+                  <span>+</span>
                   <span className="font-medium">{synergy.target.name}</span>
                 </p>
                 {synergy.mechanism && (
