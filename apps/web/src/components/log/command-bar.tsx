@@ -1,13 +1,30 @@
 "use client";
 
-import { useState, useRef, useEffect, useTransition, useMemo, useCallback } from "react";
+import {
+  useState,
+  useRef,
+  useEffect,
+  useTransition,
+  useMemo,
+  useCallback,
+} from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Terminal, X, Sparkles, Loader2 } from "lucide-react";
 import { getServingPresets, type ServingPreset } from "~/server/data/serving-presets";
 import { parseCommand, type ParsedDosage } from "~/lib/ai/command-parser";
-import { useSemanticSearch, type SearchResult } from "~/lib/ai/use-semantic-search";
+import {
+  useSemanticSearch,
+  type SearchResult,
+} from "~/lib/ai/use-semantic-search";
 import { fuzzySearchSupplements } from "~/server/data/supplement-aliases";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+} from "~/components/ui/command";
 
 type Supplement = {
   id: string;
@@ -25,11 +42,12 @@ type CommandBarProps = {
 };
 
 const UNITS = ["mg", "mcg", "g", "IU", "ml"] as const;
-const UNIT_PATTERN = new RegExp(`^(\\d+(?:\\.\\d+)?)\\s*(${UNITS.join("|")})$`, "i");
+const UNIT_PATTERN = new RegExp(
+  `^(\\d+(?:\\.\\d+)?)\\s*(${UNITS.join("|")})$`,
+  "i",
+);
 
-function parseDosageInput(
-  text: string,
-): ParsedDosage | null {
+function parseDosageInput(text: string): ParsedDosage | null {
   const match = UNIT_PATTERN.exec(text.trim());
   if (!match?.[1] || !match[2]) return null;
 
@@ -42,19 +60,19 @@ function parseDosageInput(
 
 export function CommandBar({ supplements, onLog }: CommandBarProps) {
   const [input, setInput] = useState("");
-  const [selectedSupplement, setSelectedSupplement] = useState<Supplement | null>(null);
-  const [highlightedIndex, setHighlightedIndex] = useState(0);
+  const [selectedSupplement, setSelectedSupplement] =
+    useState<Supplement | null>(null);
   const [isPending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
     message: string;
   } | null>(null);
-  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   // Semantic search integration
-  const { search: semanticSearch, isReady: isAIReady } = useSemanticSearch(supplements);
+  const { search: semanticSearch, isReady: isAIReady } =
+    useSemanticSearch(supplements);
   const [aiSuggestions, setAiSuggestions] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -112,7 +130,7 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
         setIsSearching(false);
       }
     },
-    [isAIReady, semanticSearch]
+    [isAIReady, semanticSearch],
   );
 
   // Debounced semantic search
@@ -143,7 +161,12 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
         clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [input, selectedSupplement, parsedCommand.supplementQuery, triggerSemanticSearch]);
+  }, [
+    input,
+    selectedSupplement,
+    parsedCommand.supplementQuery,
+    triggerSemanticSearch,
+  ]);
 
   const parsedDosage = useMemo(() => {
     if (!selectedSupplement) {
@@ -178,31 +201,18 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
     }
   }, [feedback]);
 
-  // Click-outside handler to close suggestions
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setShowSuggestions(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   function handleInputChange(value: string) {
     setInput(value);
-    setHighlightedIndex(0);
-    setShowSuggestions(true);
+    setOpen(true);
   }
 
   function handleInputFocus() {
-    setShowSuggestions(true);
+    setOpen(true);
   }
 
   function selectSupplement(supp: Supplement, dosage?: ParsedDosage | null) {
     setSelectedSupplement(supp);
-    setShowSuggestions(false);
+    setOpen(false);
     // If dosage was parsed from natural language, pre-fill it
     if (dosage) {
       setInput(`${dosage.value}${dosage.unit}`);
@@ -267,84 +277,123 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
 
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter") {
-      e.preventDefault();
+      // cmdk handles item selection on Enter, but we handle dosage submission
       if (canSubmit) {
+        e.preventDefault();
         handleSubmit();
-      } else if (canOneShotLog && suggestions.length > 0) {
-        // One-shot log: "200mg mag" -> log directly
-        const selected = suggestions[highlightedIndex];
-        if (selected) {
-          handleSubmit(selected, parsedCommand.dosage);
-        }
-      } else if (!selectedSupplement && suggestions.length > 0) {
-        const selected = suggestions[highlightedIndex];
-        if (selected) {
-          selectSupplement(selected, parsedCommand.dosage);
-        }
       }
     } else if (e.key === "Backspace" && input === "" && selectedSupplement) {
       e.preventDefault();
       clearSelection();
-    } else if (e.key === "Escape" && selectedSupplement) {
-      e.preventDefault();
-      clearSelection();
-    } else if (e.key === "Escape" && showSuggestions) {
-      e.preventDefault();
-      setShowSuggestions(false);
-    } else if (!selectedSupplement) {
-      if (e.key === "ArrowDown") {
+    } else if (e.key === "Escape") {
+      if (selectedSupplement) {
         e.preventDefault();
-        setHighlightedIndex((i) => Math.min(i + 1, suggestions.length - 1));
-      } else if (e.key === "ArrowUp") {
+        clearSelection();
+      } else if (open) {
         e.preventDefault();
-        setHighlightedIndex((i) => Math.max(i - 1, 0));
-      } else if (e.key === "Tab" && suggestions.length > 0) {
-        e.preventDefault();
-        const selected = suggestions[highlightedIndex];
-        if (selected) {
-          selectSupplement(selected, parsedCommand.dosage);
-        }
+        setOpen(false);
       }
     }
   }
 
+  // Handle cmdk item selection
+  function handleSelect(supplementId: string) {
+    const supp = supplements.find((s) => s.id === supplementId);
+    if (!supp) return;
+
+    // If we have a dosage ready, do a one-shot log
+    if (canOneShotLog && parsedCommand.dosage) {
+      handleSubmit(supp, parsedCommand.dosage);
+    } else {
+      selectSupplement(supp, parsedCommand.dosage);
+    }
+  }
+
+  const showList = open && suggestions.length > 0 && !selectedSupplement;
+
   return (
-    <div className="space-y-2" ref={containerRef}>
+    <div className="space-y-2">
       <p className="text-sm text-muted-foreground">
         Quick log: type a supplement name and dosage
       </p>
-      <div className="relative">
-        <Terminal className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <div className="flex items-center gap-1 rounded-md border bg-background pl-10 pr-3">
-          {selectedSupplement && (
-            <Badge
-              variant="secondary"
-              className="shrink-0 cursor-pointer gap-1 font-mono hover:bg-secondary/80"
-              onClick={clearSelection}
-            >
-              {selectedSupplement.name}
-              <X className="h-3 w-3" />
-            </Badge>
-          )}
-          <input
-            ref={inputRef}
-            value={input}
-            onChange={(e) => handleInputChange(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onFocus={handleInputFocus}
-            placeholder={
-              selectedSupplement
-                ? "200mg, 5000IU..."
-                : "200mg mag, vitamin d 5000iu..."
-            }
-            className="flex-1 bg-transparent py-2 font-mono text-sm outline-none placeholder:text-muted-foreground"
-            disabled={isPending}
-          />
-          {isSearching && (
-            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-          )}
+
+      <Command
+        shouldFilter={false}
+        className="overflow-visible bg-transparent"
+      >
+        <div className="relative">
+          <Terminal className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <div className="flex items-center gap-1 rounded-md border bg-background pl-10 pr-3">
+            {selectedSupplement && (
+              <Badge
+                variant="secondary"
+                className="shrink-0 cursor-pointer gap-1 font-mono hover:bg-secondary/80"
+                onClick={clearSelection}
+              >
+                {selectedSupplement.name}
+                <X className="h-3 w-3" />
+              </Badge>
+            )}
+            <input
+              ref={inputRef}
+              value={input}
+              onChange={(e) => handleInputChange(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onFocus={handleInputFocus}
+              placeholder={
+                selectedSupplement
+                  ? "200mg, 5000IU..."
+                  : "200mg mag, vitamin d 5000iu..."
+              }
+              className="flex-1 bg-transparent py-2 font-mono text-sm outline-none placeholder:text-muted-foreground"
+              disabled={isPending}
+            />
+            {isSearching && (
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            )}
+          </div>
         </div>
-      </div>
+
+        {showList && (
+          <div className="relative mt-1">
+            <CommandList className="absolute z-10 w-full rounded-md border bg-popover shadow-md">
+              <CommandEmpty className="py-3 text-sm">
+                No supplements found.
+              </CommandEmpty>
+              <CommandGroup>
+                {suggestions.map((s) => {
+                  const aiMatch = aiSuggestions.find((ai) => ai.id === s.id);
+                  return (
+                    <CommandItem
+                      key={s.id}
+                      value={s.id}
+                      onSelect={handleSelect}
+                      className="cursor-pointer"
+                    >
+                      <div className="flex w-full items-center justify-between">
+                        <div>
+                          <span className="font-medium">{s.name}</span>
+                          {s.form && (
+                            <span className="ml-2 text-muted-foreground">
+                              ({s.form})
+                            </span>
+                          )}
+                        </div>
+                        {aiMatch && aiMatch.score > 0.5 && (
+                          <span className="flex items-center gap-1 text-xs text-primary/70">
+                            <Sparkles className="h-3 w-3" />
+                            {Math.round(aiMatch.score * 100)}%
+                          </span>
+                        )}
+                      </div>
+                    </CommandItem>
+                  );
+                })}
+              </CommandGroup>
+            </CommandList>
+          </div>
+        )}
+      </Command>
 
       {feedback && (
         <div
@@ -359,14 +408,14 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
       )}
 
       {/* One-shot log hint */}
-      {canOneShotLog && suggestions.length > 0 && showSuggestions && (
+      {canOneShotLog && suggestions.length > 0 && open && (
         <div className="flex items-center gap-2 rounded-md bg-primary/10 px-3 py-2">
           <Sparkles className="h-3 w-3 text-primary" />
           <span className="text-xs text-muted-foreground">
             Press Enter to log {parsedCommand.dosage?.value}
             {parsedCommand.dosage?.unit} of{" "}
             <span className="font-medium text-foreground">
-              {suggestions[highlightedIndex]?.name}
+              {suggestions[0]?.name}
             </span>
           </span>
         </div>
@@ -403,39 +452,6 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
               </Button>
             ))}
           </div>
-        </div>
-      )}
-
-      {suggestions.length > 0 && !selectedSupplement && showSuggestions && (
-        <div className="rounded-md border bg-popover p-1">
-          {suggestions.map((s, i) => {
-            const aiMatch = aiSuggestions.find((ai) => ai.id === s.id);
-            return (
-              <button
-                key={s.id}
-                type="button"
-                className={`w-full rounded px-3 py-2 text-left text-sm transition-colors ${
-                  i === highlightedIndex ? "bg-muted" : "hover:bg-muted/50"
-                }`}
-                onClick={() => selectSupplement(s, parsedCommand.dosage)}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="font-medium">{s.name}</span>
-                    {s.form && (
-                      <span className="ml-2 text-muted-foreground">({s.form})</span>
-                    )}
-                  </div>
-                  {aiMatch && aiMatch.score > 0.5 && (
-                    <span className="flex items-center gap-1 text-xs text-primary/70">
-                      <Sparkles className="h-3 w-3" />
-                      {Math.round(aiMatch.score * 100)}%
-                    </span>
-                  )}
-                </div>
-              </button>
-            );
-          })}
         </div>
       )}
     </div>
