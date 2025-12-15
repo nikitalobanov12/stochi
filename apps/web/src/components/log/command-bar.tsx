@@ -64,7 +64,7 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
     useState<Supplement | null>(null);
   const [isPending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<{
-    type: "success" | "error";
+    type: "success" | "error" | "pending";
     message: string;
   } | null>(null);
   const [open, setOpen] = useState(false);
@@ -235,15 +235,22 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
 
     if (!targetSupplement || !targetDosage) return;
 
+    // Optimistic: show pending immediately
+    const pendingMessage = `${targetDosage.value}${targetDosage.unit} ${targetSupplement.name}`;
+    setFeedback({
+      type: "pending",
+      message: `Logging ${pendingMessage}...`,
+    });
+    setSelectedSupplement(null);
+    setInput("");
+    setAiSuggestions([]);
+
     startTransition(async () => {
       try {
         await onLog(targetSupplement.id, targetDosage.value, targetDosage.unit);
-        setSelectedSupplement(null);
-        setInput("");
-        setAiSuggestions([]);
         setFeedback({
           type: "success",
-          message: `Logged ${targetDosage.value}${targetDosage.unit} ${targetSupplement.name}`,
+          message: `Logged ${pendingMessage}`,
         });
       } catch {
         setFeedback({
@@ -257,14 +264,23 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
   function handlePresetClick(preset: ServingPreset) {
     if (!selectedSupplement) return;
 
+    // Optimistic: show pending immediately
+    const pendingMessage = `${preset.label} (${preset.dosage}${preset.unit}) ${selectedSupplement.name}`;
+    const suppName = selectedSupplement.name;
+    const suppId = selectedSupplement.id;
+    setFeedback({
+      type: "pending",
+      message: `Logging ${pendingMessage}...`,
+    });
+    setSelectedSupplement(null);
+    setInput("");
+
     startTransition(async () => {
       try {
-        await onLog(selectedSupplement.id, preset.dosage, preset.unit);
-        setSelectedSupplement(null);
-        setInput("");
+        await onLog(suppId, preset.dosage, preset.unit);
         setFeedback({
           type: "success",
-          message: `Logged ${preset.label} (${preset.dosage}${preset.unit}) ${selectedSupplement.name}`,
+          message: `Logged ${preset.label} (${preset.dosage}${preset.unit}) ${suppName}`,
         });
       } catch {
         setFeedback({
@@ -397,12 +413,17 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
 
       {feedback && (
         <div
-          className={`rounded-md px-3 py-2 font-mono text-sm ${
+          className={`flex items-center gap-2 rounded-md px-3 py-2 font-mono text-sm ${
             feedback.type === "success"
               ? "bg-green-500/10 text-green-500"
-              : "bg-destructive/10 text-destructive"
+              : feedback.type === "pending"
+                ? "bg-muted text-muted-foreground"
+                : "bg-destructive/10 text-destructive"
           }`}
         >
+          {feedback.type === "pending" && (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          )}
           {feedback.message}
         </div>
       )}
