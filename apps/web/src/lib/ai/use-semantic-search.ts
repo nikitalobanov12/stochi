@@ -7,7 +7,7 @@
  * searching supplements using vector similarity.
  */
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { getSupplementsWithAliases } from "./command-parser";
 
 export type SearchResult = {
@@ -45,6 +45,12 @@ export function useSemanticSearch(supplements: SupplementCandidate[]) {
   >(new Map());
   const pendingTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map());
   const searchIdCounter = useRef(0);
+
+  // Memoize supplements with aliases to avoid recalculating on every search
+  const supplementsWithAliases = useMemo(
+    () => getSupplementsWithAliases(supplements),
+    [supplements]
+  );
 
   // Initialize worker
   useEffect(() => {
@@ -132,7 +138,6 @@ export function useSemanticSearch(supplements: SupplementCandidate[]) {
       return;
     }
 
-    const supplementsWithAliases = getSupplementsWithAliases(supplements);
     const id = `precompute-${Date.now()}`;
 
     workerRef.current.postMessage({
@@ -140,7 +145,7 @@ export function useSemanticSearch(supplements: SupplementCandidate[]) {
       id,
       supplements: supplementsWithAliases,
     });
-  }, [status, supplements]);
+  }, [status, supplements.length, supplementsWithAliases]);
 
   // Search function
   const search = useCallback(
@@ -151,7 +156,6 @@ export function useSemanticSearch(supplements: SupplementCandidate[]) {
       }
 
       const id = `search-${searchIdCounter.current++}`;
-      const supplementsWithAliases = getSupplementsWithAliases(supplements);
 
       return new Promise((resolve) => {
         pendingSearches.current.set(id, resolve);
@@ -173,7 +177,7 @@ export function useSemanticSearch(supplements: SupplementCandidate[]) {
         pendingTimeouts.current.set(id, timeout);
       });
     },
-    [status, supplements]
+    [status, supplementsWithAliases]
   );
 
   return {
