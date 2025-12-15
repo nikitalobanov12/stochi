@@ -2,42 +2,95 @@
 // Maps supplement name to common aliases/abbreviations
 
 export const supplementAliases: Record<string, string[]> = {
-  // Magnesium forms
+  // ============================================
+  // MAGNESIUM FORMS
+  // ============================================
   "Magnesium Glycinate": ["mag glycinate", "magnesium bisgly", "mag bisgly", "calm magnesium", "mag", "magnesium"],
   "Magnesium Citrate": ["mag citrate", "natural calm", "mag", "magnesium"],
   "Magnesium L-Threonate": ["mag threonate", "magtein", "brain magnesium", "mag", "magnesium"],
   "Magnesium Oxide": ["mag oxide", "magox", "mag", "magnesium"],
+  "Magnesium Malate": ["mag malate", "malic acid magnesium", "mag", "magnesium"],
 
-  // Zinc forms
+  // ============================================
+  // ZINC FORMS
+  // ============================================
   "Zinc Picolinate": ["zinc", "zn picolinate", "zn"],
   "Zinc Gluconate": ["zinc gluconate", "zn gluconate", "zinc", "zn"],
 
-  // Vitamins
+  // ============================================
+  // B-VITAMINS
+  // ============================================
+  "Vitamin B1": ["b1", "thiamine", "vit b1", "thiamin"],
+  "Vitamin B2": ["b2", "riboflavin", "vit b2", "r5p"],
+  "Vitamin B3": ["b3", "niacin", "niacinamide", "vit b3", "nicotinamide"],
+  "Vitamin B6": ["b6", "p5p", "pyridoxine", "vit b6", "pyridoxal"],
+  "Folate": ["b9", "folic acid", "methylfolate", "5-mthf", "vit b9", "folate"],
+  "Vitamin B12": ["b12", "methylcobalamin", "cobalamin", "vit b12"],
+  "Biotin": ["vitamin b7", "b7", "vit b7", "biotin"],
+
+  // ============================================
+  // OTHER VITAMINS
+  // ============================================
   "Vitamin D3": ["d3", "vit d", "vitamin d", "sunshine vitamin", "cholecalciferol"],
   "Vitamin K2 MK-7": ["k2", "mk7", "mk-7", "vitamin k", "vit k2", "menaquinone", "k2 mk7"],
   "Vitamin C": ["vit c", "ascorbic acid", "c"],
-  "Vitamin B12": ["b12", "methylcobalamin", "cobalamin", "vit b12"],
+  "Vitamin E": ["vit e", "tocopherol", "e", "mixed tocopherols"],
 
-  // Minerals
+  // ============================================
+  // MINERALS
+  // ============================================
   "Iron Bisglycinate": ["iron", "ferrous", "fe", "gentle iron"],
   "Copper Bisglycinate": ["copper", "cu"],
   "Selenium": ["se", "selenomethionine"],
+  "Calcium": ["ca", "calcium citrate", "cal"],
+  "Potassium": ["k", "potassium citrate"],
+  "Boron": ["boron glycinate"],
+  "Iodine": ["iodide", "potassium iodide", "ki"],
+  "Chromium": ["chromium picolinate", "cr"],
 
-  // Omega-3
+  // ============================================
+  // OMEGA-3
+  // ============================================
   "Fish Oil (EPA)": ["epa", "omega 3", "omega-3", "fish oil", "omega3", "omega"],
   "Fish Oil (DHA)": ["dha", "omega 3", "omega-3", "fish oil", "omega3", "brain omega", "omega"],
 
-  // Amino Acids
+  // ============================================
+  // AMINO ACIDS
+  // ============================================
   "L-Tyrosine": ["tyrosine", "l tyrosine"],
   "L-Theanine": ["theanine", "l theanine", "suntheanine"],
   "5-HTP": ["5htp", "hydroxytryptophan", "serotonin precursor"],
+  "GABA": ["gamma-aminobutyric acid", "pharmagaba", "gaba"],
+  "Glycine": ["gly", "glycine"],
+  "Taurine": ["tau", "taurine"],
 
-  // Other
+  // ============================================
+  // ANTIOXIDANTS
+  // ============================================
+  "CoQ10": ["coenzyme q10", "ubiquinol", "ubiquinone", "coq"],
+  "Alpha Lipoic Acid": ["ala", "r-ala", "r-lipoic acid", "lipoic acid"],
+  "NAC": ["n-acetyl cysteine", "n-acetylcysteine", "cysteine", "nac"],
+  "Quercetin": ["quercetin dihydrate"],
+  "Glutathione": ["gsh", "reduced glutathione", "liposomal glutathione"],
+
+  // ============================================
+  // NOOTROPICS & ADAPTOGENS
+  // ============================================
   "Caffeine": ["coffee", "caff"],
+  "Ashwagandha": ["ash", "ksm-66", "ksm66", "withania", "ashwa"],
+  "Lion's Mane": ["lions mane", "hericium", "yamabushitake"],
+  "Rhodiola Rosea": ["rhodiola", "golden root", "arctic root"],
+  "Bacopa Monnieri": ["bacopa", "brahmi", "water hyssop"],
+  "Berberine": ["berberine hcl"],
+
+  // ============================================
+  // OTHER
+  // ============================================
   "Curcumin": ["turmeric", "curcuminoids"],
   "Piperine": ["black pepper", "bioperine"],
-  "Ashwagandha": ["ash", "ksm-66", "ksm66", "withania", "ashwa"],
   "Creatine Monohydrate": ["creatine", "creapure"],
+  "Collagen": ["collagen peptides", "hydrolyzed collagen", "collagen powder"],
+  "Melatonin": ["mel", "sleep hormone"],
 };
 
 /**
