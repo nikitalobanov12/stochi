@@ -27,7 +27,7 @@ _The app currently lacks domain logic. We need to define the "Bio-Hacker" entiti
 
 ---
 
-## 🟠 Phase 2: The PWA Platform (In Progress)
+## 🟠 Phase 2: The PWA Platform ✅ COMPLETE
 
 _Make it installable on mobile immediately so we can test the "gym basement" use case._
 
@@ -35,11 +35,12 @@ _Make it installable on mobile immediately so we can test the "gym basement" use
   - [x] Install `next-pwa` package (`@ducanh2912/next-pwa`).
   - [x] Update `next.config.js` to wrap the config with `withPWA`.
   - [x] Add `manifest.json` to `public/` (Name: Stochi, Theme Color: #0D1117).
-  - [ ] Add iOS splash screen meta tags to `layout.tsx`.
-  - [ ] Generate PNG icons (192x192, 512x512) from logo.svg.
+  - [x] Add iOS splash screen meta tags to `layout.tsx`.
+  - [x] Generate PNG icons (192x192, 512x512) from logo.svg.
+  - [x] Add viewport-fit=cover for notch handling.
 - [x] **Mobile Layout**
   - [x] Create `BottomNav` component (Dashboard, Stacks, Log, Settings).
-  - [ ] Ensure all touch targets are min 44px height.
+  - [x] Ensure all touch targets are min 44px height.
 
 ---
 
