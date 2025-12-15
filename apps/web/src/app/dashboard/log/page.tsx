@@ -34,6 +34,11 @@ import {
 } from "~/components/ui/table";
 import { Badge } from "~/components/ui/badge";
 import { CommandBar } from "~/components/log/command-bar";
+import {
+  SeverityBadge,
+  getWarningBackgroundClass,
+  getWarningBorderClass,
+} from "~/components/interactions/severity-badge";
 
 export default async function LogPage() {
   const session = await getSession();
@@ -467,7 +472,7 @@ function TodayInteractionsCard({
   const totalWarnings = warnings.length + timingWarnings.length;
 
   return (
-    <Card className={criticalCount > 0 ? "border-destructive/50" : mediumCount > 0 ? "border-yellow-500/50" : ""}>
+    <Card className={getWarningBorderClass(criticalCount, mediumCount)}>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 font-mono text-base">
           {!hasInteractions ? (
@@ -500,23 +505,10 @@ function TodayInteractionsCard({
             {timingWarnings.map((warning) => (
               <div
                 key={warning.id}
-                className={`rounded-md p-2 text-xs ${
-                  warning.severity === "critical"
-                    ? "bg-destructive/10"
-                    : warning.severity === "medium"
-                      ? "bg-yellow-500/10"
-                      : "bg-muted"
-                }`}
+                className={`rounded-md p-2 text-xs ${getWarningBackgroundClass(warning.severity)}`}
               >
                 <div className="flex items-center gap-2">
-                  <Badge
-                    variant={warning.severity === "critical" ? "destructive" : "secondary"}
-                    className={`text-[10px] ${
-                      warning.severity === "medium" ? "bg-yellow-500/20 text-yellow-600" : ""
-                    }`}
-                  >
-                    {warning.severity}
-                  </Badge>
+                  <SeverityBadge severity={warning.severity} />
                   <Clock className="h-3 w-3 text-muted-foreground" />
                   <span className="text-[10px] text-muted-foreground">
                     timing
@@ -539,23 +531,10 @@ function TodayInteractionsCard({
             {warnings.map((warning) => (
               <div
                 key={warning.id}
-                className={`rounded-md p-2 text-xs ${
-                  warning.severity === "critical"
-                    ? "bg-destructive/10"
-                    : warning.severity === "medium"
-                      ? "bg-yellow-500/10"
-                      : "bg-muted"
-                }`}
+                className={`rounded-md p-2 text-xs ${getWarningBackgroundClass(warning.severity)}`}
               >
                 <div className="flex items-center gap-2">
-                  <Badge
-                    variant={warning.severity === "critical" ? "destructive" : "secondary"}
-                    className={`text-[10px] ${
-                      warning.severity === "medium" ? "bg-yellow-500/20 text-yellow-600" : ""
-                    }`}
-                  >
-                    {warning.severity}
-                  </Badge>
+                  <SeverityBadge severity={warning.severity} />
                 </div>
                 <p className="mt-1">
                   <span className="font-medium">{warning.source.name}</span>

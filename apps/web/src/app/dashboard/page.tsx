@@ -13,6 +13,7 @@ import { Badge } from "~/components/ui/badge";
 import { WelcomeFlow } from "~/components/onboarding/welcome-flow";
 import { CommandBar } from "~/components/log/command-bar";
 import { TodayLogList } from "~/components/log/today-log-list";
+import { SeverityBadge, getWarningTextClass } from "~/components/interactions/severity-badge";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -204,11 +205,7 @@ function InteractionCard({ interaction }: { interaction: InteractionWarning }) {
         <Zap className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
       ) : (
         <AlertTriangle
-          className={`mt-0.5 h-4 w-4 shrink-0 ${
-            interaction.severity === "critical"
-              ? "text-destructive"
-              : "text-yellow-500"
-          }`}
+          className={`mt-0.5 h-4 w-4 shrink-0 ${getWarningTextClass(interaction.severity)}`}
         />
       )}
       <div className="min-w-0 flex-1">
@@ -222,18 +219,16 @@ function InteractionCard({ interaction }: { interaction: InteractionWarning }) {
           <span className="text-sm font-medium">
             {interaction.target.name}
           </span>
-          <Badge
-            variant="secondary"
-            className={`ml-auto text-[10px] ${
-              isSynergy
-                ? "bg-green-500/10 text-green-600"
-                : interaction.severity === "critical"
-                  ? "bg-destructive/10 text-destructive"
-                  : "bg-yellow-500/10 text-yellow-600"
-            }`}
-          >
-            {isSynergy ? "synergy" : interaction.severity}
-          </Badge>
+          {isSynergy ? (
+            <Badge
+              variant="secondary"
+              className="ml-auto bg-green-500/10 text-green-600 text-[10px]"
+            >
+              synergy
+            </Badge>
+          ) : (
+            <SeverityBadge severity={interaction.severity} className="ml-auto" />
+          )}
         </div>
         {interaction.mechanism && (
           <p className="mt-1 text-xs text-muted-foreground line-clamp-2">

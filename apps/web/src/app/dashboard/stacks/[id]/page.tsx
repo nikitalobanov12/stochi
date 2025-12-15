@@ -34,6 +34,12 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { AddSupplementsDialog } from "~/components/stacks/add-supplements-dialog";
+import {
+  SeverityBadge,
+  getWarningBackgroundClass,
+  getWarningTextClass,
+  getWarningBorderClass,
+} from "~/components/interactions/severity-badge";
 
 export default async function StackDetailPage({
   params,
@@ -262,7 +268,7 @@ function InteractionsCard({
   }
 
   return (
-    <Card className={criticalCount > 0 ? "border-destructive/50" : mediumCount > 0 ? "border-yellow-500/50" : ""}>
+    <Card className={getWarningBorderClass(criticalCount, mediumCount)}>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 font-mono text-base">
           {(warnings.length > 0 || ratioWarnings.length > 0) ? (
@@ -285,30 +291,11 @@ function InteractionsCard({
         {ratioWarnings.map((warning) => (
           <div
             key={warning.id}
-            className={`rounded-md p-2 text-xs ${
-              warning.severity === "critical"
-                ? "bg-destructive/10"
-                : warning.severity === "medium"
-                  ? "bg-yellow-500/10"
-                  : "bg-muted"
-            }`}
+            className={`rounded-md p-2 text-xs ${getWarningBackgroundClass(warning.severity)}`}
           >
             <div className="flex items-center gap-2 font-medium">
-              <Badge
-                variant={warning.severity === "critical" ? "destructive" : "secondary"}
-                className={`text-[10px] ${
-                  warning.severity === "medium" ? "bg-yellow-500/20 text-yellow-600" : ""
-                }`}
-              >
-                {warning.severity}
-              </Badge>
-              <span className={
-                warning.severity === "critical"
-                  ? "text-destructive"
-                  : warning.severity === "medium"
-                    ? "text-yellow-600"
-                    : ""
-              }>
+              <SeverityBadge severity={warning.severity} />
+              <span className={getWarningTextClass(warning.severity)}>
                 Ratio Imbalance
               </span>
             </div>
@@ -329,30 +316,11 @@ function InteractionsCard({
         {warnings.map((warning) => (
           <div
             key={warning.id}
-            className={`rounded-md p-2 text-xs ${
-              warning.severity === "critical"
-                ? "bg-destructive/10"
-                : warning.severity === "medium"
-                  ? "bg-yellow-500/10"
-                  : "bg-muted"
-            }`}
+            className={`rounded-md p-2 text-xs ${getWarningBackgroundClass(warning.severity)}`}
           >
             <div className="flex items-center gap-2 font-medium">
-              <Badge
-                variant={warning.severity === "critical" ? "destructive" : "secondary"}
-                className={`text-[10px] ${
-                  warning.severity === "medium" ? "bg-yellow-500/20 text-yellow-600" : ""
-                }`}
-              >
-                {warning.severity}
-              </Badge>
-              <span className={
-                warning.severity === "critical"
-                  ? "text-destructive"
-                  : warning.severity === "medium"
-                    ? "text-yellow-600"
-                    : ""
-              }>
+              <SeverityBadge severity={warning.severity} />
+              <span className={getWarningTextClass(warning.severity)}>
                 {warning.type === "competition" ? "Competition" : "Inhibition"}
               </span>
             </div>
