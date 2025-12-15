@@ -1,4 +1,4 @@
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, count } from "drizzle-orm";
 import { User, Shield, Database } from "lucide-react";
 
 import { db } from "~/server/db";
@@ -13,18 +13,31 @@ import {
 } from "~/components/ui/card";
 import { ExportButton } from "~/components/settings/export-button";
 
+// Limit export to last 10,000 entries to prevent memory issues
+const EXPORT_LIMIT = 10000;
+
 export default async function SettingsPage() {
   const session = await getSession();
   if (!session) return null;
 
   const user = session.user;
 
-  // Get stats for the data section
+  // Get counts for stats (efficient, doesn't load all data)
+  const [logCountResult, stackCountResult] = await Promise.all([
+    db.select({ count: count() }).from(log).where(eq(log.userId, user.id)),
+    db.select({ count: count() }).from(stack).where(eq(stack.userId, user.id)),
+  ]);
+
+  const logCount = logCountResult[0]?.count ?? 0;
+  const stackCount = stackCountResult[0]?.count ?? 0;
+
+  // Only fetch full data for export (with reasonable limit)
   const [userLogs, userStacks] = await Promise.all([
     db.query.log.findMany({
       where: eq(log.userId, user.id),
       with: { supplement: true },
       orderBy: [desc(log.loggedAt)],
+      limit: EXPORT_LIMIT,
     }),
     db.query.stack.findMany({
       where: eq(stack.userId, user.id),
@@ -108,11 +121,11 @@ export default async function SettingsPage() {
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
               <div className="rounded-md bg-muted/50 p-3">
-                <p className="font-mono text-2xl font-bold">{userLogs.length}</p>
+                <p className="font-mono text-2xl font-bold">{logCount}</p>
                 <p className="text-xs text-muted-foreground">Total logs</p>
               </div>
               <div className="rounded-md bg-muted/50 p-3">
-                <p className="font-mono text-2xl font-bold">{userStacks.length}</p>
+                <p className="font-mono text-2xl font-bold">{stackCount}</p>
                 <p className="text-xs text-muted-foreground">Stacks</p>
               </div>
             </div>
@@ -136,6 +149,11 @@ export default async function SettingsPage() {
               All exports include timestamps and are compatible with spreadsheet
               applications.
             </p>
+            {logCount > EXPORT_LIMIT && (
+              <p className="text-xs text-yellow-600">
+                Note: Export is limited to the most recent {EXPORT_LIMIT.toLocaleString()} log entries.
+              </p>
+            )}
             <div className="flex flex-wrap gap-2">
               <ExportButton data={serializedData} format="json" />
               <ExportButton data={serializedData} format="csv" />
