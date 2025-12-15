@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { Button } from "~/components/ui/button";
 import { deleteLog } from "~/server/actions/logs";
+import { formatTime } from "~/lib/utils";
 
 type LogEntry = {
   id: string;
@@ -23,14 +24,6 @@ type TodayLogListProps = {
   logs: LogEntry[];
   maxVisible?: number;
 };
-
-function formatTime(date: Date): string {
-  return date.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-}
 
 function LogRow({ entry }: { entry: LogEntry }) {
   const [isPending, startTransition] = useTransition();

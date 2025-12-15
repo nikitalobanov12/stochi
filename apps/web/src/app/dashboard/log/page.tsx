@@ -39,6 +39,7 @@ import {
   getWarningBackgroundClass,
   getWarningBorderClass,
 } from "~/components/interactions/severity-badge";
+import { formatTime, formatRelativeDate } from "~/lib/utils";
 
 export default async function LogPage() {
   const session = await getSession();
@@ -383,7 +384,7 @@ function RecentLogsGrouped({ logs }: { logs: LogEntry[] }) {
 
   const grouped = logs.reduce(
     (acc, entry) => {
-      const date = formatDate(new Date(entry.loggedAt));
+      const date = formatRelativeDate(new Date(entry.loggedAt));
       acc[date] ??= [];
       acc[date].push(entry);
       return acc;
@@ -421,38 +422,6 @@ function RecentLogsGrouped({ logs }: { logs: LogEntry[] }) {
       ))}
     </div>
   );
-}
-
-function formatTime(date: Date): string {
-  return date.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-}
-
-function formatDate(date: Date): string {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-
-  const dateOnly = new Date(date);
-  dateOnly.setHours(0, 0, 0, 0);
-
-  if (dateOnly.getTime() === today.getTime()) {
-    return "Today";
-  }
-  if (dateOnly.getTime() === yesterday.getTime()) {
-    return "Yesterday";
-  }
-
-  return date.toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
 }
 
 function TodayInteractionsCard({
