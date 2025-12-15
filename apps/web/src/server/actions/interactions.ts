@@ -203,33 +203,52 @@ export async function checkTimingWarnings(
 
   if (rules.length === 0) return [];
 
+  // Collect all other supplement IDs and find the max time window needed
+  const otherSupplementIds: string[] = [];
+  let maxWindowMs = 0;
+
+  for (const rule of rules) {
+    const otherId =
+      rule.sourceSupplementId === supplementId
+        ? rule.targetSupplementId
+        : rule.sourceSupplementId;
+    otherSupplementIds.push(otherId);
+    maxWindowMs = Math.max(maxWindowMs, rule.minHoursApart * 60 * 60 * 1000);
+  }
+
+  // Single batched query for all potentially conflicting logs
+  const windowStart = new Date(loggedAt.getTime() - maxWindowMs);
+  const windowEnd = new Date(loggedAt.getTime() + maxWindowMs);
+
+  const allConflictingLogs = await db.query.log.findMany({
+    where: and(
+      eq(log.userId, userId),
+      inArray(log.supplementId, otherSupplementIds),
+      gte(log.loggedAt, windowStart),
+      lte(log.loggedAt, windowEnd),
+    ),
+    with: {
+      supplement: true,
+    },
+  });
+
+  // Group logs by supplement ID for efficient lookup
+  const logsBySupplementId = new Map<string, typeof allConflictingLogs>();
+  for (const logEntry of allConflictingLogs) {
+    const existing = logsBySupplementId.get(logEntry.supplementId) ?? [];
+    existing.push(logEntry);
+    logsBySupplementId.set(logEntry.supplementId, existing);
+  }
+
   const warnings: TimingWarning[] = [];
 
   for (const rule of rules) {
-    // Find the other supplement in the rule
     const otherSupplementId =
       rule.sourceSupplementId === supplementId
         ? rule.targetSupplementId
         : rule.sourceSupplementId;
 
-    // Define time window to check (minHoursApart in both directions)
-    const windowMs = rule.minHoursApart * 60 * 60 * 1000;
-    const windowStart = new Date(loggedAt.getTime() - windowMs);
-    const windowEnd = new Date(loggedAt.getTime() + windowMs);
-
-    // Check for logs of the other supplement within the window
-    const conflictingLogs = await db.query.log.findMany({
-      where: and(
-        eq(log.userId, userId),
-        eq(log.supplementId, otherSupplementId),
-        gte(log.loggedAt, windowStart),
-        lte(log.loggedAt, windowEnd),
-      ),
-      with: {
-        supplement: true,
-      },
-      limit: 1,
-    });
+    const conflictingLogs = logsBySupplementId.get(otherSupplementId) ?? [];
 
     for (const conflictLog of conflictingLogs) {
       const hoursDiff =
@@ -238,7 +257,7 @@ export async function checkTimingWarnings(
 
       if (hoursDiff < rule.minHoursApart) {
         const isSource = rule.sourceSupplementId === supplementId;
-        
+
         warnings.push({
           id: rule.id,
           severity: rule.severity,

@@ -5,18 +5,46 @@ import { eq, and, desc, gte, lte } from "drizzle-orm";
 import { redirect } from "next/navigation";
 
 import { db } from "~/server/db";
-import { log } from "~/server/db/schema";
+import { log, supplement } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
+
+const VALID_UNITS = ["mg", "mcg", "g", "IU", "ml"] as const;
+type DosageUnit = (typeof VALID_UNITS)[number];
 
 export async function createLog(
   supplementId: string,
   dosage: number,
-  unit: "mg" | "mcg" | "g" | "IU" | "ml",
+  unit: DosageUnit,
   loggedAt?: Date,
 ) {
   const session = await getSession();
   if (!session) {
     redirect("/auth/sign-in");
+  }
+
+  // Validate dosage
+  if (!Number.isFinite(dosage) || dosage <= 0) {
+    throw new Error("Dosage must be a positive number");
+  }
+
+  // Validate unit
+  if (!VALID_UNITS.includes(unit)) {
+    throw new Error("Invalid dosage unit");
+  }
+
+  // Validate supplementId format (UUID)
+  if (!supplementId || typeof supplementId !== "string") {
+    throw new Error("Invalid supplement ID");
+  }
+
+  // Verify supplement exists
+  const supp = await db.query.supplement.findFirst({
+    where: eq(supplement.id, supplementId),
+    columns: { id: true },
+  });
+
+  if (!supp) {
+    throw new Error("Supplement not found");
   }
 
   await db.insert(log).values({
