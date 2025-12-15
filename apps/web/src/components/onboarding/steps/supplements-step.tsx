@@ -14,6 +14,7 @@ import {
 } from "~/components/ui/select";
 import { getGoalByKey } from "~/server/data/goal-recommendations";
 import { fuzzySearchSupplements } from "~/server/data/supplement-aliases";
+import { getServingPresets } from "~/server/data/serving-presets";
 
 type Supplement = {
   id: string;
@@ -177,42 +178,85 @@ export function SupplementsStep({
           </div>
 
           {pendingSupplement && (
-            <div className="flex items-center gap-2">
-              <Input
-                type="number"
-                placeholder="Dosage"
-                value={pendingDosage}
-                onChange={(e) => setPendingDosage(e.target.value)}
-                className="w-24 font-mono text-sm"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleAddSupplement();
-                  }
-                }}
-              />
-              <Select
-                value={pendingUnit}
-                onValueChange={(v) => setPendingUnit(v as typeof pendingUnit)}
-              >
-                <SelectTrigger className="w-20">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="mg">mg</SelectItem>
-                  <SelectItem value="mcg">mcg</SelectItem>
-                  <SelectItem value="g">g</SelectItem>
-                  <SelectItem value="IU">IU</SelectItem>
-                  <SelectItem value="ml">ml</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                size="sm"
-                onClick={handleAddSupplement}
-                disabled={!pendingDosage}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
+            <div className="space-y-2">
+              {/* Serving presets */}
+              {(() => {
+                const presets = getServingPresets(pendingSupplement.name);
+                if (presets.length === 0) return null;
+                return (
+                  <div className="space-y-1.5">
+                    <p className="text-xs text-muted-foreground">Quick servings:</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {presets.slice(0, 4).map((preset) => (
+                        <Button
+                          key={preset.label}
+                          variant="outline"
+                          size="sm"
+                          className="h-auto px-2 py-1 text-xs"
+                          onClick={() => {
+                            const newSupplement: SelectedSupplement = {
+                              id: pendingSupplement.id,
+                              name: pendingSupplement.name,
+                              form: pendingSupplement.form,
+                              dosage: preset.dosage,
+                              unit: preset.unit,
+                            };
+                            onChange([...selected, newSupplement]);
+                            setPendingSupplement(null);
+                            setSearchQuery("");
+                            setPendingDosage("");
+                            setPendingUnit("mg");
+                          }}
+                        >
+                          {preset.label}
+                          <span className="ml-1 text-muted-foreground">
+                            ({preset.dosage}{preset.unit})
+                          </span>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Manual dosage input */}
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  placeholder="Dosage"
+                  value={pendingDosage}
+                  onChange={(e) => setPendingDosage(e.target.value)}
+                  className="w-24 font-mono text-sm"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddSupplement();
+                    }
+                  }}
+                />
+                <Select
+                  value={pendingUnit}
+                  onValueChange={(v) => setPendingUnit(v as typeof pendingUnit)}
+                >
+                  <SelectTrigger className="w-20">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="mg">mg</SelectItem>
+                    <SelectItem value="mcg">mcg</SelectItem>
+                    <SelectItem value="g">g</SelectItem>
+                    <SelectItem value="IU">IU</SelectItem>
+                    <SelectItem value="ml">ml</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  size="sm"
+                  onClick={handleAddSupplement}
+                  disabled={!pendingDosage}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           )}
         </div>
