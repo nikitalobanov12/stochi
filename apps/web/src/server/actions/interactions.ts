@@ -1,8 +1,11 @@
 "use server";
 
 import { inArray, or, and, eq, gte, lte } from "drizzle-orm";
+import { cookies } from "next/headers";
 import { db } from "~/server/db";
 import { interaction, ratioRule, timingRule, log } from "~/server/db/schema";
+import { env } from "~/env";
+import { logger } from "~/lib/logger";
 
 export type InteractionWarning = {
   id: string;
@@ -61,9 +64,74 @@ export type TimingWarning = {
   };
 };
 
+// ============================================================================
+// Go Engine Integration
+// ============================================================================
+
+type EngineAnalyzeResponse = {
+  status: "green" | "yellow" | "red";
+  warnings: InteractionWarning[];
+  synergies: InteractionWarning[];
+};
+
+/**
+ * Get session token from cookies for Go engine auth
+ */
+async function getSessionToken(): Promise<string | null> {
+  const cookieStore = await cookies();
+  return cookieStore.get("better-auth.session_token")?.value ?? null;
+}
+
+/**
+ * Call the Go engine to check interactions (if configured)
+ * Returns null if engine not available, letting caller fall back to TS impl
+ */
+async function checkInteractionsViaEngine(
+  supplementIds: string[],
+): Promise<InteractionWarning[] | null> {
+  if (!env.ENGINE_URL) {
+    return null;
+  }
+
+  const token = await getSessionToken();
+  if (!token) {
+    logger.warn("No session token available for engine call");
+    return null;
+  }
+
+  try {
+    const response = await fetch(`${env.ENGINE_URL}/api/analyze`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ supplementIds }),
+      // Short timeout - fall back to TS if engine is slow
+      signal: AbortSignal.timeout(3000),
+    });
+
+    if (!response.ok) {
+      logger.error(`Engine returned ${response.status}: ${await response.text()}`);
+      return null;
+    }
+
+    const data = (await response.json()) as EngineAnalyzeResponse;
+    // Combine warnings and synergies into single array (matching TS behavior)
+    return [...data.warnings, ...data.synergies];
+  } catch (err) {
+    logger.error("Engine request failed, falling back to TS", { data: err });
+    return null;
+  }
+}
+
+// ============================================================================
+// Main Functions
+// ============================================================================
+
 /**
  * Check for interactions between a set of supplements.
- * Returns all interactions where both source and target are in the provided set.
+ * Uses Go engine if available, falls back to TypeScript implementation.
  */
 export async function checkInteractions(
   supplementIds: string[],
@@ -71,6 +139,16 @@ export async function checkInteractions(
   if (supplementIds.length < 2) {
     return [];
   }
+
+  // Try Go engine first
+  const engineResult = await checkInteractionsViaEngine(supplementIds);
+  if (engineResult !== null) {
+    logger.debug("Using Go engine for interaction check");
+    return engineResult;
+  }
+
+  // Fall back to TypeScript implementation
+  logger.debug("Using TypeScript fallback for interaction check");
 
   // Find all interactions where both source and target are in our set
   const interactions = await db.query.interaction.findMany({
