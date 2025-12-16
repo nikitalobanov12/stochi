@@ -527,6 +527,20 @@ async function seed() {
       mechanism: "Tannins and polyphenols in caffeine sources inhibit iron absorption",
       severity: "medium" as const,
     },
+    {
+      sourceId: supplementMap.get("Caffeine")!,
+      targetId: supplementMap.get("Zinc Picolinate")!,
+      type: "inhibition" as const,
+      mechanism: "Caffeine may reduce zinc absorption and increase urinary zinc excretion",
+      severity: "low" as const,
+    },
+    {
+      sourceId: supplementMap.get("Caffeine")!,
+      targetId: supplementMap.get("Zinc Gluconate")!,
+      type: "inhibition" as const,
+      mechanism: "Caffeine may reduce zinc absorption and increase urinary zinc excretion",
+      severity: "low" as const,
+    },
 
     // ============================================
     // SYNERGIES
