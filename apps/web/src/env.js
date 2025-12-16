@@ -12,6 +12,8 @@ export const env = createEnv({
     DATABASE_URL: z.string().url(),
     // Go engine URL (optional - falls back to TypeScript implementation)
     ENGINE_URL: z.string().url().optional(),
+    // Shared secret for internal service-to-service auth with Go engine
+    ENGINE_INTERNAL_KEY: z.string().optional(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -31,6 +33,7 @@ export const env = createEnv({
       process.env.BETTER_AUTH_GOOGLE_CLIENT_SECRET,
     DATABASE_URL: process.env.DATABASE_URL,
     ENGINE_URL: process.env.ENGINE_URL,
+    ENGINE_INTERNAL_KEY: process.env.ENGINE_INTERNAL_KEY,
     NODE_ENV: process.env.NODE_ENV,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,

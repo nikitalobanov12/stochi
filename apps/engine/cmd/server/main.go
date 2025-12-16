@@ -31,7 +31,7 @@ func main() {
 	log.Println("Connected to database")
 
 	// Create middleware and handlers
-	authMiddleware := auth.NewMiddleware(pool)
+	authMiddleware := auth.NewMiddleware(cfg.InternalKey)
 	handler := handlers.NewHandler(pool, authMiddleware)
 
 	// Setup routes

@@ -4,79 +4,46 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"strings"
-	"time"
-
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 var (
-	ErrNoAuthHeader    = errors.New("no authorization header")
-	ErrInvalidToken    = errors.New("invalid or expired token")
-	ErrSessionNotFound = errors.New("session not found")
+	ErrNoAuthHeader = errors.New("no authorization header")
+	ErrInvalidKey   = errors.New("invalid internal key")
+	ErrNoUserID     = errors.New("no user ID provided")
 )
-
-// Session represents a user session from the database
-type Session struct {
-	ID        string
-	UserID    string
-	Token     string
-	ExpiresAt time.Time
-}
 
 // Middleware provides authentication middleware for HTTP handlers
 type Middleware struct {
-	pool *pgxpool.Pool
+	internalKey string
 }
 
 // NewMiddleware creates a new auth middleware instance
-func NewMiddleware(pool *pgxpool.Pool) *Middleware {
-	return &Middleware{pool: pool}
+func NewMiddleware(internalKey string) *Middleware {
+	return &Middleware{internalKey: internalKey}
 }
 
-// ValidateRequest validates the authorization header and returns the user ID
+// ValidateRequest validates the internal service request
+// Expects:
+// - X-Internal-Key header with the shared secret
+// - X-User-ID header with the authenticated user's ID
 func (m *Middleware) ValidateRequest(r *http.Request) (string, error) {
-	authHeader := r.Header.Get("Authorization")
-	if authHeader == "" {
+	// Validate internal key
+	internalKey := r.Header.Get("X-Internal-Key")
+	if internalKey == "" {
 		return "", ErrNoAuthHeader
 	}
 
-	// Expect "Bearer <token>" format
-	parts := strings.SplitN(authHeader, " ", 2)
-	if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-		return "", ErrInvalidToken
+	if m.internalKey == "" || internalKey != m.internalKey {
+		return "", ErrInvalidKey
 	}
 
-	token := parts[1]
-	return m.ValidateToken(r.Context(), token)
-}
-
-// ValidateToken validates a session token and returns the user ID
-func (m *Middleware) ValidateToken(ctx context.Context, token string) (string, error) {
-	var session Session
-
-	query := `
-		SELECT id, user_id, token, expires_at
-		FROM session
-		WHERE token = $1
-	`
-
-	err := m.pool.QueryRow(ctx, query, token).Scan(
-		&session.ID,
-		&session.UserID,
-		&session.Token,
-		&session.ExpiresAt,
-	)
-	if err != nil {
-		return "", ErrSessionNotFound
+	// Get user ID from header
+	userID := r.Header.Get("X-User-ID")
+	if userID == "" {
+		return "", ErrNoUserID
 	}
 
-	// Check if session has expired
-	if time.Now().After(session.ExpiresAt) {
-		return "", ErrInvalidToken
-	}
-
-	return session.UserID, nil
+	return userID, nil
 }
 
 // Protect wraps an HTTP handler with authentication

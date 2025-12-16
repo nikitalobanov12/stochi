@@ -1,12 +1,12 @@
 "use server";
 
 import { inArray, or, and, eq, gte, lte } from "drizzle-orm";
-import { cookies } from "next/headers";
 import { db } from "~/server/db";
 import { interaction, ratioRule, timingRule, log } from "~/server/db/schema";
 import { env } from "~/env";
 import { logger } from "~/lib/logger";
-import { checkTimingViaEngine, type EngineTimingWarning } from "~/lib/engine/client";
+import { checkTimingViaEngine, isEngineConfigured, type EngineTimingWarning } from "~/lib/engine/client";
+import { getSession } from "~/server/better-auth/server";
 
 // ============================================================================
 // Types
@@ -110,28 +110,15 @@ type EngineAnalyzeResponse = {
 };
 
 /**
- * Get session token from cookies for Go engine auth
- */
-async function getSessionToken(): Promise<string | null> {
-  const cookieStore = await cookies();
-  return cookieStore.get("better-auth.session_token")?.value ?? null;
-}
-
-/**
  * Call the Go engine to check interactions (if configured)
  * Returns null if engine not available, letting caller fall back to TS impl
  */
 async function checkInteractionsViaEngine(
+  userId: string,
   supplementIds: string[],
   dosages?: DosageInput[],
 ): Promise<{ interactions: InteractionWarning[]; ratioWarnings: RatioWarning[] } | null> {
-  if (!env.ENGINE_URL) {
-    return null;
-  }
-
-  const token = await getSessionToken();
-  if (!token) {
-    logger.warn("No session token available for engine call");
+  if (!isEngineConfigured()) {
     return null;
   }
 
@@ -140,7 +127,8 @@ async function checkInteractionsViaEngine(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        "X-Internal-Key": env.ENGINE_INTERNAL_KEY!,
+        "X-User-ID": userId,
       },
       body: JSON.stringify({
         supplementIds,
@@ -228,11 +216,14 @@ export async function checkInteractions(
     unit: d.unit,
   }));
 
-  // Try Go engine first
-  const engineResult = await checkInteractionsViaEngine(supplementIds, engineDosages);
-  if (engineResult !== null) {
-    logger.debug("Using Go engine for interaction check");
-    return engineResult;
+  // Try Go engine first (only if we have a valid session)
+  const session = await getSession();
+  if (session?.user?.id) {
+    const engineResult = await checkInteractionsViaEngine(session.user.id, supplementIds, engineDosages);
+    if (engineResult !== null) {
+      logger.debug("Using Go engine for interaction check");
+      return engineResult;
+    }
   }
 
   // Fall back to TypeScript implementation
@@ -365,34 +356,31 @@ export async function checkTimingWarnings(
   loggedAt: Date,
 ): Promise<TimingWarning[]> {
   // Try Go engine first
-  if (env.ENGINE_URL) {
-    const token = await getSessionToken();
-    if (token) {
-      try {
-        const response = await checkTimingViaEngine(token, supplementId, loggedAt);
-        logger.debug("Using Go engine for timing check");
+  if (isEngineConfigured()) {
+    try {
+      const response = await checkTimingViaEngine(userId, supplementId, loggedAt);
+      logger.debug("Using Go engine for timing check");
 
-        // Convert engine format to our TimingWarning format
-        return response.warnings.map((w: EngineTimingWarning) => ({
-          id: w.id,
-          severity: w.severity,
-          reason: w.reason,
-          minHoursApart: w.minHoursApart,
-          actualHoursApart: w.actualHoursApart,
-          source: {
-            id: w.source.id,
-            name: w.source.name,
-            loggedAt, // Engine doesn't return timestamps, use the provided one
-          },
-          target: {
-            id: w.target.id,
-            name: w.target.name,
-            loggedAt, // Approximate - the actual conflict log time isn't returned
-          },
-        }));
-      } catch (err) {
-        logger.error("Engine timing check failed, falling back to TS", { data: err });
-      }
+      // Convert engine format to our TimingWarning format
+      return response.warnings.map((w: EngineTimingWarning) => ({
+        id: w.id,
+        severity: w.severity,
+        reason: w.reason,
+        minHoursApart: w.minHoursApart,
+        actualHoursApart: w.actualHoursApart,
+        source: {
+          id: w.source.id,
+          name: w.source.name,
+          loggedAt, // Engine doesn't return timestamps, use the provided one
+        },
+        target: {
+          id: w.target.id,
+          name: w.target.name,
+          loggedAt, // Approximate - the actual conflict log time isn't returned
+        },
+      }));
+    } catch (err) {
+      logger.error("Engine timing check failed, falling back to TS", { data: err });
     }
   }
 

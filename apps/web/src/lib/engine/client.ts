@@ -55,10 +55,10 @@ export type AnalyzeResponse = {
 };
 
 /**
- * Check if the Go engine is configured
+ * Check if the Go engine is configured (URL and internal key both set)
  */
 export function isEngineConfigured(): boolean {
-  return !!env.ENGINE_URL;
+  return !!env.ENGINE_URL && !!env.ENGINE_INTERNAL_KEY;
 }
 
 /**
@@ -72,9 +72,22 @@ function getEngineUrl(): string {
 }
 
 /**
+ * Get internal auth headers for Go engine requests
+ */
+function getInternalAuthHeaders(userId: string): Record<string, string> {
+  if (!env.ENGINE_INTERNAL_KEY) {
+    throw new Error("ENGINE_INTERNAL_KEY not configured");
+  }
+  return {
+    "X-Internal-Key": env.ENGINE_INTERNAL_KEY,
+    "X-User-ID": userId,
+  };
+}
+
+/**
  * Call the Go engine to analyze interactions between supplements
  * 
- * @param sessionToken - The user's session token for authentication
+ * @param userId - The authenticated user's ID
  * @param supplementIds - Array of supplement IDs to analyze
  * @param options - Optional parameters for analysis
  * @param options.includeTiming - Whether to include timing analysis
@@ -82,7 +95,7 @@ function getEngineUrl(): string {
  * @returns Analysis response from the engine
  */
 export async function analyzeInteractions(
-  sessionToken: string,
+  userId: string,
   supplementIds: string[],
   options: {
     includeTiming?: boolean;
@@ -95,7 +108,7 @@ export async function analyzeInteractions(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${sessionToken}`,
+      ...getInternalAuthHeaders(userId),
     },
     body: JSON.stringify({
       supplementIds,
@@ -194,13 +207,13 @@ export type TimingCheckResponse = {
 /**
  * Check timing conflicts for a specific supplement via the Go engine
  *
- * @param sessionToken - The user's session token for authentication
+ * @param userId - The authenticated user's ID
  * @param supplementId - The ID of the supplement that was just logged
  * @param loggedAt - The timestamp when the supplement was logged
  * @returns Timing warnings from the engine
  */
 export async function checkTimingViaEngine(
-  sessionToken: string,
+  userId: string,
   supplementId: string,
   loggedAt: Date,
 ): Promise<TimingCheckResponse> {
@@ -210,7 +223,7 @@ export async function checkTimingViaEngine(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${sessionToken}`,
+      ...getInternalAuthHeaders(userId),
     },
     body: JSON.stringify({
       supplementId,

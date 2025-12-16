@@ -8,6 +8,7 @@ import (
 type Config struct {
 	Port        string
 	DatabaseURL string
+	InternalKey string // Shared secret for internal service-to-service auth
 }
 
 // Load reads configuration from environment variables
@@ -20,5 +21,6 @@ func Load() *Config {
 	return &Config{
 		Port:        port,
 		DatabaseURL: os.Getenv("DATABASE_URL"),
+		InternalKey: os.Getenv("INTERNAL_KEY"),
 	}
 }
