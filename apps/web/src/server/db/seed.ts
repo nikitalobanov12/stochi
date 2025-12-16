@@ -737,6 +737,75 @@ async function seed() {
       warningMessage: "Zn:Cu ratio outside optimal range (8-15:1). High zinc without copper causes copper deficiency.",
       severity: "critical" as const,
     },
+    // Calcium:Magnesium ratio (optimal 1-2:1, problems above 2:1)
+    // High calcium inhibits magnesium absorption and can cause deficiency
+    {
+      sourceSupplementId: supplementMap.get("Calcium")!,
+      targetSupplementId: supplementMap.get("Magnesium Glycinate")!,
+      minRatio: 0.5,
+      maxRatio: 2,
+      optimalRatio: 1,
+      warningMessage: "Ca:Mg ratio outside optimal range (1-2:1). Excess calcium impairs magnesium absorption.",
+      severity: "medium" as const,
+    },
+    {
+      sourceSupplementId: supplementMap.get("Calcium")!,
+      targetSupplementId: supplementMap.get("Magnesium Citrate")!,
+      minRatio: 0.5,
+      maxRatio: 2,
+      optimalRatio: 1,
+      warningMessage: "Ca:Mg ratio outside optimal range (1-2:1). Excess calcium impairs magnesium absorption.",
+      severity: "medium" as const,
+    },
+    {
+      sourceSupplementId: supplementMap.get("Calcium")!,
+      targetSupplementId: supplementMap.get("Magnesium L-Threonate")!,
+      minRatio: 0.5,
+      maxRatio: 2,
+      optimalRatio: 1,
+      warningMessage: "Ca:Mg ratio outside optimal range (1-2:1). Excess calcium impairs magnesium absorption.",
+      severity: "medium" as const,
+    },
+    {
+      sourceSupplementId: supplementMap.get("Calcium")!,
+      targetSupplementId: supplementMap.get("Magnesium Malate")!,
+      minRatio: 0.5,
+      maxRatio: 2,
+      optimalRatio: 1,
+      warningMessage: "Ca:Mg ratio outside optimal range (1-2:1). Excess calcium impairs magnesium absorption.",
+      severity: "medium" as const,
+    },
+    // Iron:Zinc ratio - both compete for DMT1 transporter
+    // Avoid excess iron relative to zinc (>3:1 is problematic)
+    {
+      sourceSupplementId: supplementMap.get("Iron Bisglycinate")!,
+      targetSupplementId: supplementMap.get("Zinc Picolinate")!,
+      minRatio: 0.5,
+      maxRatio: 3,
+      optimalRatio: 1,
+      warningMessage: "Fe:Zn ratio outside optimal range. Both compete for DMT1 transporter - balance intake.",
+      severity: "medium" as const,
+    },
+    {
+      sourceSupplementId: supplementMap.get("Iron Bisglycinate")!,
+      targetSupplementId: supplementMap.get("Zinc Gluconate")!,
+      minRatio: 0.5,
+      maxRatio: 3,
+      optimalRatio: 1,
+      warningMessage: "Fe:Zn ratio outside optimal range. Both compete for DMT1 transporter - balance intake.",
+      severity: "medium" as const,
+    },
+    // Vitamin D3:K2 ratio - K2 directs calcium from D3
+    // Optimal is ~100:1 IU D3 to mcg K2 (e.g., 5000 IU D3 with 50-100mcg K2)
+    {
+      sourceSupplementId: supplementMap.get("Vitamin D3")!,
+      targetSupplementId: supplementMap.get("Vitamin K2 MK-7")!,
+      minRatio: 50,
+      maxRatio: 200,
+      optimalRatio: 100,
+      warningMessage: "D3:K2 ratio outside optimal range (50-200:1). K2 helps direct calcium to bones, preventing arterial calcification.",
+      severity: "low" as const,
+    },
   ];
 
   console.log("Seeding ratio rules...");
