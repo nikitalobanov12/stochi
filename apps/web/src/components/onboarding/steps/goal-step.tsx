@@ -3,17 +3,17 @@
 import { useState } from "react";
 import { ArrowRight, ArrowLeft } from "lucide-react";
 import { Button } from "~/components/ui/button";
-import { goals, type Goal } from "~/server/data/goal-recommendations";
+import { goals, type Goal, type GoalKey } from "~/server/data/goal-recommendations";
 import { cn } from "~/lib/utils";
 
 type GoalStepProps = {
-  onNext: (goalKey: string | null) => void;
+  onNext: (goalKey: GoalKey | null) => void;
   onSkip: () => void;
   onBack: () => void;
 };
 
 export function GoalStep({ onNext, onSkip, onBack }: GoalStepProps) {
-  const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
+  const [selectedGoal, setSelectedGoal] = useState<GoalKey | null>(null);
 
   return (
     <div className="flex h-full flex-col">

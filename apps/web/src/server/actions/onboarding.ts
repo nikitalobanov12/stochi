@@ -4,9 +4,10 @@ import { revalidatePath } from "next/cache";
 import { eq, and, inArray, gte } from "drizzle-orm";
 
 import { db } from "~/server/db";
-import { stack, stackItem, log, supplement } from "~/server/db/schema";
+import { stack, stackItem, log, supplement, userGoal } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
 import { getTemplateByKey } from "~/server/data/stack-templates";
+import { type GoalKey, goals } from "~/server/data/goal-recommendations";
 
 /**
  * Instantiate a template stack for the user.
@@ -214,6 +215,7 @@ export async function checkNeedsOnboarding(): Promise<boolean> {
 /**
  * Create a stack from onboarding flow data.
  * Takes user-selected supplements with dosages and creates a new stack.
+ * Optionally saves the selected goal.
  */
 export async function createStackFromOnboarding(data: {
   stackName: string;
@@ -222,6 +224,7 @@ export async function createStackFromOnboarding(data: {
     dosage: number;
     unit: "mg" | "mcg" | "g" | "IU" | "ml";
   }>;
+  goal?: GoalKey;
 }): Promise<{ success: boolean; stackId?: string; error?: string }> {
   const session = await getSession();
   if (!session) {
@@ -244,6 +247,11 @@ export async function createStackFromOnboarding(data: {
 
   if (existingSupplements.length !== supplementIds.length) {
     return { success: false, error: "Some supplements not found" };
+  }
+
+  // Validate goal if provided
+  if (data.goal && !goals.some((g) => g.key === data.goal)) {
+    return { success: false, error: "Invalid goal" };
   }
 
   // Create stack
@@ -269,8 +277,23 @@ export async function createStackFromOnboarding(data: {
 
   await db.insert(stackItem).values(stackItems);
 
+  // Save goal if provided (as primary goal with priority 1)
+  if (data.goal) {
+    // Delete any existing goals first (shouldn't have any for new users, but just in case)
+    await db.delete(userGoal).where(eq(userGoal.userId, session.user.id));
+    
+    // Insert the selected goal
+    await db.insert(userGoal).values({
+      userId: session.user.id,
+      goal: data.goal,
+      priority: 1,
+      createdAt: new Date(),
+    });
+  }
+
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/stacks");
+  revalidatePath("/dashboard/settings");
 
   return { success: true, stackId: newStack.id };
 }

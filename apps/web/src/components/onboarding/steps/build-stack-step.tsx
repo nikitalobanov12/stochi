@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { getGoalByKey } from "~/server/data/goal-recommendations";
+import { getGoalByKey, type GoalKey } from "~/server/data/goal-recommendations";
 import { fuzzySearchSupplements } from "~/server/data/supplement-aliases";
 import { getServingPresets } from "~/server/data/serving-presets";
 
@@ -33,7 +33,7 @@ export type SelectedSupplement = {
 
 type BuildStackStepProps = {
   supplements: Supplement[];
-  selectedGoal: string | null;
+  selectedGoal: GoalKey | null;
   selected: SelectedSupplement[];
   stackName: string;
   onChangeSupplements: (supplements: SelectedSupplement[]) => void;

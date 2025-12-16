@@ -12,6 +12,7 @@ import { GoalStep } from "./steps/goal-step";
 import { BuildStackStep, type SelectedSupplement } from "./steps/build-stack-step";
 import { InteractionsStep } from "./steps/interactions-step";
 import { createStackFromOnboarding } from "~/server/actions/onboarding";
+import { type GoalKey } from "~/server/data/goal-recommendations";
 
 type Supplement = {
   id: string;
@@ -46,7 +47,7 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(0);
-  const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
+  const [selectedGoal, setSelectedGoal] = useState<GoalKey | null>(null);
   const [selectedSupplements, setSelectedSupplements] = useState<SelectedSupplement[]>([]);
   const [stackName, setStackName] = useState("Morning Stack");
 
@@ -60,7 +61,7 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
     setStep((s) => Math.max(s - 1, 0));
   }, []);
 
-  const handleGoalNext = useCallback((goalKey: string | null) => {
+  const handleGoalNext = useCallback((goalKey: GoalKey | null) => {
     setSelectedGoal(goalKey);
     goNext();
   }, [goNext]);
@@ -82,12 +83,13 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
         dosage: s.dosage,
         unit: s.unit,
       })),
+      goal: selectedGoal ?? undefined,
     });
 
     if (result.success) {
       router.refresh();
     }
-  }, [stackName, selectedSupplements, router]);
+  }, [stackName, selectedSupplements, selectedGoal, router]);
 
   if (!open) return null;
 

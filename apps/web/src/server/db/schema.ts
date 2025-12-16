@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm";
 import {
   boolean,
   index,
+  integer,
   pgEnum,
   pgTable,
   real,
@@ -116,6 +117,18 @@ export const verification = pgTable("verification", {
 // Stochi Domain Tables
 // ============================================================================
 
+// Supplement categories for UI grouping
+export const supplementCategoryEnum = pgEnum("supplement_category", [
+  "mineral",
+  "vitamin",
+  "amino-acid",
+  "adaptogen",
+  "nootropic",
+  "antioxidant",
+  "omega",
+  "other",
+]);
+
 export const supplement = pgTable(
   "supplement",
   {
@@ -124,6 +137,12 @@ export const supplement = pgTable(
     form: text("form"),
     elementalWeight: real("elemental_weight"),
     defaultUnit: dosageUnitEnum("default_unit").default("mg"),
+    // New fields for Supplement Intelligence
+    description: text("description"), // Bio-hacker benefit (1 sentence)
+    mechanism: text("mechanism"), // Scientific mechanism (1 sentence)
+    researchUrl: text("research_url"), // Link to Examine.com
+    category: supplementCategoryEnum("category"), // For UI grouping
+    commonGoals: text("common_goals").array(), // ["sleep", "focus", "longevity"]
     createdAt: timestamp("created_at")
       .$defaultFn(() => new Date())
       .notNull(),
@@ -165,6 +184,7 @@ export const stack = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
+    isPublic: boolean("is_public").default(false), // true for system protocols
     createdAt: timestamp("created_at")
       .$defaultFn(() => new Date())
       .notNull(),
@@ -173,6 +193,23 @@ export const stack = pgTable(
       .notNull(),
   },
   (t) => [index("stack_user_idx").on(t.userId)],
+);
+
+// User goals for personalized recommendations
+export const userGoal = pgTable(
+  "user_goal",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    goal: text("goal").notNull(), // "sleep" | "focus" | "energy" | "stress" | "health" | "longevity"
+    priority: integer("priority").default(1).notNull(), // 1 = primary goal
+    createdAt: timestamp("created_at")
+      .$defaultFn(() => new Date())
+      .notNull(),
+  },
+  (t) => [index("user_goal_user_idx").on(t.userId)],
 );
 
 export const stackItem = pgTable(
@@ -240,6 +277,7 @@ export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   stacks: many(stack),
   logs: many(log),
+  goals: many(userGoal),
 }));
 
 export const accountRelations = relations(account, ({ one }) => ({
@@ -319,4 +357,8 @@ export const timingRuleRelations = relations(timingRule, ({ one }) => ({
     references: [supplement.id],
     relationName: "timingTarget",
   }),
+}));
+
+export const userGoalRelations = relations(userGoal, ({ one }) => ({
+  user: one(user, { fields: [userGoal.userId], references: [user.id] }),
 }));

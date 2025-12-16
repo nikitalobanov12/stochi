@@ -8,12 +8,14 @@ import { getSession } from "~/server/better-auth/server";
 import { logStack } from "~/server/actions/stacks";
 import { createLog } from "~/server/actions/logs";
 import { checkInteractions, type InteractionWarning } from "~/server/actions/interactions";
+import { getGoalProgress } from "~/server/actions/goals";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { WelcomeFlow } from "~/components/onboarding/welcome-flow";
 import { CommandBar } from "~/components/log/command-bar";
 import { TodayLogList } from "~/components/log/today-log-list";
 import { SeverityBadge, getWarningTextClass } from "~/components/interactions/severity-badge";
+import { GoalProgressCard } from "~/components/dashboard/goal-progress-card";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -22,7 +24,7 @@ export default async function DashboardPage() {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
-  const [userStacks, todayLogs, allSupplements] = await Promise.all([
+  const [userStacks, todayLogs, allSupplements, goalProgress] = await Promise.all([
     db.query.stack.findMany({
       where: eq(stack.userId, session.user.id),
       with: {
@@ -51,6 +53,7 @@ export default async function DashboardPage() {
       },
       orderBy: [supplement.name],
     }),
+    getGoalProgress(),
   ]);
 
   // Filter to today's logs
@@ -83,6 +86,9 @@ export default async function DashboardPage() {
               : `${todaysLogs.length} supplement${todaysLogs.length !== 1 ? "s" : ""} logged today`}
           </p>
         </div>
+
+        {/* Goal Progress - Only show if user has stacks (not during onboarding) */}
+        {userStacks.length > 0 && <GoalProgressCard progress={goalProgress} />}
 
         {/* Quick Log Input */}
         <div className="rounded-lg border bg-card p-4">

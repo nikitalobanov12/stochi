@@ -8,6 +8,13 @@
       "when": 1765604858885,
       "tag": "0000_clever_human_fly",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1765920436756,
+      "tag": "0001_careless_quasar",
+      "breakpoints": true
     }
   ]
 }

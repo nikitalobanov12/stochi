@@ -1,9 +1,15 @@
+import { eq } from "drizzle-orm";
 import { db } from "./index";
-import { supplement, interaction, ratioRule, timingRule } from "./schema";
+import { supplement, interaction, ratioRule, timingRule, user, stack, stackItem } from "./schema";
+
+// System user ID for public protocol stacks
+const SYSTEM_USER_ID = "system";
+
+type SupplementCategory = "mineral" | "vitamin" | "amino-acid" | "adaptogen" | "nootropic" | "antioxidant" | "omega" | "other";
 
 const supplements = [
   // ============================================
-  // MAGNESIUM FORMS (4)
+  // MAGNESIUM FORMS (5)
   // ============================================
   {
     name: "Magnesium Glycinate",
@@ -11,6 +17,11 @@ const supplements = [
     elementalWeight: 14.1,
     defaultUnit: "mg" as const,
     aliases: ["mag glycinate", "magnesium bisgly", "mag bisgly", "calm magnesium"],
+    description: "Highly bioavailable magnesium form that promotes relaxation and quality sleep",
+    mechanism: "Glycine chelation enhances absorption; glycine itself acts as inhibitory neurotransmitter",
+    researchUrl: "https://examine.com/supplements/magnesium/",
+    category: "mineral" as SupplementCategory,
+    commonGoals: ["sleep", "stress", "health"],
   },
   {
     name: "Magnesium Citrate",
@@ -18,6 +29,11 @@ const supplements = [
     elementalWeight: 16.2,
     defaultUnit: "mg" as const,
     aliases: ["mag citrate", "natural calm"],
+    description: "Well-absorbed magnesium form with mild laxative effect at higher doses",
+    mechanism: "Citric acid enhances solubility and absorption in the gut",
+    researchUrl: "https://examine.com/supplements/magnesium/",
+    category: "mineral" as SupplementCategory,
+    commonGoals: ["stress", "health"],
   },
   {
     name: "Magnesium L-Threonate",
@@ -25,6 +41,11 @@ const supplements = [
     elementalWeight: 8.3,
     defaultUnit: "mg" as const,
     aliases: ["mag threonate", "magtein", "brain magnesium"],
+    description: "Patented form specifically designed to cross the blood-brain barrier for cognitive support",
+    mechanism: "L-threonate enhances magnesium transport across BBB, increasing brain magnesium levels",
+    researchUrl: "https://examine.com/supplements/magnesium-l-threonate/",
+    category: "mineral" as SupplementCategory,
+    commonGoals: ["focus", "sleep", "longevity"],
   },
   {
     name: "Magnesium Oxide",
@@ -32,6 +53,23 @@ const supplements = [
     elementalWeight: 60.3,
     defaultUnit: "mg" as const,
     aliases: ["mag oxide", "magox"],
+    description: "High elemental magnesium content but lower bioavailability; best for correcting deficiency",
+    mechanism: "Simple salt form with 60% elemental magnesium but ~4% absorption rate",
+    researchUrl: "https://examine.com/supplements/magnesium/",
+    category: "mineral" as SupplementCategory,
+    commonGoals: ["health"],
+  },
+  {
+    name: "Magnesium Malate",
+    form: "Magnesium Malate",
+    elementalWeight: 15.5,
+    defaultUnit: "mg" as const,
+    aliases: ["mag malate", "malic acid magnesium"],
+    description: "Magnesium bound to malic acid; may support energy production and reduce muscle fatigue",
+    mechanism: "Malic acid participates in Krebs cycle; combination may enhance ATP production",
+    researchUrl: "https://examine.com/supplements/magnesium/",
+    category: "mineral" as SupplementCategory,
+    commonGoals: ["energy", "health"],
   },
 
   // ============================================
@@ -43,6 +81,11 @@ const supplements = [
     elementalWeight: 21.0,
     defaultUnit: "mg" as const,
     aliases: ["zinc", "zn picolinate"],
+    description: "Highly bioavailable zinc form essential for immune function and testosterone synthesis",
+    mechanism: "Picolinic acid chelation enhances intestinal absorption via amino acid transporters",
+    researchUrl: "https://examine.com/supplements/zinc/",
+    category: "mineral" as SupplementCategory,
+    commonGoals: ["health", "energy"],
   },
   {
     name: "Zinc Gluconate",
@@ -50,10 +93,15 @@ const supplements = [
     elementalWeight: 14.3,
     defaultUnit: "mg" as const,
     aliases: ["zinc gluconate", "zn gluconate"],
+    description: "Common zinc form found in lozenges; supports immune function",
+    mechanism: "Gluconic acid chelation provides moderate bioavailability",
+    researchUrl: "https://examine.com/supplements/zinc/",
+    category: "mineral" as SupplementCategory,
+    commonGoals: ["health"],
   },
 
   // ============================================
-  // B-VITAMINS (6) - NEW
+  // B-VITAMINS (6)
   // ============================================
   {
     name: "Vitamin B1",
@@ -61,6 +109,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mg" as const,
     aliases: ["b1", "thiamine", "vit b1", "thiamin"],
+    description: "Essential for carbohydrate metabolism and nervous system function",
+    mechanism: "Cofactor for pyruvate dehydrogenase and alpha-ketoglutarate dehydrogenase in energy metabolism",
+    researchUrl: "https://examine.com/supplements/vitamin-b1/",
+    category: "vitamin" as SupplementCategory,
+    commonGoals: ["energy", "health"],
   },
   {
     name: "Vitamin B2",
@@ -68,6 +121,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mg" as const,
     aliases: ["b2", "riboflavin", "vit b2", "r5p"],
+    description: "Active form of riboflavin; critical for FAD-dependent enzymes and energy production",
+    mechanism: "Precursor to FAD and FMN cofactors required for electron transport chain",
+    researchUrl: "https://examine.com/supplements/vitamin-b2/",
+    category: "vitamin" as SupplementCategory,
+    commonGoals: ["energy", "health"],
   },
   {
     name: "Vitamin B3",
@@ -75,6 +133,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mg" as const,
     aliases: ["b3", "niacin", "niacinamide", "vit b3", "nicotinamide"],
+    description: "NAD+ precursor supporting cellular energy and DNA repair without flushing",
+    mechanism: "Converts to NAD+ which is essential for sirtuins and PARP enzymes",
+    researchUrl: "https://examine.com/supplements/vitamin-b3/",
+    category: "vitamin" as SupplementCategory,
+    commonGoals: ["energy", "longevity", "health"],
   },
   {
     name: "Vitamin B6",
@@ -82,6 +145,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mg" as const,
     aliases: ["b6", "p5p", "pyridoxine", "vit b6", "pyridoxal"],
+    description: "Active form critical for neurotransmitter synthesis and amino acid metabolism",
+    mechanism: "Cofactor for over 100 enzymes including those synthesizing dopamine and serotonin",
+    researchUrl: "https://examine.com/supplements/vitamin-b6/",
+    category: "vitamin" as SupplementCategory,
+    commonGoals: ["focus", "stress", "health"],
   },
   {
     name: "Folate",
@@ -89,6 +157,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mcg" as const,
     aliases: ["b9", "folic acid", "methylfolate", "5-mthf", "vit b9"],
+    description: "Bioactive folate form bypassing MTHFR gene variants; essential for methylation",
+    mechanism: "Directly enters folate cycle as methyl donor for homocysteine conversion and DNA synthesis",
+    researchUrl: "https://examine.com/supplements/folate/",
+    category: "vitamin" as SupplementCategory,
+    commonGoals: ["health", "longevity"],
   },
   {
     name: "Vitamin B12",
@@ -96,10 +169,15 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mcg" as const,
     aliases: ["b12", "methylcobalamin", "cobalamin", "vit b12"],
+    description: "Active B12 form supporting methylation, energy, and neurological function",
+    mechanism: "Cofactor for methionine synthase in methylation and mitochondrial function",
+    researchUrl: "https://examine.com/supplements/vitamin-b12/",
+    category: "vitamin" as SupplementCategory,
+    commonGoals: ["energy", "focus", "health"],
   },
 
   // ============================================
-  // OTHER VITAMINS (3)
+  // OTHER VITAMINS (4)
   // ============================================
   {
     name: "Vitamin D3",
@@ -107,6 +185,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "IU" as const,
     aliases: ["d3", "vit d", "vitamin d", "sunshine vitamin", "cholecalciferol"],
+    description: "Secosteroid hormone regulating calcium, immune function, and gene expression",
+    mechanism: "Converts to calcitriol which binds VDR receptors affecting 1000+ genes",
+    researchUrl: "https://examine.com/supplements/vitamin-d/",
+    category: "vitamin" as SupplementCategory,
+    commonGoals: ["health", "longevity", "energy"],
   },
   {
     name: "Vitamin K2 MK-7",
@@ -114,6 +197,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mcg" as const,
     aliases: ["k2", "mk7", "mk-7", "vitamin k", "vit k2", "menaquinone"],
+    description: "Long-acting K2 form that directs calcium to bones and away from arteries",
+    mechanism: "Activates osteocalcin and matrix GLA protein for calcium trafficking",
+    researchUrl: "https://examine.com/supplements/vitamin-k/",
+    category: "vitamin" as SupplementCategory,
+    commonGoals: ["health", "longevity"],
   },
   {
     name: "Vitamin C",
@@ -121,10 +209,27 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mg" as const,
     aliases: ["vit c", "ascorbic acid", "c"],
+    description: "Potent antioxidant essential for collagen synthesis and immune function",
+    mechanism: "Electron donor for enzymatic reactions; regenerates vitamin E and glutathione",
+    researchUrl: "https://examine.com/supplements/vitamin-c/",
+    category: "vitamin" as SupplementCategory,
+    commonGoals: ["health", "longevity"],
+  },
+  {
+    name: "Vitamin E",
+    form: "Mixed Tocopherols",
+    elementalWeight: 100,
+    defaultUnit: "IU" as const,
+    aliases: ["vit e", "tocopherol", "e"],
+    description: "Fat-soluble antioxidant protecting cell membranes from oxidative damage",
+    mechanism: "Chain-breaking antioxidant that neutralizes lipid peroxyl radicals",
+    researchUrl: "https://examine.com/supplements/vitamin-e/",
+    category: "vitamin" as SupplementCategory,
+    commonGoals: ["health", "longevity"],
   },
 
   // ============================================
-  // MINERALS (8) - EXPANDED
+  // MINERALS (8)
   // ============================================
   {
     name: "Iron Bisglycinate",
@@ -132,6 +237,11 @@ const supplements = [
     elementalWeight: 27.4,
     defaultUnit: "mg" as const,
     aliases: ["iron", "ferrous", "fe", "gentle iron"],
+    description: "Chelated iron form with superior absorption and minimal GI side effects",
+    mechanism: "Glycine chelation allows absorption via amino acid transporters, bypassing hepcidin regulation",
+    researchUrl: "https://examine.com/supplements/iron/",
+    category: "mineral" as SupplementCategory,
+    commonGoals: ["energy", "health"],
   },
   {
     name: "Copper Bisglycinate",
@@ -139,6 +249,11 @@ const supplements = [
     elementalWeight: 30.0,
     defaultUnit: "mg" as const,
     aliases: ["copper", "cu"],
+    description: "Essential trace mineral for iron metabolism, connective tissue, and antioxidant enzymes",
+    mechanism: "Cofactor for ceruloplasmin, cytochrome c oxidase, and superoxide dismutase",
+    researchUrl: "https://examine.com/supplements/copper/",
+    category: "mineral" as SupplementCategory,
+    commonGoals: ["health"],
   },
   {
     name: "Selenium",
@@ -146,6 +261,11 @@ const supplements = [
     elementalWeight: 40.3,
     defaultUnit: "mcg" as const,
     aliases: ["se", "selenomethionine"],
+    description: "Essential for thyroid function and glutathione peroxidase antioxidant system",
+    mechanism: "Incorporated into selenoproteins including glutathione peroxidases and deiodinases",
+    researchUrl: "https://examine.com/supplements/selenium/",
+    category: "mineral" as SupplementCategory,
+    commonGoals: ["health", "longevity"],
   },
   {
     name: "Calcium",
@@ -153,6 +273,11 @@ const supplements = [
     elementalWeight: 24.1,
     defaultUnit: "mg" as const,
     aliases: ["ca", "calcium citrate", "cal"],
+    description: "Essential mineral for bone health, muscle contraction, and nerve signaling",
+    mechanism: "Structural component of hydroxyapatite in bones; second messenger in cell signaling",
+    researchUrl: "https://examine.com/supplements/calcium/",
+    category: "mineral" as SupplementCategory,
+    commonGoals: ["health"],
   },
   {
     name: "Potassium",
@@ -160,6 +285,11 @@ const supplements = [
     elementalWeight: 38.3,
     defaultUnit: "mg" as const,
     aliases: ["k", "potassium citrate"],
+    description: "Critical electrolyte for blood pressure regulation and muscle/nerve function",
+    mechanism: "Maintains cell membrane potential via Na+/K+-ATPase pump",
+    researchUrl: "https://examine.com/supplements/potassium/",
+    category: "mineral" as SupplementCategory,
+    commonGoals: ["health", "energy"],
   },
   {
     name: "Boron",
@@ -167,6 +297,11 @@ const supplements = [
     elementalWeight: 4.6,
     defaultUnit: "mg" as const,
     aliases: ["boron glycinate"],
+    description: "Trace mineral supporting bone health, testosterone, and cognitive function",
+    mechanism: "Influences steroid hormone metabolism and calcium/magnesium utilization",
+    researchUrl: "https://examine.com/supplements/boron/",
+    category: "mineral" as SupplementCategory,
+    commonGoals: ["health", "energy"],
   },
   {
     name: "Iodine",
@@ -174,6 +309,11 @@ const supplements = [
     elementalWeight: 76.5,
     defaultUnit: "mcg" as const,
     aliases: ["iodide", "potassium iodide", "ki"],
+    description: "Essential for thyroid hormone synthesis regulating metabolism",
+    mechanism: "Incorporated into T3 and T4 thyroid hormones via thyroid peroxidase",
+    researchUrl: "https://examine.com/supplements/iodine/",
+    category: "mineral" as SupplementCategory,
+    commonGoals: ["health", "energy"],
   },
   {
     name: "Chromium",
@@ -181,6 +321,11 @@ const supplements = [
     elementalWeight: 12.4,
     defaultUnit: "mcg" as const,
     aliases: ["chromium picolinate", "cr"],
+    description: "Trace mineral that may enhance insulin sensitivity and glucose metabolism",
+    mechanism: "Potentiates insulin signaling via chromodulin oligopeptide",
+    researchUrl: "https://examine.com/supplements/chromium/",
+    category: "mineral" as SupplementCategory,
+    commonGoals: ["health"],
   },
 
   // ============================================
@@ -192,6 +337,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mg" as const,
     aliases: ["epa", "omega 3", "omega-3", "fish oil", "omega3"],
+    description: "Anti-inflammatory omega-3 supporting cardiovascular and mental health",
+    mechanism: "Competes with arachidonic acid; precursor to anti-inflammatory resolvins",
+    researchUrl: "https://examine.com/supplements/fish-oil/",
+    category: "omega" as SupplementCategory,
+    commonGoals: ["health", "longevity", "stress"],
   },
   {
     name: "Fish Oil (DHA)",
@@ -199,10 +349,15 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mg" as const,
     aliases: ["dha", "omega 3", "omega-3", "fish oil", "omega3", "brain omega"],
+    description: "Structural omega-3 essential for brain development and neuronal membrane fluidity",
+    mechanism: "Major component of neuronal membranes; precursor to neuroprotectin D1",
+    researchUrl: "https://examine.com/supplements/fish-oil/",
+    category: "omega" as SupplementCategory,
+    commonGoals: ["focus", "health", "longevity"],
   },
 
   // ============================================
-  // AMINO ACIDS (6) - EXPANDED
+  // AMINO ACIDS (6)
   // ============================================
   {
     name: "L-Tyrosine",
@@ -210,6 +365,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mg" as const,
     aliases: ["tyrosine", "l tyrosine"],
+    description: "Dopamine and norepinephrine precursor enhancing focus under stress",
+    mechanism: "Rate-limited conversion to L-DOPA then dopamine via tyrosine hydroxylase",
+    researchUrl: "https://examine.com/supplements/l-tyrosine/",
+    category: "amino-acid" as SupplementCategory,
+    commonGoals: ["focus", "stress", "energy"],
   },
   {
     name: "L-Theanine",
@@ -217,6 +377,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mg" as const,
     aliases: ["theanine", "l theanine", "suntheanine"],
+    description: "Calming amino acid from tea that promotes alpha brain waves without sedation",
+    mechanism: "Crosses BBB; increases GABA, serotonin, dopamine; promotes alpha wave activity",
+    researchUrl: "https://examine.com/supplements/theanine/",
+    category: "amino-acid" as SupplementCategory,
+    commonGoals: ["focus", "sleep", "stress"],
   },
   {
     name: "5-HTP",
@@ -224,6 +389,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mg" as const,
     aliases: ["5htp", "hydroxytryptophan", "serotonin precursor"],
+    description: "Direct serotonin precursor supporting mood and sleep; use with caution",
+    mechanism: "Bypasses rate-limiting tryptophan hydroxylase; converts directly to serotonin",
+    researchUrl: "https://examine.com/supplements/5-htp/",
+    category: "amino-acid" as SupplementCategory,
+    commonGoals: ["sleep", "stress"],
   },
   {
     name: "GABA",
@@ -231,6 +401,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mg" as const,
     aliases: ["gamma-aminobutyric acid", "pharmagaba"],
+    description: "Primary inhibitory neurotransmitter; oral form may reduce anxiety via gut-brain axis",
+    mechanism: "Limited BBB penetration; likely acts via enteric nervous system and vagus nerve",
+    researchUrl: "https://examine.com/supplements/gaba/",
+    category: "amino-acid" as SupplementCategory,
+    commonGoals: ["sleep", "stress"],
   },
   {
     name: "Glycine",
@@ -238,6 +413,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "g" as const,
     aliases: ["gly"],
+    description: "Inhibitory amino acid improving sleep quality and collagen synthesis",
+    mechanism: "NMDA receptor co-agonist; lowers core body temperature promoting sleep onset",
+    researchUrl: "https://examine.com/supplements/glycine/",
+    category: "amino-acid" as SupplementCategory,
+    commonGoals: ["sleep", "health", "longevity"],
   },
   {
     name: "Taurine",
@@ -245,10 +425,15 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "g" as const,
     aliases: ["tau"],
+    description: "Conditionally essential amino acid supporting cardiovascular and neurological function",
+    mechanism: "Osmoregulator and membrane stabilizer; modulates calcium signaling and bile acid conjugation",
+    researchUrl: "https://examine.com/supplements/taurine/",
+    category: "amino-acid" as SupplementCategory,
+    commonGoals: ["health", "longevity", "energy"],
   },
 
   // ============================================
-  // ANTIOXIDANTS (5) - NEW
+  // ANTIOXIDANTS (5)
   // ============================================
   {
     name: "CoQ10",
@@ -256,6 +441,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mg" as const,
     aliases: ["coenzyme q10", "ubiquinol", "ubiquinone", "coq"],
+    description: "Mitochondrial electron carrier essential for ATP production; declines with age",
+    mechanism: "Shuttles electrons in Complex I-III of electron transport chain; potent lipid antioxidant",
+    researchUrl: "https://examine.com/supplements/coq10/",
+    category: "antioxidant" as SupplementCategory,
+    commonGoals: ["energy", "longevity", "health"],
   },
   {
     name: "Alpha Lipoic Acid",
@@ -263,6 +453,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mg" as const,
     aliases: ["ala", "r-ala", "r-lipoic acid", "lipoic acid"],
+    description: "Universal antioxidant that regenerates other antioxidants and supports glucose metabolism",
+    mechanism: "Cofactor for mitochondrial enzymes; regenerates vitamins C, E, and glutathione",
+    researchUrl: "https://examine.com/supplements/alpha-lipoic-acid/",
+    category: "antioxidant" as SupplementCategory,
+    commonGoals: ["longevity", "health"],
   },
   {
     name: "NAC",
@@ -270,6 +465,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mg" as const,
     aliases: ["n-acetyl cysteine", "n-acetylcysteine", "cysteine"],
+    description: "Glutathione precursor supporting detoxification, liver health, and mucolytic action",
+    mechanism: "Rate-limiting cysteine donor for glutathione synthesis; direct antioxidant",
+    researchUrl: "https://examine.com/supplements/n-acetylcysteine/",
+    category: "antioxidant" as SupplementCategory,
+    commonGoals: ["longevity", "health"],
   },
   {
     name: "Quercetin",
@@ -277,6 +477,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mg" as const,
     aliases: ["quercetin dihydrate"],
+    description: "Plant flavonoid with senolytic and anti-inflammatory properties",
+    mechanism: "Inhibits senescent cell survival pathways; modulates NF-kB and mast cell degranulation",
+    researchUrl: "https://examine.com/supplements/quercetin/",
+    category: "antioxidant" as SupplementCategory,
+    commonGoals: ["longevity", "health"],
   },
   {
     name: "Glutathione",
@@ -284,10 +489,15 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mg" as const,
     aliases: ["gsh", "reduced glutathione", "liposomal glutathione"],
+    description: "Master antioxidant and detoxifier; liposomal form improves oral bioavailability",
+    mechanism: "Tripeptide that neutralizes ROS, conjugates toxins, and recycles other antioxidants",
+    researchUrl: "https://examine.com/supplements/glutathione/",
+    category: "antioxidant" as SupplementCategory,
+    commonGoals: ["longevity", "health"],
   },
 
   // ============================================
-  // NOOTROPICS & ADAPTOGENS (6) - EXPANDED
+  // NOOTROPICS & ADAPTOGENS (6)
   // ============================================
   {
     name: "Caffeine",
@@ -295,6 +505,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mg" as const,
     aliases: ["coffee", "caff"],
+    description: "Adenosine antagonist that enhances alertness, focus, and physical performance",
+    mechanism: "Blocks A1 and A2A adenosine receptors; increases dopamine and norepinephrine",
+    researchUrl: "https://examine.com/supplements/caffeine/",
+    category: "nootropic" as SupplementCategory,
+    commonGoals: ["focus", "energy"],
   },
   {
     name: "Ashwagandha",
@@ -302,6 +517,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mg" as const,
     aliases: ["ash", "ksm-66", "ksm66", "withania", "ashwa"],
+    description: "Premier adaptogen reducing cortisol, anxiety, and supporting testosterone",
+    mechanism: "Modulates HPA axis; withanolides mimic GABA and influence thyroid hormones",
+    researchUrl: "https://examine.com/supplements/ashwagandha/",
+    category: "adaptogen" as SupplementCategory,
+    commonGoals: ["stress", "sleep", "energy"],
   },
   {
     name: "Lion's Mane",
@@ -309,6 +529,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mg" as const,
     aliases: ["lions mane", "hericium", "yamabushitake"],
+    description: "Medicinal mushroom promoting nerve growth factor and cognitive function",
+    mechanism: "Hericenones and erinacines stimulate NGF synthesis; supports neuroplasticity",
+    researchUrl: "https://examine.com/supplements/lions-mane/",
+    category: "adaptogen" as SupplementCategory,
+    commonGoals: ["focus", "longevity"],
   },
   {
     name: "Rhodiola Rosea",
@@ -316,6 +541,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mg" as const,
     aliases: ["rhodiola", "golden root", "arctic root"],
+    description: "Adaptogen enhancing stress resilience, endurance, and mental performance",
+    mechanism: "Modulates cortisol and activates AMPK; influences serotonin and dopamine",
+    researchUrl: "https://examine.com/supplements/rhodiola-rosea/",
+    category: "adaptogen" as SupplementCategory,
+    commonGoals: ["stress", "energy", "focus"],
   },
   {
     name: "Bacopa Monnieri",
@@ -323,6 +553,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mg" as const,
     aliases: ["bacopa", "brahmi", "water hyssop"],
+    description: "Ayurvedic herb enhancing memory formation and reducing anxiety over time",
+    mechanism: "Bacosides enhance synaptic communication and upregulate serotonin/dopamine",
+    researchUrl: "https://examine.com/supplements/bacopa-monnieri/",
+    category: "adaptogen" as SupplementCategory,
+    commonGoals: ["focus", "stress"],
   },
   {
     name: "Berberine",
@@ -330,6 +565,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mg" as const,
     aliases: ["berberine hcl"],
+    description: "Plant alkaloid rivaling metformin for blood sugar control and AMPK activation",
+    mechanism: "Activates AMPK; inhibits Complex I; modulates gut microbiome composition",
+    researchUrl: "https://examine.com/supplements/berberine/",
+    category: "other" as SupplementCategory,
+    commonGoals: ["longevity", "health"],
   },
 
   // ============================================
@@ -341,6 +581,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mg" as const,
     aliases: ["turmeric", "curcuminoids"],
+    description: "Potent anti-inflammatory from turmeric; requires piperine for absorption",
+    mechanism: "Inhibits NF-kB, COX-2, and multiple inflammatory pathways",
+    researchUrl: "https://examine.com/supplements/curcumin/",
+    category: "other" as SupplementCategory,
+    commonGoals: ["health", "longevity"],
   },
   {
     name: "Piperine",
@@ -348,6 +593,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mg" as const,
     aliases: ["black pepper", "bioperine"],
+    description: "Bioavailability enhancer that inhibits drug metabolism enzymes",
+    mechanism: "Inhibits CYP3A4 and P-glycoprotein; increases absorption of many compounds by 2000%",
+    researchUrl: "https://examine.com/supplements/black-pepper/",
+    category: "other" as SupplementCategory,
+    commonGoals: ["health"],
   },
   {
     name: "Creatine Monohydrate",
@@ -355,6 +605,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "g" as const,
     aliases: ["creatine", "creapure"],
+    description: "Most researched ergogenic aid; enhances strength, power, and cognitive function",
+    mechanism: "Regenerates ATP via phosphocreatine system; buffers cellular energy demands",
+    researchUrl: "https://examine.com/supplements/creatine/",
+    category: "other" as SupplementCategory,
+    commonGoals: ["energy", "focus", "health"],
   },
   {
     name: "Collagen",
@@ -362,6 +617,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "g" as const,
     aliases: ["collagen peptides", "hydrolyzed collagen", "collagen powder"],
+    description: "Structural protein supporting skin elasticity, joint health, and gut integrity",
+    mechanism: "Peptides stimulate fibroblast collagen synthesis; provides glycine and proline",
+    researchUrl: "https://examine.com/supplements/collagen/",
+    category: "other" as SupplementCategory,
+    commonGoals: ["health", "longevity"],
   },
   {
     name: "Biotin",
@@ -369,6 +629,11 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mcg" as const,
     aliases: ["vitamin b7", "b7", "vit b7"],
+    description: "B-vitamin essential for fatty acid synthesis, gluconeogenesis, and hair/nail health",
+    mechanism: "Cofactor for carboxylase enzymes in lipid and carbohydrate metabolism",
+    researchUrl: "https://examine.com/supplements/biotin/",
+    category: "vitamin" as SupplementCategory,
+    commonGoals: ["health"],
   },
   {
     name: "Melatonin",
@@ -376,29 +641,16 @@ const supplements = [
     elementalWeight: 100,
     defaultUnit: "mg" as const,
     aliases: ["mel", "sleep hormone"],
-  },
-
-  // ============================================
-  // ADDITIONAL TO REACH 50
-  // ============================================
-  {
-    name: "Magnesium Malate",
-    form: "Magnesium Malate",
-    elementalWeight: 15.5,
-    defaultUnit: "mg" as const,
-    aliases: ["mag malate", "malic acid magnesium"],
-  },
-  {
-    name: "Vitamin E",
-    form: "Mixed Tocopherols",
-    elementalWeight: 100,
-    defaultUnit: "IU" as const,
-    aliases: ["vit e", "tocopherol", "e"],
+    description: "Sleep-regulating hormone that resets circadian rhythm; potent antioxidant",
+    mechanism: "Binds MT1/MT2 receptors in SCN; lowers core body temperature; scavenges free radicals",
+    researchUrl: "https://examine.com/supplements/melatonin/",
+    category: "other" as SupplementCategory,
+    commonGoals: ["sleep"],
   },
 ];
 
 async function seed() {
-  console.log("Seeding supplements...");
+  console.log("Seeding supplements with enriched metadata...");
 
   // Upsert supplements (insert or update on conflict)
   const supplementsToInsert = supplements.map(({ aliases: _aliases, ...rest }) => rest);
@@ -414,6 +666,11 @@ async function seed() {
           form: supp.form,
           elementalWeight: supp.elementalWeight,
           defaultUnit: supp.defaultUnit,
+          description: supp.description,
+          mechanism: supp.mechanism,
+          researchUrl: supp.researchUrl,
+          category: supp.category,
+          commonGoals: supp.commonGoals,
           updatedAt: new Date(),
         },
       })
@@ -421,7 +678,7 @@ async function seed() {
     if (result.length > 0) insertedCount++;
   }
 
-  console.log(`Upserted ${insertedCount} supplements`);
+  console.log(`Upserted ${insertedCount} supplements with metadata`);
 
   // Get all supplements to build the map
   const allSupplements = await db.query.supplement.findMany();
@@ -465,7 +722,7 @@ async function seed() {
     },
 
     // ============================================
-    // CALCIUM COMPETITION (Medium) - NEW
+    // CALCIUM COMPETITION (Medium)
     // ============================================
     {
       sourceId: supplementMap.get("Calcium")!,
@@ -617,7 +874,7 @@ async function seed() {
     },
 
     // ============================================
-    // B-VITAMIN SYNERGIES - NEW
+    // B-VITAMIN SYNERGIES
     // ============================================
     {
       sourceId: supplementMap.get("Vitamin B6")!,
@@ -646,7 +903,7 @@ async function seed() {
     },
 
     // ============================================
-    // BERBERINE INTERACTIONS - NEW
+    // BERBERINE INTERACTIONS
     // ============================================
     {
       sourceId: supplementMap.get("Berberine")!,
@@ -686,7 +943,7 @@ async function seed() {
     },
 
     // ============================================
-    // MELATONIN INTERACTIONS - NEW
+    // MELATONIN INTERACTIONS
     // ============================================
     {
       sourceId: supplementMap.get("Melatonin")!,
@@ -738,7 +995,6 @@ async function seed() {
       severity: "critical" as const,
     },
     // Calcium:Magnesium ratio (optimal 1-2:1, problems above 2:1)
-    // High calcium inhibits magnesium absorption and can cause deficiency
     {
       sourceSupplementId: supplementMap.get("Calcium")!,
       targetSupplementId: supplementMap.get("Magnesium Glycinate")!,
@@ -775,8 +1031,7 @@ async function seed() {
       warningMessage: "Ca:Mg ratio outside optimal range (1-2:1). Excess calcium impairs magnesium absorption.",
       severity: "medium" as const,
     },
-    // Iron:Zinc ratio - both compete for DMT1 transporter
-    // Avoid excess iron relative to zinc (>3:1 is problematic)
+    // Iron:Zinc ratio
     {
       sourceSupplementId: supplementMap.get("Iron Bisglycinate")!,
       targetSupplementId: supplementMap.get("Zinc Picolinate")!,
@@ -795,8 +1050,7 @@ async function seed() {
       warningMessage: "Fe:Zn ratio outside optimal range. Both compete for DMT1 transporter - balance intake.",
       severity: "medium" as const,
     },
-    // Vitamin D3:K2 ratio - K2 directs calcium from D3
-    // Optimal is ~100:1 IU D3 to mcg K2 (e.g., 5000 IU D3 with 50-100mcg K2)
+    // Vitamin D3:K2 ratio
     {
       sourceSupplementId: supplementMap.get("Vitamin D3")!,
       targetSupplementId: supplementMap.get("Vitamin K2 MK-7")!,
@@ -819,7 +1073,6 @@ async function seed() {
 
   // Timing rules for supplement spacing
   const timingRules = [
-    // Tyrosine and 5-HTP compete for LNAAT transporter
     {
       sourceSupplementId: supplementMap.get("L-Tyrosine")!,
       targetSupplementId: supplementMap.get("5-HTP")!,
@@ -827,7 +1080,6 @@ async function seed() {
       reason: "LNAAT transporter saturation - space apart for optimal absorption across BBB",
       severity: "medium" as const,
     },
-    // Iron and Zinc compete for DMT1
     {
       sourceSupplementId: supplementMap.get("Iron Bisglycinate")!,
       targetSupplementId: supplementMap.get("Zinc Picolinate")!,
@@ -835,7 +1087,6 @@ async function seed() {
       reason: "DMT1 transporter competition - take at different meals for better absorption",
       severity: "medium" as const,
     },
-    // Caffeine and Magnesium
     {
       sourceSupplementId: supplementMap.get("Caffeine")!,
       targetSupplementId: supplementMap.get("Magnesium Glycinate")!,
@@ -843,15 +1094,13 @@ async function seed() {
       reason: "Caffeine increases magnesium excretion - space apart for retention",
       severity: "low" as const,
     },
-    // Vitamin B12 at night disrupts sleep
     {
       sourceSupplementId: supplementMap.get("Vitamin B12")!,
-      targetSupplementId: supplementMap.get("Magnesium Glycinate")!, // proxy for "evening/sleep supplements"
+      targetSupplementId: supplementMap.get("Magnesium Glycinate")!,
       minHoursApart: 8,
       reason: "B12 can suppress melatonin - take in morning, not evening",
       severity: "low" as const,
     },
-    // NAC timing - take away from meals for better absorption
     {
       sourceSupplementId: supplementMap.get("NAC")!,
       targetSupplementId: supplementMap.get("Zinc Picolinate")!,
@@ -866,7 +1115,6 @@ async function seed() {
       reason: "NAC chelates minerals - take 2 hours away from iron for optimal absorption of both",
       severity: "medium" as const,
     },
-    // Berberine timing - take before meals
     {
       sourceSupplementId: supplementMap.get("Berberine")!,
       targetSupplementId: supplementMap.get("Vitamin B6")!,
@@ -874,7 +1122,6 @@ async function seed() {
       reason: "Berberine may interfere with B6 - space apart to reduce interaction",
       severity: "medium" as const,
     },
-    // Calcium and Iron timing
     {
       sourceSupplementId: supplementMap.get("Calcium")!,
       targetSupplementId: supplementMap.get("Iron Bisglycinate")!,
@@ -882,7 +1129,6 @@ async function seed() {
       reason: "Calcium significantly inhibits iron absorption - take at separate meals",
       severity: "medium" as const,
     },
-    // Caffeine and Melatonin timing
     {
       sourceSupplementId: supplementMap.get("Caffeine")!,
       targetSupplementId: supplementMap.get("Melatonin")!,
@@ -890,7 +1136,6 @@ async function seed() {
       reason: "Caffeine has ~6 hour half-life and suppresses melatonin - avoid caffeine in evening",
       severity: "medium" as const,
     },
-    // Caffeine and Creatine timing
     {
       sourceSupplementId: supplementMap.get("Caffeine")!,
       targetSupplementId: supplementMap.get("Creatine Monohydrate")!,
@@ -908,6 +1153,101 @@ async function seed() {
     .values(timingRules)
     .returning();
   console.log(`Inserted ${insertedTimingRules.length} timing rules`);
+
+  // ============================================
+  // SYSTEM USER & PROTOCOL STACKS
+  // ============================================
+  console.log("Seeding system user and protocol stacks...");
+
+  // Upsert system user
+  await db
+    .insert(user)
+    .values({
+      id: SYSTEM_USER_ID,
+      name: "Stochi",
+      email: "system@stochi.app",
+      emailVerified: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .onConflictDoNothing();
+
+  // Delete existing system stacks (to refresh protocols)
+  await db.delete(stack).where(eq(stack.userId, SYSTEM_USER_ID));
+
+  // Protocol 1: Huberman Sleep Cocktail
+  const [hubermanStack] = await db
+    .insert(stack)
+    .values({
+      userId: SYSTEM_USER_ID,
+      name: "Huberman Sleep Cocktail",
+      isPublic: true,
+    })
+    .returning();
+
+  if (hubermanStack) {
+    await db.insert(stackItem).values([
+      {
+        stackId: hubermanStack.id,
+        supplementId: supplementMap.get("Magnesium L-Threonate")!,
+        dosage: 145,
+        unit: "mg" as const,
+      },
+      {
+        stackId: hubermanStack.id,
+        supplementId: supplementMap.get("L-Theanine")!,
+        dosage: 200,
+        unit: "mg" as const,
+      },
+      {
+        stackId: hubermanStack.id,
+        supplementId: supplementMap.get("Glycine")!,
+        dosage: 2,
+        unit: "g" as const,
+      },
+    ]);
+    console.log("Created Huberman Sleep Cocktail protocol");
+  }
+
+  // Protocol 2: Foundational Longevity Stack
+  const [longevityStack] = await db
+    .insert(stack)
+    .values({
+      userId: SYSTEM_USER_ID,
+      name: "Foundational Longevity",
+      isPublic: true,
+    })
+    .returning();
+
+  if (longevityStack) {
+    await db.insert(stackItem).values([
+      {
+        stackId: longevityStack.id,
+        supplementId: supplementMap.get("Vitamin D3")!,
+        dosage: 5000,
+        unit: "IU" as const,
+      },
+      {
+        stackId: longevityStack.id,
+        supplementId: supplementMap.get("Vitamin K2 MK-7")!,
+        dosage: 100,
+        unit: "mcg" as const,
+      },
+      {
+        stackId: longevityStack.id,
+        supplementId: supplementMap.get("Fish Oil (EPA)")!,
+        dosage: 1000,
+        unit: "mg" as const,
+      },
+      {
+        stackId: longevityStack.id,
+        supplementId: supplementMap.get("NAC")!,
+        dosage: 600,
+        unit: "mg" as const,
+      },
+    ]);
+    console.log("Created Foundational Longevity protocol");
+  }
 
   console.log("Seed completed!");
 }

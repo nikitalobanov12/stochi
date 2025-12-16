@@ -4,6 +4,7 @@ import { User, Shield, Database } from "lucide-react";
 import { db } from "~/server/db";
 import { log, stack } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
+import { getUserGoals } from "~/server/actions/goals";
 import {
   Card,
   CardContent,
@@ -12,6 +13,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { ExportButton } from "~/components/settings/export-button";
+import { GoalsCard } from "~/components/settings/goals-card";
 
 // Limit export to last 10,000 entries to prevent memory issues
 const EXPORT_LIMIT = 10000;
@@ -23,9 +25,10 @@ export default async function SettingsPage() {
   const user = session.user;
 
   // Get counts for stats (efficient, doesn't load all data)
-  const [logCountResult, stackCountResult] = await Promise.all([
+  const [logCountResult, stackCountResult, userGoals] = await Promise.all([
     db.select({ count: count() }).from(log).where(eq(log.userId, user.id)),
     db.select({ count: count() }).from(stack).where(eq(stack.userId, user.id)),
+    getUserGoals(),
   ]);
 
   const logCount = logCountResult[0]?.count ?? 0;
@@ -79,6 +82,11 @@ export default async function SettingsPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
+        {/* Goals Card - Full Width */}
+        <div className="md:col-span-2">
+          <GoalsCard initialGoals={userGoals.map((g) => g.goal)} />
+        </div>
+
         {/* Profile Card */}
         <Card>
           <CardHeader>
