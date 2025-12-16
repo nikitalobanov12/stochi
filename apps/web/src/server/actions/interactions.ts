@@ -7,6 +7,10 @@ import { interaction, ratioRule, timingRule, log } from "~/server/db/schema";
 import { env } from "~/env";
 import { logger } from "~/lib/logger";
 
+// ============================================================================
+// Types
+// ============================================================================
+
 export type InteractionWarning = {
   id: string;
   type: "inhibition" | "synergy" | "competition";
@@ -65,7 +69,10 @@ export type TimingWarning = {
 };
 
 // ============================================================================
-// Go Engine Integration
+// Go Engine Integration (Primary)
+// The Go engine at ENGINE_URL handles interaction and ratio checking with
+// accurate stoichiometric calculations using elemental weights.
+// TS fallback is kept for resilience when engine is unavailable.
 // ============================================================================
 
 type DosageInput = {
