@@ -2,11 +2,11 @@ import { db } from "~/server/db";
 import { log, stack } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
 import { eq, desc } from "drizzle-orm";
-import { Trash2, Clock, Zap, Terminal, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Trash2, Clock, Zap, Terminal, AlertTriangle, CheckCircle2, Scale } from "lucide-react";
 
 import { createLog, deleteLog } from "~/server/actions/logs";
 import { logStack } from "~/server/actions/stacks";
-import { checkInteractions, checkTimingWarnings, type InteractionWarning, type TimingWarning } from "~/server/actions/interactions";
+import { checkInteractions, checkTimingWarnings, type InteractionWarning, type TimingWarning, type RatioWarning } from "~/server/actions/interactions";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -58,9 +58,16 @@ export default async function LogPage() {
 
   const todaysLogs = recentLogs.filter((l) => new Date(l.loggedAt) >= today);
 
-  // Check interactions for today's logged supplements
+  // Build dosage data for ratio calculations
+  const dosageMap = new Map<string, { id: string; dosage: number; unit: string }>();
+  for (const l of todaysLogs) {
+    dosageMap.set(l.supplement.id, { id: l.supplement.id, dosage: l.dosage, unit: l.unit });
+  }
+  const dosages = Array.from(dosageMap.values());
+
+  // Check interactions for today's logged supplements (with dosages for ratio checking)
   const todaySupplementIds = [...new Set(todaysLogs.map((l) => l.supplement.id))];
-  const todayInteractions = await checkInteractions(todaySupplementIds);
+  const { interactions: todayInteractions, ratioWarnings } = await checkInteractions(todaySupplementIds, dosages);
   const warnings = todayInteractions.filter((i) => i.type !== "synergy");
   const synergies = todayInteractions.filter((i) => i.type === "synergy");
 
@@ -210,7 +217,7 @@ export default async function LogPage() {
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Today's Interactions */}
-          <TodayInteractionsCard warnings={warnings} synergies={synergies} timingWarnings={timingWarnings} />
+          <TodayInteractionsCard warnings={warnings} synergies={synergies} timingWarnings={timingWarnings} ratioWarnings={ratioWarnings} />
 
           {/* Recent History */}
           <Card>
@@ -314,17 +321,21 @@ function TodayInteractionsCard({
   warnings,
   synergies,
   timingWarnings,
+  ratioWarnings,
 }: {
   warnings: InteractionWarning[];
   synergies: InteractionWarning[];
   timingWarnings: TimingWarning[];
+  ratioWarnings: RatioWarning[];
 }) {
-  const hasInteractions = warnings.length > 0 || synergies.length > 0 || timingWarnings.length > 0;
+  const hasInteractions = warnings.length > 0 || synergies.length > 0 || timingWarnings.length > 0 || ratioWarnings.length > 0;
   const criticalCount = warnings.filter((w) => w.severity === "critical").length +
-    timingWarnings.filter((w) => w.severity === "critical").length;
+    timingWarnings.filter((w) => w.severity === "critical").length +
+    ratioWarnings.filter((w) => w.severity === "critical").length;
   const mediumCount = warnings.filter((w) => w.severity === "medium").length +
-    timingWarnings.filter((w) => w.severity === "medium").length;
-  const totalWarnings = warnings.length + timingWarnings.length;
+    timingWarnings.filter((w) => w.severity === "medium").length +
+    ratioWarnings.filter((w) => w.severity === "medium").length;
+  const totalWarnings = warnings.length + timingWarnings.length + ratioWarnings.length;
 
   return (
     <Card className={getWarningBorderClass(criticalCount, mediumCount)}>
@@ -379,6 +390,33 @@ function TodayInteractionsCard({
                 </p>
                 <p className="mt-0.5 text-[10px] text-muted-foreground line-clamp-2">
                   {warning.reason}
+                </p>
+              </div>
+            ))}
+
+            {/* Ratio Warnings */}
+            {ratioWarnings.map((warning) => (
+              <div
+                key={warning.id}
+                className={`rounded-md p-2 text-xs ${getWarningBackgroundClass(warning.severity)}`}
+              >
+                <div className="flex items-center gap-2">
+                  <SeverityBadge severity={warning.severity} />
+                  <Scale className="h-3 w-3 text-muted-foreground" />
+                  <span className="text-[10px] text-muted-foreground">
+                    ratio
+                  </span>
+                </div>
+                <p className="mt-1 flex flex-wrap items-center gap-x-1">
+                  <span className="font-medium">{warning.source.name}</span>
+                  <span>:</span>
+                  <span className="font-medium">{warning.target.name}</span>
+                </p>
+                <p className="font-mono text-[10px] text-muted-foreground">
+                  {warning.currentRatio}:1 (optimal: {warning.minRatio}-{warning.maxRatio}:1)
+                </p>
+                <p className="mt-0.5 text-[10px] text-muted-foreground line-clamp-2">
+                  {warning.message}
                 </p>
               </div>
             ))}

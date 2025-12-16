@@ -60,7 +60,7 @@ export default async function DashboardPage() {
 
   // Get interactions for today's supplements
   const todaySupplementIds = [...new Set(todaysLogs.map((l) => l.supplement.id))];
-  const interactions = await checkInteractions(todaySupplementIds);
+  const { interactions } = await checkInteractions(todaySupplementIds);
   const warnings = interactions.filter((i) => i.type !== "synergy");
   const synergies = interactions.filter((i) => i.type === "synergy");
 

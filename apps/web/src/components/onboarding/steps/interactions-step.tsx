@@ -38,7 +38,7 @@ export function InteractionsStep({
         getSuggestions(supplementIds),
       ]);
       
-      setInteractions(interactionsResult);
+      setInteractions(interactionsResult.interactions);
       setSuggestions(suggestionsResult);
       setLoading(false);
     }

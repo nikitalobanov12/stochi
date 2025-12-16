@@ -13,7 +13,7 @@ import {
   removeStackItem,
   logStack,
 } from "~/server/actions/stacks";
-import { checkInteractions, checkRatioWarnings, type InteractionWarning, type RatioWarning } from "~/server/actions/interactions";
+import { checkInteractions, type InteractionWarning, type RatioWarning } from "~/server/actions/interactions";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -69,19 +69,16 @@ export default async function StackDetailPage({
     orderBy: (s, { asc }) => [asc(s.name)],
   });
 
-  // Check for interactions in this stack
+  // Check for interactions in this stack (with dosages for ratio checking)
   const supplementIds = userStack.items.map((item) => item.supplementId);
-  const interactions = await checkInteractions(supplementIds);
-  const warnings = interactions.filter((i) => i.type !== "synergy");
-  const synergies = interactions.filter((i) => i.type === "synergy");
-
-  // Check for ratio warnings (e.g., Zn:Cu ratio)
   const supplementsWithDosage = userStack.items.map((item) => ({
     id: item.supplementId,
     dosage: item.dosage,
     unit: item.unit,
   }));
-  const ratioWarnings = await checkRatioWarnings(supplementsWithDosage);
+  const { interactions, ratioWarnings } = await checkInteractions(supplementIds, supplementsWithDosage);
+  const warnings = interactions.filter((i) => i.type !== "synergy");
+  const synergies = interactions.filter((i) => i.type === "synergy");
 
   const logStackWithId = logStack.bind(null, userStack.id);
   const deleteStackWithId = deleteStack.bind(null, userStack.id);

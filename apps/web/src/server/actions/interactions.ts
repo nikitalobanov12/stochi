@@ -68,10 +68,37 @@ export type TimingWarning = {
 // Go Engine Integration
 // ============================================================================
 
+type DosageInput = {
+  supplementId: string;
+  amount: number;
+  unit: string;
+};
+
+type EngineRatioWarning = {
+  id: string;
+  severity: "low" | "medium" | "critical";
+  currentRatio: number;
+  optimalRatio?: number;
+  minRatio?: number;
+  maxRatio?: number;
+  warningMessage: string;
+  source: {
+    id: string;
+    name: string;
+    form?: string;
+  };
+  target: {
+    id: string;
+    name: string;
+    form?: string;
+  };
+};
+
 type EngineAnalyzeResponse = {
   status: "green" | "yellow" | "red";
   warnings: InteractionWarning[];
   synergies: InteractionWarning[];
+  ratioWarnings?: EngineRatioWarning[];
 };
 
 /**
@@ -88,7 +115,8 @@ async function getSessionToken(): Promise<string | null> {
  */
 async function checkInteractionsViaEngine(
   supplementIds: string[],
-): Promise<InteractionWarning[] | null> {
+  dosages?: DosageInput[],
+): Promise<{ interactions: InteractionWarning[]; ratioWarnings: RatioWarning[] } | null> {
   if (!env.ENGINE_URL) {
     return null;
   }
@@ -106,7 +134,14 @@ async function checkInteractionsViaEngine(
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ supplementIds }),
+      body: JSON.stringify({
+        supplementIds,
+        dosages: dosages?.map((d) => ({
+          supplementId: d.supplementId,
+          amount: d.amount,
+          unit: d.unit,
+        })),
+      }),
       // Short timeout - fall back to TS if engine is slow
       signal: AbortSignal.timeout(3000),
     });
@@ -117,8 +152,41 @@ async function checkInteractionsViaEngine(
     }
 
     const data = (await response.json()) as EngineAnalyzeResponse;
+
+    // Convert engine ratio warnings to our RatioWarning format
+    const ratioWarnings: RatioWarning[] = (data.ratioWarnings ?? []).map((rw) => {
+      // Find dosage info for source and target
+      const sourceDosage = dosages?.find((d) => d.supplementId === rw.source.id);
+      const targetDosage = dosages?.find((d) => d.supplementId === rw.target.id);
+
+      return {
+        id: rw.id,
+        severity: rw.severity,
+        message: rw.warningMessage,
+        currentRatio: rw.currentRatio,
+        optimalRatio: rw.optimalRatio ?? null,
+        minRatio: rw.minRatio ?? null,
+        maxRatio: rw.maxRatio ?? null,
+        source: {
+          id: rw.source.id,
+          name: rw.source.name,
+          dosage: sourceDosage?.amount ?? 0,
+          unit: sourceDosage?.unit ?? "mg",
+        },
+        target: {
+          id: rw.target.id,
+          name: rw.target.name,
+          dosage: targetDosage?.amount ?? 0,
+          unit: targetDosage?.unit ?? "mg",
+        },
+      };
+    });
+
     // Combine warnings and synergies into single array (matching TS behavior)
-    return [...data.warnings, ...data.synergies];
+    return {
+      interactions: [...data.warnings, ...data.synergies],
+      ratioWarnings,
+    };
   } catch (err) {
     logger.error("Engine request failed, falling back to TS", { data: err });
     return null;
@@ -132,16 +200,28 @@ async function checkInteractionsViaEngine(
 /**
  * Check for interactions between a set of supplements.
  * Uses Go engine if available, falls back to TypeScript implementation.
+ *
+ * @param supplementIds - Array of supplement IDs to check
+ * @param dosages - Optional dosage data for ratio calculations (enables stoichiometric checks)
+ * @returns Object containing interaction warnings and ratio warnings
  */
 export async function checkInteractions(
   supplementIds: string[],
-): Promise<InteractionWarning[]> {
+  dosages?: Array<{ id: string; dosage: number; unit: string }>,
+): Promise<{ interactions: InteractionWarning[]; ratioWarnings: RatioWarning[] }> {
   if (supplementIds.length < 2) {
-    return [];
+    return { interactions: [], ratioWarnings: [] };
   }
 
+  // Convert dosages to engine format
+  const engineDosages = dosages?.map((d) => ({
+    supplementId: d.id,
+    amount: d.dosage,
+    unit: d.unit,
+  }));
+
   // Try Go engine first
-  const engineResult = await checkInteractionsViaEngine(supplementIds);
+  const engineResult = await checkInteractionsViaEngine(supplementIds, engineDosages);
   if (engineResult !== null) {
     logger.debug("Using Go engine for interaction check");
     return engineResult;
@@ -169,7 +249,7 @@ export async function checkInteractions(
       supplementIds.includes(i.targetId),
   );
 
-  return relevantInteractions.map((i) => ({
+  const interactionWarnings = relevantInteractions.map((i) => ({
     id: i.id,
     type: i.type,
     severity: i.severity,
@@ -185,6 +265,14 @@ export async function checkInteractions(
       form: i.target.form,
     },
   }));
+
+  // Check ratio warnings using TS fallback if dosages provided
+  let ratioWarnings: RatioWarning[] = [];
+  if (dosages && dosages.length >= 2) {
+    ratioWarnings = await checkRatioWarnings(dosages);
+  }
+
+  return { interactions: interactionWarnings, ratioWarnings };
 }
 
 /**
@@ -382,25 +470,35 @@ export async function getTodayInteractionSummary(userId: string): Promise<{
   medium: number;
   low: number;
   synergies: number;
+  ratioWarnings: number;
 }> {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Get today's logged supplements
+  // Get today's logged supplements with dosages
   const todayLogs = await db.query.log.findMany({
     where: and(eq(log.userId, userId), gte(log.loggedAt, today)),
     columns: {
       supplementId: true,
+      dosage: true,
+      unit: true,
     },
   });
 
   const uniqueSupplementIds = [...new Set(todayLogs.map((l) => l.supplementId))];
 
   if (uniqueSupplementIds.length < 2) {
-    return { total: 0, critical: 0, medium: 0, low: 0, synergies: 0 };
+    return { total: 0, critical: 0, medium: 0, low: 0, synergies: 0, ratioWarnings: 0 };
   }
 
-  const interactions = await checkInteractions(uniqueSupplementIds);
+  // Build dosage map (use latest dosage for each supplement)
+  const dosageMap = new Map<string, { id: string; dosage: number; unit: string }>();
+  for (const l of todayLogs) {
+    dosageMap.set(l.supplementId, { id: l.supplementId, dosage: l.dosage, unit: l.unit });
+  }
+  const dosages = Array.from(dosageMap.values());
+
+  const { interactions, ratioWarnings } = await checkInteractions(uniqueSupplementIds, dosages);
 
   const warnings = interactions.filter((i) => i.type !== "synergy");
   const synergies = interactions.filter((i) => i.type === "synergy");
@@ -411,6 +509,7 @@ export async function getTodayInteractionSummary(userId: string): Promise<{
     medium: warnings.filter((i) => i.severity === "medium").length,
     low: warnings.filter((i) => i.severity === "low").length,
     synergies: synergies.length,
+    ratioWarnings: ratioWarnings.length,
   };
 }
 
@@ -420,6 +519,7 @@ export async function getTodayInteractionSummary(userId: string): Promise<{
  */
 export async function getUserInteractions(userId: string): Promise<{
   today: InteractionWarning[];
+  ratioWarnings: RatioWarning[];
   inStacks: Array<{
     stackId: string;
     stackName: string;
@@ -431,16 +531,26 @@ export async function getUserInteractions(userId: string): Promise<{
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Get today's logged supplements
+  // Get today's logged supplements with dosages
   const todayLogs = await db.query.log.findMany({
     where: and(eq(log.userId, userId), gte(log.loggedAt, today)),
     columns: {
       supplementId: true,
+      dosage: true,
+      unit: true,
     },
   });
 
   const todaySupplementIds = [...new Set(todayLogs.map((l) => l.supplementId))];
-  const todayInteractions = await checkInteractions(todaySupplementIds);
+
+  // Build dosage map
+  const dosageMap = new Map<string, { id: string; dosage: number; unit: string }>();
+  for (const l of todayLogs) {
+    dosageMap.set(l.supplementId, { id: l.supplementId, dosage: l.dosage, unit: l.unit });
+  }
+  const dosages = Array.from(dosageMap.values());
+
+  const { interactions: todayInteractions, ratioWarnings } = await checkInteractions(todaySupplementIds, dosages);
 
   // Get user's stacks
   const userStacks = await db.query.stack.findMany({
@@ -453,7 +563,7 @@ export async function getUserInteractions(userId: string): Promise<{
   const stackInteractions = await Promise.all(
     userStacks.map(async (s) => {
       const supplementIds = s.items.map((item) => item.supplementId);
-      const interactions = await checkInteractions(supplementIds);
+      const { interactions } = await checkInteractions(supplementIds);
       return {
         stackId: s.id,
         stackName: s.name,
@@ -464,6 +574,7 @@ export async function getUserInteractions(userId: string): Promise<{
 
   return {
     today: todayInteractions,
+    ratioWarnings,
     inStacks: stackInteractions.filter((s) => s.interactions.length > 0),
   };
 }
@@ -509,9 +620,8 @@ export async function checkLogWarnings(
 
   const uniqueIds = [...new Set(allSupplements.map((s) => s.id))];
 
-  const [interactions, ratioWarnings, timingWarnings] = await Promise.all([
-    checkInteractions(uniqueIds),
-    checkRatioWarnings(allSupplements),
+  const [{ interactions, ratioWarnings }, timingWarnings] = await Promise.all([
+    checkInteractions(uniqueIds, allSupplements),
     checkTimingWarnings(userId, supplementId, loggedAt),
   ]);
 
