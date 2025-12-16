@@ -52,10 +52,10 @@ _The primary input method. Needs to be fast, offline-capable, and "smart."_
   - [x] Install `@huggingface/transformers` for client-side inference.
   - [x] Create `workers/semantic-search.worker.ts` (Web Worker) to load the ONNX model without freezing UI.
   - [x] Implement Regex Parser for dosage (e.g., extracts `200mg` instantly).
-- [ ] **Command Component**
-  - [ ] Install `cmdk` (Shadcn command menu).
-  - [ ] Refactor `<CommandBar />` to use cmdk primitives.
-  - [ ] Implement "Optimistic UI" - show result instantly, update database in background.
+- [x] **Command Component**
+  - [x] Install `cmdk` (Shadcn command menu).
+  - [x] Refactor `<CommandBar />` to use cmdk primitives.
+  - [x] Implement "Optimistic UI" - show result instantly, update database in background.
 
 ---
 
@@ -63,26 +63,26 @@ _The primary input method. Needs to be fast, offline-capable, and "smart."_
 
 _The "Brain" that calculates interactions. Decoupled from the Next.js frontend._
 
-- [ ] **Service Setup**
-  - [ ] Initialize Go module: `go mod init github.com/nikitalobanov12/stochi/apps/engine`
-  - [ ] Install `sqlc` and `pgx` driver.
-  - [ ] Configure `sqlc.yaml` to read migrations from `apps/web/drizzle`.
-  - [ ] Setup pgxpool with SSL for Neon connection.
-- [ ] **Auth Middleware (Zero Trust)**
-  - [ ] Validate session token by querying `session` table directly.
-  - [ ] Reject unauthorized requests.
-- [ ] **Interaction Logic**
-  - [ ] Create `GET /health` endpoint (Railway check).
-  - [ ] Create `POST /api/analyze` endpoint.
-  - [ ] Implement graph traversal for:
-    - [ ] Competitive Inhibition (e.g., Zinc vs Copper).
-    - [ ] Absorption Block (e.g., Caffeine vs Creatine).
-    - [ ] Ratio warnings (stoichiometric balance).
-    - [ ] Timing warnings (supplement spacing).
-  - [ ] Return "Traffic Light" status (Red/Yellow/Green) JSON to frontend.
-- [ ] **Deployment**
-  - [ ] Create Dockerfile (multi-stage build).
-  - [ ] Configure railway.toml.
+- [x] **Service Setup**
+  - [x] Initialize Go module: `go mod init github.com/nikitalobanov12/stochi/apps/engine`
+  - [x] Install `pgx` driver.
+  - [x] Setup pgxpool with SSL for Neon connection.
+- [x] **Auth Middleware (Zero Trust)**
+  - [x] Validate session token by querying `session` table directly.
+  - [x] Reject unauthorized requests.
+- [x] **Interaction Logic**
+  - [x] Create `GET /health` endpoint (Railway check).
+  - [x] Create `POST /api/analyze` endpoint.
+  - [x] Create `POST /api/timing` endpoint.
+  - [x] Implement graph traversal for:
+    - [x] Competitive Inhibition (e.g., Zinc vs Copper).
+    - [x] Absorption Block (e.g., Caffeine vs Creatine).
+    - [x] Ratio warnings (stoichiometric balance).
+    - [x] Timing warnings (supplement spacing).
+  - [x] Return "Traffic Light" status (Red/Yellow/Green) JSON to frontend.
+- [x] **Deployment**
+  - [x] Create Dockerfile (multi-stage build).
+  - [x] Configure fly.toml (deployed to Fly.io).
 
 ---
 
@@ -90,11 +90,11 @@ _The "Brain" that calculates interactions. Decoupled from the Next.js frontend._
 
 _Connect the two halves and remove duplication._
 
-- [ ] **Frontend Integration**
-  - [ ] Add `ENGINE_URL` to env.js.
-  - [ ] Create Go client utility for API calls.
-  - [ ] Update dashboard pages to fetch from Go engine.
-  - [ ] Delete `src/server/actions/interactions.ts` (TS logic replaced by Go).
+- [x] **Frontend Integration**
+  - [x] Add `ENGINE_URL` to env.js.
+  - [x] Create Go client utility for API calls.
+  - [x] Update dashboard pages to fetch from Go engine.
+  - [x] Keep TS fallback for resilience when engine is unavailable.
 - [x] **Onboarding**
   - [x] Create `focus-protocol` and `mineral-balance` seed templates.
   - [x] Build 4-step onboarding wizard for new users.
