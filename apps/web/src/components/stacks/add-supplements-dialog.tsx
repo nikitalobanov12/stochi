@@ -200,6 +200,12 @@ export function AddSupplementsDialog({
       <DialogContent
         className="max-w-lg"
         onEscapeKeyDown={(e) => {
+          // Always close dropdown first
+          if (showDropdown) {
+            e.preventDefault();
+            setShowDropdown(false);
+            return;
+          }
           if (pendingItems.length > 0) {
             e.preventDefault();
             setShowDiscardConfirm(true);
@@ -258,6 +264,21 @@ export function AddSupplementsDialog({
                   value={searchQuery}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   onFocus={() => setShowDropdown(true)}
+                  onBlur={(e) => {
+                    // Delay closing to allow clicking on dropdown items
+                    const relatedTarget = e.relatedTarget as HTMLElement | null;
+                    if (relatedTarget?.closest('[data-dropdown-item]')) {
+                      return;
+                    }
+                    setTimeout(() => setShowDropdown(false), 150);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape" && showDropdown) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setShowDropdown(false);
+                    }
+                  }}
                   className="pl-9 font-mono"
                   autoComplete="off"
                 />
@@ -269,10 +290,11 @@ export function AddSupplementsDialog({
                         <button
                           key={supplement.id}
                           type="button"
+                          data-dropdown-item
                           onClick={() => handleSelectSupplement(supplement)}
                           className={cn(
                             "flex w-full items-center justify-between px-3 py-2 text-left text-sm transition-colors",
-                            "hover:bg-muted",
+                            "hover:bg-accent",
                             selectedSupplement?.id === supplement.id && "bg-primary/10 text-primary"
                           )}
                         >

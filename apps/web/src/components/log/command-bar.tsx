@@ -210,6 +210,20 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
     setOpen(true);
   }
 
+  function handleInputBlur(e: React.FocusEvent) {
+    // Delay closing to allow clicking on suggestions
+    // Check if the new focus target is within our component
+    const relatedTarget = e.relatedTarget as HTMLElement | null;
+    if (relatedTarget?.closest('[data-slot="command-item"]')) {
+      // Clicking on a suggestion, don't close
+      return;
+    }
+    // Close after a short delay to allow click events to fire
+    setTimeout(() => {
+      setOpen(false);
+    }, 150);
+  }
+
   function selectSupplement(supp: Supplement, dosage?: ParsedDosage | null) {
     setSelectedSupplement(supp);
     setOpen(false);
@@ -356,6 +370,7 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
               onChange={(e) => handleInputChange(e.target.value)}
               onKeyDown={handleKeyDown}
               onFocus={handleInputFocus}
+              onBlur={handleInputBlur}
               placeholder={
                 selectedSupplement
                   ? "200mg, 5000IU..."
