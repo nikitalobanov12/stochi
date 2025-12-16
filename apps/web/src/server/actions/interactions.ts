@@ -6,6 +6,7 @@ import { db } from "~/server/db";
 import { interaction, ratioRule, timingRule, log } from "~/server/db/schema";
 import { env } from "~/env";
 import { logger } from "~/lib/logger";
+import { checkTimingViaEngine, type EngineTimingWarning } from "~/lib/engine/client";
 
 // ============================================================================
 // Types
@@ -355,6 +356,7 @@ export async function checkRatioWarnings(
 
 /**
  * Check timing-based warnings for supplements logged within a time window.
+ * Uses Go engine if available, falls back to TypeScript implementation.
  * Used for transporter competition (e.g., Tyrosine and 5-HTP need 4h apart).
  */
 export async function checkTimingWarnings(
@@ -362,6 +364,41 @@ export async function checkTimingWarnings(
   supplementId: string,
   loggedAt: Date,
 ): Promise<TimingWarning[]> {
+  // Try Go engine first
+  if (env.ENGINE_URL) {
+    const token = await getSessionToken();
+    if (token) {
+      try {
+        const response = await checkTimingViaEngine(token, supplementId, loggedAt);
+        logger.debug("Using Go engine for timing check");
+
+        // Convert engine format to our TimingWarning format
+        return response.warnings.map((w: EngineTimingWarning) => ({
+          id: w.id,
+          severity: w.severity,
+          reason: w.reason,
+          minHoursApart: w.minHoursApart,
+          actualHoursApart: w.actualHoursApart,
+          source: {
+            id: w.source.id,
+            name: w.source.name,
+            loggedAt, // Engine doesn't return timestamps, use the provided one
+          },
+          target: {
+            id: w.target.id,
+            name: w.target.name,
+            loggedAt, // Approximate - the actual conflict log time isn't returned
+          },
+        }));
+      } catch (err) {
+        logger.error("Engine timing check failed, falling back to TS", { data: err });
+      }
+    }
+  }
+
+  // Fall back to TypeScript implementation
+  logger.debug("Using TypeScript fallback for timing check");
+
   // Get timing rules for this supplement
   const rules = await db.query.timingRule.findMany({
     where: or(

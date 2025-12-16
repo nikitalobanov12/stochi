@@ -162,3 +162,68 @@ export function calculateTrafficLight(
 
   return "green";
 }
+
+/**
+ * Engine timing warning type (slightly different from TS version)
+ */
+export type EngineTimingWarning = {
+  id: string;
+  severity: "low" | "medium" | "critical";
+  minHoursApart: number;
+  actualHoursApart: number;
+  reason: string;
+  source: {
+    id: string;
+    name: string;
+    form?: string;
+  };
+  target: {
+    id: string;
+    name: string;
+    form?: string;
+  };
+};
+
+/**
+ * Response from the Go engine timing check endpoint
+ */
+export type TimingCheckResponse = {
+  warnings: EngineTimingWarning[];
+};
+
+/**
+ * Check timing conflicts for a specific supplement via the Go engine
+ *
+ * @param sessionToken - The user's session token for authentication
+ * @param supplementId - The ID of the supplement that was just logged
+ * @param loggedAt - The timestamp when the supplement was logged
+ * @returns Timing warnings from the engine
+ */
+export async function checkTimingViaEngine(
+  sessionToken: string,
+  supplementId: string,
+  loggedAt: Date,
+): Promise<TimingCheckResponse> {
+  const engineUrl = getEngineUrl();
+
+  const response = await fetch(`${engineUrl}/api/timing`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${sessionToken}`,
+    },
+    body: JSON.stringify({
+      supplementId,
+      loggedAt: loggedAt.toISOString(),
+    }),
+    // Short timeout - fall back to TS if engine is slow
+    signal: AbortSignal.timeout(3000),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Engine timing check failed: ${response.status} ${error}`);
+  }
+
+  return response.json() as Promise<TimingCheckResponse>;
+}

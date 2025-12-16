@@ -77,6 +77,45 @@ func (h *Handler) Analyze(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+// CheckTiming handles the timing check endpoint for a single supplement
+func (h *Handler) CheckTiming(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, `{"error":"method not allowed"}`, http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req models.TimingCheckRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, `{"error":"invalid request body"}`, http.StatusBadRequest)
+		return
+	}
+
+	if req.SupplementID == "" {
+		http.Error(w, `{"error":"supplementId required"}`, http.StatusBadRequest)
+		return
+	}
+
+	ctx := r.Context()
+	userID, ok := auth.GetUserID(ctx)
+	if !ok || userID == "" {
+		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
+
+	warnings, err := h.checkTimingForSupplement(ctx, userID, req.SupplementID, req.LoggedAt)
+	if err != nil {
+		http.Error(w, `{"error":"timing check failed"}`, http.StatusInternalServerError)
+		return
+	}
+
+	response := models.TimingCheckResponse{
+		Warnings: warnings,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
 func (h *Handler) analyzeInteractions(ctx context.Context, userID string, req models.AnalyzeRequest) (*models.AnalyzeResponse, error) {
 	// Fetch supplements
 	supplements, err := h.getSupplements(ctx, req.SupplementIDs)
@@ -188,6 +227,167 @@ func (h *Handler) getInteractions(ctx context.Context, supplementIDs []string) (
 	}
 
 	return interactions, rows.Err()
+}
+
+// checkTimingForSupplement checks timing conflicts for a specific supplement that was just logged.
+// It finds all timing rules involving this supplement and checks recent logs for violations.
+func (h *Handler) checkTimingForSupplement(ctx context.Context, userID string, supplementID string, loggedAt time.Time) ([]models.TimingWarning, error) {
+	// Get timing rules for this supplement (either as source or target)
+	rulesQuery := `
+		SELECT tr.id, tr.source_supplement_id, tr.target_supplement_id, 
+		       tr.min_hours_apart, tr.reason, tr.severity,
+		       s1.name as source_name, s1.form as source_form,
+		       s2.name as target_name, s2.form as target_form
+		FROM timing_rule tr
+		JOIN supplement s1 ON tr.source_supplement_id = s1.id
+		JOIN supplement s2 ON tr.target_supplement_id = s2.id
+		WHERE tr.source_supplement_id = $1 OR tr.target_supplement_id = $1
+	`
+
+	rows, err := h.pool.Query(ctx, rulesQuery, supplementID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	type ruleInfo struct {
+		ID                 string
+		SourceSupplementID string
+		TargetSupplementID string
+		MinHoursApart      float32
+		Reason             string
+		Severity           models.Severity
+		SourceName         string
+		SourceForm         *string
+		TargetName         string
+		TargetForm         *string
+	}
+
+	var rules []ruleInfo
+	var maxWindowHours float32 = 0
+
+	for rows.Next() {
+		var rule ruleInfo
+		if err := rows.Scan(
+			&rule.ID, &rule.SourceSupplementID, &rule.TargetSupplementID,
+			&rule.MinHoursApart, &rule.Reason, &rule.Severity,
+			&rule.SourceName, &rule.SourceForm,
+			&rule.TargetName, &rule.TargetForm,
+		); err != nil {
+			return nil, err
+		}
+		rules = append(rules, rule)
+		if rule.MinHoursApart > maxWindowHours {
+			maxWindowHours = rule.MinHoursApart
+		}
+	}
+
+	if len(rules) == 0 {
+		return nil, nil
+	}
+
+	// Collect other supplement IDs from rules
+	otherSupplementIDs := make([]string, 0, len(rules))
+	for _, rule := range rules {
+		if rule.SourceSupplementID == supplementID {
+			otherSupplementIDs = append(otherSupplementIDs, rule.TargetSupplementID)
+		} else {
+			otherSupplementIDs = append(otherSupplementIDs, rule.SourceSupplementID)
+		}
+	}
+
+	// Query logs for the other supplements within the time window
+	windowStart := loggedAt.Add(-time.Duration(maxWindowHours) * time.Hour)
+	windowEnd := loggedAt.Add(time.Duration(maxWindowHours) * time.Hour)
+
+	logsQuery := `
+		SELECT l.supplement_id, l.logged_at, s.name, s.form
+		FROM log l
+		JOIN supplement s ON l.supplement_id = s.id
+		WHERE l.user_id = $1
+		  AND l.supplement_id = ANY($2)
+		  AND l.logged_at >= $3
+		  AND l.logged_at <= $4
+		ORDER BY l.logged_at
+	`
+
+	logRows, err := h.pool.Query(ctx, logsQuery, userID, otherSupplementIDs, windowStart, windowEnd)
+	if err != nil {
+		return nil, err
+	}
+	defer logRows.Close()
+
+	type logInfo struct {
+		SupplementID string
+		LoggedAt     time.Time
+		Name         string
+		Form         *string
+	}
+
+	var conflictingLogs []logInfo
+	for logRows.Next() {
+		var l logInfo
+		if err := logRows.Scan(&l.SupplementID, &l.LoggedAt, &l.Name, &l.Form); err != nil {
+			return nil, err
+		}
+		conflictingLogs = append(conflictingLogs, l)
+	}
+
+	// Check for timing violations
+	var warnings []models.TimingWarning
+	for _, rule := range rules {
+		otherID := rule.TargetSupplementID
+		if rule.SourceSupplementID != supplementID {
+			otherID = rule.SourceSupplementID
+		}
+
+		for _, l := range conflictingLogs {
+			if l.SupplementID != otherID {
+				continue
+			}
+
+			hoursApart := float32(abs(loggedAt.Sub(l.LoggedAt).Hours()))
+			if hoursApart < rule.MinHoursApart {
+				isSource := rule.SourceSupplementID == supplementID
+
+				warning := models.TimingWarning{
+					ID:               rule.ID,
+					Severity:         rule.Severity,
+					MinHoursApart:    rule.MinHoursApart,
+					ActualHoursApart: float32(int(hoursApart*10)) / 10, // Round to 1 decimal
+					Reason:           rule.Reason,
+				}
+
+				if isSource {
+					warning.Source = models.SupplementInfo{
+						ID:   supplementID,
+						Name: rule.SourceName,
+						Form: rule.SourceForm,
+					}
+					warning.Target = models.SupplementInfo{
+						ID:   l.SupplementID,
+						Name: l.Name,
+						Form: l.Form,
+					}
+				} else {
+					warning.Source = models.SupplementInfo{
+						ID:   l.SupplementID,
+						Name: l.Name,
+						Form: l.Form,
+					}
+					warning.Target = models.SupplementInfo{
+						ID:   supplementID,
+						Name: rule.TargetName,
+						Form: rule.TargetForm,
+					}
+				}
+
+				warnings = append(warnings, warning)
+			}
+		}
+	}
+
+	return warnings, nil
 }
 
 func (h *Handler) checkTimingWarnings(ctx context.Context, userID string, supplementIDs []string) ([]models.TimingWarning, error) {

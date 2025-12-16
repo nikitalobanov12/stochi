@@ -42,6 +42,7 @@ func main() {
 
 	// Protected API endpoints
 	mux.HandleFunc("POST /api/analyze", authMiddleware.Protect(handler.Analyze))
+	mux.HandleFunc("POST /api/timing", authMiddleware.Protect(handler.CheckTiming))
 
 	// Create server
 	server := &http.Server{

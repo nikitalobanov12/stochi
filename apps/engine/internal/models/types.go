@@ -100,6 +100,17 @@ type AnalyzeRequest struct {
 	IncludeTiming bool `json:"includeTiming,omitempty"`
 }
 
+// TimingCheckRequest is the request body for the timing check endpoint
+type TimingCheckRequest struct {
+	SupplementID string    `json:"supplementId"`
+	LoggedAt     time.Time `json:"loggedAt"`
+}
+
+// TimingCheckResponse is the response from the timing check endpoint
+type TimingCheckResponse struct {
+	Warnings []TimingWarning `json:"warnings"`
+}
+
 // AnalyzeResponse is the response from the analyze endpoint
 type AnalyzeResponse struct {
 	Status         TrafficLightStatus   `json:"status"`
