@@ -84,9 +84,18 @@ type LogEntry struct {
 	LoggedAt     time.Time  `json:"loggedAt"`
 }
 
+// DosageInput represents a supplement with its dosage for ratio calculations
+type DosageInput struct {
+	SupplementID string     `json:"supplementId"`
+	Amount       float32    `json:"amount"`
+	Unit         DosageUnit `json:"unit"`
+}
+
 // AnalyzeRequest is the request body for the analyze endpoint
 type AnalyzeRequest struct {
 	SupplementIDs []string `json:"supplementIds"`
+	// Optional: dosages for ratio calculations (if not provided, ratio checks are skipped)
+	Dosages []DosageInput `json:"dosages,omitempty"`
 	// Optional: include logs for timing analysis
 	IncludeTiming bool `json:"includeTiming,omitempty"`
 }

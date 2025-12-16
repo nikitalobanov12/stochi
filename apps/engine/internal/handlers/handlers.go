@@ -126,6 +126,17 @@ func (h *Handler) analyzeInteractions(ctx context.Context, userID string, req mo
 		}
 	}
 
+	// Check ratio warnings if dosages are provided
+	if len(req.Dosages) > 0 {
+		ratioWarnings, err := h.checkRatioWarnings(ctx, req.Dosages, supplements)
+		if err == nil && len(ratioWarnings) > 0 {
+			response.RatioWarnings = ratioWarnings
+			// Update status based on ratio warnings
+			status = h.calculateStatusWithRatios(status, ratioWarnings)
+			response.Status = status
+		}
+	}
+
 	return response, nil
 }
 
@@ -319,4 +330,170 @@ func abs(x float64) float64 {
 		return -x
 	}
 	return x
+}
+
+func (h *Handler) checkRatioWarnings(ctx context.Context, dosages []models.DosageInput, supplements map[string]models.Supplement) ([]models.RatioWarning, error) {
+	// Build a map of supplement ID to dosage for quick lookup
+	dosageMap := make(map[string]models.DosageInput)
+	for _, d := range dosages {
+		dosageMap[d.SupplementID] = d
+	}
+
+	// Get all supplement IDs from dosages
+	supplementIDs := make([]string, 0, len(dosages))
+	for _, d := range dosages {
+		supplementIDs = append(supplementIDs, d.SupplementID)
+	}
+
+	// Fetch ratio rules that apply to the given supplements
+	rulesQuery := `
+		SELECT rr.id, rr.source_supplement_id, rr.target_supplement_id,
+		       rr.min_ratio, rr.max_ratio, rr.optimal_ratio,
+		       rr.warning_message, rr.severity,
+		       s1.name as source_name, s1.form as source_form,
+		       s2.name as target_name, s2.form as target_form
+		FROM ratio_rule rr
+		JOIN supplement s1 ON rr.source_supplement_id = s1.id
+		JOIN supplement s2 ON rr.target_supplement_id = s2.id
+		WHERE rr.source_supplement_id = ANY($1)
+		  AND rr.target_supplement_id = ANY($1)
+	`
+
+	rows, err := h.pool.Query(ctx, rulesQuery, supplementIDs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var warnings []models.RatioWarning
+
+	for rows.Next() {
+		var rule struct {
+			ID                 string
+			SourceSupplementID string
+			TargetSupplementID string
+			MinRatio           *float32
+			MaxRatio           *float32
+			OptimalRatio       *float32
+			WarningMessage     string
+			Severity           models.Severity
+			SourceName         string
+			SourceForm         *string
+			TargetName         string
+			TargetForm         *string
+		}
+
+		if err := rows.Scan(
+			&rule.ID, &rule.SourceSupplementID, &rule.TargetSupplementID,
+			&rule.MinRatio, &rule.MaxRatio, &rule.OptimalRatio,
+			&rule.WarningMessage, &rule.Severity,
+			&rule.SourceName, &rule.SourceForm,
+			&rule.TargetName, &rule.TargetForm,
+		); err != nil {
+			return nil, err
+		}
+
+		// Get dosages for source and target
+		sourceDosage, hasSource := dosageMap[rule.SourceSupplementID]
+		targetDosage, hasTarget := dosageMap[rule.TargetSupplementID]
+
+		if !hasSource || !hasTarget {
+			// Can't calculate ratio without both dosages
+			continue
+		}
+
+		// Get supplement info for elemental weight
+		sourceSupp, hasSourceSupp := supplements[rule.SourceSupplementID]
+		targetSupp, hasTargetSupp := supplements[rule.TargetSupplementID]
+
+		if !hasSourceSupp || !hasTargetSupp {
+			continue
+		}
+
+		// Calculate elemental amounts
+		sourceInput := DosageInput{
+			SupplementID:           sourceDosage.SupplementID,
+			Amount:                 sourceDosage.Amount,
+			Unit:                   sourceDosage.Unit,
+			ElementalWeightPercent: getElementalWeight(sourceSupp),
+		}
+		targetInput := DosageInput{
+			SupplementID:           targetDosage.SupplementID,
+			Amount:                 targetDosage.Amount,
+			Unit:                   targetDosage.Unit,
+			ElementalWeightPercent: getElementalWeight(targetSupp),
+		}
+
+		ratio, err := CalculateRatio(sourceInput, targetInput)
+		if err != nil {
+			// Skip this rule if we can't calculate the ratio
+			continue
+		}
+
+		// Check if ratio is outside acceptable range
+		modelRule := models.RatioRule{
+			MinRatio: rule.MinRatio,
+			MaxRatio: rule.MaxRatio,
+		}
+
+		isCompliant, _ := CheckRatioCompliance(ratio, modelRule)
+		if !isCompliant {
+			warnings = append(warnings, models.RatioWarning{
+				ID:             rule.ID,
+				Severity:       rule.Severity,
+				CurrentRatio:   RoundToDecimal(ratio, 1),
+				OptimalRatio:   rule.OptimalRatio,
+				MinRatio:       rule.MinRatio,
+				MaxRatio:       rule.MaxRatio,
+				WarningMessage: rule.WarningMessage,
+				Source: models.SupplementInfo{
+					ID:   rule.SourceSupplementID,
+					Name: rule.SourceName,
+					Form: rule.SourceForm,
+				},
+				Target: models.SupplementInfo{
+					ID:   rule.TargetSupplementID,
+					Name: rule.TargetName,
+					Form: rule.TargetForm,
+				},
+			})
+		}
+	}
+
+	return warnings, rows.Err()
+}
+
+func getElementalWeight(s models.Supplement) float32 {
+	if s.ElementalWeight != nil {
+		return *s.ElementalWeight
+	}
+	return 100 // Default to 100% if not specified
+}
+
+func (h *Handler) calculateStatusWithRatios(currentStatus models.TrafficLightStatus, ratioWarnings []models.RatioWarning) models.TrafficLightStatus {
+	// If already red, stay red
+	if currentStatus == models.TrafficLightRed {
+		return currentStatus
+	}
+
+	// Check ratio warnings for critical severity
+	for _, w := range ratioWarnings {
+		if w.Severity == models.SeverityCritical {
+			return models.TrafficLightRed
+		}
+	}
+
+	// If already yellow, stay yellow
+	if currentStatus == models.TrafficLightYellow {
+		return currentStatus
+	}
+
+	// Check for medium severity
+	for _, w := range ratioWarnings {
+		if w.Severity == models.SeverityMedium {
+			return models.TrafficLightYellow
+		}
+	}
+
+	return currentStatus
 }

@@ -7,6 +7,43 @@ import { type InteractionWarning, type TimingWarning } from "~/server/actions/in
 export type TrafficLightStatus = "green" | "yellow" | "red";
 
 /**
+ * Dosage unit type matching the Go engine
+ */
+export type DosageUnit = "mg" | "mcg" | "g" | "IU" | "ml";
+
+/**
+ * Dosage input for ratio calculations
+ */
+export type DosageInput = {
+  supplementId: string;
+  amount: number;
+  unit: DosageUnit;
+};
+
+/**
+ * Ratio warning from the Go engine
+ */
+export type RatioWarning = {
+  id: string;
+  severity: "low" | "medium" | "critical";
+  currentRatio: number;
+  optimalRatio?: number;
+  minRatio?: number;
+  maxRatio?: number;
+  warningMessage: string;
+  source: {
+    id: string;
+    name: string;
+    form?: string;
+  };
+  target: {
+    id: string;
+    name: string;
+    form?: string;
+  };
+};
+
+/**
  * Response from the Go engine analyze endpoint
  */
 export type AnalyzeResponse = {
@@ -14,6 +51,7 @@ export type AnalyzeResponse = {
   warnings: InteractionWarning[];
   synergies: InteractionWarning[];
   timingWarnings?: TimingWarning[];
+  ratioWarnings?: RatioWarning[];
 };
 
 /**
@@ -38,13 +76,18 @@ function getEngineUrl(): string {
  * 
  * @param sessionToken - The user's session token for authentication
  * @param supplementIds - Array of supplement IDs to analyze
- * @param includeTiming - Whether to include timing analysis
+ * @param options - Optional parameters for analysis
+ * @param options.includeTiming - Whether to include timing analysis
+ * @param options.dosages - Dosage data for ratio calculations
  * @returns Analysis response from the engine
  */
 export async function analyzeInteractions(
   sessionToken: string,
   supplementIds: string[],
-  includeTiming = false,
+  options: {
+    includeTiming?: boolean;
+    dosages?: DosageInput[];
+  } = {},
 ): Promise<AnalyzeResponse> {
   const engineUrl = getEngineUrl();
 
@@ -56,7 +99,8 @@ export async function analyzeInteractions(
     },
     body: JSON.stringify({
       supplementIds,
-      includeTiming,
+      includeTiming: options.includeTiming ?? false,
+      dosages: options.dosages,
     }),
   });
 
