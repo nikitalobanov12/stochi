@@ -175,10 +175,28 @@ bun check                # Lint + TypeCheck (use SKIP_ENV_VALIDATION=1 if env va
 # Database
 ./start-database.sh      # Start local Postgres container manually
 ./scripts/stop-db.sh     # Stop Postgres container manually
-bun db:push              # Push schema to database
+bun db:generate          # Generate new migration from schema changes
+bun db:migrate           # Run pending migrations (non-interactive)
+bun db:push              # Push schema directly (interactive - use for quick dev)
 bun db:studio            # Open Drizzle Studio
 bun db:seed              # Seed supplements and interactions
 ```
+
+### Migration Workflow
+
+**For schema changes:**
+1. Edit `src/server/db/schema.ts`
+2. Run `bun db:generate` to create a migration file
+3. Run `bun db:migrate` to apply it
+4. Commit both the schema and migration files
+
+**For fresh databases:**
+```bash
+bun db:migrate           # Apply all migrations
+bun db:seed              # Seed reference data
+```
+
+**Note:** If migrations fail because tables already exist (from prior `db:push`), you may need to manually mark migrations as applied in the `drizzle.__drizzle_migrations` table.
 
 ## Design Guidelines
 

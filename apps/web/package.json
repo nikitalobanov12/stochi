@@ -7,7 +7,7 @@
     "build": "next build",
     "check": "eslint . && tsc --noEmit",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
+    "db:migrate": "bun run src/server/db/migrate.ts",
     "db:push": "drizzle-kit push",
     "db:seed": "bun run src/server/db/seed.ts",
     "db:studio": "drizzle-kit studio",
