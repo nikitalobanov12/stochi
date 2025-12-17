@@ -75,9 +75,14 @@ export default async function DashboardPage() {
       <WelcomeFlow open={needsOnboarding} supplements={allSupplements} />
 
       <div className="space-y-6">
+        {/* Section ID */}
+        <div className="section-id text-primary">
+          {"// DASHBOARD"}
+        </div>
+
         {/* Header */}
         <div>
-          <h1 className="font-mono text-2xl font-bold">
+          <h1 className="font-mono text-2xl font-bold tracking-tight">
             Hey, {session.user.name.split(" ")[0]}
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -91,18 +96,18 @@ export default async function DashboardPage() {
         {userStacks.length > 0 && <GoalProgressCard progress={goalProgress} />}
 
         {/* Quick Log Input */}
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-xl border border-border bg-card p-4">
           <DashboardCommandBar supplements={allSupplements} />
         </div>
 
         {/* Stack Quick Actions */}
         {userStacks.length > 0 && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="font-mono text-sm font-medium text-muted-foreground">
-                Log Stack
+              <h2 className="section-id text-muted-foreground">
+                {"// QUICK_LOG"}
               </h2>
-              <Button variant="ghost" size="sm" asChild className="h-auto py-1 text-xs">
+              <Button variant="ghost" size="sm" asChild className="h-auto py-1 text-xs text-muted-foreground hover:text-foreground">
                 <Link href="/dashboard/stacks">
                   Manage
                   <ChevronRight className="ml-1 h-3 w-3" />
@@ -116,7 +121,7 @@ export default async function DashboardPage() {
                     type="submit"
                     variant="outline"
                     size="sm"
-                    className="font-mono"
+                    className="font-mono text-xs"
                     disabled={s.items.length === 0}
                   >
                     <Layers className="mr-1.5 h-3 w-3" />
@@ -147,12 +152,12 @@ export default async function DashboardPage() {
             )}
 
             {/* Today's Log */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h2 className="font-mono text-sm font-medium text-muted-foreground">
-                  Today
+                <h2 className="section-id text-muted-foreground">
+                  {"// TODAY"}
                 </h2>
-                <Button variant="ghost" size="sm" asChild className="h-auto py-1 text-xs">
+                <Button variant="ghost" size="sm" asChild className="h-auto py-1 text-xs text-muted-foreground hover:text-foreground">
                   <Link href="/dashboard/log">
                     View all
                     <ChevronRight className="ml-1 h-3 w-3" />
@@ -166,12 +171,12 @@ export default async function DashboardPage() {
 
         {/* Empty State */}
         {todaysLogs.length === 0 && userStacks.length > 0 && (
-          <div className="rounded-lg border border-dashed py-12 text-center">
+          <div className="rounded-xl border border-dashed border-border bg-card/50 py-12 text-center">
             <Clock className="mx-auto mb-3 h-8 w-8 text-muted-foreground/50" />
-            <p className="text-sm text-muted-foreground">
+            <p className="font-mono text-sm text-muted-foreground">
               Log your first supplement of the day
             </p>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 text-xs text-muted-foreground/70">
               Use the search above or tap a stack button
             </p>
           </div>
@@ -179,12 +184,12 @@ export default async function DashboardPage() {
 
         {/* No Stacks State */}
         {userStacks.length === 0 && !needsOnboarding && (
-          <div className="rounded-lg border border-dashed py-12 text-center">
+          <div className="rounded-xl border border-dashed border-border bg-card/50 py-12 text-center">
             <Layers className="mx-auto mb-3 h-8 w-8 text-muted-foreground/50" />
-            <p className="text-sm text-muted-foreground">
+            <p className="font-mono text-sm text-muted-foreground">
               No stacks configured
             </p>
-            <Button asChild variant="outline" size="sm" className="mt-4">
+            <Button asChild variant="outline" size="sm" className="mt-4 font-mono">
               <Link href="/dashboard/stacks">Create a Stack</Link>
             </Button>
           </div>

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Settings, LogOut } from "lucide-react";
 
 import { getSession } from "~/server/better-auth/server";
@@ -31,13 +32,27 @@ export default async function DashboardLayout({
   const user = session.user;
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <div className="relative flex min-h-screen flex-col">
+      {/* Noise texture overlay */}
+      <div className="hud-noise" />
+      
+      {/* Vignette overlay */}
+      <div className="hud-vignette" />
+
+      <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-md">
+        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
           <div className="flex items-center gap-6">
-            <Link href="/dashboard" className="font-mono text-xl font-bold">
-              <span className="text-primary">stochi</span>
-              <span className="animate-pulse text-primary">_</span>
+            <Link href="/dashboard" className="flex items-center gap-2">
+              <Image
+                src="/logo.svg"
+                alt="Stochi"
+                width={24}
+                height={24}
+                className="h-6 w-6"
+              />
+              <span className="font-mono text-sm font-medium tracking-tight">
+                stochi<span className="text-primary">_</span>
+              </span>
             </Link>
 
             <nav className="hidden items-center gap-4 md:flex">
@@ -60,9 +75,9 @@ export default async function DashboardLayout({
                   variant="ghost"
                   className="relative h-8 w-8 rounded-full"
                 >
-                  <Avatar className="h-8 w-8">
+                  <Avatar className="h-8 w-8 border border-border">
                     <AvatarImage src={user.image ?? undefined} alt={user.name} />
-                    <AvatarFallback className="font-mono text-xs">
+                    <AvatarFallback className="bg-secondary font-mono text-xs">
                       {user.name
                         .split(" ")
                         .map((n) => n[0])
@@ -115,11 +130,11 @@ export default async function DashboardLayout({
         </div>
       </header>
 
-      <main className="flex-1 pb-20 md:pb-0">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">{children}</div>
+      <main className="relative z-10 flex-1 pb-20 md:pb-0">
+        <div className="mx-auto max-w-5xl px-4 py-6">{children}</div>
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 border-t border-border bg-background pb-safe md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background pb-safe md:hidden">
         <div className="flex items-center justify-around py-2">
           <MobileNavLink href="/dashboard" iconName="dashboard" label="Home" />
           <MobileNavLink href="/dashboard/stacks" iconName="stacks" label="Stacks" />

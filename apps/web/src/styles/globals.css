@@ -130,38 +130,38 @@
 }
 
 .dark {
-  --background: oklch(0.2478 0 0);
-  --foreground: oklch(0.9067 0 0);
-  --card: oklch(0.2931 0 0);
-  --card-foreground: oklch(0.9067 0 0);
-  --popover: oklch(0.2931 0 0);
-  --popover-foreground: oklch(0.9067 0 0);
-  --primary: oklch(0.8749 0.2353 151.0240);
-  --primary-foreground: oklch(0.2178 0 0);
-  --secondary: oklch(0.4091 0 0);
-  --secondary-foreground: oklch(0.9067 0 0);
-  --muted: oklch(0.3211 0 0);
-  --muted-foreground: oklch(0.7058 0 0);
-  --accent: oklch(0.3211 0 0);
-  --accent-foreground: oklch(0.9067 0 0);
-  --destructive: oklch(0.6636 0.2231 25.7269);
-  --border: oklch(0.45 0 0);
-  --input: oklch(0.45 0 0);
-  --ring: oklch(0.8749 0.2353 151.0240);
-  --chart-1: oklch(0.8749 0.2353 151.0240);
-  --chart-2: oklch(0.9054 0.1546 194.7689);
-  --chart-3: oklch(0.8868 0.1822 95.3305);
-  --chart-4: oklch(0.7283 0.1971 351.9947);
-  --chart-5: oklch(0.6269 0.1580 296.6718);
-  --sidebar: oklch(0.2178 0 0);
-  --sidebar-foreground: oklch(0.9067 0 0);
-  --sidebar-primary: oklch(0.8749 0.2353 151.0240);
-  --sidebar-primary-foreground: oklch(0.2178 0 0);
-  --sidebar-accent: oklch(0.9054 0.1546 194.7689);
-  --sidebar-accent-foreground: oklch(0.2178 0 0);
-  --sidebar-border: oklch(0.3485 0 0);
-  --sidebar-ring: oklch(0.8749 0.2353 151.0240);
-  --destructive-foreground: oklch(0.2178 0 0);
+  --background: #0A0C10;
+  --foreground: #C9D1D9;
+  --card: #0D1117;
+  --card-foreground: #C9D1D9;
+  --popover: #161B22;
+  --popover-foreground: #C9D1D9;
+  --primary: #39FF14;
+  --primary-foreground: #0A0C10;
+  --secondary: #161B22;
+  --secondary-foreground: #C9D1D9;
+  --muted: #161B22;
+  --muted-foreground: #8B949E;
+  --accent: #161B22;
+  --accent-foreground: #C9D1D9;
+  --destructive: #FF6B6B;
+  --border: #30363D;
+  --input: #30363D;
+  --ring: #39FF14;
+  --chart-1: #39FF14;
+  --chart-2: #00D4FF;
+  --chart-3: #F0A500;
+  --chart-4: #FF6B6B;
+  --chart-5: #A855F7;
+  --sidebar: #0A0C10;
+  --sidebar-foreground: #C9D1D9;
+  --sidebar-primary: #39FF14;
+  --sidebar-primary-foreground: #0A0C10;
+  --sidebar-accent: #161B22;
+  --sidebar-accent-foreground: #C9D1D9;
+  --sidebar-border: #30363D;
+  --sidebar-ring: #39FF14;
+  --destructive-foreground: #0A0C10;
   --radius: 0.5rem;
   --font-sans: Inter, ui-sans-serif, sans-serif, system-ui;
   --font-serif: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
@@ -241,3 +241,47 @@
 .animate-fade-in {
   animation: fade-in 0.5s ease-out forwards;
 }
+
+/* HUD-style utilities for dark theme */
+.dark .hud-noise {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.015;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+.dark .hud-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 0%, transparent 50%, rgba(0,0,0,0.4) 100%);
+}
+
+/* Section ID styling (like // SEC_01: DASHBOARD) */
+.section-id {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+/* Terminal-style card */
+.dark .terminal-card {
+  background-color: #0D1117;
+  border-color: #30363D;
+}
+
+.dark .terminal-card-header {
+  background-color: #161B22;
+  border-bottom-color: #30363D;
+}
+
+/* Status colors */
+.status-safe { color: #39FF14; }
+.status-warning { color: #F0A500; }
+.status-danger { color: #FF6B6B; }
+.status-info { color: #00D4FF; }
