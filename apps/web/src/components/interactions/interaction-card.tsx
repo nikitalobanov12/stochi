@@ -280,30 +280,72 @@ type RatioCardProps = {
   defaultExpanded?: boolean;
 };
 
+// Helper to format dosage with appropriate units
+function formatDosage(value: number, unit: string): string {
+  // Round to sensible precision based on magnitude
+  if (value >= 1000) {
+    return `${Math.round(value / 100) * 100}${unit}`;
+  } else if (value >= 100) {
+    return `${Math.round(value / 10) * 10}${unit}`;
+  } else if (value >= 10) {
+    return `${Math.round(value)}${unit}`;
+  } else {
+    return `${Math.round(value * 10) / 10}${unit}`;
+  }
+}
+
+type AdjustmentSuggestion = {
+  action: "increase" | "decrease";
+  supplement: string;
+  rangeMin: string;
+  rangeMax: string;
+  explanation: string;
+} | null;
+
 export function RatioCard({ warning, defaultExpanded = false }: RatioCardProps) {
   const [isOpen, setIsOpen] = useState(defaultExpanded);
   const styles = getSeverityStyles(warning.severity);
 
-  // Calculate what adjustment is needed
-  const getAdjustmentSuggestion = () => {
-    if (warning.optimalRatio === null) return null;
+  // Calculate what adjustment is needed - returns a range
+  const getAdjustmentSuggestion = (): AdjustmentSuggestion => {
+    const { currentRatio, minRatio, maxRatio, source, target } = warning;
     
-    const currentRatio = warning.currentRatio;
-    const optimal = warning.optimalRatio;
+    // Need both min and max to calculate a meaningful range
+    if (minRatio === null || maxRatio === null) return null;
+    if (source.dosage === 0 || target.dosage === 0) return null;
     
-    if (currentRatio > (warning.maxRatio ?? optimal)) {
-      // Ratio too high - need more target or less source
-      const targetNeeded = Math.round(warning.source.dosage / optimal);
-      return `Consider ${targetNeeded}${warning.target.unit} of ${warning.target.name} to balance`;
-    } else if (currentRatio < (warning.minRatio ?? optimal)) {
-      // Ratio too low - need more source or less target
-      const sourceNeeded = Math.round(warning.target.dosage * optimal);
-      return `Consider ${sourceNeeded}${warning.source.unit} of ${warning.source.name} to balance`;
+    if (currentRatio < minRatio) {
+      // Ratio too low - need more source (or less target)
+      // Calculate source needed to hit min and max ratios
+      const sourceForMin = target.dosage * minRatio;
+      const sourceForMax = target.dosage * maxRatio;
+      
+      return {
+        action: "increase",
+        supplement: source.name,
+        rangeMin: formatDosage(sourceForMin, source.unit),
+        rangeMax: formatDosage(sourceForMax, source.unit),
+        explanation: `With ${target.dosage}${target.unit} ${target.name}, aim for ${minRatio}-${maxRatio}:1`,
+      };
+    } else if (currentRatio > maxRatio) {
+      // Ratio too high - need more target (or less source)
+      // Calculate target needed to hit min and max ratios
+      const targetForMax = source.dosage / minRatio; // More target = lower ratio
+      const targetForMin = source.dosage / maxRatio; // Less target = higher ratio
+      
+      return {
+        action: "increase",
+        supplement: target.name,
+        rangeMin: formatDosage(targetForMin, target.unit),
+        rangeMax: formatDosage(targetForMax, target.unit),
+        explanation: `With ${source.dosage}${source.unit} ${source.name}, aim for ${minRatio}-${maxRatio}:1`,
+      };
     }
+    
     return null;
   };
 
-  const adjustmentSuggestion = getAdjustmentSuggestion();
+  const suggestion = getAdjustmentSuggestion();
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -381,16 +423,41 @@ export function RatioCard({ warning, defaultExpanded = false }: RatioCardProps) 
               </div>
             )}
 
-            {/* Adjustment Suggestion */}
-            {adjustmentSuggestion && (
+            {/* Adjustment Suggestion - Now with range */}
+            {suggestion && (
               <div className="flex gap-2 rounded-md bg-background/50 p-2">
                 <Lightbulb className="h-4 w-4 shrink-0 text-primary mt-0.5" />
                 <div>
-                  <p className="text-xs font-medium text-primary mb-0.5">How to fix</p>
-                  <p className="text-sm">{adjustmentSuggestion}</p>
+                  <p className="text-xs font-medium text-primary mb-0.5">How to optimize</p>
+                  <p className="text-sm font-medium">
+                    {suggestion.action === "increase" ? "Increase" : "Decrease"}{" "}
+                    {suggestion.supplement} to{" "}
+                    <span className="font-mono">{suggestion.rangeMin}-{suggestion.rangeMax}</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {suggestion.explanation}
+                  </p>
                 </div>
               </div>
             )}
+
+            {/* Research Link */}
+            {warning.researchUrl && (
+              <a
+                href={warning.researchUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ExternalLink className="h-3 w-3" />
+                <span>View research on Examine.com</span>
+              </a>
+            )}
+
+            {/* Disclaimer */}
+            <p className="text-[10px] text-muted-foreground/70 border-t border-border/30 pt-2">
+              Analysis based on indexed research. Not medical advice.
+            </p>
           </div>
         </CollapsibleContent>
       </div>

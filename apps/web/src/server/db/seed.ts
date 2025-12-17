@@ -1050,6 +1050,7 @@ async function seed() {
       optimalRatio: 10,
       warningMessage: "Zn:Cu ratio outside optimal range (8-15:1). High zinc without copper causes copper deficiency.",
       severity: "critical" as const,
+      researchUrl: "https://examine.com/supplements/zinc/#interactions-with-other-nutrients_copper",
     },
     {
       sourceSupplementId: supplementMap.get("Zinc Gluconate")!,
@@ -1059,6 +1060,7 @@ async function seed() {
       optimalRatio: 10,
       warningMessage: "Zn:Cu ratio outside optimal range (8-15:1). High zinc without copper causes copper deficiency.",
       severity: "critical" as const,
+      researchUrl: "https://examine.com/supplements/zinc/#interactions-with-other-nutrients_copper",
     },
     // Calcium:Magnesium ratio (optimal 1-2:1, problems above 2:1)
     {
@@ -1069,6 +1071,7 @@ async function seed() {
       optimalRatio: 1,
       warningMessage: "Ca:Mg ratio outside optimal range (1-2:1). Excess calcium impairs magnesium absorption.",
       severity: "medium" as const,
+      researchUrl: "https://examine.com/supplements/calcium/#interactions-with-other-nutrients_magnesium",
     },
     {
       sourceSupplementId: supplementMap.get("Calcium")!,
@@ -1078,6 +1081,7 @@ async function seed() {
       optimalRatio: 1,
       warningMessage: "Ca:Mg ratio outside optimal range (1-2:1). Excess calcium impairs magnesium absorption.",
       severity: "medium" as const,
+      researchUrl: "https://examine.com/supplements/calcium/#interactions-with-other-nutrients_magnesium",
     },
     {
       sourceSupplementId: supplementMap.get("Calcium")!,
@@ -1087,6 +1091,7 @@ async function seed() {
       optimalRatio: 1,
       warningMessage: "Ca:Mg ratio outside optimal range (1-2:1). Excess calcium impairs magnesium absorption.",
       severity: "medium" as const,
+      researchUrl: "https://examine.com/supplements/calcium/#interactions-with-other-nutrients_magnesium",
     },
     {
       sourceSupplementId: supplementMap.get("Calcium")!,
@@ -1096,6 +1101,7 @@ async function seed() {
       optimalRatio: 1,
       warningMessage: "Ca:Mg ratio outside optimal range (1-2:1). Excess calcium impairs magnesium absorption.",
       severity: "medium" as const,
+      researchUrl: "https://examine.com/supplements/calcium/#interactions-with-other-nutrients_magnesium",
     },
     // Iron:Zinc ratio
     {
@@ -1106,6 +1112,7 @@ async function seed() {
       optimalRatio: 1,
       warningMessage: "Fe:Zn ratio outside optimal range. Both compete for DMT1 transporter - balance intake.",
       severity: "medium" as const,
+      researchUrl: "https://examine.com/supplements/iron/#interactions-with-other-nutrients_zinc",
     },
     {
       sourceSupplementId: supplementMap.get("Iron Bisglycinate")!,
@@ -1115,6 +1122,7 @@ async function seed() {
       optimalRatio: 1,
       warningMessage: "Fe:Zn ratio outside optimal range. Both compete for DMT1 transporter - balance intake.",
       severity: "medium" as const,
+      researchUrl: "https://examine.com/supplements/iron/#interactions-with-other-nutrients_zinc",
     },
     // Vitamin D3:K2 ratio
     {
@@ -1125,6 +1133,7 @@ async function seed() {
       optimalRatio: 100,
       warningMessage: "D3:K2 ratio outside optimal range (50-200:1). K2 helps direct calcium to bones, preventing arterial calcification.",
       severity: "low" as const,
+      researchUrl: "https://examine.com/supplements/vitamin-k/#interactions-with-other-nutrients_vitamin-d",
     },
   ];
 

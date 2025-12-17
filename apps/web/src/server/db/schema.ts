@@ -48,6 +48,7 @@ export const ratioRule = pgTable("ratio_rule", {
   optimalRatio: real("optimal_ratio"), // optimal ratio (e.g., 10:1 for Zn:Cu)
   warningMessage: text("warning_message").notNull(),
   severity: severityEnum("severity").notNull(),
+  researchUrl: text("research_url"), // Link to Examine.com or study for grounding
   createdAt: timestamp("created_at")
     .$defaultFn(() => new Date())
     .notNull(),

@@ -39,6 +39,7 @@ export type RatioWarning = {
   optimalRatio: number | null;
   minRatio: number | null;
   maxRatio: number | null;
+  researchUrl: string | null; // Link to Examine.com or study
   source: {
     id: string;
     name: string;
@@ -92,6 +93,7 @@ type EngineRatioWarning = {
   minRatio?: number;
   maxRatio?: number;
   warningMessage: string;
+  researchUrl?: string; // Link to Examine.com or study
   source: {
     id: string;
     name: string;
@@ -165,6 +167,7 @@ async function checkInteractionsViaEngine(
         optimalRatio: rw.optimalRatio ?? null,
         minRatio: rw.minRatio ?? null,
         maxRatio: rw.maxRatio ?? null,
+        researchUrl: rw.researchUrl ?? null,
         source: {
           id: rw.source.id,
           name: rw.source.name,
@@ -330,6 +333,7 @@ export async function checkRatioWarnings(
         optimalRatio: rule.optimalRatio,
         minRatio: rule.minRatio,
         maxRatio: rule.maxRatio,
+        researchUrl: rule.researchUrl ?? null,
         source: {
           id: rule.sourceSupplement.id,
           name: rule.sourceSupplement.name,
