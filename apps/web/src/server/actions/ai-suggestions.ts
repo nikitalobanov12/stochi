@@ -293,6 +293,6 @@ export async function generateDosageExplanation(
 /**
  * Check if AI suggestions are enabled (API key is configured)
  */
-export function isAISuggestionsEnabled(): boolean {
+export async function isAISuggestionsEnabled(): Promise<boolean> {
   return !!env.HUGGINGFACE_API_KEY;
 }
