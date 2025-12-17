@@ -2,6 +2,32 @@
 
 This file provides guidance for AI agents working on the Stochi codebase.
 
+## CRITICAL: Database Migration Rules
+
+**NEVER use `db:push` for schema changes.** Always use migrations:
+
+```bash
+# Schema change workflow:
+1. Edit src/server/db/schema.ts
+2. bun db:generate              # Creates migration file in drizzle/
+3. bun db:migrate               # Applies migration (non-interactive)
+4. git add src/server/db/schema.ts drizzle/
+5. git commit -m "feat(schema): description of change"
+```
+
+**Why?**
+- `db:push` is interactive (breaks CI/automation)
+- `db:push` doesn't track history (no migration files)
+- `db:push` causes conflicts with `__drizzle_migrations` table
+- Migrations ensure schema syncs across all environments
+
+**If migrations fail with "already exists" errors:**
+The database was likely set up with `db:push`. Manually mark migrations as applied:
+```sql
+INSERT INTO drizzle.__drizzle_migrations (hash, created_at)
+VALUES ('migration_tag_from_journal', unix_timestamp_ms);
+```
+
 ## CRITICAL: Workflow Requirements
 
 ### Before Every Commit

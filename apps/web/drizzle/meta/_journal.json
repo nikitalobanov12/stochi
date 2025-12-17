@@ -15,6 +15,13 @@
       "when": 1765920436756,
       "tag": "0001_careless_quasar",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1765997673456,
+      "tag": "0002_secret_lilith",
+      "breakpoints": true
     }
   ]
 }
