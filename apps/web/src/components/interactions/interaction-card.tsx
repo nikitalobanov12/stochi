@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { ExternalLink, ChevronDown, Lightbulb, Zap, AlertTriangle, Clock, Scale } from "lucide-react";
+import { useState, useEffect, useTransition, useRef } from "react";
+import { ExternalLink, ChevronDown, Lightbulb, Zap, AlertTriangle, Clock, Scale, Sparkles, Loader2 } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -11,6 +11,7 @@ import {
 } from "~/components/ui/collapsible";
 import { cn } from "~/lib/utils";
 import type { InteractionWarning, TimingWarning, RatioWarning } from "~/server/actions/interactions";
+import { generateDosageExplanation, type DosageExplanationResponse } from "~/server/actions/ai-suggestions";
 
 // ============================================================================
 // Shared Utilities
@@ -304,6 +305,9 @@ type AdjustmentSuggestion = {
 
 export function RatioCard({ warning, defaultExpanded = false }: RatioCardProps) {
   const [isOpen, setIsOpen] = useState(defaultExpanded);
+  const [aiInsight, setAiInsight] = useState<DosageExplanationResponse | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const loadAttemptedRef = useRef(false);
   const styles = getSeverityStyles(warning.severity);
 
   // Calculate what adjustment is needed - returns a range
@@ -346,6 +350,40 @@ export function RatioCard({ warning, defaultExpanded = false }: RatioCardProps) 
   };
 
   const suggestion = getAdjustmentSuggestion();
+
+  // Load AI insight when card is expanded
+  useEffect(() => {
+    if (!isOpen || !suggestion || loadAttemptedRef.current || isPending) return;
+
+    // Mark as attempted before starting transition (ref doesn't trigger re-render)
+    loadAttemptedRef.current = true;
+    
+    startTransition(async () => {
+      try {
+        const result = await generateDosageExplanation({
+          sourceId: warning.source.id,
+          sourceName: warning.source.name,
+          sourceDosage: warning.source.dosage,
+          sourceUnit: warning.source.unit,
+          targetId: warning.target.id,
+          targetName: warning.target.name,
+          targetDosage: warning.target.dosage,
+          targetUnit: warning.target.unit,
+          currentRatio: warning.currentRatio,
+          optimalRatio: warning.optimalRatio,
+          minRatio: warning.minRatio,
+          maxRatio: warning.maxRatio,
+          warningMessage: warning.message,
+          suggestedSupplement: suggestion!.supplement,
+          suggestedRangeMin: suggestion!.rangeMin,
+          suggestedRangeMax: suggestion!.rangeMax,
+        });
+        setAiInsight(result);
+      } catch (error) {
+        console.error("Failed to load AI insight:", error);
+      }
+    });
+  }, [isOpen, suggestion, isPending, warning]);
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -438,6 +476,40 @@ export function RatioCard({ warning, defaultExpanded = false }: RatioCardProps) 
                     {suggestion.explanation}
                   </p>
                 </div>
+              </div>
+            )}
+
+            {/* AI Insight Section */}
+            {suggestion && (
+              <div className="rounded-md border border-primary/20 bg-primary/5 p-2.5">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-primary" />
+                  <p className="text-xs font-medium text-primary">AI Insight</p>
+                  {aiInsight?.cached && (
+                    <Badge variant="outline" className="text-[10px] px-1 py-0 h-4">
+                      cached
+                    </Badge>
+                  )}
+                </div>
+                {isPending ? (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span>Generating explanation...</span>
+                  </div>
+                ) : aiInsight ? (
+                  <div className="space-y-2">
+                    <p className="text-sm leading-relaxed">{aiInsight.explanation}</p>
+                    {aiInsight.researchSnippet && (
+                      <p className="text-xs text-muted-foreground border-l-2 border-primary/30 pl-2">
+                        {aiInsight.researchSnippet}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Expand card to load AI insight
+                  </p>
+                )}
               </div>
             )}
 

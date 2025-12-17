@@ -105,6 +105,16 @@ _Connect the two halves and remove duplication._
 ## 🧊 Icebox (Future / Post-MVP)
 
 - [ ] **OCR Label Scanning:** Upload photo of bottle -> Textract -> Match Supplement.
-- [ ] **RAG Medical Search:** "Chat with your stack" using vector search on PubMed abstracts.
 - [ ] **Wearable Integration:** Sync sleep data from Apple Health (requires native wrapper later).
 - [ ] **Scan Tab:** Barcode/QR scanning for supplement bottles.
+
+---
+
+## ✅ Completed (Post-MVP Features)
+
+- [x] **AI Dosage Suggestions:** HuggingFace Inference API integration for ratio warning explanations.
+  - [x] Server-side AI via Zephyr-7B model
+  - [x] Safety guardrails with NIH/FDA upper limits
+  - [x] 7-day in-memory caching
+  - [x] Fallback to DB mechanism text when API unavailable
+  - [x] Integrated into RatioCard component

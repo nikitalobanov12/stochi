@@ -264,18 +264,20 @@ Always validate AI suggestions against known safe upper limits:
 
 ## Implementation Roadmap
 
-### Phase 1: Deterministic (This Sprint)
+### Phase 1: Deterministic Range Calculator ✅ COMPLETE
 - [x] Schema: Add `researchUrl` to `ratioRule`
-- [ ] Seed: Add Examine.com links to all ratio rules  
-- [ ] Component: Improve `RatioCard` with dosage range + research link
+- [x] Seed: Add Examine.com links to all ratio rules  
+- [x] Component: Improve `RatioCard` with dosage range + research link
 - [ ] Deploy: Push to production
 
-### Phase 2: AI Enhancement (Future Sprint)
-- [ ] Curate research corpus (50-100 snippets)
-- [ ] Set up HuggingFace Inference API
-- [ ] Implement RAG retrieval for research snippets
-- [ ] Add AI explanation as async enhancement
-- [ ] A/B test engagement
+### Phase 2: AI Enhancement ✅ COMPLETE
+- [x] Set up HuggingFace Inference API (Zephyr-7B model)
+- [x] Add AI explanation as async enhancement in RatioCard
+- [x] Implement safety guardrails (NIH/FDA upper limits validation)
+- [x] Add 7-day in-memory caching for responses
+- [x] Fallback to DB mechanism text when API unavailable
+- [ ] Curate research corpus (50-100 snippets) - deferred
+- [ ] A/B test engagement - deferred
 
 ### Phase 3: Production AI (Future)
 - [ ] Evaluate client-side vs server-side tradeoffs

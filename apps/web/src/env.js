@@ -14,6 +14,8 @@ export const env = createEnv({
     ENGINE_URL: z.string().url().optional(),
     // Shared secret for internal service-to-service auth with Go engine
     ENGINE_INTERNAL_KEY: z.string().optional(),
+    // HuggingFace Inference API key (optional - enables AI dosage suggestions)
+    HUGGINGFACE_API_KEY: z.string().optional(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -34,6 +36,7 @@ export const env = createEnv({
     DATABASE_URL: process.env.DATABASE_URL,
     ENGINE_URL: process.env.ENGINE_URL,
     ENGINE_INTERNAL_KEY: process.env.ENGINE_INTERNAL_KEY,
+    HUGGINGFACE_API_KEY: process.env.HUGGINGFACE_API_KEY,
     NODE_ENV: process.env.NODE_ENV,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
