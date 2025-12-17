@@ -34,9 +34,9 @@ export const sessionRelations = relations(session, ({one}) => ({
 
 export const userRelations = relations(user, ({many}) => ({
 	sessions: many(session),
-	stacks: many(stack),
 	logs: many(log),
 	accounts: many(account),
+	stacks: many(stack),
 }));
 
 export const stackItemRelations = relations(stackItem, ({one}) => ({

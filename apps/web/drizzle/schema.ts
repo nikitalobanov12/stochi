@@ -1,9 +1,10 @@
-import { pgTable, index, foreignKey, check, uuid, text, timestamp, unique, real, boolean, pgEnum } from "drizzle-orm/pg-core"
+import { pgTable, index, foreignKey, check, uuid, text, timestamp, unique, real, boolean, integer, pgEnum } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 export const dosageUnit = pgEnum("dosage_unit", ['mg', 'mcg', 'g', 'IU', 'ml'])
 export const interactionType = pgEnum("interaction_type", ['inhibition', 'synergy', 'competition'])
 export const severity = pgEnum("severity", ['low', 'medium', 'critical'])
+export const supplementCategory = pgEnum("supplement_category", ['mineral', 'vitamin', 'amino-acid', 'adaptogen', 'nootropic', 'antioxidant', 'omega', 'other'])
 
 
 export const interaction = pgTable("interaction", {
@@ -82,26 +83,6 @@ export const stackItem = pgTable("stack_item", {
 	check("stack_item_supplement_id_not_null", sql`NOT NULL supplement_id`),
 	check("stack_item_dosage_not_null", sql`NOT NULL dosage`),
 	check("stack_item_unit_not_null", sql`NOT NULL unit`),
-]);
-
-export const stack = pgTable("stack", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	userId: text("user_id").notNull(),
-	name: text().notNull(),
-	createdAt: timestamp("created_at", { mode: 'string' }).notNull(),
-	updatedAt: timestamp("updated_at", { mode: 'string' }).notNull(),
-}, (table) => [
-	index("stack_user_idx").using("btree", table.userId.asc().nullsLast().op("text_ops")),
-	foreignKey({
-			columns: [table.userId],
-			foreignColumns: [user.id],
-			name: "stack_user_id_user_id_fk"
-		}).onDelete("cascade"),
-	check("stack_id_not_null", sql`NOT NULL id`),
-	check("stack_user_id_not_null", sql`NOT NULL user_id`),
-	check("stack_name_not_null", sql`NOT NULL name`),
-	check("stack_created_at_not_null", sql`NOT NULL created_at`),
-	check("stack_updated_at_not_null", sql`NOT NULL updated_at`),
 ]);
 
 export const log = pgTable("log", {
@@ -194,6 +175,41 @@ export const account = pgTable("account", {
 	check("account_updated_at_not_null", sql`NOT NULL updated_at`),
 ]);
 
+export const stack = pgTable("stack", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	userId: text("user_id").notNull(),
+	name: text().notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).notNull(),
+	isPublic: boolean("is_public").default(false),
+}, (table) => [
+	index("stack_user_idx").using("btree", table.userId.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [user.id],
+			name: "stack_user_id_user_id_fk"
+		}).onDelete("cascade"),
+	check("stack_id_not_null", sql`NOT NULL id`),
+	check("stack_user_id_not_null", sql`NOT NULL user_id`),
+	check("stack_name_not_null", sql`NOT NULL name`),
+	check("stack_created_at_not_null", sql`NOT NULL created_at`),
+	check("stack_updated_at_not_null", sql`NOT NULL updated_at`),
+]);
+
+export const userGoal = pgTable("user_goal", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	userId: text("user_id").notNull(),
+	goal: text().notNull(),
+	priority: integer().default(1).notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).notNull(),
+}, (table) => [
+	check("user_goal_id_not_null", sql`NOT NULL id`),
+	check("user_goal_user_id_not_null", sql`NOT NULL user_id`),
+	check("user_goal_goal_not_null", sql`NOT NULL goal`),
+	check("user_goal_priority_not_null", sql`NOT NULL priority`),
+	check("user_goal_created_at_not_null", sql`NOT NULL created_at`),
+]);
+
 export const ratioRule = pgTable("ratio_rule", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	sourceSupplementId: uuid("source_supplement_id").notNull(),
@@ -239,6 +255,11 @@ export const supplement = pgTable("supplement", {
 	createdAt: timestamp("created_at", { mode: 'string' }).notNull(),
 	updatedAt: timestamp("updated_at", { mode: 'string' }).notNull(),
 	defaultUnit: dosageUnit("default_unit").default('mg'),
+	description: text(),
+	mechanism: text(),
+	researchUrl: text("research_url"),
+	category: supplementCategory(),
+	commonGoals: text("common_goals").array(),
 }, (table) => [
 	index("supplement_name_idx").using("btree", table.name.asc().nullsLast().op("text_ops")),
 	unique("supplement_name_unique").on(table.name),
