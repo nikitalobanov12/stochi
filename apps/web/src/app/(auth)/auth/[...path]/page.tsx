@@ -51,9 +51,6 @@ export default async function AuthPage({
         <div className="rounded-xl border border-border bg-card p-6">
           <AuthView path={path[0] ?? "sign-in"} />
         </div>
-        <p className="mt-6 text-center font-mono text-xs text-muted-foreground">
-          {"// SECURE_AUTH"}
-        </p>
       </div>
     </main>
   );

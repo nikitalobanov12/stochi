@@ -260,15 +260,6 @@
   background: radial-gradient(ellipse at center, transparent 0%, transparent 50%, rgba(0,0,0,0.4) 100%);
 }
 
-/* Section ID styling (like // SEC_01: DASHBOARD) */
-.section-id {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  opacity: 0.6;
-}
-
 /* Terminal-style card */
 .dark .terminal-card {
   background-color: #0D1117;

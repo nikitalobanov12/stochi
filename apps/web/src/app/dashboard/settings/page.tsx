@@ -74,7 +74,6 @@ export default async function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="section-id text-primary">{"// SETTINGS"}</div>
       <div>
         <h1 className="font-mono text-2xl font-bold tracking-tight">Settings</h1>
         <p className="text-sm text-muted-foreground">

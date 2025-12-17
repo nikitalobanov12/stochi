@@ -36,7 +36,6 @@ export default async function StacksPage() {
 
   return (
     <div className="space-y-6">
-      <div className="section-id text-primary">{"// STACKS"}</div>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-mono text-2xl font-bold tracking-tight">Stacks</h1>

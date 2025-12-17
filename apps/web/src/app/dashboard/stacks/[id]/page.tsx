@@ -81,7 +81,6 @@ export default async function StackDetailPage({
 
   return (
     <div className="space-y-6">
-      <div className="section-id text-primary">{"// STACK_DETAIL"}</div>
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/dashboard/stacks">

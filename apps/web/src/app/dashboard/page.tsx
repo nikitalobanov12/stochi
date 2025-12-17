@@ -75,11 +75,6 @@ export default async function DashboardPage() {
       <WelcomeFlow open={needsOnboarding} supplements={allSupplements} />
 
       <div className="space-y-6">
-        {/* Section ID */}
-        <div className="section-id text-primary">
-          {"// DASHBOARD"}
-        </div>
-
         {/* Header */}
         <div>
           <h1 className="font-mono text-2xl font-bold tracking-tight">
@@ -104,8 +99,8 @@ export default async function DashboardPage() {
         {userStacks.length > 0 && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="section-id text-muted-foreground">
-                {"// QUICK_LOG"}
+              <h2 className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Quick Log
               </h2>
               <Button variant="ghost" size="sm" asChild className="h-auto py-1 text-xs text-muted-foreground hover:text-foreground">
                 <Link href="/dashboard/stacks">
@@ -154,8 +149,8 @@ export default async function DashboardPage() {
             {/* Today's Log */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h2 className="section-id text-muted-foreground">
-                  {"// TODAY"}
+                <h2 className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Today
                 </h2>
                 <Button variant="ghost" size="sm" asChild className="h-auto py-1 text-xs text-muted-foreground hover:text-foreground">
                   <Link href="/dashboard/log">

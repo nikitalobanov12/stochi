@@ -87,7 +87,6 @@ export default async function LogPage() {
 
   return (
     <div className="space-y-6 overflow-hidden">
-      <div className="section-id text-primary">{"// LOG_INTAKE"}</div>
       <div>
         <h1 className="font-mono text-2xl font-bold tracking-tight">Log</h1>
         <p className="text-sm text-muted-foreground">
