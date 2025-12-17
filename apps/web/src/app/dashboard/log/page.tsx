@@ -87,18 +87,19 @@ export default async function LogPage() {
 
   return (
     <div className="space-y-6 overflow-hidden">
+      <div className="section-id text-primary">{"// LOG_INTAKE"}</div>
       <div>
-        <h1 className="font-mono text-2xl font-bold">Log</h1>
+        <h1 className="font-mono text-2xl font-bold tracking-tight">Log</h1>
         <p className="text-sm text-muted-foreground">
           Track your supplement intake
         </p>
       </div>
 
       {/* Quick Entry Command Bar */}
-      <Card>
+      <Card className="rounded-xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 font-mono text-base">
-            <Terminal className="h-4 w-4" />
+            <Terminal className="h-4 w-4 text-primary" />
             Quick Entry
           </CardTitle>
           <CardDescription>
@@ -114,10 +115,10 @@ export default async function LogPage() {
         <div className="space-y-6 lg:col-span-2">
           {/* Quick Log from Stacks */}
           {userStacks.length > 0 && (
-            <Card>
+            <Card className="rounded-xl">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-mono text-base">
-                  <Zap className="h-4 w-4" />
+                  <Zap className="h-4 w-4 text-primary" />
                   Quick Log Stacks
                 </CardTitle>
                 <CardDescription>
@@ -135,7 +136,7 @@ export default async function LogPage() {
                         disabled={s.items.length === 0}
                       >
                         {s.name}
-                        <Badge variant="secondary" className="ml-2">
+                        <Badge variant="secondary" className="ml-2 tabular-nums">
                           {s.items.length}
                         </Badge>
                       </Button>
@@ -147,14 +148,14 @@ export default async function LogPage() {
           )}
 
           {/* Today's Logs */}
-          <Card>
+          <Card className="rounded-xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 font-mono text-base">
-                <Clock className="h-4 w-4" />
+                <Clock className="h-4 w-4 text-muted-foreground" />
                 Today&apos;s Log
               </CardTitle>
               <CardDescription>
-                {todaysLogs.length} entries today
+                <span className="tabular-nums">{todaysLogs.length}</span> entries today
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -217,7 +218,7 @@ export default async function LogPage() {
           <TodayInteractionsCard warnings={warnings} synergies={synergies} timingWarnings={timingWarnings} ratioWarnings={ratioWarnings} />
 
           {/* Recent History */}
-          <Card>
+          <Card className="rounded-xl">
             <CardHeader>
               <CardTitle className="font-mono text-base">
                 Recent History
@@ -335,17 +336,17 @@ function TodayInteractionsCard({
   const totalWarnings = warnings.length + timingWarnings.length + ratioWarnings.length;
 
   return (
-    <Card className={getWarningBorderClass(criticalCount, mediumCount)}>
+    <Card className={`rounded-xl ${getWarningBorderClass(criticalCount, mediumCount)}`}>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 font-mono text-base">
           {!hasInteractions ? (
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
+            <CheckCircle2 className="h-4 w-4 text-primary" />
           ) : totalWarnings > 0 ? (
             <AlertTriangle className={`h-4 w-4 ${
               criticalCount > 0 ? "text-destructive" : "text-yellow-500"
             }`} />
           ) : (
-            <Zap className="h-4 w-4 text-green-500" />
+            <Zap className="h-4 w-4 text-primary" />
           )}
           Today&apos;s Interactions
         </CardTitle>

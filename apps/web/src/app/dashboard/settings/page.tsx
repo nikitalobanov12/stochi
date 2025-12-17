@@ -74,8 +74,9 @@ export default async function SettingsPage() {
 
   return (
     <div className="space-y-6">
+      <div className="section-id text-primary">{"// SETTINGS"}</div>
       <div>
-        <h1 className="font-mono text-2xl font-bold">Settings</h1>
+        <h1 className="font-mono text-2xl font-bold tracking-tight">Settings</h1>
         <p className="text-sm text-muted-foreground">
           Manage your account and data
         </p>
@@ -88,10 +89,10 @@ export default async function SettingsPage() {
         </div>
 
         {/* Profile Card */}
-        <Card>
+        <Card className="rounded-xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 font-mono">
-              <User className="h-4 w-4" />
+              <User className="h-4 w-4 text-muted-foreground" />
               Profile
             </CardTitle>
             <CardDescription>Your account information</CardDescription>
@@ -118,22 +119,22 @@ export default async function SettingsPage() {
         </Card>
 
         {/* Data Stats Card */}
-        <Card>
+        <Card className="rounded-xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 font-mono">
-              <Database className="h-4 w-4" />
+              <Database className="h-4 w-4 text-muted-foreground" />
               Your Data
             </CardTitle>
             <CardDescription>Overview of your stored data</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
-              <div className="rounded-md bg-muted/50 p-3">
-                <p className="font-mono text-2xl font-bold">{logCount}</p>
+              <div className="rounded-lg bg-muted/50 p-3">
+                <p className="font-mono text-2xl font-bold tabular-nums">{logCount}</p>
                 <p className="text-xs text-muted-foreground">Total logs</p>
               </div>
-              <div className="rounded-md bg-muted/50 p-3">
-                <p className="font-mono text-2xl font-bold">{stackCount}</p>
+              <div className="rounded-lg bg-muted/50 p-3">
+                <p className="font-mono text-2xl font-bold tabular-nums">{stackCount}</p>
                 <p className="text-xs text-muted-foreground">Stacks</p>
               </div>
             </div>
@@ -141,10 +142,10 @@ export default async function SettingsPage() {
         </Card>
 
         {/* Data Export Card */}
-        <Card className="md:col-span-2">
+        <Card className="rounded-xl md:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 font-mono">
-              <Shield className="h-4 w-4" />
+              <Shield className="h-4 w-4 text-muted-foreground" />
               Data Sovereignty
             </CardTitle>
             <CardDescription>

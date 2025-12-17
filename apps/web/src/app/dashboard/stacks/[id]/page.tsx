@@ -81,6 +81,7 @@ export default async function StackDetailPage({
 
   return (
     <div className="space-y-6">
+      <div className="section-id text-primary">{"// STACK_DETAIL"}</div>
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/dashboard/stacks">
@@ -88,9 +89,9 @@ export default async function StackDetailPage({
           </Link>
         </Button>
         <div className="flex-1">
-          <h1 className="font-mono text-2xl font-bold">{userStack.name}</h1>
+          <h1 className="font-mono text-2xl font-bold tracking-tight">{userStack.name}</h1>
           <p className="text-sm text-muted-foreground">
-            {userStack.items.length} supplements in this stack
+            <span className="tabular-nums">{userStack.items.length}</span> supplements in this stack
           </p>
         </div>
         <form action={logStackWithId}>
@@ -107,7 +108,7 @@ export default async function StackDetailPage({
 
       <div className="grid gap-6 md:grid-cols-3">
         <div className="md:col-span-2">
-          <Card>
+          <Card className="rounded-xl">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="font-mono">Supplements</CardTitle>
@@ -179,7 +180,7 @@ export default async function StackDetailPage({
           {/* Interactions Card */}
           <InteractionsCard warnings={warnings} synergies={synergies} ratioWarnings={ratioWarnings} />
 
-          <Card>
+          <Card className="rounded-xl">
             <CardHeader>
               <CardTitle className="font-mono text-base">Settings</CardTitle>
             </CardHeader>
@@ -201,7 +202,7 @@ export default async function StackDetailPage({
             </CardContent>
           </Card>
 
-          <Card className="border-destructive/50">
+          <Card className="rounded-xl border-destructive/50">
             <CardHeader>
               <CardTitle className="font-mono text-base text-destructive">
                 Danger Zone
@@ -243,10 +244,10 @@ function InteractionsCard({
 
   if (!hasInteractions) {
     return (
-      <Card>
+      <Card className="rounded-xl">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 font-mono text-base">
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
+            <CheckCircle2 className="h-4 w-4 text-primary" />
             Interactions
           </CardTitle>
         </CardHeader>
@@ -260,7 +261,7 @@ function InteractionsCard({
   }
 
   return (
-    <Card className={getWarningBorderClass(criticalCount, mediumCount)}>
+    <Card className={`rounded-xl ${getWarningBorderClass(criticalCount, mediumCount)}`}>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 font-mono text-base">
           {(warnings.length > 0 || ratioWarnings.length > 0) ? (
@@ -268,7 +269,7 @@ function InteractionsCard({
               criticalCount > 0 ? "text-destructive" : "text-yellow-500"
             }`} />
           ) : (
-            <Zap className="h-4 w-4 text-green-500" />
+            <Zap className="h-4 w-4 text-primary" />
           )}
           Interactions
         </CardTitle>
