@@ -17,6 +17,8 @@ export type InteractionWarning = {
   type: "inhibition" | "synergy" | "competition";
   severity: "low" | "medium" | "critical";
   mechanism: string | null;
+  researchUrl: string | null;
+  suggestion: string | null;
   source: {
     id: string;
     name: string;
@@ -253,6 +255,8 @@ export async function checkInteractions(
     type: i.type,
     severity: i.severity,
     mechanism: i.mechanism,
+    researchUrl: i.researchUrl ?? null,
+    suggestion: i.suggestion ?? null,
     source: {
       id: i.source.id,
       name: i.source.name,

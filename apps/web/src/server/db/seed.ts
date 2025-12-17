@@ -694,6 +694,8 @@ async function seed() {
       type: "competition" as const,
       mechanism: "Metallothionein induction - high zinc induces metallothionein which binds copper",
       severity: "critical" as const,
+      researchUrl: "https://examine.com/supplements/zinc/#interactions-with-other-nutrients_copper",
+      suggestion: "Take zinc and copper at separate meals (2+ hours apart), or ensure 10:1 zinc:copper ratio",
     },
     {
       sourceId: supplementMap.get("Zinc Gluconate")!,
@@ -701,6 +703,8 @@ async function seed() {
       type: "competition" as const,
       mechanism: "Metallothionein induction - high zinc induces metallothionein which binds copper",
       severity: "critical" as const,
+      researchUrl: "https://examine.com/supplements/zinc/#interactions-with-other-nutrients_copper",
+      suggestion: "Take zinc and copper at separate meals (2+ hours apart), or ensure 10:1 zinc:copper ratio",
     },
 
     // ============================================
@@ -712,6 +716,8 @@ async function seed() {
       type: "competition" as const,
       mechanism: "DMT1 transporter competition",
       severity: "medium" as const,
+      researchUrl: "https://examine.com/supplements/iron/#interactions-with-other-nutrients_zinc",
+      suggestion: "Take iron and zinc at different meals - iron in morning, zinc with dinner",
     },
     {
       sourceId: supplementMap.get("Iron Bisglycinate")!,
@@ -719,6 +725,8 @@ async function seed() {
       type: "competition" as const,
       mechanism: "DMT1 transporter competition",
       severity: "medium" as const,
+      researchUrl: "https://examine.com/supplements/iron/#interactions-with-other-nutrients_zinc",
+      suggestion: "Take iron and zinc at different meals - iron in morning, zinc with dinner",
     },
 
     // ============================================
@@ -730,6 +738,8 @@ async function seed() {
       type: "competition" as const,
       mechanism: "Calcium inhibits both heme and non-heme iron absorption",
       severity: "medium" as const,
+      researchUrl: "https://examine.com/supplements/calcium/#interactions-with-other-nutrients_iron",
+      suggestion: "Take calcium and iron 2+ hours apart - iron with breakfast, calcium with dinner",
     },
     {
       sourceId: supplementMap.get("Calcium")!,
@@ -737,6 +747,8 @@ async function seed() {
       type: "competition" as const,
       mechanism: "Calcium competes for zinc absorption at intestinal level",
       severity: "medium" as const,
+      researchUrl: "https://examine.com/supplements/calcium/#interactions-with-other-nutrients_zinc",
+      suggestion: "Take calcium and zinc at separate meals for optimal absorption of both",
     },
     {
       sourceId: supplementMap.get("Calcium")!,
@@ -744,6 +756,8 @@ async function seed() {
       type: "competition" as const,
       mechanism: "Calcium competes for zinc absorption at intestinal level",
       severity: "medium" as const,
+      researchUrl: "https://examine.com/supplements/calcium/#interactions-with-other-nutrients_zinc",
+      suggestion: "Take calcium and zinc at separate meals for optimal absorption of both",
     },
     {
       sourceId: supplementMap.get("Calcium")!,
@@ -751,6 +765,8 @@ async function seed() {
       type: "competition" as const,
       mechanism: "High calcium intake can reduce magnesium absorption",
       severity: "low" as const,
+      researchUrl: "https://examine.com/supplements/calcium/#interactions-with-other-nutrients_magnesium",
+      suggestion: "Maintain ~2:1 calcium:magnesium ratio. Consider taking at different times if doses are high",
     },
 
     // ============================================
@@ -762,6 +778,8 @@ async function seed() {
       type: "inhibition" as const,
       mechanism: "Increases urinary magnesium excretion",
       severity: "medium" as const,
+      researchUrl: "https://examine.com/supplements/caffeine/#interactions-with-other-nutrients_magnesium",
+      suggestion: "Take magnesium 2+ hours after caffeine, or take magnesium before bed when caffeine has cleared",
     },
     {
       sourceId: supplementMap.get("Caffeine")!,
@@ -769,6 +787,8 @@ async function seed() {
       type: "inhibition" as const,
       mechanism: "Increases urinary magnesium excretion",
       severity: "medium" as const,
+      researchUrl: "https://examine.com/supplements/caffeine/#interactions-with-other-nutrients_magnesium",
+      suggestion: "Take magnesium 2+ hours after caffeine, or take magnesium before bed when caffeine has cleared",
     },
     {
       sourceId: supplementMap.get("Caffeine")!,
@@ -776,6 +796,8 @@ async function seed() {
       type: "inhibition" as const,
       mechanism: "Caffeine may reduce creatine absorption and negate ergogenic benefits",
       severity: "medium" as const,
+      researchUrl: "https://examine.com/supplements/creatine/#interactions-with-other-nutrients_caffeine",
+      suggestion: "Take creatine at a different time from caffeine - creatine works well post-workout",
     },
     {
       sourceId: supplementMap.get("Caffeine")!,
@@ -783,6 +805,8 @@ async function seed() {
       type: "inhibition" as const,
       mechanism: "Tannins and polyphenols in caffeine sources inhibit iron absorption",
       severity: "medium" as const,
+      researchUrl: "https://examine.com/supplements/iron/#interactions-with-other-nutrients_caffeine",
+      suggestion: "Take iron 1-2 hours before coffee/tea, or take iron at bedtime away from caffeine",
     },
     {
       sourceId: supplementMap.get("Caffeine")!,
@@ -790,6 +814,8 @@ async function seed() {
       type: "inhibition" as const,
       mechanism: "Caffeine may reduce zinc absorption and increase urinary zinc excretion",
       severity: "low" as const,
+      researchUrl: "https://examine.com/supplements/zinc/",
+      suggestion: "Minor interaction - take zinc with a meal separate from your morning coffee",
     },
     {
       sourceId: supplementMap.get("Caffeine")!,
@@ -797,6 +823,8 @@ async function seed() {
       type: "inhibition" as const,
       mechanism: "Caffeine may reduce zinc absorption and increase urinary zinc excretion",
       severity: "low" as const,
+      researchUrl: "https://examine.com/supplements/zinc/",
+      suggestion: "Minor interaction - take zinc with a meal separate from your morning coffee",
     },
 
     // ============================================
@@ -808,6 +836,8 @@ async function seed() {
       type: "synergy" as const,
       mechanism: "Reduces ferric iron to ferrous form, enhances absorption",
       severity: "low" as const,
+      researchUrl: "https://examine.com/supplements/iron/#interactions-with-other-nutrients_vitamin-c",
+      suggestion: "Take together! 100mg vitamin C can boost iron absorption 2-3x. Great combo.",
     },
     {
       sourceId: supplementMap.get("Vitamin D3")!,
@@ -815,6 +845,8 @@ async function seed() {
       type: "synergy" as const,
       mechanism: "K2 directs calcium mobilized by D3 to bones, prevents arterial calcification",
       severity: "low" as const,
+      researchUrl: "https://examine.com/supplements/vitamin-k/#interactions-with-other-nutrients_vitamin-d",
+      suggestion: "Take together! Essential pairing - K2 ensures D3-mobilized calcium goes to bones, not arteries",
     },
     {
       sourceId: supplementMap.get("L-Theanine")!,
@@ -822,6 +854,8 @@ async function seed() {
       type: "synergy" as const,
       mechanism: "L-Theanine smooths caffeine effects, reduces jitters, improves focus",
       severity: "low" as const,
+      researchUrl: "https://examine.com/supplements/theanine/#interactions-with-other-nutrients_caffeine",
+      suggestion: "Take together! Classic nootropic stack. Try 100-200mg theanine with your coffee for calm focus",
     },
     {
       sourceId: supplementMap.get("Piperine")!,
@@ -829,6 +863,8 @@ async function seed() {
       type: "synergy" as const,
       mechanism: "Inhibits glucuronidation, increases curcumin bioavailability by 2000%",
       severity: "low" as const,
+      researchUrl: "https://examine.com/supplements/curcumin/#interactions-with-other-nutrients_piperine",
+      suggestion: "Take together! Piperine is almost essential for curcumin - 5-20mg piperine per dose",
     },
     {
       sourceId: supplementMap.get("Piperine")!,
@@ -836,6 +872,8 @@ async function seed() {
       type: "synergy" as const,
       mechanism: "Piperine enhances CoQ10 absorption and bioavailability",
       severity: "low" as const,
+      researchUrl: "https://examine.com/supplements/coq10/",
+      suggestion: "Take together! Piperine boosts CoQ10 absorption, especially important for ubiquinone form",
     },
     {
       sourceId: supplementMap.get("Alpha Lipoic Acid")!,
@@ -843,6 +881,8 @@ async function seed() {
       type: "synergy" as const,
       mechanism: "ALA regenerates CoQ10, both work synergistically as antioxidants",
       severity: "low" as const,
+      researchUrl: "https://examine.com/supplements/alpha-lipoic-acid/",
+      suggestion: "Take together! ALA recycles CoQ10 - powerful mitochondrial support combo",
     },
     {
       sourceId: supplementMap.get("NAC")!,
@@ -850,6 +890,8 @@ async function seed() {
       type: "synergy" as const,
       mechanism: "NAC and Vitamin C work synergistically to regenerate glutathione",
       severity: "low" as const,
+      researchUrl: "https://examine.com/supplements/n-acetylcysteine/",
+      suggestion: "Take together! Both support glutathione - your body's master antioxidant",
     },
     {
       sourceId: supplementMap.get("NAC")!,
@@ -857,6 +899,8 @@ async function seed() {
       type: "synergy" as const,
       mechanism: "NAC is a precursor to glutathione synthesis",
       severity: "low" as const,
+      researchUrl: "https://examine.com/supplements/n-acetylcysteine/",
+      suggestion: "Good combo but potentially redundant - NAC boosts glutathione production naturally. Choose one or use both for acute support",
     },
     {
       sourceId: supplementMap.get("Vitamin D3")!,
@@ -864,6 +908,8 @@ async function seed() {
       type: "synergy" as const,
       mechanism: "Magnesium is required for vitamin D activation and metabolism",
       severity: "low" as const,
+      researchUrl: "https://examine.com/supplements/vitamin-d/#interactions-with-other-nutrients_magnesium",
+      suggestion: "Take together! Magnesium activates vitamin D. Many D3 'non-responders' are actually magnesium deficient",
     },
     {
       sourceId: supplementMap.get("Quercetin")!,
@@ -871,6 +917,8 @@ async function seed() {
       type: "synergy" as const,
       mechanism: "Quercetin enhances vitamin C absorption and both have synergistic antioxidant effects",
       severity: "low" as const,
+      researchUrl: "https://examine.com/supplements/quercetin/",
+      suggestion: "Take together! Quercetin recycles vitamin C and both enhance immune function",
     },
 
     // ============================================
@@ -882,6 +930,8 @@ async function seed() {
       type: "synergy" as const,
       mechanism: "B6 and B12 work together in methylation cycle and homocysteine metabolism",
       severity: "low" as const,
+      researchUrl: "https://examine.com/supplements/vitamin-b12/",
+      suggestion: "Take together! B-vitamins work as a team. Consider a B-complex or pair B6+B12+Folate",
     },
     {
       sourceId: supplementMap.get("Folate")!,
@@ -889,6 +939,8 @@ async function seed() {
       type: "synergy" as const,
       mechanism: "Folate and B12 are co-dependent in methylation and DNA synthesis",
       severity: "low" as const,
+      researchUrl: "https://examine.com/supplements/folate/",
+      suggestion: "Take together! Critical pairing for methylation. Never take high-dose folate without B12",
     },
 
     // ============================================
@@ -900,6 +952,8 @@ async function seed() {
       type: "competition" as const,
       mechanism: "Large Neutral Amino Acid Transporter (LNAAT) competition at BBB",
       severity: "medium" as const,
+      researchUrl: "https://examine.com/supplements/5-htp/#interactions-with-other-nutrients_amino-acids",
+      suggestion: "Take 4+ hours apart. Tyrosine in morning for focus, 5-HTP in evening for sleep/mood",
     },
 
     // ============================================
@@ -911,6 +965,8 @@ async function seed() {
       type: "inhibition" as const,
       mechanism: "Berberine may reduce B6 levels by increasing its metabolism",
       severity: "medium" as const,
+      researchUrl: "https://examine.com/supplements/berberine/",
+      suggestion: "Consider increasing B6 intake or taking a B-complex if using berberine long-term",
     },
     {
       sourceId: supplementMap.get("Berberine")!,
@@ -918,6 +974,8 @@ async function seed() {
       type: "inhibition" as const,
       mechanism: "Berberine inhibits mitochondrial complex I, may increase CoQ10 requirements",
       severity: "medium" as const,
+      researchUrl: "https://examine.com/supplements/berberine/",
+      suggestion: "Supplement CoQ10 (100-200mg) when taking berberine to support mitochondrial function",
     },
 
     // ============================================
@@ -929,6 +987,8 @@ async function seed() {
       type: "inhibition" as const,
       mechanism: "CYP3A4 inhibition increases caffeine half-life",
       severity: "medium" as const,
+      researchUrl: "https://examine.com/supplements/black-pepper/",
+      suggestion: "Piperine extends caffeine effects - reduce caffeine dose or avoid piperine if sensitive",
     },
 
     // ============================================
@@ -940,6 +1000,8 @@ async function seed() {
       type: "competition" as const,
       mechanism: "Compete for absorption in small intestine",
       severity: "low" as const,
+      researchUrl: "https://examine.com/supplements/magnesium/",
+      suggestion: "Minor interaction - take at different times if maximizing absorption is important",
     },
 
     // ============================================
@@ -951,6 +1013,8 @@ async function seed() {
       type: "competition" as const,
       mechanism: "Caffeine suppresses melatonin production and delays circadian rhythm",
       severity: "medium" as const,
+      researchUrl: "https://examine.com/supplements/melatonin/",
+      suggestion: "Avoid caffeine 6+ hours before melatonin. Caffeine has ~6h half-life and blocks melatonin",
     },
     {
       sourceId: supplementMap.get("Magnesium Glycinate")!,
@@ -958,6 +1022,8 @@ async function seed() {
       type: "synergy" as const,
       mechanism: "Magnesium enhances melatonin production and supports GABA activity for sleep",
       severity: "low" as const,
+      researchUrl: "https://examine.com/supplements/melatonin/",
+      suggestion: "Take together before bed! Classic sleep stack - magnesium relaxes muscles, melatonin signals sleep",
     },
   ];
 

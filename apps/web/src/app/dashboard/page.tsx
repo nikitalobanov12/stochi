@@ -1,20 +1,20 @@
 import { eq, desc } from "drizzle-orm";
 import Link from "next/link";
-import { Layers, AlertTriangle, Zap, Clock, ChevronRight } from "lucide-react";
+import { Layers, Clock, ChevronRight } from "lucide-react";
 
 import { db } from "~/server/db";
 import { stack, log, supplement } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
 import { logStack } from "~/server/actions/stacks";
 import { createLog } from "~/server/actions/logs";
-import { checkInteractions, type InteractionWarning } from "~/server/actions/interactions";
+import { checkInteractions } from "~/server/actions/interactions";
 import { getGoalProgress } from "~/server/actions/goals";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { WelcomeFlow } from "~/components/onboarding/welcome-flow";
 import { CommandBar } from "~/components/log/command-bar";
 import { TodayLogList } from "~/components/log/today-log-list";
-import { SeverityBadge, getWarningTextClass } from "~/components/interactions/severity-badge";
+import { InteractionCard } from "~/components/interactions/interaction-card";
 import { GoalProgressCard } from "~/components/dashboard/goal-progress-card";
 
 export default async function DashboardPage() {
@@ -191,58 +191,6 @@ export default async function DashboardPage() {
         )}
       </div>
     </>
-  );
-}
-
-function InteractionCard({ interaction }: { interaction: InteractionWarning }) {
-  const isSynergy = interaction.type === "synergy";
-
-  return (
-    <div
-      className={`flex items-start gap-3 rounded-lg border p-3 ${
-        isSynergy
-          ? "border-green-500/30 bg-green-500/5"
-          : interaction.severity === "critical"
-            ? "border-destructive/30 bg-destructive/5"
-            : "border-yellow-500/30 bg-yellow-500/5"
-      }`}
-    >
-      {isSynergy ? (
-        <Zap className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
-      ) : (
-        <AlertTriangle
-          className={`mt-0.5 h-4 w-4 shrink-0 ${getWarningTextClass(interaction.severity)}`}
-        />
-      )}
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">
-            {interaction.source.name}
-          </span>
-          <span className="text-muted-foreground">
-            {isSynergy ? "+" : "→"}
-          </span>
-          <span className="text-sm font-medium">
-            {interaction.target.name}
-          </span>
-          {isSynergy ? (
-            <Badge
-              variant="secondary"
-              className="ml-auto bg-green-500/10 text-green-600 text-[10px]"
-            >
-              synergy
-            </Badge>
-          ) : (
-            <SeverityBadge severity={interaction.severity} className="ml-auto" />
-          )}
-        </div>
-        {interaction.mechanism && (
-          <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
-            {interaction.mechanism}
-          </p>
-        )}
-      </div>
-    </div>
   );
 }
 

@@ -22,7 +22,6 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import {
@@ -34,12 +33,8 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { AddSupplementsDialog } from "~/components/stacks/add-supplements-dialog";
-import {
-  SeverityBadge,
-  getWarningBackgroundClass,
-  getWarningTextClass,
-  getWarningBorderClass,
-} from "~/components/interactions/severity-badge";
+import { getWarningBorderClass } from "~/components/interactions/severity-badge";
+import { InteractionCard, RatioCard } from "~/components/interactions/interaction-card";
 
 export default async function StackDetailPage({
   params,
@@ -283,79 +278,20 @@ function InteractionsCard({
           {synergies.length > 0 && `${synergies.length} synerg${synergies.length > 1 ? "ies" : "y"}`}
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-3">
-        {/* Ratio Warnings */}
+      <CardContent className="space-y-2">
+        {/* Ratio Warnings - using new expandable RatioCard */}
         {ratioWarnings.map((warning) => (
-          <div
-            key={warning.id}
-            className={`rounded-md p-2 text-xs ${getWarningBackgroundClass(warning.severity)}`}
-          >
-            <div className="flex items-center gap-2 font-medium">
-              <SeverityBadge severity={warning.severity} />
-              <span className={getWarningTextClass(warning.severity)}>
-                Ratio Imbalance
-              </span>
-            </div>
-            <p className="mt-1 text-muted-foreground">
-              <span className="font-medium text-foreground">{warning.source.name}</span>
-              {" : "}
-              <span className="font-medium text-foreground">{warning.target.name}</span>
-              <span className="ml-2 font-mono">
-                ({warning.currentRatio}:1 vs {warning.minRatio}-{warning.maxRatio}:1)
-              </span>
-            </p>
-            <p className="mt-1 text-[10px] text-muted-foreground">
-              {warning.message}
-            </p>
-          </div>
+          <RatioCard key={warning.id} warning={warning} />
         ))}
 
+        {/* Interaction Warnings - using new expandable InteractionCard */}
         {warnings.map((warning) => (
-          <div
-            key={warning.id}
-            className={`rounded-md p-2 text-xs ${getWarningBackgroundClass(warning.severity)}`}
-          >
-            <div className="flex items-center gap-2 font-medium">
-              <SeverityBadge severity={warning.severity} />
-              <span className={getWarningTextClass(warning.severity)}>
-                {warning.type === "competition" ? "Competition" : "Inhibition"}
-              </span>
-            </div>
-            <p className="mt-1 text-muted-foreground">
-              <span className="font-medium text-foreground">{warning.source.name}</span>
-              {" → "}
-              <span className="font-medium text-foreground">{warning.target.name}</span>
-            </p>
-            {warning.mechanism && (
-              <p className="mt-1 text-[10px] text-muted-foreground">
-                {warning.mechanism}
-              </p>
-            )}
-          </div>
+          <InteractionCard key={warning.id} interaction={warning} />
         ))}
 
+        {/* Synergies - using new expandable InteractionCard */}
         {synergies.map((synergy) => (
-          <div
-            key={synergy.id}
-            className="rounded-md bg-green-500/10 p-2 text-xs"
-          >
-            <div className="flex items-center gap-2 font-medium">
-              <Badge className="bg-green-500/20 text-green-600 text-[10px]">
-                synergy
-              </Badge>
-              <Zap className="h-3 w-3 text-green-500" />
-            </div>
-            <p className="mt-1 text-muted-foreground">
-              <span className="font-medium text-foreground">{synergy.source.name}</span>
-              {" + "}
-              <span className="font-medium text-foreground">{synergy.target.name}</span>
-            </p>
-            {synergy.mechanism && (
-              <p className="mt-1 text-[10px] text-muted-foreground">
-                {synergy.mechanism}
-              </p>
-            )}
-          </div>
+          <InteractionCard key={synergy.id} interaction={synergy} />
         ))}
       </CardContent>
     </Card>

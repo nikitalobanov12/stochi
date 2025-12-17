@@ -166,6 +166,9 @@ export const interaction = pgTable(
     type: interactionTypeEnum("type").notNull(),
     mechanism: text("mechanism"),
     severity: severityEnum("severity").notNull(),
+    // New fields for enhanced interaction info
+    researchUrl: text("research_url"), // Link to Examine.com or study
+    suggestion: text("suggestion"), // Actionable fix (e.g., "Take 2h apart")
     createdAt: timestamp("created_at")
       .$defaultFn(() => new Date())
       .notNull(),

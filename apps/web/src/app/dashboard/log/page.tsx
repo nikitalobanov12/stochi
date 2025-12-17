@@ -2,7 +2,7 @@ import { db } from "~/server/db";
 import { log, stack } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
 import { eq, desc } from "drizzle-orm";
-import { Trash2, Clock, Zap, Terminal, AlertTriangle, CheckCircle2, Scale } from "lucide-react";
+import { Trash2, Clock, Zap, Terminal, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 import { createLog, deleteLog } from "~/server/actions/logs";
 import { logStack } from "~/server/actions/stacks";
@@ -17,11 +17,8 @@ import {
 } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { CommandBar } from "~/components/log/command-bar";
-import {
-  SeverityBadge,
-  getWarningBackgroundClass,
-  getWarningBorderClass,
-} from "~/components/interactions/severity-badge";
+import { getWarningBorderClass } from "~/components/interactions/severity-badge";
+import { InteractionCard, TimingCard, RatioCard } from "~/components/interactions/interaction-card";
 import { formatTime, formatRelativeDate } from "~/lib/utils";
 
 export default async function LogPage() {
@@ -357,6 +354,7 @@ function TodayInteractionsCard({
             {totalWarnings > 0 && `${totalWarnings} warning${totalWarnings > 1 ? "s" : ""}`}
             {totalWarnings > 0 && synergies.length > 0 && ", "}
             {synergies.length > 0 && `${synergies.length} synerg${synergies.length > 1 ? "ies" : "y"}`}
+            {hasInteractions && " • tap to expand"}
           </CardDescription>
         )}
       </CardHeader>
@@ -366,103 +364,25 @@ function TodayInteractionsCard({
             No interactions detected in today&apos;s logs.
           </p>
         ) : (
-          <div className="space-y-2 max-h-[300px] overflow-y-auto">
+          <div className="space-y-2 max-h-[400px] overflow-y-auto">
             {/* Timing Warnings */}
             {timingWarnings.map((warning) => (
-              <div
-                key={warning.id}
-                className={`rounded-md p-2 text-xs ${getWarningBackgroundClass(warning.severity)}`}
-              >
-                <div className="flex items-center gap-2">
-                  <SeverityBadge severity={warning.severity} />
-                  <Clock className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-[10px] text-muted-foreground">
-                    timing
-                  </span>
-                </div>
-                <p className="mt-1 flex flex-wrap items-center gap-x-1">
-                  <span className="font-medium">{warning.source.name}</span>
-                  <span>↔</span>
-                  <span className="font-medium">{warning.target.name}</span>
-                </p>
-                <p className="font-mono text-[10px] text-muted-foreground">
-                  {warning.actualHoursApart}h apart, need {warning.minHoursApart}h+
-                </p>
-                <p className="mt-0.5 text-[10px] text-muted-foreground line-clamp-2">
-                  {warning.reason}
-                </p>
-              </div>
+              <TimingCard key={warning.id} warning={warning} />
             ))}
 
             {/* Ratio Warnings */}
             {ratioWarnings.map((warning) => (
-              <div
-                key={warning.id}
-                className={`rounded-md p-2 text-xs ${getWarningBackgroundClass(warning.severity)}`}
-              >
-                <div className="flex items-center gap-2">
-                  <SeverityBadge severity={warning.severity} />
-                  <Scale className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-[10px] text-muted-foreground">
-                    ratio
-                  </span>
-                </div>
-                <p className="mt-1 flex flex-wrap items-center gap-x-1">
-                  <span className="font-medium">{warning.source.name}</span>
-                  <span>:</span>
-                  <span className="font-medium">{warning.target.name}</span>
-                </p>
-                <p className="font-mono text-[10px] text-muted-foreground">
-                  {warning.currentRatio}:1 (optimal: {warning.minRatio}-{warning.maxRatio}:1)
-                </p>
-                <p className="mt-0.5 text-[10px] text-muted-foreground line-clamp-2">
-                  {warning.message}
-                </p>
-              </div>
+              <RatioCard key={warning.id} warning={warning} />
             ))}
 
+            {/* Interaction Warnings */}
             {warnings.map((warning) => (
-              <div
-                key={warning.id}
-                className={`rounded-md p-2 text-xs ${getWarningBackgroundClass(warning.severity)}`}
-              >
-                <div className="flex items-center gap-2">
-                  <SeverityBadge severity={warning.severity} />
-                </div>
-                <p className="mt-1 flex flex-wrap items-center gap-x-1">
-                  <span className="font-medium">{warning.source.name}</span>
-                  <span>→</span>
-                  <span className="font-medium">{warning.target.name}</span>
-                </p>
-                {warning.mechanism && (
-                  <p className="mt-0.5 text-[10px] text-muted-foreground line-clamp-2">
-                    {warning.mechanism}
-                  </p>
-                )}
-              </div>
+              <InteractionCard key={warning.id} interaction={warning} />
             ))}
 
+            {/* Synergies */}
             {synergies.map((synergy) => (
-              <div
-                key={synergy.id}
-                className="rounded-md bg-green-500/10 p-2 text-xs"
-              >
-                <div className="flex items-center gap-2">
-                  <Badge className="bg-green-500/20 text-green-600 text-[10px]">
-                    synergy
-                  </Badge>
-                </div>
-                <p className="mt-1 flex flex-wrap items-center gap-x-1">
-                  <span className="font-medium">{synergy.source.name}</span>
-                  <span>+</span>
-                  <span className="font-medium">{synergy.target.name}</span>
-                </p>
-                {synergy.mechanism && (
-                  <p className="mt-0.5 text-[10px] text-muted-foreground line-clamp-2">
-                    {synergy.mechanism}
-                  </p>
-                )}
-              </div>
+              <InteractionCard key={synergy.id} interaction={synergy} />
             ))}
           </div>
         )}
