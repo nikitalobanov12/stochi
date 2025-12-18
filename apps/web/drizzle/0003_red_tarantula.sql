@@ -1,0 +1,1 @@
+ALTER TABLE "supplement" ADD COLUMN "safety_category" text;

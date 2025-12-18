@@ -4,7 +4,7 @@ import { getSession } from "~/server/better-auth/server";
 import { eq, desc } from "drizzle-orm";
 import { Trash2, Clock, Zap, Terminal, AlertTriangle, CheckCircle2 } from "lucide-react";
 
-import { createLog, deleteLog } from "~/server/actions/logs";
+import { deleteLog } from "~/server/actions/logs";
 import { logStack } from "~/server/actions/stacks";
 import { checkInteractions, checkTimingWarnings, type InteractionWarning, type TimingWarning, type RatioWarning } from "~/server/actions/interactions";
 import { Button } from "~/components/ui/button";
@@ -16,7 +16,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
-import { CommandBar } from "~/components/log/command-bar";
+import { SafeCommandBar } from "~/components/log/safe-command-bar";
 import { getWarningBorderClass } from "~/components/interactions/severity-badge";
 import { InteractionCard, TimingCard, RatioCard } from "~/components/interactions/interaction-card";
 import { formatTime, formatRelativeDate } from "~/lib/utils";
@@ -106,7 +106,7 @@ export default async function LogPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <CommandBarWrapper supplements={allSupplements} />
+          <SafeCommandBar supplements={allSupplements} />
         </CardContent>
       </Card>
 
@@ -232,23 +232,6 @@ export default async function LogPage() {
       </div>
     </div>
   );
-}
-
-function CommandBarWrapper({
-  supplements,
-}: {
-  supplements: Array<{ id: string; name: string; form: string | null }>;
-}) {
-  async function handleLog(
-    supplementId: string,
-    dosage: number,
-    unit: "mg" | "mcg" | "g" | "IU" | "ml",
-  ) {
-    "use server";
-    await createLog(supplementId, dosage, unit);
-  }
-
-  return <CommandBar supplements={supplements} onLog={handleLog} />;
 }
 
 type LogEntry = {

@@ -7,9 +7,18 @@ import { redirect } from "next/navigation";
 import { db } from "~/server/db";
 import { stack, stackItem, log } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
+import {
+  checkStackSafety,
+  type SafetyCheckResult,
+  type SupplementWithSafety,
+} from "~/server/services/safety";
 
 const VALID_UNITS = ["mg", "mcg", "g", "IU", "ml"] as const;
 type DosageUnit = (typeof VALID_UNITS)[number];
+
+export type LogStackResult =
+  | { success: true }
+  | { success: false; safetyCheck: SafetyCheckResult };
 
 function validateFormDataString(
   formData: FormData,
@@ -215,7 +224,13 @@ export async function removeStackItem(itemId: string) {
   revalidatePath("/dashboard");
 }
 
-export async function logStack(stackId: string) {
+/**
+ * Log all items in a stack (simple version for form actions).
+ * This does NOT perform safety checks - use logStackWithSafetyCheck for that.
+ *
+ * @param stackId - The stack to log
+ */
+export async function logStack(stackId: string): Promise<void> {
   const session = await getSession();
   if (!session) {
     redirect("/auth/sign-in");
@@ -250,4 +265,169 @@ export async function logStack(stackId: string) {
 
   revalidatePath("/dashboard");
   revalidatePath("/log");
+}
+
+/**
+ * Log all items in a stack with safety checks.
+ * Use this when you need to handle safety warnings on the client.
+ *
+ * @param stackId - The stack to log
+ * @param forceOverride - If true, bypass soft limit warnings (hard limits still block)
+ */
+export async function logStackWithSafetyCheck(
+  stackId: string,
+  forceOverride?: boolean
+): Promise<LogStackResult> {
+  const session = await getSession();
+  if (!session) {
+    redirect("/auth/sign-in");
+  }
+
+  const userStack = await db.query.stack.findFirst({
+    where: and(eq(stack.id, stackId), eq(stack.userId, session.user.id)),
+    with: {
+      items: {
+        with: {
+          supplement: {
+            columns: {
+              id: true,
+              name: true,
+              elementalWeight: true,
+              safetyCategory: true,
+              defaultUnit: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!userStack) {
+    throw new Error("Stack not found");
+  }
+
+  if (userStack.items.length === 0) {
+    throw new Error("Stack has no items to log");
+  }
+
+  // Perform safety check on all items
+  const itemsForSafetyCheck = userStack.items.map((item) => ({
+    supplement: item.supplement as SupplementWithSafety,
+    dosage: item.dosage,
+    unit: item.unit,
+  }));
+
+  const safetyCheck = await checkStackSafety(session.user.id, itemsForSafetyCheck);
+
+  // If there's a safety violation
+  if (safetyCheck) {
+    // Hard limits always block - no override allowed
+    if (safetyCheck.isHardLimit) {
+      return { success: false, safetyCheck };
+    }
+
+    // Soft limits can be overridden by user
+    if (!forceOverride) {
+      return { success: false, safetyCheck };
+    }
+    // If forceOverride is true, continue with the log
+  }
+
+  const now = new Date();
+
+  await db.insert(log).values(
+    userStack.items.map((item) => ({
+      userId: session.user.id,
+      supplementId: item.supplementId,
+      dosage: item.dosage,
+      unit: item.unit,
+      loggedAt: now,
+    })),
+  );
+
+  revalidatePath("/dashboard");
+  revalidatePath("/log");
+
+  return { success: true };
+}
+
+/**
+ * Pre-check if logging a stack would be safe.
+ * Useful for showing warnings before the user confirms.
+ */
+export async function preCheckStackSafety(
+  stackId: string
+): Promise<SafetyCheckResult | null> {
+  const session = await getSession();
+  if (!session) {
+    return null;
+  }
+
+  const userStack = await db.query.stack.findFirst({
+    where: and(eq(stack.id, stackId), eq(stack.userId, session.user.id)),
+    with: {
+      items: {
+        with: {
+          supplement: {
+            columns: {
+              id: true,
+              name: true,
+              elementalWeight: true,
+              safetyCategory: true,
+              defaultUnit: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!userStack || userStack.items.length === 0) {
+    return null;
+  }
+
+  const itemsForSafetyCheck = userStack.items.map((item) => ({
+    supplement: item.supplement as SupplementWithSafety,
+    dosage: item.dosage,
+    unit: item.unit,
+  }));
+
+  return checkStackSafety(session.user.id, itemsForSafetyCheck);
+}
+
+/**
+ * Get stacks for the current user.
+ */
+export async function getStacks() {
+  const session = await getSession();
+  if (!session) {
+    return [];
+  }
+
+  return db.query.stack.findMany({
+    where: eq(stack.userId, session.user.id),
+    with: {
+      items: {
+        with: {
+          supplement: true,
+        },
+      },
+    },
+  });
+}
+
+/**
+ * Get public protocol stacks (system stacks).
+ */
+export async function getPublicStacks() {
+  return db.query.stack.findMany({
+    where: eq(stack.isPublic, true),
+    with: {
+      items: {
+        with: {
+          supplement: true,
+        },
+      },
+    },
+  });
 }

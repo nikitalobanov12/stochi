@@ -6,13 +6,12 @@ import { db } from "~/server/db";
 import { stack, log, supplement } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
 import { logStack } from "~/server/actions/stacks";
-import { createLog } from "~/server/actions/logs";
 import { checkInteractions } from "~/server/actions/interactions";
 import { getGoalProgress } from "~/server/actions/goals";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { WelcomeFlow } from "~/components/onboarding/welcome-flow";
-import { CommandBar } from "~/components/log/command-bar";
+import { SafeCommandBar } from "~/components/log/safe-command-bar";
 import { TodayLogList } from "~/components/log/today-log-list";
 import { InteractionCard } from "~/components/interactions/interaction-card";
 import { GoalProgressCard } from "~/components/dashboard/goal-progress-card";
@@ -92,7 +91,7 @@ export default async function DashboardPage() {
 
         {/* Quick Log Input */}
         <div className="rounded-xl border border-border bg-card p-4">
-          <DashboardCommandBar supplements={allSupplements} />
+          <SafeCommandBar supplements={allSupplements} />
         </div>
 
         {/* Stack Quick Actions */}
@@ -192,21 +191,4 @@ export default async function DashboardPage() {
       </div>
     </>
   );
-}
-
-function DashboardCommandBar({
-  supplements,
-}: {
-  supplements: Array<{ id: string; name: string; form: string | null }>;
-}) {
-  async function handleLog(
-    supplementId: string,
-    dosage: number,
-    unit: "mg" | "mcg" | "g" | "IU" | "ml",
-  ) {
-    "use server";
-    await createLog(supplementId, dosage, unit);
-  }
-
-  return <CommandBar supplements={supplements} onLog={handleLog} />;
 }

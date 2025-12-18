@@ -144,6 +144,8 @@ export const supplement = pgTable(
     researchUrl: text("research_url"), // Link to Examine.com
     category: supplementCategoryEnum("category"), // For UI grouping
     commonGoals: text("common_goals").array(), // ["sleep", "focus", "longevity"]
+    // Safety tracking - maps to SAFETY_LIMITS keys (e.g., "zinc", "magnesium", "iron")
+    safetyCategory: text("safety_category"),
     createdAt: timestamp("created_at")
       .$defaultFn(() => new Date())
       .notNull(),

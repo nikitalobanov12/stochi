@@ -7,6 +7,10 @@ const SYSTEM_USER_ID = "system";
 
 type SupplementCategory = "mineral" | "vitamin" | "amino-acid" | "adaptogen" | "nootropic" | "antioxidant" | "omega" | "other";
 
+// Safety categories map to SAFETY_UPPER_LIMITS keys in safety-limits.ts
+// null = no UL (no safety check needed)
+type SafetyCategoryKey = "magnesium" | "zinc" | "iron" | "copper" | "calcium" | "selenium" | "vitamin-d3" | "vitamin-b6" | "vitamin-c" | "vitamin-e" | "vitamin-a" | null;
+
 const supplements = [
   // ============================================
   // MAGNESIUM FORMS (5)
@@ -22,6 +26,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/magnesium/",
     category: "mineral" as SupplementCategory,
     commonGoals: ["sleep", "stress", "health"],
+    safetyCategory: "magnesium" as SafetyCategoryKey,
   },
   {
     name: "Magnesium Citrate",
@@ -34,6 +39,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/magnesium/",
     category: "mineral" as SupplementCategory,
     commonGoals: ["stress", "health"],
+    safetyCategory: "magnesium" as SafetyCategoryKey,
   },
   {
     name: "Magnesium L-Threonate",
@@ -46,6 +52,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/magnesium-l-threonate/",
     category: "mineral" as SupplementCategory,
     commonGoals: ["focus", "sleep", "longevity"],
+    safetyCategory: "magnesium" as SafetyCategoryKey,
   },
   {
     name: "Magnesium Oxide",
@@ -58,6 +65,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/magnesium/",
     category: "mineral" as SupplementCategory,
     commonGoals: ["health"],
+    safetyCategory: "magnesium" as SafetyCategoryKey,
   },
   {
     name: "Magnesium Malate",
@@ -70,6 +78,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/magnesium/",
     category: "mineral" as SupplementCategory,
     commonGoals: ["energy", "health"],
+    safetyCategory: "magnesium" as SafetyCategoryKey,
   },
 
   // ============================================
@@ -86,6 +95,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/zinc/",
     category: "mineral" as SupplementCategory,
     commonGoals: ["health", "energy"],
+    safetyCategory: "zinc" as SafetyCategoryKey,
   },
   {
     name: "Zinc Gluconate",
@@ -98,6 +108,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/zinc/",
     category: "mineral" as SupplementCategory,
     commonGoals: ["health"],
+    safetyCategory: "zinc" as SafetyCategoryKey,
   },
 
   // ============================================
@@ -114,6 +125,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/vitamin-b1/",
     category: "vitamin" as SupplementCategory,
     commonGoals: ["energy", "health"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "Vitamin B2",
@@ -126,6 +138,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/vitamin-b2/",
     category: "vitamin" as SupplementCategory,
     commonGoals: ["energy", "health"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "Vitamin B3",
@@ -138,6 +151,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/vitamin-b3/",
     category: "vitamin" as SupplementCategory,
     commonGoals: ["energy", "longevity", "health"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "Vitamin B6",
@@ -150,6 +164,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/vitamin-b6/",
     category: "vitamin" as SupplementCategory,
     commonGoals: ["focus", "stress", "health"],
+    safetyCategory: "vitamin-b6" as SafetyCategoryKey,
   },
   {
     name: "Folate",
@@ -162,6 +177,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/folate/",
     category: "vitamin" as SupplementCategory,
     commonGoals: ["health", "longevity"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "Vitamin B12",
@@ -174,6 +190,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/vitamin-b12/",
     category: "vitamin" as SupplementCategory,
     commonGoals: ["energy", "focus", "health"],
+    safetyCategory: null as SafetyCategoryKey,
   },
 
   // ============================================
@@ -190,6 +207,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/vitamin-d/",
     category: "vitamin" as SupplementCategory,
     commonGoals: ["health", "longevity", "energy"],
+    safetyCategory: "vitamin-d3" as SafetyCategoryKey,
   },
   {
     name: "Vitamin K2 MK-7",
@@ -202,6 +220,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/vitamin-k/",
     category: "vitamin" as SupplementCategory,
     commonGoals: ["health", "longevity"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "Vitamin C",
@@ -214,6 +233,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/vitamin-c/",
     category: "vitamin" as SupplementCategory,
     commonGoals: ["health", "longevity"],
+    safetyCategory: "vitamin-c" as SafetyCategoryKey,
   },
   {
     name: "Vitamin E",
@@ -226,6 +246,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/vitamin-e/",
     category: "vitamin" as SupplementCategory,
     commonGoals: ["health", "longevity"],
+    safetyCategory: "vitamin-e" as SafetyCategoryKey,
   },
 
   // ============================================
@@ -242,6 +263,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/iron/",
     category: "mineral" as SupplementCategory,
     commonGoals: ["energy", "health"],
+    safetyCategory: "iron" as SafetyCategoryKey,
   },
   {
     name: "Copper Bisglycinate",
@@ -254,6 +276,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/copper/",
     category: "mineral" as SupplementCategory,
     commonGoals: ["health"],
+    safetyCategory: "copper" as SafetyCategoryKey,
   },
   {
     name: "Selenium",
@@ -266,6 +289,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/selenium/",
     category: "mineral" as SupplementCategory,
     commonGoals: ["health", "longevity"],
+    safetyCategory: "selenium" as SafetyCategoryKey,
   },
   {
     name: "Calcium",
@@ -278,6 +302,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/calcium/",
     category: "mineral" as SupplementCategory,
     commonGoals: ["health"],
+    safetyCategory: "calcium" as SafetyCategoryKey,
   },
   {
     name: "Potassium",
@@ -290,6 +315,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/potassium/",
     category: "mineral" as SupplementCategory,
     commonGoals: ["health", "energy"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "Boron",
@@ -302,6 +328,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/boron/",
     category: "mineral" as SupplementCategory,
     commonGoals: ["health", "energy"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "Iodine",
@@ -314,6 +341,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/iodine/",
     category: "mineral" as SupplementCategory,
     commonGoals: ["health", "energy"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "Chromium",
@@ -326,6 +354,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/chromium/",
     category: "mineral" as SupplementCategory,
     commonGoals: ["health"],
+    safetyCategory: null as SafetyCategoryKey,
   },
 
   // ============================================
@@ -342,6 +371,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/fish-oil/",
     category: "omega" as SupplementCategory,
     commonGoals: ["health", "longevity", "stress"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "Fish Oil (DHA)",
@@ -354,6 +384,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/fish-oil/",
     category: "omega" as SupplementCategory,
     commonGoals: ["focus", "health", "longevity"],
+    safetyCategory: null as SafetyCategoryKey,
   },
 
   // ============================================
@@ -370,6 +401,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/l-tyrosine/",
     category: "amino-acid" as SupplementCategory,
     commonGoals: ["focus", "stress", "energy"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "L-Theanine",
@@ -382,6 +414,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/theanine/",
     category: "amino-acid" as SupplementCategory,
     commonGoals: ["focus", "sleep", "stress"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "5-HTP",
@@ -394,6 +427,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/5-htp/",
     category: "amino-acid" as SupplementCategory,
     commonGoals: ["sleep", "stress"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "GABA",
@@ -406,6 +440,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/gaba/",
     category: "amino-acid" as SupplementCategory,
     commonGoals: ["sleep", "stress"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "Glycine",
@@ -418,6 +453,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/glycine/",
     category: "amino-acid" as SupplementCategory,
     commonGoals: ["sleep", "health", "longevity"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "Taurine",
@@ -430,6 +466,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/taurine/",
     category: "amino-acid" as SupplementCategory,
     commonGoals: ["health", "longevity", "energy"],
+    safetyCategory: null as SafetyCategoryKey,
   },
 
   // ============================================
@@ -446,6 +483,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/coq10/",
     category: "antioxidant" as SupplementCategory,
     commonGoals: ["energy", "longevity", "health"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "Alpha Lipoic Acid",
@@ -458,6 +496,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/alpha-lipoic-acid/",
     category: "antioxidant" as SupplementCategory,
     commonGoals: ["longevity", "health"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "NAC",
@@ -470,6 +509,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/n-acetylcysteine/",
     category: "antioxidant" as SupplementCategory,
     commonGoals: ["longevity", "health"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "Quercetin",
@@ -482,6 +522,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/quercetin/",
     category: "antioxidant" as SupplementCategory,
     commonGoals: ["longevity", "health"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "Glutathione",
@@ -494,6 +535,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/glutathione/",
     category: "antioxidant" as SupplementCategory,
     commonGoals: ["longevity", "health"],
+    safetyCategory: null as SafetyCategoryKey,
   },
 
   // ============================================
@@ -510,6 +552,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/caffeine/",
     category: "nootropic" as SupplementCategory,
     commonGoals: ["focus", "energy"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "Ashwagandha",
@@ -522,6 +565,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/ashwagandha/",
     category: "adaptogen" as SupplementCategory,
     commonGoals: ["stress", "sleep", "energy"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "Lion's Mane",
@@ -534,6 +578,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/lions-mane/",
     category: "adaptogen" as SupplementCategory,
     commonGoals: ["focus", "longevity"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "Rhodiola Rosea",
@@ -546,6 +591,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/rhodiola-rosea/",
     category: "adaptogen" as SupplementCategory,
     commonGoals: ["stress", "energy", "focus"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "Bacopa Monnieri",
@@ -558,6 +604,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/bacopa-monnieri/",
     category: "adaptogen" as SupplementCategory,
     commonGoals: ["focus", "stress"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "Berberine",
@@ -570,6 +617,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/berberine/",
     category: "other" as SupplementCategory,
     commonGoals: ["longevity", "health"],
+    safetyCategory: null as SafetyCategoryKey,
   },
 
   // ============================================
@@ -586,6 +634,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/curcumin/",
     category: "other" as SupplementCategory,
     commonGoals: ["health", "longevity"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "Piperine",
@@ -598,6 +647,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/black-pepper/",
     category: "other" as SupplementCategory,
     commonGoals: ["health"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "Creatine Monohydrate",
@@ -610,6 +660,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/creatine/",
     category: "other" as SupplementCategory,
     commonGoals: ["energy", "focus", "health"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "Collagen",
@@ -622,6 +673,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/collagen/",
     category: "other" as SupplementCategory,
     commonGoals: ["health", "longevity"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "Biotin",
@@ -634,6 +686,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/biotin/",
     category: "vitamin" as SupplementCategory,
     commonGoals: ["health"],
+    safetyCategory: null as SafetyCategoryKey,
   },
   {
     name: "Melatonin",
@@ -646,6 +699,7 @@ const supplements = [
     researchUrl: "https://examine.com/supplements/melatonin/",
     category: "other" as SupplementCategory,
     commonGoals: ["sleep"],
+    safetyCategory: null as SafetyCategoryKey,
   },
 ];
 
@@ -671,6 +725,7 @@ async function seed() {
           researchUrl: supp.researchUrl,
           category: supp.category,
           commonGoals: supp.commonGoals,
+          safetyCategory: supp.safetyCategory,
           updatedAt: new Date(),
         },
       })
