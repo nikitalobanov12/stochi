@@ -1,6 +1,6 @@
 import { eq, desc } from "drizzle-orm";
 import Link from "next/link";
-import { Plus, Layers } from "lucide-react";
+import { Plus, Layers, ChevronRight } from "lucide-react";
 
 import { db } from "~/server/db";
 import { stack } from "~/server/db/schema";
@@ -8,13 +8,6 @@ import { getSession } from "~/server/better-auth/server";
 import { createStack } from "~/server/actions/stacks";
 import { createStackFromTemplate } from "~/server/actions/onboarding";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { CreateStackDialog } from "~/components/stacks/create-stack-dialog";
 
@@ -35,13 +28,17 @@ export default async function StacksPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-2xl space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-mono text-2xl font-bold tracking-tight">Stacks</h1>
-          <p className="text-sm text-muted-foreground">
-            Create and manage your supplement bundles, easily log your entire
-            stack at once
+          <h1 className="font-mono text-lg font-medium tracking-tight">
+            Protocols
+          </h1>
+          <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+            {userStacks.length === 0
+              ? "NO PROTOCOLS"
+              : `${userStacks.length} PROTOCOL${userStacks.length !== 1 ? "S" : ""}`}
           </p>
         </div>
         <CreateStackDialog
@@ -50,59 +47,66 @@ export default async function StacksPage() {
         />
       </div>
 
+      {/* Stacks List */}
       {userStacks.length === 0 ? (
-        <Card className="rounded-xl">
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <Layers className="mb-4 h-16 w-16 text-muted-foreground/50" />
-            <h3 className="mb-2 font-mono text-lg font-semibold">
-              No stacks yet
-            </h3>
-            <p className="mb-6 text-center text-sm text-muted-foreground">
-              Create your first stack to quickly log multiple supplements at
-              once
-            </p>
-            <CreateStackDialog
-              createStack={createStack}
-              createStackFromTemplate={createStackFromTemplate}
+        <div className="rounded-lg border border-dashed border-border/40 bg-card/30 py-16 text-center">
+          <Layers className="mx-auto mb-4 h-10 w-10 text-muted-foreground/30" />
+          <p className="font-mono text-sm text-muted-foreground">
+            No protocols yet
+          </p>
+          <p className="mt-1 font-mono text-[10px] text-muted-foreground/60">
+            Create your first protocol to batch-log supplements
+          </p>
+          <CreateStackDialog
+            createStack={createStack}
+            createStackFromTemplate={createStackFromTemplate}
+          >
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-6 border-border/40 font-mono text-xs"
             >
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Create your first stack
-              </Button>
-            </CreateStackDialog>
-          </CardContent>
-        </Card>
+              <Plus className="mr-2 h-3 w-3" />
+              Create Protocol
+            </Button>
+          </CreateStackDialog>
+        </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="space-y-2">
           {userStacks.map((s) => (
             <Link key={s.id} href={`/dashboard/stacks/${s.id}`}>
-              <Card className="h-full rounded-xl transition-colors hover:border-primary/50">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="font-mono">{s.name}</CardTitle>
-                    <Badge variant="secondary" className="font-mono tabular-nums">
-                      {s.items.length} items
+              <div className="group flex items-center justify-between rounded-lg border border-border/40 bg-card/30 px-4 py-3 transition-colors hover:border-border/60 hover:bg-card/50">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-sm font-medium">
+                      {s.name}
+                    </span>
+                    <Badge
+                      variant="secondary"
+                      className="bg-muted/50 font-mono text-[10px] tabular-nums"
+                    >
+                      {s.items.length}
                     </Badge>
                   </div>
-                  <CardDescription>
+                  <p className="mt-0.5 truncate font-mono text-[10px] text-muted-foreground/60">
                     {s.items.length === 0
-                      ? "No supplements added yet"
+                      ? "Empty protocol"
                       : s.items
                           .slice(0, 3)
                           .map((item) => item.supplement.name)
-                          .join(", ") + (s.items.length > 3 ? "..." : "")}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="font-mono text-xs text-muted-foreground">
-                    Updated{" "}
+                          .join(" • ") + (s.items.length > 3 ? " ..." : "")}
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <span className="font-mono text-[10px] text-muted-foreground/40">
                     {new Date(s.updatedAt).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
                     })}
-                  </div>
-                </CardContent>
-              </Card>
+                  </span>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5" />
+                </div>
+              </div>
             </Link>
           ))}
         </div>

@@ -1,17 +1,10 @@
 import { eq, desc, count } from "drizzle-orm";
-import { User, Shield, Database } from "lucide-react";
+import { User, Download } from "lucide-react";
 
 import { db } from "~/server/db";
 import { log, stack } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
 import { getUserGoals } from "~/server/actions/goals";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
 import { ExportButton } from "~/components/settings/export-button";
 import { GoalsCard } from "~/components/settings/goals-card";
 
@@ -72,103 +65,105 @@ export default async function SettingsPage() {
     })),
   };
 
+  const memberSince = new Date(user.createdAt).toLocaleDateString("en-US", {
+    month: "short",
+    year: "numeric",
+  });
+
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-2xl space-y-6">
+      {/* Header */}
       <div>
-        <h1 className="font-mono text-2xl font-bold tracking-tight">Settings</h1>
-        <p className="text-sm text-muted-foreground">
-          Manage your account and data
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          Settings
         </p>
+        <h1 className="font-mono text-lg font-medium">Account & Data</h1>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Goals Card - Full Width */}
-        <div className="md:col-span-2">
-          <GoalsCard initialGoals={userGoals.map((g) => g.goal)} />
-        </div>
-
-        {/* Profile Card */}
-        <Card className="rounded-xl">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 font-mono">
+      {/* Profile Section */}
+      <section className="space-y-3">
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          Profile
+        </p>
+        <div className="rounded-lg border border-border/40 bg-card/30 p-4">
+          <div className="flex items-start gap-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border/40 bg-muted/30">
               <User className="h-4 w-4 text-muted-foreground" />
-              Profile
-            </CardTitle>
-            <CardDescription>Your account information</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-1">
-              <label className="text-xs text-muted-foreground">Name</label>
-              <p className="font-medium">{user.name}</p>
             </div>
-            <div className="space-y-1">
-              <label className="text-xs text-muted-foreground">Email</label>
-              <p className="font-mono text-sm">{user.email}</p>
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs text-muted-foreground">Member since</label>
-              <p className="font-mono text-sm">
-                {new Date(user.createdAt).toLocaleDateString("en-US", {
-                  month: "long",
-                  year: "numeric",
-                })}
+            <div className="flex-1 space-y-3">
+              <div>
+                <p className="font-mono text-sm font-medium">{user.name}</p>
+                <p className="font-mono text-xs text-muted-foreground">
+                  {user.email}
+                </p>
+              </div>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground/60">
+                Member since {memberSince}
               </p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+      </section>
 
-        {/* Data Stats Card */}
-        <Card className="rounded-xl">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 font-mono">
-              <Database className="h-4 w-4 text-muted-foreground" />
-              Your Data
-            </CardTitle>
-            <CardDescription>Overview of your stored data</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="rounded-lg bg-muted/50 p-3">
-                <p className="font-mono text-2xl font-bold tabular-nums">{logCount}</p>
-                <p className="text-xs text-muted-foreground">Total logs</p>
-              </div>
-              <div className="rounded-lg bg-muted/50 p-3">
-                <p className="font-mono text-2xl font-bold tabular-nums">{stackCount}</p>
-                <p className="text-xs text-muted-foreground">Stacks</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Goals Section */}
+      <section className="space-y-3">
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          Goals
+        </p>
+        <GoalsCard initialGoals={userGoals.map((g) => g.goal)} />
+      </section>
 
-        {/* Data Export Card */}
-        <Card className="rounded-xl md:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 font-mono">
-              <Shield className="h-4 w-4 text-muted-foreground" />
-              Data Sovereignty
-            </CardTitle>
-            <CardDescription>
-              Your data belongs to you. Export it anytime in standard formats.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Export your complete supplement history and stack configurations.
-              All exports include timestamps and are compatible with spreadsheet
-              applications.
+      {/* Data Stats */}
+      <section className="space-y-3">
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          Data Overview
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-lg border border-border/40 bg-card/30 p-3">
+            <p className="font-mono text-2xl font-medium tabular-nums">
+              {logCount.toLocaleString()}
+            </p>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+              Log Entries
+            </p>
+          </div>
+          <div className="rounded-lg border border-border/40 bg-card/30 p-3">
+            <p className="font-mono text-2xl font-medium tabular-nums">
+              {stackCount}
+            </p>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+              Protocols
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Data Export */}
+      <section className="space-y-3">
+        <div className="flex items-center gap-2">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+            Data Export
+          </p>
+          <Download className="h-3 w-3 text-muted-foreground/50" />
+        </div>
+        <div className="rounded-lg border border-border/40 bg-card/30 p-4">
+          <div className="space-y-3">
+            <p className="font-mono text-xs text-muted-foreground">
+              Your data belongs to you. Export supplement logs and protocol
+              configurations in standard formats.
             </p>
             {logCount > EXPORT_LIMIT && (
-              <p className="text-xs text-yellow-600">
-                Note: Export is limited to the most recent {EXPORT_LIMIT.toLocaleString()} log entries.
+              <p className="font-mono text-[10px] text-amber-500">
+                Limited to {EXPORT_LIMIT.toLocaleString()} most recent entries
               </p>
             )}
-            <div className="flex flex-wrap gap-2">
+            <div className="flex gap-2">
               <ExportButton data={serializedData} format="json" />
               <ExportButton data={serializedData} format="csv" />
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
