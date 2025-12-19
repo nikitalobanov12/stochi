@@ -30,6 +30,7 @@ import {
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { AddSupplementsDialog } from "~/components/stacks/add-supplements-dialog";
+import { EditStackItemDialog } from "~/components/stacks/edit-stack-item-dialog";
 import {
   InteractionCard,
   RatioCard,
@@ -162,6 +163,12 @@ export default async function StackDetailPage({
                     {item.dosage}
                     {item.unit}
                   </span>
+                  <EditStackItemDialog
+                    itemId={item.id}
+                    supplementName={item.supplement.name}
+                    currentDosage={item.dosage}
+                    currentUnit={item.unit}
+                  />
                   <form action={removeStackItem.bind(null, item.id)}>
                     <button
                       type="submit"

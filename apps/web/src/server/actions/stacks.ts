@@ -224,6 +224,48 @@ export async function removeStackItem(itemId: string) {
   revalidatePath("/dashboard");
 }
 
+export async function updateStackItem(
+  itemId: string,
+  dosage: number,
+  unit: string,
+) {
+  const session = await getSession();
+  if (!session) {
+    redirect("/auth/sign-in");
+  }
+
+  if (!isValidUnit(unit)) {
+    throw new Error(`Invalid unit: ${unit}`);
+  }
+  if (!Number.isFinite(dosage) || dosage <= 0) {
+    throw new Error("Dosage must be a positive number");
+  }
+
+  const item = await db.query.stackItem.findFirst({
+    where: eq(stackItem.id, itemId),
+    with: {
+      stack: true,
+    },
+  });
+
+  if (!item?.stack || item.stack.userId !== session.user.id) {
+    throw new Error("Item not found");
+  }
+
+  await db
+    .update(stackItem)
+    .set({ dosage, unit })
+    .where(eq(stackItem.id, itemId));
+
+  await db
+    .update(stack)
+    .set({ updatedAt: new Date() })
+    .where(eq(stack.id, item.stackId));
+
+  revalidatePath(`/stacks/${item.stackId}`);
+  revalidatePath("/dashboard");
+}
+
 /**
  * Log all items in a stack (simple version for form actions).
  * This does NOT perform safety checks - use logStackWithSafetyCheck for that.
