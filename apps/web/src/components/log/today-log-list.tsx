@@ -49,7 +49,8 @@ function LogRow({ entry }: { entry: LogEntry }) {
       }`}
     >
       <div className="flex items-center gap-3">
-        <span className="text-muted-foreground font-mono text-xs">
+        {/* Timestamps use Cyan (--chart-2) for neutral info display */}
+        <span className="font-mono text-xs text-[#00D4FF]">
           {formatTime(new Date(entry.loggedAt))}
         </span>
         <div className="flex items-center gap-1.5">
@@ -63,7 +64,8 @@ function LogRow({ entry }: { entry: LogEntry }) {
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <span className="text-muted-foreground font-mono text-sm">
+        {/* Dosage values use Cyan for neutral data display */}
+        <span className="font-mono text-sm text-[#00D4FF]/80">
           {entry.dosage}
           {entry.unit}
         </span>
