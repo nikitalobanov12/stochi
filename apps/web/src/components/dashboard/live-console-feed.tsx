@@ -39,6 +39,14 @@ function generateConsoleEntries(
   const entries: ConsoleEntry[] = [];
   const now = new Date();
 
+  // Build set of timing warning pairs to deduplicate against interactions
+  const timingPairs = new Set(
+    timingWarnings.map((tw) => {
+      const ids = [tw.source.id, tw.target.id].sort();
+      return `${ids[0]}-${ids[1]}`;
+    })
+  );
+
   // Safety checks
   for (const check of safetyChecks) {
     if (!check.category) continue;
@@ -86,8 +94,15 @@ function generateConsoleEntries(
     });
   }
 
-  // Interactions
+  // Interactions (deduplicated against timing warnings)
   for (const interaction of interactions) {
+    // Skip if there's already a timing warning for this pair
+    const ids = [interaction.source.id, interaction.target.id].sort();
+    const pairKey = `${ids[0]}-${ids[1]}`;
+    if (timingPairs.has(pairKey) && interaction.type !== "synergy") {
+      continue;
+    }
+
     if (interaction.type === "synergy") {
       entries.push({
         timestamp: now,

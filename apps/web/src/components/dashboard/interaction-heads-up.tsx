@@ -52,8 +52,24 @@ export function InteractionHeadsUp({
   ratioWarnings,
   timingWarnings,
 }: InteractionHeadsUpProps) {
-  const warnings = interactions.filter((i) => i.type !== "synergy");
-  const synergies = interactions.filter((i) => i.type === "synergy");
+  // Deduplicate: if a timing warning exists for a pair, filter out the general interaction
+  // since timing warnings are more specific and actionable
+  const timingPairs = new Set(
+    timingWarnings.map((tw) => {
+      const ids = [tw.source.id, tw.target.id].sort();
+      return `${ids[0]}-${ids[1]}`;
+    })
+  );
+
+  const deduplicatedInteractions = interactions.filter((interaction) => {
+    const ids = [interaction.source.id, interaction.target.id].sort();
+    const pairKey = `${ids[0]}-${ids[1]}`;
+    // Keep interaction only if there's no timing warning for this pair
+    return !timingPairs.has(pairKey);
+  });
+
+  const warnings = deduplicatedInteractions.filter((i) => i.type !== "synergy");
+  const synergies = deduplicatedInteractions.filter((i) => i.type === "synergy");
 
   const totalWarnings =
     warnings.length + ratioWarnings.length + timingWarnings.length;
