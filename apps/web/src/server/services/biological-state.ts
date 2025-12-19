@@ -1,6 +1,7 @@
 import { and, gte, lte, eq } from "drizzle-orm";
 import { db } from "~/server/db";
 import { log, interaction } from "~/server/db/schema";
+import { type SafetyCategory, isHardLimit } from "~/server/data/safety-limits";
 
 // ============================================================================
 // Types
@@ -65,6 +66,8 @@ export type OptimizationOpportunity = {
   description: string;
   /** Priority (higher = more important) */
   priority: number;
+  /** Safety warning for high-risk supplements (e.g., Iron, Vitamin A) */
+  safetyWarning?: string;
 };
 
 export type BiologicalState = {
@@ -318,6 +321,24 @@ async function calculateOptimizations(
     },
   });
 
+  /**
+   * Generate safety warning for high-risk supplements.
+   * Returns a warning string if the supplement has a hard safety limit.
+   */
+  function getSafetyWarning(supplement: { name: string; safetyCategory: string | null }): string | undefined {
+    if (!supplement.safetyCategory) return undefined;
+    const category = supplement.safetyCategory as SafetyCategory;
+    if (!isHardLimit(category)) return undefined;
+    
+    // Custom warnings for specific high-risk supplements
+    const warnings: Partial<Record<SafetyCategory, string>> = {
+      iron: "Caution: Only supplement if Ferritin <150ng/mL. Test before use.",
+      "vitamin-a": "Caution: High doses are teratogenic. Not recommended during pregnancy.",
+      selenium: "Caution: Narrow therapeutic window. Don't exceed 200mcg/day without testing.",
+    };
+    return warnings[category] ?? `Caution: ${supplement.name} has a hard safety limit.`;
+  }
+
   // Check for synergies that could be leveraged
   for (const synergy of synergyInteractions) {
     const hasSource = activeSupplementIds.has(synergy.sourceId);
@@ -331,6 +352,7 @@ async function calculateOptimizations(
         title: `Enhance ${synergy.source.name} with ${synergy.target.name}`,
         description: synergy.suggestion ?? `${synergy.source.name} and ${synergy.target.name} have synergistic effects.`,
         priority: 2,
+        safetyWarning: getSafetyWarning(synergy.target),
       });
     } else if (hasTarget && !hasSource) {
       optimizations.push({
@@ -339,6 +361,7 @@ async function calculateOptimizations(
         title: `Enhance ${synergy.target.name} with ${synergy.source.name}`,
         description: synergy.suggestion ?? `${synergy.target.name} and ${synergy.source.name} have synergistic effects.`,
         priority: 2,
+        safetyWarning: getSafetyWarning(synergy.source),
       });
     } else if (hasSource && hasTarget) {
       // User already has both - note the active synergy

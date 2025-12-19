@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Clock, Zap, AlertTriangle, ChevronRight, Bell, Check, BellRing, X } from "lucide-react";
+import { Clock, Zap, AlertTriangle, ChevronRight, Bell, Check, BellRing, X, ShieldAlert } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import {
@@ -382,13 +382,16 @@ function SynergyCard({
   onDismiss?: () => void;
 }) {
   const isActive = optimization.title.startsWith("Active synergy");
+  const hasSafetyWarning = !!optimization.safetyWarning;
 
   return (
     <div
       className={`group relative rounded-lg border p-3 ${
-        isActive 
-          ? "border-[#39FF14]/30 bg-[#39FF14]/5" 
-          : "border-[#00D4FF]/20 bg-[#00D4FF]/5"
+        hasSafetyWarning
+          ? "border-[#F0A500]/30 bg-[#F0A500]/5"
+          : isActive 
+            ? "border-[#39FF14]/30 bg-[#39FF14]/5" 
+            : "border-[#00D4FF]/20 bg-[#00D4FF]/5"
       }`}
     >
       {/* Dismiss button - visible on hover for suggestions */}
@@ -403,11 +406,15 @@ function SynergyCard({
         </button>
       )}
       <div className="flex items-start gap-2">
-        <Zap
-          className={`mt-0.5 h-4 w-4 shrink-0 ${
-            isActive ? "text-[#39FF14]" : "text-[#00D4FF]"
-          }`}
-        />
+        {hasSafetyWarning ? (
+          <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-[#F0A500]" />
+        ) : (
+          <Zap
+            className={`mt-0.5 h-4 w-4 shrink-0 ${
+              isActive ? "text-[#39FF14]" : "text-[#00D4FF]"
+            }`}
+          />
+        )}
         <div className="min-w-0 pr-4">
           <div className="text-foreground font-mono text-xs">
             {isActive 
@@ -417,6 +424,14 @@ function SynergyCard({
           <div className="text-muted-foreground mt-0.5 font-mono text-[10px] leading-relaxed">
             {optimization.description}
           </div>
+          {hasSafetyWarning && (
+            <div className="mt-1.5 flex items-start gap-1.5 rounded bg-[#F0A500]/10 px-2 py-1">
+              <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0 text-[#F0A500]" />
+              <span className="font-mono text-[9px] leading-relaxed text-[#F0A500]">
+                {optimization.safetyWarning}
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </div>
