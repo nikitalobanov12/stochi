@@ -135,15 +135,17 @@ type MemoizedAreaProps = {
   id: string;
   index: number;
   allSupplementIds: string[];
+  name: string;
 };
 
-const MemoizedArea = memo(function MemoizedArea({ id, index, allSupplementIds }: MemoizedAreaProps) {
+const MemoizedArea = memo(function MemoizedArea({ id, index, allSupplementIds, name }: MemoizedAreaProps) {
   // Use consistent color based on original index in allSupplementIds
   const colorIndex = allSupplementIds.indexOf(id);
   return (
     <Area
       type="monotone"
       dataKey={`concentrations.${id}`}
+      name={name}
       stroke={getCompoundColor(colorIndex >= 0 ? colorIndex : index)}
       strokeWidth={2}
       fill={`url(#gradient-${id})`}
@@ -360,6 +362,7 @@ export function BiologicalTimeline({
                   id={id}
                   index={colorIndex}
                   allSupplementIds={allSupplementIds}
+                  name={supplementNames.get(id) ?? "Unknown"}
                 />
               );
             })}
