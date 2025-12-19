@@ -36,6 +36,13 @@
       "when": 1766105241042,
       "tag": "0004_eminent_johnny_blaze",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1766178042244,
+      "tag": "0005_friendly_captain_universe",
+      "breakpoints": true
     }
   ]
 }

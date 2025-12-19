@@ -162,6 +162,12 @@ export const supplement = pgTable(
       .notNull(),
     route: routeEnum("route").default("oral").notNull(),
     storageInstructions: text("storage_instructions"),
+    // Pharmacokinetic fields (sourced from Examine.com/PubMed)
+    // Used for biological state timeline visualization
+    peakMinutes: integer("peak_minutes"), // Time to Cmax (peak plasma concentration)
+    halfLifeMinutes: integer("half_life_minutes"), // Elimination half-life (t½)
+    absorptionWindowMinutes: integer("absorption_window_minutes"), // Active absorption period
+    bioavailabilityPercent: real("bioavailability_percent"), // % systemic availability
     createdAt: timestamp("created_at")
       .$defaultFn(() => new Date())
       .notNull(),
