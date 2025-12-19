@@ -28,7 +28,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
         </div>
       </div>
 
-      <div className="pt-6">
+      <div className="shrink-0 pt-6">
         <Button onClick={onNext} className="w-full font-mono" size="lg">
           Get Started
           <ArrowRight className="ml-2 h-4 w-4" />

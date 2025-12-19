@@ -156,7 +156,7 @@ export function BuildStackStep({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex-1 space-y-4 overflow-y-auto">
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pb-4">
         <div className="space-y-1">
           <h2 className="font-mono text-xl font-bold">Build your stack</h2>
           <p className="text-sm text-muted-foreground">
@@ -356,7 +356,7 @@ export function BuildStackStep({
         </div>
       </div>
 
-      <div className="flex gap-2 pt-4">
+      <div className="flex shrink-0 gap-2 border-t border-border/40 pt-4">
         <Button variant="ghost" onClick={onBack} size="sm">
           <ArrowLeft className="mr-1 h-4 w-4" />
           Back
