@@ -52,6 +52,7 @@ type SafetyCategoryKey =
 const supplements = [
   // ============================================
   // MAGNESIUM FORMS (5)
+  // Pharmacokinetic data from Examine.com & PubMed
   // ============================================
   {
     name: "Magnesium Glycinate",
@@ -72,6 +73,11 @@ const supplements = [
     category: "mineral" as SupplementCategory,
     commonGoals: ["sleep", "stress", "health"],
     safetyCategory: "magnesium" as SafetyCategoryKey,
+    // PK: High bioavailability chelated form
+    peakMinutes: 120,
+    halfLifeMinutes: 720, // 12h - tissue distribution
+    absorptionWindowMinutes: 240,
+    bioavailabilityPercent: 25,
   },
   {
     name: "Magnesium Citrate",
@@ -86,6 +92,11 @@ const supplements = [
     category: "mineral" as SupplementCategory,
     commonGoals: ["stress", "health"],
     safetyCategory: "magnesium" as SafetyCategoryKey,
+    // PK: Good bioavailability, faster absorption
+    peakMinutes: 90,
+    halfLifeMinutes: 720,
+    absorptionWindowMinutes: 180,
+    bioavailabilityPercent: 20,
   },
   {
     name: "Magnesium L-Threonate",
@@ -101,6 +112,11 @@ const supplements = [
     category: "mineral" as SupplementCategory,
     commonGoals: ["focus", "sleep", "longevity"],
     safetyCategory: "magnesium" as SafetyCategoryKey,
+    // PK: Designed for CNS penetration
+    peakMinutes: 90,
+    halfLifeMinutes: 480, // 8h - faster CNS clearance
+    absorptionWindowMinutes: 180,
+    bioavailabilityPercent: 15,
   },
   {
     name: "Magnesium Oxide",
@@ -116,6 +132,11 @@ const supplements = [
     category: "mineral" as SupplementCategory,
     commonGoals: ["health"],
     safetyCategory: "magnesium" as SafetyCategoryKey,
+    // PK: Poor bioavailability
+    peakMinutes: 180,
+    halfLifeMinutes: 720,
+    absorptionWindowMinutes: 240,
+    bioavailabilityPercent: 4,
   },
   {
     name: "Magnesium Malate",
@@ -131,6 +152,11 @@ const supplements = [
     category: "mineral" as SupplementCategory,
     commonGoals: ["energy", "health"],
     safetyCategory: "magnesium" as SafetyCategoryKey,
+    // PK: Good absorption, energy-focused
+    peakMinutes: 120,
+    halfLifeMinutes: 720,
+    absorptionWindowMinutes: 240,
+    bioavailabilityPercent: 18,
   },
 
   // ============================================
@@ -150,6 +176,11 @@ const supplements = [
     category: "mineral" as SupplementCategory,
     commonGoals: ["health", "energy"],
     safetyCategory: "zinc" as SafetyCategoryKey,
+    // PK: Superior absorption form
+    peakMinutes: 150,
+    halfLifeMinutes: 300, // 5h plasma half-life
+    absorptionWindowMinutes: 180,
+    bioavailabilityPercent: 60,
   },
   {
     name: "Zinc Gluconate",
@@ -163,10 +194,16 @@ const supplements = [
     category: "mineral" as SupplementCategory,
     commonGoals: ["health"],
     safetyCategory: "zinc" as SafetyCategoryKey,
+    // PK: Moderate absorption
+    peakMinutes: 180,
+    halfLifeMinutes: 300,
+    absorptionWindowMinutes: 180,
+    bioavailabilityPercent: 40,
   },
 
   // ============================================
   // B-VITAMINS (6)
+  // PK data from clinical studies
   // ============================================
   {
     name: "Vitamin B1",
@@ -182,6 +219,11 @@ const supplements = [
     category: "vitamin" as SupplementCategory,
     commonGoals: ["energy", "health"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Water-soluble, rapid absorption
+    peakMinutes: 60,
+    halfLifeMinutes: 60, // Short plasma t½
+    absorptionWindowMinutes: 60,
+    bioavailabilityPercent: 35,
   },
   {
     name: "Vitamin B2",
@@ -197,6 +239,11 @@ const supplements = [
     category: "vitamin" as SupplementCategory,
     commonGoals: ["energy", "health"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Active form, rapid utilization
+    peakMinutes: 90,
+    halfLifeMinutes: 66, // ~1.1h
+    absorptionWindowMinutes: 90,
+    bioavailabilityPercent: 60,
   },
   {
     name: "Vitamin B3",
@@ -212,6 +259,11 @@ const supplements = [
     category: "vitamin" as SupplementCategory,
     commonGoals: ["energy", "longevity", "health"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Rapid absorption, no flush form
+    peakMinutes: 60,
+    halfLifeMinutes: 45, // Short t½
+    absorptionWindowMinutes: 60,
+    bioavailabilityPercent: 85,
   },
   {
     name: "Vitamin B6",
@@ -227,6 +279,11 @@ const supplements = [
     category: "vitamin" as SupplementCategory,
     commonGoals: ["focus", "stress", "health"],
     safetyCategory: "vitamin-b6" as SafetyCategoryKey,
+    // PK: Active form, longer retention
+    peakMinutes: 120,
+    halfLifeMinutes: 1200, // ~20h tissue half-life
+    absorptionWindowMinutes: 120,
+    bioavailabilityPercent: 75,
   },
   {
     name: "Folate",
@@ -242,6 +299,11 @@ const supplements = [
     category: "vitamin" as SupplementCategory,
     commonGoals: ["health", "longevity"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Active form, immediate utilization
+    peakMinutes: 90,
+    halfLifeMinutes: 180, // 3h plasma
+    absorptionWindowMinutes: 90,
+    bioavailabilityPercent: 98,
   },
   {
     name: "Vitamin B12",
@@ -257,10 +319,16 @@ const supplements = [
     category: "vitamin" as SupplementCategory,
     commonGoals: ["energy", "focus", "health"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Long tissue retention
+    peakMinutes: 180,
+    halfLifeMinutes: 8640, // ~6 days tissue t½
+    absorptionWindowMinutes: 240,
+    bioavailabilityPercent: 2, // Oral absorption is very low
   },
 
   // ============================================
   // OTHER VITAMINS (4)
+  // PK data from Examine.com & clinical studies
   // ============================================
   {
     name: "Vitamin D3",
@@ -282,6 +350,11 @@ const supplements = [
     category: "vitamin" as SupplementCategory,
     commonGoals: ["health", "longevity", "energy"],
     safetyCategory: "vitamin-d3" as SafetyCategoryKey,
+    // PK: Fat-soluble, very long half-life
+    peakMinutes: 720, // 12h to peak
+    halfLifeMinutes: 20160, // 14 days tissue t½
+    absorptionWindowMinutes: 1440, // 24h absorption window
+    bioavailabilityPercent: 80,
   },
   {
     name: "Vitamin K2 MK-7",
@@ -297,6 +370,11 @@ const supplements = [
     category: "vitamin" as SupplementCategory,
     commonGoals: ["health", "longevity"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: MK-7 has longest half-life of K2 forms
+    peakMinutes: 360, // 6h
+    halfLifeMinutes: 4320, // 3 days
+    absorptionWindowMinutes: 480,
+    bioavailabilityPercent: 70,
   },
   {
     name: "Vitamin C",
@@ -312,6 +390,11 @@ const supplements = [
     category: "vitamin" as SupplementCategory,
     commonGoals: ["health", "longevity"],
     safetyCategory: "vitamin-c" as SafetyCategoryKey,
+    // PK: Water-soluble, dose-dependent absorption
+    peakMinutes: 120,
+    halfLifeMinutes: 180, // 3h plasma
+    absorptionWindowMinutes: 120,
+    bioavailabilityPercent: 70, // Decreases at higher doses
   },
   {
     name: "Vitamin E",
@@ -327,10 +410,16 @@ const supplements = [
     category: "vitamin" as SupplementCategory,
     commonGoals: ["health", "longevity"],
     safetyCategory: "vitamin-e" as SafetyCategoryKey,
+    // PK: Fat-soluble, slow absorption
+    peakMinutes: 480, // 8h
+    halfLifeMinutes: 2880, // 48h
+    absorptionWindowMinutes: 480,
+    bioavailabilityPercent: 40,
   },
 
   // ============================================
   // MINERALS (8)
+  // PK data from clinical pharmacology literature
   // ============================================
   {
     name: "Iron Bisglycinate",
@@ -346,6 +435,11 @@ const supplements = [
     category: "mineral" as SupplementCategory,
     commonGoals: ["energy", "health"],
     safetyCategory: "iron" as SafetyCategoryKey,
+    // PK: Well-absorbed chelate
+    peakMinutes: 120,
+    halfLifeMinutes: 360, // 6h plasma
+    absorptionWindowMinutes: 180,
+    bioavailabilityPercent: 20,
   },
   {
     name: "Copper Bisglycinate",
@@ -361,6 +455,11 @@ const supplements = [
     category: "mineral" as SupplementCategory,
     commonGoals: ["health"],
     safetyCategory: "copper" as SafetyCategoryKey,
+    // PK: Rapid tissue distribution
+    peakMinutes: 120,
+    halfLifeMinutes: 1440, // 24h
+    absorptionWindowMinutes: 180,
+    bioavailabilityPercent: 50,
   },
   {
     name: "Selenium",
@@ -376,6 +475,11 @@ const supplements = [
     category: "mineral" as SupplementCategory,
     commonGoals: ["health", "longevity"],
     safetyCategory: "selenium" as SafetyCategoryKey,
+    // PK: Organic form, good retention
+    peakMinutes: 480,
+    halfLifeMinutes: 7200, // 5 days tissue
+    absorptionWindowMinutes: 360,
+    bioavailabilityPercent: 90,
   },
   {
     name: "Calcium",
@@ -391,6 +495,11 @@ const supplements = [
     category: "mineral" as SupplementCategory,
     commonGoals: ["health"],
     safetyCategory: "calcium" as SafetyCategoryKey,
+    // PK: Better absorbed than carbonate
+    peakMinutes: 240,
+    halfLifeMinutes: 480, // 8h plasma
+    absorptionWindowMinutes: 240,
+    bioavailabilityPercent: 25,
   },
   {
     name: "Potassium",
@@ -405,6 +514,11 @@ const supplements = [
     category: "mineral" as SupplementCategory,
     commonGoals: ["health", "energy"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Rapid electrolyte dynamics
+    peakMinutes: 60,
+    halfLifeMinutes: 120, // 2h
+    absorptionWindowMinutes: 60,
+    bioavailabilityPercent: 85,
   },
   {
     name: "Boron",
@@ -420,6 +534,11 @@ const supplements = [
     category: "mineral" as SupplementCategory,
     commonGoals: ["health", "energy"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Limited data, estimated
+    peakMinutes: 120,
+    halfLifeMinutes: 1320, // ~22h
+    absorptionWindowMinutes: 120,
+    bioavailabilityPercent: 85,
   },
   {
     name: "Iodine",
@@ -435,6 +554,11 @@ const supplements = [
     category: "mineral" as SupplementCategory,
     commonGoals: ["health", "energy"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Rapid thyroid uptake
+    peakMinutes: 120,
+    halfLifeMinutes: 480, // 8h plasma
+    absorptionWindowMinutes: 90,
+    bioavailabilityPercent: 95,
   },
   {
     name: "Chromium",
@@ -449,10 +573,16 @@ const supplements = [
     category: "mineral" as SupplementCategory,
     commonGoals: ["health"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Picolinate form enhances absorption
+    peakMinutes: 120,
+    halfLifeMinutes: 2400, // ~40h
+    absorptionWindowMinutes: 120,
+    bioavailabilityPercent: 2.5, // Very low
   },
 
   // ============================================
   // OMEGA-3 (2)
+  // PK from clinical studies
   // ============================================
   {
     name: "Fish Oil (EPA)",
@@ -468,6 +598,11 @@ const supplements = [
     category: "omega" as SupplementCategory,
     commonGoals: ["health", "longevity", "stress"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Fat-soluble, slow incorporation
+    peakMinutes: 300, // 5h
+    halfLifeMinutes: 2880, // 48h plasma
+    absorptionWindowMinutes: 360,
+    bioavailabilityPercent: 25,
   },
   {
     name: "Fish Oil (DHA)",
@@ -483,10 +618,16 @@ const supplements = [
     category: "omega" as SupplementCategory,
     commonGoals: ["focus", "health", "longevity"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Slower incorporation into tissues
+    peakMinutes: 360, // 6h
+    halfLifeMinutes: 2880, // 48h
+    absorptionWindowMinutes: 360,
+    bioavailabilityPercent: 25,
   },
 
   // ============================================
   // AMINO ACIDS (6)
+  // PK from pharmacological literature
   // ============================================
   {
     name: "L-Tyrosine",
@@ -502,6 +643,11 @@ const supplements = [
     category: "amino-acid" as SupplementCategory,
     commonGoals: ["focus", "stress", "energy"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Rapid absorption, competes at BBB
+    peakMinutes: 120,
+    halfLifeMinutes: 180, // 3h
+    absorptionWindowMinutes: 90,
+    bioavailabilityPercent: 90,
   },
   {
     name: "L-Theanine",
@@ -517,6 +663,11 @@ const supplements = [
     category: "amino-acid" as SupplementCategory,
     commonGoals: ["focus", "sleep", "stress"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Rapid BBB penetration
+    peakMinutes: 60,
+    halfLifeMinutes: 180, // 3h
+    absorptionWindowMinutes: 90,
+    bioavailabilityPercent: 90,
   },
   {
     name: "5-HTP",
@@ -532,6 +683,11 @@ const supplements = [
     category: "amino-acid" as SupplementCategory,
     commonGoals: ["sleep", "stress"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Rapid serotonin conversion
+    peakMinutes: 90,
+    halfLifeMinutes: 300, // 5h
+    absorptionWindowMinutes: 120,
+    bioavailabilityPercent: 70,
   },
   {
     name: "GABA",
@@ -547,6 +703,11 @@ const supplements = [
     category: "amino-acid" as SupplementCategory,
     commonGoals: ["sleep", "stress"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Poor BBB penetration
+    peakMinutes: 60,
+    halfLifeMinutes: 30, // Very short
+    absorptionWindowMinutes: 60,
+    bioavailabilityPercent: 5,
   },
   {
     name: "Glycine",
@@ -562,6 +723,11 @@ const supplements = [
     category: "amino-acid" as SupplementCategory,
     commonGoals: ["sleep", "health", "longevity"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Rapid absorption
+    peakMinutes: 30,
+    halfLifeMinutes: 45, // ~45min
+    absorptionWindowMinutes: 30,
+    bioavailabilityPercent: 95,
   },
   {
     name: "Taurine",
@@ -577,10 +743,16 @@ const supplements = [
     category: "amino-acid" as SupplementCategory,
     commonGoals: ["health", "longevity", "energy"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Good absorption, long tissue retention
+    peakMinutes: 90,
+    halfLifeMinutes: 60, // 1h plasma
+    absorptionWindowMinutes: 90,
+    bioavailabilityPercent: 90,
   },
 
   // ============================================
   // ANTIOXIDANTS (5)
+  // PK from clinical pharmacology literature
   // ============================================
   {
     name: "CoQ10",
@@ -596,6 +768,11 @@ const supplements = [
     category: "antioxidant" as SupplementCategory,
     commonGoals: ["energy", "longevity", "health"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Fat-soluble, slow absorption
+    peakMinutes: 360, // 6h
+    halfLifeMinutes: 2040, // 34h
+    absorptionWindowMinutes: 480,
+    bioavailabilityPercent: 8, // Ubiquinone; ubiquinol is higher
   },
   {
     name: "Alpha Lipoic Acid",
@@ -611,6 +788,11 @@ const supplements = [
     category: "antioxidant" as SupplementCategory,
     commonGoals: ["longevity", "health"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Rapid absorption, short half-life
+    peakMinutes: 60,
+    halfLifeMinutes: 30, // Very short t½
+    absorptionWindowMinutes: 45,
+    bioavailabilityPercent: 30,
   },
   {
     name: "NAC",
@@ -626,6 +808,11 @@ const supplements = [
     category: "antioxidant" as SupplementCategory,
     commonGoals: ["longevity", "health"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Good absorption, moderate half-life
+    peakMinutes: 60,
+    halfLifeMinutes: 330, // 5.5h
+    absorptionWindowMinutes: 90,
+    bioavailabilityPercent: 10,
   },
   {
     name: "Quercetin",
@@ -641,6 +828,11 @@ const supplements = [
     category: "antioxidant" as SupplementCategory,
     commonGoals: ["longevity", "health"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Poor bioavailability
+    peakMinutes: 420, // 7h
+    halfLifeMinutes: 660, // 11h
+    absorptionWindowMinutes: 360,
+    bioavailabilityPercent: 2,
   },
   {
     name: "Glutathione",
@@ -656,6 +848,11 @@ const supplements = [
     category: "antioxidant" as SupplementCategory,
     commonGoals: ["longevity", "health"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Poor oral bioavailability (unless liposomal)
+    peakMinutes: 90,
+    halfLifeMinutes: 90, // 1.5h
+    absorptionWindowMinutes: 90,
+    bioavailabilityPercent: 3, // Standard oral; liposomal ~15%
   },
 
   // ============================================
@@ -675,6 +872,11 @@ const supplements = [
     category: "nootropic" as SupplementCategory,
     commonGoals: ["focus", "energy"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Well-characterized, rapid oral absorption
+    peakMinutes: 45, // 30-60min Tmax
+    halfLifeMinutes: 300, // 5h average (3-7h range)
+    absorptionWindowMinutes: 45,
+    bioavailabilityPercent: 99,
   },
   {
     name: "Ashwagandha",
@@ -690,6 +892,11 @@ const supplements = [
     category: "adaptogen" as SupplementCategory,
     commonGoals: ["stress", "sleep", "energy"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Withanolides have moderate absorption
+    peakMinutes: 180, // 2-3h for withanolides
+    halfLifeMinutes: 720, // ~12h for active withanolides
+    absorptionWindowMinutes: 180,
+    bioavailabilityPercent: 35,
   },
   {
     name: "Lion's Mane",
@@ -705,6 +912,11 @@ const supplements = [
     category: "adaptogen" as SupplementCategory,
     commonGoals: ["focus", "longevity"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Fungal polysaccharides, slow effect onset
+    peakMinutes: 120, // 2h for beta-glucans
+    halfLifeMinutes: 480, // ~8h estimated
+    absorptionWindowMinutes: 180,
+    bioavailabilityPercent: 20,
   },
   {
     name: "Rhodiola Rosea",
@@ -720,6 +932,11 @@ const supplements = [
     category: "adaptogen" as SupplementCategory,
     commonGoals: ["stress", "energy", "focus"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Rosavins and salidroside absorption
+    peakMinutes: 60, // ~1h for salidroside
+    halfLifeMinutes: 240, // ~4h
+    absorptionWindowMinutes: 90,
+    bioavailabilityPercent: 30,
   },
   {
     name: "Bacopa Monnieri",
@@ -735,6 +952,11 @@ const supplements = [
     category: "adaptogen" as SupplementCategory,
     commonGoals: ["focus", "stress"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Bacosides A and B kinetics
+    peakMinutes: 120, // 1-3h
+    halfLifeMinutes: 360, // ~6h
+    absorptionWindowMinutes: 180,
+    bioavailabilityPercent: 15,
   },
   {
     name: "Berberine",
@@ -750,6 +972,11 @@ const supplements = [
     category: "other" as SupplementCategory,
     commonGoals: ["longevity", "health"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Poor bioavailability, gut-first-pass
+    peakMinutes: 240, // 4h
+    halfLifeMinutes: 300, // ~5h plasma
+    absorptionWindowMinutes: 240,
+    bioavailabilityPercent: 5, // Very low oral bioavailability
   },
 
   // ============================================
@@ -768,6 +995,11 @@ const supplements = [
     category: "other" as SupplementCategory,
     commonGoals: ["health", "longevity"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Very poor bioavailability without enhancers
+    peakMinutes: 120, // 1-2h
+    halfLifeMinutes: 420, // ~7h
+    absorptionWindowMinutes: 180,
+    bioavailabilityPercent: 1, // Extremely low; piperine increases 20x
   },
   {
     name: "Piperine",
@@ -783,6 +1015,11 @@ const supplements = [
     category: "other" as SupplementCategory,
     commonGoals: ["health"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Rapid absorption, enzyme inhibition lasts hours
+    peakMinutes: 60, // ~1h
+    halfLifeMinutes: 360, // 6h (enzyme inhibition duration)
+    absorptionWindowMinutes: 60,
+    bioavailabilityPercent: 90,
   },
   {
     name: "Creatine Monohydrate",
@@ -798,6 +1035,11 @@ const supplements = [
     category: "other" as SupplementCategory,
     commonGoals: ["energy", "focus", "health"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Tissue saturation model, not acute plasma kinetics
+    peakMinutes: 90, // Plasma peak ~1.5h
+    halfLifeMinutes: 180, // 3h plasma (but tissue retention is weeks)
+    absorptionWindowMinutes: 120,
+    bioavailabilityPercent: 99,
   },
   {
     name: "Collagen",
@@ -813,6 +1055,11 @@ const supplements = [
     category: "other" as SupplementCategory,
     commonGoals: ["health", "longevity"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Peptide absorption, tissue incorporation
+    peakMinutes: 60, // Dipeptides peak ~1h
+    halfLifeMinutes: 240, // ~4h for collagen dipeptides
+    absorptionWindowMinutes: 90,
+    bioavailabilityPercent: 90,
   },
   {
     name: "Biotin",
@@ -828,6 +1075,11 @@ const supplements = [
     category: "vitamin" as SupplementCategory,
     commonGoals: ["health"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Water-soluble B-vitamin
+    peakMinutes: 90, // ~1.5h
+    halfLifeMinutes: 120, // ~2h plasma
+    absorptionWindowMinutes: 90,
+    bioavailabilityPercent: 100, // Nearly complete absorption
   },
   {
     name: "Melatonin",
@@ -843,6 +1095,11 @@ const supplements = [
     category: "other" as SupplementCategory,
     commonGoals: ["sleep"],
     safetyCategory: null as SafetyCategoryKey,
+    // PK: Rapid absorption, short half-life
+    peakMinutes: 50, // 20-90min depending on formulation
+    halfLifeMinutes: 45, // 35-50min
+    absorptionWindowMinutes: 30,
+    bioavailabilityPercent: 15, // Low due to first-pass metabolism
   },
 
   // ============================================
@@ -866,6 +1123,11 @@ const supplements = [
     route: "subq_injection" as RouteOfAdministration,
     storageInstructions:
       "Keep refrigerated (2-8°C). Reconstituted peptide stable for 30 days.",
+    // PK: SubQ peptide kinetics
+    peakMinutes: 30, // Rapid subQ absorption
+    halfLifeMinutes: 240, // ~4h estimated
+    absorptionWindowMinutes: 60,
+    bioavailabilityPercent: 90, // SubQ injection
   },
   {
     name: "TB-500",
@@ -885,6 +1147,11 @@ const supplements = [
     route: "subq_injection" as RouteOfAdministration,
     storageInstructions:
       "Keep refrigerated (2-8°C). Reconstituted peptide stable for 30 days.",
+    // PK: Larger peptide, slower distribution
+    peakMinutes: 60, // ~1h subQ
+    halfLifeMinutes: 480, // ~8h
+    absorptionWindowMinutes: 90,
+    bioavailabilityPercent: 85,
   },
   {
     name: "Semaglutide",
@@ -904,6 +1171,11 @@ const supplements = [
     route: "subq_injection" as RouteOfAdministration,
     storageInstructions:
       "Keep refrigerated (2-8°C). Protect from light. Do not freeze.",
+    // PK: Engineered for long half-life (weekly dosing)
+    peakMinutes: 1440, // 1-3 days to Cmax
+    halfLifeMinutes: 10080, // ~7 days (168h)
+    absorptionWindowMinutes: 2880, // Slow subQ release
+    bioavailabilityPercent: 89,
   },
   {
     name: "GHK-Cu",
@@ -923,6 +1195,11 @@ const supplements = [
     route: "topical" as RouteOfAdministration,
     storageInstructions:
       "Keep refrigerated (2-8°C). Topical solutions stable for 60 days.",
+    // PK: Topical - local tissue retention
+    peakMinutes: 60, // Local dermal peak
+    halfLifeMinutes: 180, // ~3h in skin tissue
+    absorptionWindowMinutes: 120,
+    bioavailabilityPercent: 10, // Local topical delivery
   },
   {
     name: "Ipamorelin",
@@ -942,6 +1219,11 @@ const supplements = [
     route: "subq_injection" as RouteOfAdministration,
     storageInstructions:
       "Keep refrigerated (2-8°C). Administer fasted for optimal GH response.",
+    // PK: Short-acting GHRP
+    peakMinutes: 30, // Rapid GH pulse
+    halfLifeMinutes: 120, // ~2h
+    absorptionWindowMinutes: 30,
+    bioavailabilityPercent: 95,
   },
   {
     name: "CJC-1295",
@@ -961,6 +1243,11 @@ const supplements = [
     route: "subq_injection" as RouteOfAdministration,
     storageInstructions:
       "Keep refrigerated (2-8°C). Administer fasted, typically with Ipamorelin.",
+    // PK: No DAC = shorter duration than DAC version
+    peakMinutes: 30, // Rapid onset
+    halfLifeMinutes: 30, // ~30min (No DAC version)
+    absorptionWindowMinutes: 30,
+    bioavailabilityPercent: 95,
   },
 
   // ============================================
@@ -984,6 +1271,11 @@ const supplements = [
     route: "intranasal" as RouteOfAdministration,
     storageInstructions:
       "Keep refrigerated (2-8°C). Fragile peptide - handle with care.",
+    // PK: Intranasal peptide - rapid CNS entry
+    peakMinutes: 10, // Rapid nasal absorption
+    halfLifeMinutes: 180, // ~3h
+    absorptionWindowMinutes: 15,
+    bioavailabilityPercent: 60, // Intranasal bypasses first-pass
   },
   {
     name: "Selank",
@@ -1003,6 +1295,11 @@ const supplements = [
     route: "intranasal" as RouteOfAdministration,
     storageInstructions:
       "Keep refrigerated (2-8°C). Use within 30 days of opening.",
+    // PK: Intranasal anxiolytic peptide
+    peakMinutes: 15, // Rapid nasal absorption
+    halfLifeMinutes: 60, // ~1h (short-acting)
+    absorptionWindowMinutes: 15,
+    bioavailabilityPercent: 65,
   },
   {
     name: "Noopept",
@@ -1022,6 +1319,11 @@ const supplements = [
     route: "oral" as RouteOfAdministration,
     storageInstructions:
       "Store in cool, dry place. Sublingual administration common for faster onset.",
+    // PK: Rapid oral/sublingual absorption
+    peakMinutes: 20, // 15-20min (sublingual faster)
+    halfLifeMinutes: 60, // ~1h (but metabolite cycloprolylglycine longer)
+    absorptionWindowMinutes: 30,
+    bioavailabilityPercent: 10, // Low oral, sublingual ~40%
   },
   {
     name: "Bromantane",
@@ -1041,6 +1343,11 @@ const supplements = [
     route: "oral" as RouteOfAdministration,
     storageInstructions:
       "Store away from light and moisture. Sublingual option available.",
+    // PK: Lipophilic actoprotector
+    peakMinutes: 180, // 2-4h (slow due to lipophilicity)
+    halfLifeMinutes: 690, // ~11.5h
+    absorptionWindowMinutes: 240,
+    bioavailabilityPercent: 40,
   },
   {
     name: "Phenylpiracetam",
@@ -1060,6 +1367,11 @@ const supplements = [
     route: "oral" as RouteOfAdministration,
     storageInstructions:
       "Store in cool, dry place. Tolerance builds rapidly - cycle 2-3 days on, 2-3 days off.",
+    // PK: Racetam with stimulant kinetics
+    peakMinutes: 60, // ~1h
+    halfLifeMinutes: 210, // 3-5h
+    absorptionWindowMinutes: 60,
+    bioavailabilityPercent: 100, // Well-absorbed racetam
   },
 ];
 
@@ -1091,6 +1403,11 @@ async function seed() {
           isResearchChemical: supp.isResearchChemical ?? false,
           route: supp.route ?? "oral",
           storageInstructions: supp.storageInstructions ?? null,
+          // Pharmacokinetic data
+          peakMinutes: supp.peakMinutes ?? null,
+          halfLifeMinutes: supp.halfLifeMinutes ?? null,
+          absorptionWindowMinutes: supp.absorptionWindowMinutes ?? null,
+          bioavailabilityPercent: supp.bioavailabilityPercent ?? null,
           updatedAt: new Date(),
         },
       })
