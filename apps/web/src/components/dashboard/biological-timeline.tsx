@@ -10,7 +10,7 @@ import {
   ReferenceLine,
   Tooltip,
 } from "recharts";
-import { Eye, EyeOff, Focus } from "lucide-react";
+import { EyeOff, ChevronDown, ChevronUp } from "lucide-react";
 import { Skeleton } from "~/components/ui/skeleton";
 import type { TimelineDataPoint, ActiveCompound } from "~/server/services/biological-state";
 
@@ -25,8 +25,8 @@ type BiologicalTimelineProps = {
   activeCompounds: ActiveCompound[];
   /** Current time marker (ISO string) */
   currentTime?: string;
-  /** Enable focus mode (toggleable compounds) */
-  focusModeEnabled?: boolean;
+  /** Default number of compounds to show (Top N) */
+  defaultVisibleCount?: number;
 };
 
 // ============================================================================
@@ -50,13 +50,14 @@ function getCompoundColor(index: number): string {
 }
 
 // ============================================================================
-// Custom Tooltip
+// Custom Tooltip - Fixed UUID Leak
 // ============================================================================
 
 type TooltipPayload = {
   name: string;
   value: number;
   color: string;
+  dataKey: string;
   payload?: TimelineDataPoint;
 };
 
@@ -86,23 +87,37 @@ function CustomTooltip({
     });
   };
 
+  // Sort by concentration value (highest first)
+  const sortedPayload = [...payload].sort((a, b) => b.value - a.value);
+
   return (
     <div className="border-border bg-card rounded-md border px-3 py-2 shadow-lg">
       <div className="text-muted-foreground mb-1 font-mono text-xs">
         {timestamp ? formatTime(timestamp) : "--:--"}
       </div>
       <div className="space-y-1">
-        {payload.map((entry, i) => {
-          const name = supplementNames.get(entry.name) ?? entry.name;
+        {sortedPayload.map((entry, i) => {
+          // Extract UUID from dataKey: "concentrations.uuid" -> "uuid"
+          const dataKeyStr = String(entry.dataKey ?? entry.name);
+          const supplementId = dataKeyStr.replace("concentrations.", "");
+          const name = supplementNames.get(supplementId) ?? "Unknown";
+          
+          // Skip if value is 0 or negligible
+          if (entry.value < 1) return null;
+
           return (
-            <div key={i} className="flex items-center gap-2">
-              <div
-                className="h-2 w-2 rounded-full"
-                style={{ backgroundColor: entry.color }}
-              />
-              <span className="text-foreground font-mono text-xs">
-                {name}:{" "}
-                <span className="tabular-nums">{Math.round(entry.value)}%</span>
+            <div key={i} className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <div
+                  className="h-2 w-2 rounded-full"
+                  style={{ backgroundColor: entry.color }}
+                />
+                <span className="text-foreground font-mono text-xs">
+                  {name}
+                </span>
+              </div>
+              <span className="text-foreground font-mono text-xs tabular-nums">
+                {Math.round(entry.value)}%
               </span>
             </div>
           );
@@ -146,11 +161,12 @@ export function BiologicalTimeline({
   timelineData,
   activeCompounds,
   currentTime,
-  focusModeEnabled = true,
+  defaultVisibleCount = 3,
 }: BiologicalTimelineProps) {
-  // Focus mode: track which compounds are visible
+  // Track whether to show all compounds or just top N
+  const [showAll, setShowAll] = useState(false);
+  // Track manually hidden compounds (for fine-grained control)
   const [hiddenCompounds, setHiddenCompounds] = useState<Set<string>>(new Set());
-  const [isFocusMode, setIsFocusMode] = useState(false);
 
   // Build supplement name map
   const supplementNames = useMemo(() => {
@@ -159,22 +175,36 @@ export function BiologicalTimeline({
     return map;
   }, [activeCompounds]);
 
-  // Get unique supplement IDs from timeline data
+  // Get unique supplement IDs from timeline data, sorted by current concentration
   const allSupplementIds = useMemo(() => {
     const ids = new Set<string>();
     timelineData.forEach((point) => {
       Object.keys(point.concentrations).forEach((id) => ids.add(id));
     });
-    return Array.from(ids);
+    
+    // Sort by current concentration (use the latest data point)
+    const latestPoint = timelineData[timelineData.length - 1];
+    const sortedIds = Array.from(ids).sort((a, b) => {
+      const concA = latestPoint?.concentrations[a] ?? 0;
+      const concB = latestPoint?.concentrations[b] ?? 0;
+      return concB - concA;
+    });
+    
+    return sortedIds;
   }, [timelineData]);
 
-  // Filter to only visible compounds
-  const supplementIds = useMemo(() => {
-    if (!isFocusMode) return allSupplementIds;
-    return allSupplementIds.filter((id) => !hiddenCompounds.has(id));
-  }, [allSupplementIds, hiddenCompounds, isFocusMode]);
+  // Determine which compounds to show on the chart
+  const visibleSupplementIds = useMemo(() => {
+    // Start with either all or top N
+    const baseIds = showAll 
+      ? allSupplementIds 
+      : allSupplementIds.slice(0, defaultVisibleCount);
+    
+    // Apply manual hide filters
+    return baseIds.filter((id) => !hiddenCompounds.has(id));
+  }, [allSupplementIds, showAll, defaultVisibleCount, hiddenCompounds]);
 
-  // Toggle compound visibility
+  // Toggle individual compound visibility
   const toggleCompound = useCallback((supplementId: string) => {
     setHiddenCompounds((prev) => {
       const next = new Set(prev);
@@ -186,15 +216,6 @@ export function BiologicalTimeline({
       return next;
     });
   }, []);
-
-  // Toggle focus mode
-  const toggleFocusMode = useCallback(() => {
-    setIsFocusMode((prev) => !prev);
-    if (isFocusMode) {
-      // Exiting focus mode - show all
-      setHiddenCompounds(new Set());
-    }
-  }, [isFocusMode]);
 
   // Calculate current time marker position
   const currentMinutesFromStart = useMemo(() => {
@@ -227,7 +248,10 @@ export function BiologicalTimeline({
     });
   }, [timestampMap]);
 
-  if (timelineData.length === 0 || supplementIds.length === 0) {
+  // Check if there are more compounds than the default visible count
+  const hasMoreCompounds = allSupplementIds.length > defaultVisibleCount;
+
+  if (timelineData.length === 0 || visibleSupplementIds.length === 0) {
     return (
       <div className="flex h-[200px] items-center justify-center">
         <p className="text-muted-foreground font-mono text-xs">
@@ -238,158 +262,177 @@ export function BiologicalTimeline({
   }
 
   return (
-    <div className="h-[200px] w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart
-          data={timelineData}
-          margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-        >
-          <defs>
-            {supplementIds.map((id, index) => (
-              <linearGradient
-                key={id}
-                id={`gradient-${id}`}
-                x1="0"
-                y1="0"
-                x2="0"
-                y2="1"
-              >
-                <stop
-                  offset="5%"
-                  stopColor={getCompoundColor(index)}
-                  stopOpacity={0.3}
-                />
-                <stop
-                  offset="95%"
-                  stopColor={getCompoundColor(index)}
-                  stopOpacity={0}
-                />
-              </linearGradient>
-            ))}
-          </defs>
-
-          <XAxis
-            dataKey="minutesFromStart"
-            tickFormatter={formatXAxis}
-            stroke="#30363D"
-            tick={{ fill: "#A8B1BB", fontSize: 10, fontFamily: "monospace" }}
-            tickLine={{ stroke: "#30363D" }}
-            axisLine={{ stroke: "#30363D" }}
-            interval="preserveStartEnd"
-            minTickGap={60}
-          />
-
-          <YAxis
-            domain={[0, 120]}
-            tickFormatter={(value) => `${value}%`}
-            stroke="#30363D"
-            tick={{ fill: "#A8B1BB", fontSize: 10, fontFamily: "monospace" }}
-            tickLine={{ stroke: "#30363D" }}
-            axisLine={{ stroke: "#30363D" }}
-            width={40}
-          />
-
-          <Tooltip
-            content={
-              <CustomTooltip
-                supplementNames={supplementNames}
-              />
-            }
-          />
-
-          {/* Current time marker */}
-          {currentMinutesFromStart !== null && (
-            <ReferenceLine
-              x={currentMinutesFromStart}
-              stroke="#39FF14"
-              strokeDasharray="3 3"
-              strokeWidth={1}
-              label={{
-                value: "NOW",
-                position: "top",
-                fill: "#39FF14",
-                fontSize: 9,
-                fontFamily: "monospace",
-              }}
-            />
-          )}
-
-          {/* Peak zone reference (100% line) */}
-          <ReferenceLine
-            y={100}
-            stroke="#30363D"
-            strokeDasharray="2 2"
-            strokeWidth={1}
-          />
-
-          {/* Concentration areas - memoized for performance */}
-          {supplementIds.map((id, index) => (
-            <MemoizedArea
-              key={id}
-              id={id}
-              index={index}
-              allSupplementIds={allSupplementIds}
-            />
-          ))}
-        </AreaChart>
-      </ResponsiveContainer>
-
-      {/* Legend with Focus Mode */}
-      <div className="mt-3 space-y-2">
-        {focusModeEnabled && allSupplementIds.length > 3 && (
-          <button
-            type="button"
-            onClick={toggleFocusMode}
-            className={`flex items-center gap-1.5 rounded-md px-2 py-1 font-mono text-[10px] transition-colors ${
-              isFocusMode
-                ? "bg-[#00D4FF]/20 text-[#00D4FF]"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
+    <div className="w-full">
+      {/* Chart */}
+      <div className="h-[200px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart
+            data={timelineData}
+            margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
           >
-            <Focus className="h-3 w-3" />
-            {isFocusMode ? "EXIT FOCUS" : "FOCUS MODE"}
-          </button>
-        )}
-        <div className="flex flex-wrap gap-x-4 gap-y-1">
-          {allSupplementIds.map((id, index) => {
+            <defs>
+              {visibleSupplementIds.map((id) => {
+                const colorIndex = allSupplementIds.indexOf(id);
+                return (
+                  <linearGradient
+                    key={id}
+                    id={`gradient-${id}`}
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop
+                      offset="5%"
+                      stopColor={getCompoundColor(colorIndex)}
+                      stopOpacity={0.3}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor={getCompoundColor(colorIndex)}
+                      stopOpacity={0}
+                    />
+                  </linearGradient>
+                );
+              })}
+            </defs>
+
+            <XAxis
+              dataKey="minutesFromStart"
+              tickFormatter={formatXAxis}
+              stroke="#30363D"
+              tick={{ fill: "#A8B1BB", fontSize: 10, fontFamily: "monospace" }}
+              tickLine={{ stroke: "#30363D" }}
+              axisLine={{ stroke: "#30363D" }}
+              interval="preserveStartEnd"
+              minTickGap={60}
+            />
+
+            <YAxis
+              domain={[0, 120]}
+              tickFormatter={(value) => `${value}%`}
+              stroke="#30363D"
+              tick={{ fill: "#A8B1BB", fontSize: 10, fontFamily: "monospace" }}
+              tickLine={{ stroke: "#30363D" }}
+              axisLine={{ stroke: "#30363D" }}
+              width={40}
+            />
+
+            <Tooltip
+              content={
+                <CustomTooltip
+                  supplementNames={supplementNames}
+                />
+              }
+            />
+
+            {/* Current time marker */}
+            {currentMinutesFromStart !== null && (
+              <ReferenceLine
+                x={currentMinutesFromStart}
+                stroke="#39FF14"
+                strokeDasharray="3 3"
+                strokeWidth={1}
+                label={{
+                  value: "NOW",
+                  position: "top",
+                  fill: "#39FF14",
+                  fontSize: 9,
+                  fontFamily: "monospace",
+                }}
+              />
+            )}
+
+            {/* Peak zone reference (100% line) */}
+            <ReferenceLine
+              y={100}
+              stroke="#30363D"
+              strokeDasharray="2 2"
+              strokeWidth={1}
+            />
+
+            {/* Concentration areas - memoized for performance */}
+            {visibleSupplementIds.map((id) => {
+              const colorIndex = allSupplementIds.indexOf(id);
+              return (
+                <MemoizedArea
+                  key={id}
+                  id={id}
+                  index={colorIndex}
+                  allSupplementIds={allSupplementIds}
+                />
+              );
+            })}
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Legend with Show All toggle */}
+      <div className="mt-3 space-y-2">
+        {/* Compound pills - clickable to toggle */}
+        <div className="flex flex-wrap items-center gap-2">
+          {(showAll ? allSupplementIds : allSupplementIds.slice(0, defaultVisibleCount)).map((id) => {
+            const colorIndex = allSupplementIds.indexOf(id);
             const name = supplementNames.get(id) ?? "Unknown";
             const compound = activeCompounds.find((c) => c.supplementId === id);
             const phase = compound?.phase ?? "cleared";
             const isHidden = hiddenCompounds.has(id);
+            const concentration = compound?.concentrationPercent ?? 0;
 
             return (
               <button
                 key={id}
                 type="button"
-                onClick={isFocusMode ? () => toggleCompound(id) : undefined}
-                disabled={!isFocusMode}
-                className={`flex items-center gap-1.5 transition-opacity ${
-                  isFocusMode ? "cursor-pointer hover:opacity-80" : "cursor-default"
-                } ${isHidden && isFocusMode ? "opacity-30" : ""}`}
+                onClick={() => toggleCompound(id)}
+                className={`flex items-center gap-1.5 rounded-full border px-2 py-0.5 font-mono text-[10px] transition-all ${
+                  isHidden
+                    ? "border-border/30 bg-transparent text-muted-foreground/50"
+                    : "border-border/50 bg-card/50 text-foreground hover:bg-card"
+                }`}
               >
-                {isFocusMode && (
-                  isHidden ? (
-                    <EyeOff className="h-3 w-3 text-muted-foreground" />
-                  ) : (
-                    <Eye className="h-3 w-3 text-muted-foreground" />
-                  )
+                {isHidden ? (
+                  <EyeOff className="h-2.5 w-2.5" />
+                ) : (
+                  <div
+                    className="h-2 w-2 rounded-full"
+                    style={{ backgroundColor: getCompoundColor(colorIndex) }}
+                  />
                 )}
-                <div
-                  className="h-2 w-2 rounded-full"
-                  style={{ backgroundColor: getCompoundColor(index) }}
-                />
-                <span className="text-muted-foreground font-mono text-[10px]">
+                <span className={isHidden ? "line-through" : ""}>
                   {name}
-                  {phase === "peak" && (
-                    <span className="status-safe ml-1">[PEAK]</span>
-                  )}
-                  {phase === "absorbing" && (
-                    <span className="status-info ml-1">[ABS]</span>
-                  )}
                 </span>
+                {!isHidden && concentration > 0 && (
+                  <span className="text-muted-foreground tabular-nums">
+                    {Math.round(concentration)}%
+                  </span>
+                )}
+                {!isHidden && phase === "peak" && (
+                  <span className="text-[#39FF14]">PEAK</span>
+                )}
               </button>
             );
           })}
+
+          {/* Show All / Show Less toggle */}
+          {hasMoreCompounds && (
+            <button
+              type="button"
+              onClick={() => setShowAll(!showAll)}
+              className="text-muted-foreground hover:text-foreground flex items-center gap-1 rounded-full border border-dashed border-border/50 px-2 py-0.5 font-mono text-[10px] transition-colors"
+            >
+              {showAll ? (
+                <>
+                  <ChevronUp className="h-2.5 w-2.5" />
+                  SHOW LESS
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="h-2.5 w-2.5" />
+                  +{allSupplementIds.length - defaultVisibleCount} MORE
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -403,6 +446,34 @@ export function BiologicalTimeline({
 type ActiveCompoundsListProps = {
   compounds: ActiveCompound[];
 };
+
+// Human-readable phase labels with explanations
+const PHASE_CONFIG = {
+  absorbing: {
+    label: "Absorbing",
+    shortLabel: "ABS",
+    description: "Entering bloodstream",
+    className: "text-[#00D4FF]",
+  },
+  peak: {
+    label: "Peak",
+    shortLabel: "PEAK",
+    description: "Maximum concentration",
+    className: "text-[#39FF14]",
+  },
+  eliminating: {
+    label: "Clearing",
+    shortLabel: "CLR",
+    description: "Being metabolized",
+    className: "text-muted-foreground",
+  },
+  cleared: {
+    label: "Cleared",
+    shortLabel: "—",
+    description: "Below threshold",
+    className: "text-muted-foreground/50",
+  },
+} as const;
 
 export function ActiveCompoundsList({ compounds }: ActiveCompoundsListProps) {
   if (compounds.length === 0) {
@@ -435,35 +506,26 @@ function CompoundRow({
   index: number;
 }) {
   const color = getCompoundColor(index);
-  const phaseLabel = {
-    absorbing: "ABS",
-    peak: "PEAK",
-    eliminating: "ELIM",
-    cleared: "CLR",
-  }[compound.phase];
-
-  const phaseClass = {
-    absorbing: "status-info",
-    peak: "status-safe",
-    eliminating: "text-muted-foreground",
-    cleared: "text-muted-foreground/50",
-  }[compound.phase];
+  const phaseConfig = PHASE_CONFIG[compound.phase];
 
   return (
     <div className="flex items-center justify-between gap-2">
-      <div className="flex items-center gap-2">
+      <div className="flex min-w-0 flex-1 items-center gap-2">
         <div
-          className="h-2 w-2 rounded-full"
+          className="h-2 w-2 shrink-0 rounded-full"
           style={{ backgroundColor: color }}
         />
-        <span className="text-foreground font-mono text-xs">
+        <span className="text-foreground truncate font-mono text-xs">
           {compound.name}
         </span>
-        <span className={`font-mono text-[10px] ${phaseClass}`}>
-          [{phaseLabel}]
+        <span 
+          className={`shrink-0 font-mono text-[10px] ${phaseConfig.className}`}
+          title={phaseConfig.description}
+        >
+          {phaseConfig.label}
         </span>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex shrink-0 items-center gap-2">
         <div className="bg-muted h-1.5 w-16 overflow-hidden rounded-full">
           <div
             className="h-full transition-all duration-300"

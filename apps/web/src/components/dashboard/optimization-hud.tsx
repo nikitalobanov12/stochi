@@ -218,7 +218,7 @@ function getSeverityColor(severity: "critical" | "medium" | "low"): string {
 }
 
 // ============================================================================
-// Exclusion Zone Card
+// Exclusion Zone Card - with severity borders
 // ============================================================================
 
 function ExclusionZoneCard({
@@ -226,11 +226,13 @@ function ExclusionZoneCard({
   onLogSupplement,
   permission,
   onRequestPermission,
+  isHero = false,
 }: {
   zone: ExclusionZone;
   onLogSupplement?: (supplementId: string) => void;
   permission: NotificationPermissionState;
   onRequestPermission: (zone: ExclusionZone) => void;
+  isHero?: boolean;
 }) {
   const { minutes, seconds, isExpired } = useCountdown(zone.endsAt);
   const [reminded, setReminded] = useState(false);
@@ -255,9 +257,22 @@ function ExclusionZoneCard({
     }, delayMs);
   }, [zone, minutes, seconds, permission, onRequestPermission]);
 
+  // Severity-based border colors
+  const borderColor = {
+    critical: "border-[#FF6B6B]/40",
+    medium: "border-[#F0A500]/40",
+    low: "border-border/40",
+  }[zone.severity];
+
+  const bgColor = {
+    critical: "bg-[#FF6B6B]/5",
+    medium: "bg-[#F0A500]/5",
+    low: "bg-card/30",
+  }[zone.severity];
+
   if (isExpired) {
     return (
-      <div className="border-border/40 bg-card/30 rounded-lg border p-3">
+      <div className="rounded-lg border border-[#39FF14]/40 bg-[#39FF14]/5 p-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Check className="h-4 w-4 text-[#39FF14]" />
@@ -266,15 +281,14 @@ function ExclusionZoneCard({
                 {zone.targetSupplementName}
               </div>
               <div className="font-mono text-[10px] text-[#39FF14]">
-                AVAILABLE NOW
+                WINDOW OPEN
               </div>
             </div>
           </div>
           {onLogSupplement && (
             <Button
               size="sm"
-              variant="outline"
-              className="h-7 font-mono text-[10px]"
+              className="h-7 bg-[#39FF14] font-mono text-[10px] text-black hover:bg-[#39FF14]/90"
               onClick={() => onLogSupplement(zone.targetSupplementId)}
             >
               LOG NOW
@@ -286,27 +300,51 @@ function ExclusionZoneCard({
   }
 
   return (
-    <div className="border-border/40 bg-card/30 rounded-lg border p-3">
+    <div className={`rounded-lg border ${borderColor} ${bgColor} p-3`}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <Clock
-              className="h-4 w-4"
-              style={{ color: getSeverityColor(zone.severity) }}
-            />
-            <span className="text-foreground font-mono text-xs">
-              {zone.targetSupplementName}
-            </span>
-            <span
-              className="font-mono text-[10px] tabular-nums"
-              style={{ color: getSeverityColor(zone.severity) }}
-            >
-              {formatCountdown(minutes, seconds)}
-            </span>
-          </div>
-          <div className="text-muted-foreground mt-1 font-mono text-[10px] leading-relaxed">
-            {zone.reason}
-          </div>
+          {isHero ? (
+            // Hero card layout - larger, more prominent
+            <>
+              <div className="text-muted-foreground mb-1 font-mono text-[10px] uppercase tracking-wider">
+                Next Window
+              </div>
+              <div className="text-foreground font-mono text-sm font-medium">
+                {zone.targetSupplementName}
+              </div>
+              <div
+                className="mt-1 font-mono text-2xl font-bold tabular-nums"
+                style={{ color: getSeverityColor(zone.severity) }}
+              >
+                {formatCountdown(minutes, seconds)}
+              </div>
+              <div className="text-muted-foreground mt-2 font-mono text-[10px] leading-relaxed">
+                {zone.reason}
+              </div>
+            </>
+          ) : (
+            // Compact card layout
+            <>
+              <div className="flex items-center gap-2">
+                <Clock
+                  className="h-4 w-4"
+                  style={{ color: getSeverityColor(zone.severity) }}
+                />
+                <span className="text-foreground font-mono text-xs">
+                  {zone.targetSupplementName}
+                </span>
+                <span
+                  className="font-mono text-[10px] tabular-nums"
+                  style={{ color: getSeverityColor(zone.severity) }}
+                >
+                  {formatCountdown(minutes, seconds)}
+                </span>
+              </div>
+              <div className="text-muted-foreground mt-1 font-mono text-[10px] leading-relaxed">
+                {zone.reason}
+              </div>
+            </>
+          )}
         </div>
         {permission === "denied" ? (
           <div className="text-muted-foreground/50" title="Notifications blocked">
@@ -333,7 +371,7 @@ function ExclusionZoneCard({
 }
 
 // ============================================================================
-// Synergy Card
+// Synergy Card - with improved contrast
 // ============================================================================
 
 function SynergyCard({ optimization }: { optimization: OptimizationOpportunity }) {
@@ -341,19 +379,23 @@ function SynergyCard({ optimization }: { optimization: OptimizationOpportunity }
 
   return (
     <div
-      className={`border-border/40 rounded-lg border p-3 ${
-        isActive ? "bg-[#39FF14]/5 border-[#39FF14]/20" : "bg-card/30"
+      className={`rounded-lg border p-3 ${
+        isActive 
+          ? "border-[#39FF14]/30 bg-[#39FF14]/5" 
+          : "border-[#00D4FF]/20 bg-[#00D4FF]/5"
       }`}
     >
       <div className="flex items-start gap-2">
         <Zap
-          className={`mt-0.5 h-4 w-4 ${
+          className={`mt-0.5 h-4 w-4 shrink-0 ${
             isActive ? "text-[#39FF14]" : "text-[#00D4FF]"
           }`}
         />
-        <div>
+        <div className="min-w-0">
           <div className="text-foreground font-mono text-xs">
-            {optimization.title}
+            {isActive 
+              ? optimization.title.replace("Active synergy: ", "")
+              : optimization.title.replace(/^Enhance .+ with /, "Add ")}
           </div>
           <div className="text-muted-foreground mt-0.5 font-mono text-[10px] leading-relaxed">
             {optimization.description}
@@ -450,17 +492,28 @@ export function OptimizationHUD({
       )}
 
       <div className="space-y-4">
-        {/* Timing Countdowns */}
-        {sortedZones.length > 0 && (
+        {/* Hero: Next Optimal Event */}
+        {sortedZones.length > 0 && sortedZones[0] && (
+          <ExclusionZoneCard
+            zone={sortedZones[0]}
+            onLogSupplement={onLogSupplement}
+            permission={permission}
+            onRequestPermission={handleRequestPermission}
+            isHero={true}
+          />
+        )}
+
+        {/* Additional Timing Windows (if more than 1) */}
+        {sortedZones.length > 1 && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-3 w-3 text-[#F0A500]" />
               <span className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
-                Timing Windows
+                Other Windows
               </span>
             </div>
             <div className="space-y-2">
-              {sortedZones.slice(0, 5).map((zone) => (
+              {sortedZones.slice(1, 4).map((zone) => (
                 <ExclusionZoneCard
                   key={zone.ruleId}
                   zone={zone}

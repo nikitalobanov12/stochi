@@ -169,7 +169,6 @@ export default async function DashboardPage() {
                   timelineData={timelineData}
                   activeCompounds={biologicalState.activeCompounds}
                   currentTime={new Date().toISOString()}
-                  focusModeEnabled={true}
                 />
               </div>
 
