@@ -215,8 +215,8 @@ export function BiologicalTimeline({
     return map;
   }, [timelineData]);
 
-  // Format x-axis ticks using pre-computed timestamps
-  const formatXAxis = (minutes: number) => {
+  // Format x-axis ticks using pre-computed timestamps (memoized to prevent Recharts re-renders)
+  const formatXAxis = useCallback((minutes: number) => {
     const timestamp = timestampMap.get(minutes);
     if (!timestamp) return "";
     const date = new Date(timestamp);
@@ -225,7 +225,7 @@ export function BiologicalTimeline({
       minute: "2-digit",
       hour12: false,
     });
-  };
+  }, [timestampMap]);
 
   if (timelineData.length === 0 || supplementIds.length === 0) {
     return (
