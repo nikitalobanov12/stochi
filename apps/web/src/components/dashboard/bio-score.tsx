@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, ChevronRight, AlertTriangle, Zap } from "lucide-react";
+import { Activity, ChevronRight, AlertTriangle, Zap, ExternalLink } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +25,7 @@ type ScoreBreakdownItem = {
   label: string;
   value: number;
   severity?: "critical" | "medium" | "low";
+  researchUrl?: string | null;
 };
 
 // ============================================================================
@@ -61,6 +62,7 @@ function calculateBreakdown(
       label: `${zone.sourceSupplementName}/${zone.targetSupplementName} conflict`,
       value: penalty,
       severity: zone.severity,
+      researchUrl: zone.researchUrl,
     });
   }
 
@@ -191,10 +193,10 @@ function BreakdownModal({
                   key={i}
                   className="flex items-center justify-between rounded-md bg-black/10 px-3 py-2"
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex min-w-0 flex-1 items-center gap-2">
                     {item.type === "penalty" ? (
                       <AlertTriangle
-                        className="h-3 w-3"
+                        className="h-3 w-3 shrink-0"
                         style={{
                           color:
                             item.severity === "critical"
@@ -205,14 +207,26 @@ function BreakdownModal({
                         }}
                       />
                     ) : (
-                      <Zap className="h-3 w-3 text-[#39FF14]" />
+                      <Zap className="h-3 w-3 shrink-0 text-[#39FF14]" />
                     )}
-                    <span className="text-foreground font-mono text-xs">
+                    <span className="text-foreground truncate font-mono text-xs">
                       {item.label}
                     </span>
+                    {item.researchUrl && (
+                      <a
+                        href={item.researchUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-muted-foreground hover:text-[#00D4FF] shrink-0 transition-colors"
+                        title="View PubMed citation"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    )}
                   </div>
                   <span
-                    className="font-mono text-xs tabular-nums"
+                    className="ml-2 shrink-0 font-mono text-xs tabular-nums"
                     style={{
                       color: item.type === "penalty" ? "#FF6B6B" : "#39FF14",
                     }}

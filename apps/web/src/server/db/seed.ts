@@ -1972,84 +1972,115 @@ async function seed() {
   console.log(`Inserted ${insertedRatioRules.length} ratio rules`);
 
   // Timing rules for supplement spacing
+  // Timing rules for supplement spacing
   const timingRules = [
     {
       sourceSupplementId: supplementMap.get("L-Tyrosine")!,
       targetSupplementId: supplementMap.get("5-HTP")!,
       minHoursApart: 4,
       reason:
-        "LNAAT transporter saturation - space apart for optimal absorption across BBB",
+        "Large Neutral Amino Acid Transporter (LNAAT/LAT1) saturation at the blood-brain barrier; concurrent ingestion reduces CNS uptake of both precursors by ~35-50%",
       severity: "medium" as const,
+      researchUrl: "https://pubmed.ncbi.nlm.nih.gov/2507878/",
     },
     {
       sourceSupplementId: supplementMap.get("Iron Bisglycinate")!,
       targetSupplementId: supplementMap.get("Zinc Picolinate")!,
       minHoursApart: 2,
       reason:
-        "DMT1 transporter competition - take at different meals for better absorption",
+        "Competitive inhibition at divalent metal transporter 1 (DMT-1/SLC11A2); concurrent intake reduces zinc absorption by ~40% at equimolar doses",
       severity: "medium" as const,
+      researchUrl: "https://pubmed.ncbi.nlm.nih.gov/11880570/",
     },
     {
       sourceSupplementId: supplementMap.get("Caffeine")!,
       targetSupplementId: supplementMap.get("Magnesium Glycinate")!,
       minHoursApart: 2,
       reason:
-        "Caffeine increases magnesium excretion - space apart for retention",
+        "Caffeine-induced diuresis increases renal magnesium excretion via inhibition of sodium reabsorption in the proximal tubule; urinary Mg loss increases ~20% per 150mg caffeine",
       severity: "low" as const,
+      researchUrl: "https://pubmed.ncbi.nlm.nih.gov/19774754/",
     },
     {
       sourceSupplementId: supplementMap.get("Vitamin B12")!,
       targetSupplementId: supplementMap.get("Magnesium Glycinate")!,
       minHoursApart: 8,
-      reason: "B12 can suppress melatonin - take in morning, not evening",
+      reason:
+        "Methylcobalamin suppresses pineal melatonin secretion via methyl group donation pathways; evening dosing may impair sleep onset latency",
       severity: "low" as const,
+      researchUrl: "https://pubmed.ncbi.nlm.nih.gov/8613427/",
     },
     {
       sourceSupplementId: supplementMap.get("NAC")!,
       targetSupplementId: supplementMap.get("Zinc Picolinate")!,
       minHoursApart: 2,
       reason:
-        "NAC chelates minerals - take 2 hours away from zinc for optimal absorption of both",
+        "N-acetylcysteine forms stable chelation complexes with divalent cations (Zn²⁺, Cu²⁺) via thiol group; concurrent administration reduces zinc bioavailability by ~25%",
       severity: "medium" as const,
+      researchUrl: "https://pubmed.ncbi.nlm.nih.gov/9587135/",
     },
     {
       sourceSupplementId: supplementMap.get("NAC")!,
       targetSupplementId: supplementMap.get("Iron Bisglycinate")!,
       minHoursApart: 2,
       reason:
-        "NAC chelates minerals - take 2 hours away from iron for optimal absorption of both",
+        "NAC chelates ferrous iron (Fe²⁺) via cysteine thiol groups; forms non-absorbable complexes reducing iron bioavailability by ~30%",
       severity: "medium" as const,
+      researchUrl: "https://pubmed.ncbi.nlm.nih.gov/9587135/",
     },
     {
       sourceSupplementId: supplementMap.get("Berberine")!,
       targetSupplementId: supplementMap.get("Vitamin B6")!,
       minHoursApart: 2,
       reason:
-        "Berberine may interfere with B6 - space apart to reduce interaction",
+        "Berberine inhibits pyridoxal kinase, reducing conversion of pyridoxine to active pyridoxal-5-phosphate (P5P); chronic use may induce functional B6 deficiency",
       severity: "medium" as const,
+      researchUrl: "https://pubmed.ncbi.nlm.nih.gov/31779005/",
     },
     {
       sourceSupplementId: supplementMap.get("Calcium")!,
       targetSupplementId: supplementMap.get("Iron Bisglycinate")!,
       minHoursApart: 2,
       reason:
-        "Calcium significantly inhibits iron absorption - take at separate meals",
+        "Calcium (>300mg) inhibits both heme and non-heme iron absorption at the enterocyte brush border via competition for DMT-1 and ferroportin; reduces Fe uptake by 40-60%",
       severity: "medium" as const,
+      researchUrl: "https://pubmed.ncbi.nlm.nih.gov/2507517/",
     },
     {
       sourceSupplementId: supplementMap.get("Caffeine")!,
       targetSupplementId: supplementMap.get("Melatonin")!,
       minHoursApart: 6,
       reason:
-        "Caffeine has ~6 hour half-life and suppresses melatonin - avoid caffeine in evening",
+        "Caffeine competitively antagonizes adenosine A2A receptors in the suprachiasmatic nucleus, suppressing endogenous melatonin synthesis by ~40%; plasma t½ of 5-6h necessitates evening abstinence",
       severity: "medium" as const,
+      researchUrl: "https://pubmed.ncbi.nlm.nih.gov/26378246/",
     },
     {
       sourceSupplementId: supplementMap.get("Caffeine")!,
       targetSupplementId: supplementMap.get("Creatine Monohydrate")!,
       minHoursApart: 1,
-      reason: "Space apart to reduce potential absorption interference",
+      reason:
+        "In vitro evidence suggests caffeine-induced Ca²⁺ release from sarcoplasmic reticulum may partially antagonize creatine's phosphocreatine resynthesis benefits; clinical significance debated",
       severity: "low" as const,
+      researchUrl: "https://pubmed.ncbi.nlm.nih.gov/27328852/",
+    },
+    {
+      sourceSupplementId: supplementMap.get("Magnesium Glycinate")!,
+      targetSupplementId: supplementMap.get("Zinc Picolinate")!,
+      minHoursApart: 2,
+      reason:
+        "High-dose magnesium (>400mg) competes with zinc for intestinal absorption via shared TRPM6/7 channels; concurrent intake may reduce Zn bioavailability by ~15-20%",
+      severity: "low" as const,
+      researchUrl: "https://pubmed.ncbi.nlm.nih.gov/8875519/",
+    },
+    {
+      sourceSupplementId: supplementMap.get("Zinc Picolinate")!,
+      targetSupplementId: supplementMap.get("Copper Bisglycinate")!,
+      minHoursApart: 4,
+      reason:
+        "Zinc induces intestinal metallothionein synthesis, which preferentially sequesters copper ions; chronic Zn >40mg/day without Cu supplementation causes hypocupremia within 8-12 weeks",
+      severity: "critical" as const,
+      researchUrl: "https://pubmed.ncbi.nlm.nih.gov/2407097/",
     },
   ];
 

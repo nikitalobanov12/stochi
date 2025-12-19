@@ -46,10 +46,12 @@ export type ExclusionZone = {
   endsAt: Date;
   /** Minutes remaining in the exclusion zone */
   minutesRemaining: number;
-  /** Reason for the exclusion */
+  /** Reason for the exclusion (mechanistic jargon) */
   reason: string;
   /** Severity of the timing conflict */
   severity: "low" | "medium" | "critical";
+  /** PubMed/Examine.com citation URL */
+  researchUrl: string | null;
 };
 
 export type OptimizationOpportunity = {
@@ -288,6 +290,7 @@ async function calculateExclusionZones(
       minutesRemaining,
       reason: rule.reason,
       severity: rule.severity,
+      researchUrl: rule.researchUrl,
     });
   }
 

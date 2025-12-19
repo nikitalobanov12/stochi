@@ -1,0 +1,1 @@
+ALTER TABLE "timing_rule" ADD COLUMN "research_url" text;

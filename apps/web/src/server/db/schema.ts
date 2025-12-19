@@ -291,6 +291,8 @@ export const timingRule = pgTable("timing_rule", {
   minHoursApart: real("min_hours_apart").notNull(), // minimum hours between doses
   reason: text("reason").notNull(),
   severity: severityEnum("severity").notNull(),
+  // PubMed/Examine.com citation for Authority validation
+  researchUrl: text("research_url"),
   createdAt: timestamp("created_at")
     .$defaultFn(() => new Date())
     .notNull(),
