@@ -87,21 +87,21 @@ function BioSyncModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border-border/50 bg-card max-w-sm">
+      <DialogContent className="border-border/50 bg-card max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 font-mono text-sm">
-            <BellRing className="h-4 w-4 text-[#00D4FF]" />
+          <DialogTitle className="flex items-center gap-2 font-mono text-base">
+            <BellRing className="h-5 w-5 text-[#00D4FF]" />
             Enable Bio-Sync
           </DialogTitle>
-          <DialogDescription className="text-muted-foreground font-mono text-xs">
+          <DialogDescription className="text-muted-foreground font-mono text-sm">
             Receive precision alerts when absorption windows open
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-5 pt-2">
           {/* Value proposition */}
           <div className="rounded-lg bg-black/20 p-4">
-            <div className="text-foreground font-mono text-xs">
+            <div className="text-foreground font-mono text-sm">
               Your next window for{" "}
               <span className="text-[#00D4FF]">{targetSupplementName}</span>{" "}
               opens in{" "}
@@ -109,54 +109,54 @@ function BioSyncModal({
                 {formatTime(minutesRemaining)}
               </span>
             </div>
-            <div className="text-muted-foreground mt-2 font-mono text-[10px]">
+            <div className="text-muted-foreground mt-2 font-mono text-xs">
               Bio-Sync will notify you at the optimal moment to maximize
               bioavailability and avoid transporter competition.
             </div>
           </div>
 
           {/* Features list */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <div className="h-1.5 w-1.5 rounded-full bg-[#39FF14]" />
-              <span className="text-muted-foreground font-mono text-[10px]">
+          <div className="space-y-2.5">
+            <div className="flex items-center gap-2.5">
+              <div className="h-2 w-2 rounded-full bg-[#39FF14]" />
+              <span className="text-muted-foreground font-mono text-xs">
                 Precision timing based on pharmacokinetic half-life
               </span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="h-1.5 w-1.5 rounded-full bg-[#39FF14]" />
-              <span className="text-muted-foreground font-mono text-[10px]">
+            <div className="flex items-center gap-2.5">
+              <div className="h-2 w-2 rounded-full bg-[#39FF14]" />
+              <span className="text-muted-foreground font-mono text-xs">
                 Automatic exclusion zone tracking
               </span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="h-1.5 w-1.5 rounded-full bg-[#39FF14]" />
-              <span className="text-muted-foreground font-mono text-[10px]">
+            <div className="flex items-center gap-2.5">
+              <div className="h-2 w-2 rounded-full bg-[#39FF14]" />
+              <span className="text-muted-foreground font-mono text-xs">
                 One-tap logging from notification
               </span>
             </div>
           </div>
 
           {/* Action buttons */}
-          <div className="flex gap-2">
+          <div className="flex gap-3 pt-2">
             <Button
               variant="outline"
-              className="flex-1 font-mono text-xs"
+              className="flex-1 font-mono text-sm"
               onClick={() => onOpenChange(false)}
             >
               NOT NOW
             </Button>
             <Button
-              className="flex-1 bg-[#00D4FF] font-mono text-xs text-black hover:bg-[#00D4FF]/90"
+              className="flex-1 bg-[#00D4FF] font-mono text-sm text-black hover:bg-[#00D4FF]/90"
               onClick={onEnable}
             >
-              <Bell className="mr-1.5 h-3 w-3" />
+              <Bell className="mr-2 h-4 w-4" />
               ENABLE
             </Button>
           </div>
 
           {/* Privacy note */}
-          <div className="text-muted-foreground/60 text-center font-mono text-[9px]">
+          <div className="text-muted-foreground/70 text-center font-mono text-xs">
             Notifications are processed locally. No data leaves your device.
           </div>
         </div>
