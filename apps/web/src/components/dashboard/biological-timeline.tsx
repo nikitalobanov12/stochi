@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useCallback, memo } from "react";
 import {
   AreaChart,
   Area,
@@ -10,6 +10,7 @@ import {
   ReferenceLine,
   Tooltip,
 } from "recharts";
+import { Eye, EyeOff, Focus } from "lucide-react";
 import type { TimelineDataPoint, ActiveCompound } from "~/server/services/biological-state";
 
 // ============================================================================
@@ -23,6 +24,8 @@ type BiologicalTimelineProps = {
   activeCompounds: ActiveCompound[];
   /** Current time marker (ISO string) */
   currentTime?: string;
+  /** Enable focus mode (toggleable compounds) */
+  focusModeEnabled?: boolean;
 };
 
 // ============================================================================
@@ -109,6 +112,32 @@ function CustomTooltip({
 }
 
 // ============================================================================
+// Memoized Area Component for Performance
+// ============================================================================
+
+type MemoizedAreaProps = {
+  id: string;
+  index: number;
+  allSupplementIds: string[];
+};
+
+const MemoizedArea = memo(function MemoizedArea({ id, index, allSupplementIds }: MemoizedAreaProps) {
+  // Use consistent color based on original index in allSupplementIds
+  const colorIndex = allSupplementIds.indexOf(id);
+  return (
+    <Area
+      type="monotone"
+      dataKey={`concentrations.${id}`}
+      stroke={getCompoundColor(colorIndex >= 0 ? colorIndex : index)}
+      strokeWidth={2}
+      fill={`url(#gradient-${id})`}
+      fillOpacity={1}
+      isAnimationActive={false}
+    />
+  );
+});
+
+// ============================================================================
 // Main Component
 // ============================================================================
 
@@ -116,7 +145,12 @@ export function BiologicalTimeline({
   timelineData,
   activeCompounds,
   currentTime,
+  focusModeEnabled = true,
 }: BiologicalTimelineProps) {
+  // Focus mode: track which compounds are visible
+  const [hiddenCompounds, setHiddenCompounds] = useState<Set<string>>(new Set());
+  const [isFocusMode, setIsFocusMode] = useState(false);
+
   // Build supplement name map
   const supplementNames = useMemo(() => {
     const map = new Map<string, string>();
@@ -125,13 +159,41 @@ export function BiologicalTimeline({
   }, [activeCompounds]);
 
   // Get unique supplement IDs from timeline data
-  const supplementIds = useMemo(() => {
+  const allSupplementIds = useMemo(() => {
     const ids = new Set<string>();
     timelineData.forEach((point) => {
       Object.keys(point.concentrations).forEach((id) => ids.add(id));
     });
     return Array.from(ids);
   }, [timelineData]);
+
+  // Filter to only visible compounds
+  const supplementIds = useMemo(() => {
+    if (!isFocusMode) return allSupplementIds;
+    return allSupplementIds.filter((id) => !hiddenCompounds.has(id));
+  }, [allSupplementIds, hiddenCompounds, isFocusMode]);
+
+  // Toggle compound visibility
+  const toggleCompound = useCallback((supplementId: string) => {
+    setHiddenCompounds((prev) => {
+      const next = new Set(prev);
+      if (next.has(supplementId)) {
+        next.delete(supplementId);
+      } else {
+        next.add(supplementId);
+      }
+      return next;
+    });
+  }, []);
+
+  // Toggle focus mode
+  const toggleFocusMode = useCallback(() => {
+    setIsFocusMode((prev) => !prev);
+    if (isFocusMode) {
+      // Exiting focus mode - show all
+      setHiddenCompounds(new Set());
+    }
+  }, [isFocusMode]);
 
   // Calculate current time marker position
   const currentMinutesFromStart = useMemo(() => {
@@ -259,47 +321,75 @@ export function BiologicalTimeline({
             strokeWidth={1}
           />
 
-          {/* Concentration areas */}
+          {/* Concentration areas - memoized for performance */}
           {supplementIds.map((id, index) => (
-            <Area
+            <MemoizedArea
               key={id}
-              type="monotone"
-              dataKey={`concentrations.${id}`}
-              stroke={getCompoundColor(index)}
-              strokeWidth={2}
-              fill={`url(#gradient-${id})`}
-              fillOpacity={1}
-              isAnimationActive={false}
+              id={id}
+              index={index}
+              allSupplementIds={allSupplementIds}
             />
           ))}
         </AreaChart>
       </ResponsiveContainer>
 
-      {/* Legend */}
-      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
-        {supplementIds.map((id, index) => {
-          const name = supplementNames.get(id) ?? "Unknown";
-          const compound = activeCompounds.find((c) => c.supplementId === id);
-          const phase = compound?.phase ?? "cleared";
-          
-          return (
-            <div key={id} className="flex items-center gap-1.5">
-              <div
-                className="h-2 w-2 rounded-full"
-                style={{ backgroundColor: getCompoundColor(index) }}
-              />
-              <span className="text-muted-foreground font-mono text-[10px]">
-                {name}
-                {phase === "peak" && (
-                  <span className="status-safe ml-1">[PEAK]</span>
+      {/* Legend with Focus Mode */}
+      <div className="mt-3 space-y-2">
+        {focusModeEnabled && allSupplementIds.length > 3 && (
+          <button
+            type="button"
+            onClick={toggleFocusMode}
+            className={`flex items-center gap-1.5 rounded-md px-2 py-1 font-mono text-[10px] transition-colors ${
+              isFocusMode
+                ? "bg-[#00D4FF]/20 text-[#00D4FF]"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Focus className="h-3 w-3" />
+            {isFocusMode ? "EXIT FOCUS" : "FOCUS MODE"}
+          </button>
+        )}
+        <div className="flex flex-wrap gap-x-4 gap-y-1">
+          {allSupplementIds.map((id, index) => {
+            const name = supplementNames.get(id) ?? "Unknown";
+            const compound = activeCompounds.find((c) => c.supplementId === id);
+            const phase = compound?.phase ?? "cleared";
+            const isHidden = hiddenCompounds.has(id);
+
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={isFocusMode ? () => toggleCompound(id) : undefined}
+                disabled={!isFocusMode}
+                className={`flex items-center gap-1.5 transition-opacity ${
+                  isFocusMode ? "cursor-pointer hover:opacity-80" : "cursor-default"
+                } ${isHidden && isFocusMode ? "opacity-30" : ""}`}
+              >
+                {isFocusMode && (
+                  isHidden ? (
+                    <EyeOff className="h-3 w-3 text-muted-foreground" />
+                  ) : (
+                    <Eye className="h-3 w-3 text-muted-foreground" />
+                  )
                 )}
-                {phase === "absorbing" && (
-                  <span className="status-info ml-1">[ABS]</span>
-                )}
-              </span>
-            </div>
-          );
-        })}
+                <div
+                  className="h-2 w-2 rounded-full"
+                  style={{ backgroundColor: getCompoundColor(index) }}
+                />
+                <span className="text-muted-foreground font-mono text-[10px]">
+                  {name}
+                  {phase === "peak" && (
+                    <span className="status-safe ml-1">[PEAK]</span>
+                  )}
+                  {phase === "absorbing" && (
+                    <span className="status-info ml-1">[ABS]</span>
+                  )}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
