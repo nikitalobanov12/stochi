@@ -95,7 +95,7 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-      <div className="relative flex h-full w-full flex-col bg-background sm:h-auto sm:max-h-[85vh] sm:w-full sm:max-w-lg sm:rounded-xl sm:border sm:shadow-xl lg:max-w-xl">
+      <div className="relative flex h-full w-full flex-col bg-background pt-16 pb-24 sm:h-auto sm:max-h-[85vh] sm:w-full sm:max-w-lg sm:rounded-xl sm:border sm:shadow-xl sm:pt-0 sm:pb-0 lg:max-w-xl">
         {/* Close button - only show after first step */}
         {step > 0 && (
           <Button
