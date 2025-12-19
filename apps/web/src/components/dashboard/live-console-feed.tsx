@@ -185,17 +185,17 @@ export function LiveConsoleFeed({
       </h2>
       <div
         ref={containerRef}
-        className="border-border/40 h-24 overflow-hidden rounded-lg border bg-black/20 p-2 font-mono text-[10px] leading-relaxed opacity-60 transition-opacity hover:opacity-100"
+        className="border-border/40 h-24 overflow-hidden rounded-lg border bg-black/20 p-2 font-mono text-[10px] leading-relaxed"
       >
         {entries.map((entry, index) => (
           <div key={index} className="flex gap-2">
-            <span className="text-muted-foreground/60 shrink-0">
+            <span className="text-muted-foreground/80 shrink-0">
               [{formatTime(entry.timestamp)}]
             </span>
             <span className={`shrink-0 ${getModuleColor(entry.module)}`}>
               {entry.module}:
             </span>
-            <span className="text-muted-foreground">{entry.message}</span>
+            <span className="text-foreground/80">{entry.message}</span>
             <span className={`shrink-0 ${getStatusColor(entry.status)}`}>
               [{entry.status}]
             </span>
@@ -204,7 +204,7 @@ export function LiveConsoleFeed({
 
         {/* Blinking cursor effect */}
         <div className="mt-1 flex items-center gap-1">
-          <span className="text-muted-foreground/60">&gt;</span>
+          <span className="text-muted-foreground/80">&gt;</span>
           <span className="h-3 w-2 animate-pulse bg-emerald-500/70" />
         </div>
       </div>
