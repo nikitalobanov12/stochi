@@ -94,7 +94,7 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-background sm:bg-background/80 sm:backdrop-blur-sm">
       <div className="relative flex h-full w-full flex-col bg-background sm:h-auto sm:max-h-[85vh] sm:w-full sm:max-w-lg sm:rounded-xl sm:border sm:shadow-xl lg:max-w-xl">
         {/* Close button - only show after first step */}
         {step > 0 && (
@@ -112,12 +112,12 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
         )}
 
         {/* Step indicator - fixed at top */}
-        <div className="shrink-0 pt-14 sm:pt-0">
+        <div className="shrink-0 pt-4">
           <StepIndicator current={step} total={TOTAL_STEPS} />
         </div>
 
         {/* Content area with animations - scrollable */}
-        <div className="relative min-h-0 flex-1 overflow-y-auto px-6 pb-24 sm:px-8 sm:pb-8">
+        <div className="relative min-h-0 flex-1 overflow-y-auto px-6 pb-6 sm:px-8 sm:pb-8">
           <AnimatePresence mode="wait" custom={direction} initial={false}>
             <motion.div
               key={step}
