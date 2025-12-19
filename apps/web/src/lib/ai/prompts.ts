@@ -74,18 +74,21 @@ Explain in 1-2 sentences why this ratio matters and what benefit the user will n
 export function buildFallbackExplanation(context: DosagePromptContext): string {
   // Build a useful explanation from available mechanism data
   const parts: string[] = [];
-  
+
   if (context.sourceMechanism) {
     parts.push(`${context.sourceName}: ${context.sourceMechanism}`);
   }
-  if (context.targetMechanism && context.targetMechanism !== context.sourceMechanism) {
+  if (
+    context.targetMechanism &&
+    context.targetMechanism !== context.sourceMechanism
+  ) {
     parts.push(`${context.targetName}: ${context.targetMechanism}`);
   }
-  
+
   if (parts.length > 0) {
     return parts.join(" • ");
   }
-  
+
   // Generic fallback if no mechanism data
   return `Maintaining the ${context.minRatio}-${context.maxRatio}:1 ratio between ${context.sourceName} and ${context.targetName} helps ensure optimal absorption and prevents imbalances.`;
 }

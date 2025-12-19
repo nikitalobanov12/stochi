@@ -45,12 +45,10 @@ export async function createStack(formData: FormData) {
     throw new Error("Stack name is required");
   }
 
-  await db
-    .insert(stack)
-    .values({
-      userId: session.user.id,
-      name,
-    });
+  await db.insert(stack).values({
+    userId: session.user.id,
+    name,
+  });
 
   revalidatePath("/stacks");
   revalidatePath("/dashboard");
@@ -318,7 +316,7 @@ export async function logStack(stackId: string): Promise<void> {
  */
 export async function logStackWithSafetyCheck(
   stackId: string,
-  forceOverride?: boolean
+  forceOverride?: boolean,
 ): Promise<LogStackResult> {
   const session = await getSession();
   if (!session) {
@@ -359,7 +357,10 @@ export async function logStackWithSafetyCheck(
     unit: item.unit,
   }));
 
-  const safetyCheck = await checkStackSafety(session.user.id, itemsForSafetyCheck);
+  const safetyCheck = await checkStackSafety(
+    session.user.id,
+    itemsForSafetyCheck,
+  );
 
   // If there's a safety violation
   if (safetyCheck) {
@@ -398,7 +399,7 @@ export async function logStackWithSafetyCheck(
  * Useful for showing warnings before the user confirms.
  */
 export async function preCheckStackSafety(
-  stackId: string
+  stackId: string,
 ): Promise<SafetyCheckResult | null> {
   const session = await getSession();
   if (!session) {

@@ -49,7 +49,7 @@ function LogRow({ entry }: { entry: LogEntry }) {
       }`}
     >
       <div className="flex items-center gap-3">
-        <span className="font-mono text-xs text-muted-foreground">
+        <span className="text-muted-foreground font-mono text-xs">
           {formatTime(new Date(entry.loggedAt))}
         </span>
         <div className="flex items-center gap-1.5">
@@ -63,7 +63,7 @@ function LogRow({ entry }: { entry: LogEntry }) {
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <span className="font-mono text-sm text-muted-foreground">
+        <span className="text-muted-foreground font-mono text-sm">
           {entry.dosage}
           {entry.unit}
         </span>
@@ -87,7 +87,7 @@ export function TodayLogList({ logs, maxVisible = 8 }: TodayLogListProps) {
   const remainingCount = logs.length - maxVisible;
 
   return (
-    <div className="rounded-lg border bg-card">
+    <div className="bg-card rounded-lg border">
       {visibleLogs.map((entry, i) => (
         <div key={entry.id} className={i !== 0 ? "border-t" : ""}>
           <LogRow entry={entry} />
@@ -97,7 +97,7 @@ export function TodayLogList({ logs, maxVisible = 8 }: TodayLogListProps) {
         <div className="border-t px-4 py-2 text-center">
           <Link
             href="/dashboard/log"
-            className="text-xs text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground text-xs"
           >
             +{remainingCount} more
           </Link>

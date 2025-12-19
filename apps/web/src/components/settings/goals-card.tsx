@@ -78,22 +78,22 @@ export function GoalsCard({ initialGoals }: GoalsCardProps) {
                 className={`flex items-center gap-3 rounded-lg border p-3 text-left transition-colors ${
                   isSelected
                     ? "border-primary bg-primary/5"
-                    : "border-transparent bg-muted/50 hover:bg-muted"
+                    : "bg-muted/50 hover:bg-muted border-transparent"
                 }`}
               >
                 <span className="text-lg">{goal.icon}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm">{goal.name}</p>
-                  <p className="text-xs text-muted-foreground truncate">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium">{goal.name}</p>
+                  <p className="text-muted-foreground truncate text-xs">
                     {goal.description}
                   </p>
                 </div>
                 {isSelected && (
                   <div className="flex items-center gap-2">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                    <span className="bg-primary text-primary-foreground flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold">
                       {priority}
                     </span>
-                    <Check className="h-4 w-4 text-primary" />
+                    <Check className="text-primary h-4 w-4" />
                   </div>
                 )}
               </button>
@@ -102,8 +102,13 @@ export function GoalsCard({ initialGoals }: GoalsCardProps) {
         </div>
 
         {selectedGoals.length > 0 && (
-          <p className="text-xs text-muted-foreground">
-            Priority order: {selectedGoals.map((g, i) => `${i + 1}. ${goals.find((x) => x.key === g)?.name}`).join(", ")}
+          <p className="text-muted-foreground text-xs">
+            Priority order:{" "}
+            {selectedGoals
+              .map(
+                (g, i) => `${i + 1}. ${goals.find((x) => x.key === g)?.name}`,
+              )
+              .join(", ")}
           </p>
         )}
 

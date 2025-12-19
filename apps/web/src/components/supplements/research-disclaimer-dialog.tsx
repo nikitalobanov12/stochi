@@ -21,13 +21,15 @@ const STORAGE_KEY = "hasAcknowledgedResearchRisks";
  */
 export function useResearchDisclaimer() {
   const [showDialog, setShowDialog] = useState(false);
-  const [pendingCallback, setPendingCallback] = useState<(() => void) | null>(null);
+  const [pendingCallback, setPendingCallback] = useState<(() => void) | null>(
+    null,
+  );
 
   const checkAndProceed = useCallback((onProceed: () => void) => {
     // Check localStorage for previous acknowledgment
     if (typeof window !== "undefined") {
       const hasAcknowledged = localStorage.getItem(STORAGE_KEY) === "true";
-      
+
       if (hasAcknowledged) {
         // Already acknowledged, proceed immediately
         onProceed();
@@ -44,10 +46,10 @@ export function useResearchDisclaimer() {
     if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEY, "true");
     }
-    
+
     // Close dialog
     setShowDialog(false);
-    
+
     // Execute pending callback
     if (pendingCallback) {
       pendingCallback();
@@ -96,24 +98,22 @@ export function ResearchDisclaimerDialog({
           <DialogTitle className="text-center">
             Research Compound Notice
           </DialogTitle>
-          <DialogDescription className="text-center space-y-3 pt-2">
+          <DialogDescription className="space-y-3 pt-2 text-center">
             <p>
-              You are logging a compound categorized as a <strong>Research Chemical</strong>.
+              You are logging a compound categorized as a{" "}
+              <strong>Research Chemical</strong>.
             </p>
             <p>
-              This app tracks data for personal reference only and does not provide
-              medical advice or endorse usage.
+              This app tracks data for personal reference only and does not
+              provide medical advice or endorse usage.
             </p>
             <p className="text-amber-500/80">
               These compounds may not be approved for human consumption.
             </p>
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="sm:justify-center pt-4">
-          <Button
-            onClick={onAcknowledge}
-            className="w-full sm:w-auto"
-          >
+        <DialogFooter className="pt-4 sm:justify-center">
+          <Button onClick={onAcknowledge} className="w-full sm:w-auto">
             I Acknowledge
           </Button>
         </DialogFooter>
@@ -131,7 +131,8 @@ export function ResearchDisclaimerProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const { showDialog, handleAcknowledge, handleCancel } = useResearchDisclaimer();
+  const { showDialog, handleAcknowledge, handleCancel } =
+    useResearchDisclaimer();
 
   return (
     <>

@@ -57,7 +57,8 @@ export const SAFETY_LIMITS: Record<SafetyCategory, SafetyLimit> = {
     unit: "mg",
     source: "NIH",
     isHardLimit: true,
-    notes: "Elemental zinc UL; higher doses deplete copper and cause GI distress",
+    notes:
+      "Elemental zinc UL; higher doses deplete copper and cause GI distress",
   },
   iron: {
     limit: 45,
@@ -79,7 +80,8 @@ export const SAFETY_LIMITS: Record<SafetyCategory, SafetyLimit> = {
     source: "NIH",
     isHardLimit: true,
     requiredUnit: "IU",
-    notes: "Preformed vitamin A (retinol); teratogenic and hepatotoxic at high doses",
+    notes:
+      "Preformed vitamin A (retinol); teratogenic and hepatotoxic at high doses",
   },
   "vitamin-b6": {
     limit: 100,
@@ -94,14 +96,16 @@ export const SAFETY_LIMITS: Record<SafetyCategory, SafetyLimit> = {
     source: "Endocrine Society",
     isHardLimit: true,
     requiredUnit: "IU",
-    notes: "NIH UL is 4,000 IU; Endocrine Society allows up to 10,000 IU for deficiency correction",
+    notes:
+      "NIH UL is 4,000 IU; Endocrine Society allows up to 10,000 IU for deficiency correction",
   },
   selenium: {
     limit: 400,
     unit: "mcg",
     source: "NIH",
     isHardLimit: true,
-    notes: "Selenosis (toxicity) occurs above this level; hair loss, nail brittleness, neurological issues",
+    notes:
+      "Selenosis (toxicity) occurs above this level; hair loss, nail brittleness, neurological issues",
   },
 
   // ============================================
@@ -113,7 +117,8 @@ export const SAFETY_LIMITS: Record<SafetyCategory, SafetyLimit> = {
     unit: "mg",
     source: "NIH",
     isHardLimit: false,
-    notes: "UL applies to supplemental magnesium only (not dietary); excess causes diarrhea",
+    notes:
+      "UL applies to supplemental magnesium only (not dietary); excess causes diarrhea",
   },
   "vitamin-c": {
     limit: 2000,
@@ -127,7 +132,8 @@ export const SAFETY_LIMITS: Record<SafetyCategory, SafetyLimit> = {
     unit: "mg",
     source: "NIH",
     isHardLimit: false,
-    notes: "Includes diet + supplements; excess may increase cardiovascular risk",
+    notes:
+      "Includes diet + supplements; excess may increase cardiovascular risk",
   },
   "vitamin-e": {
     limit: 1000,
@@ -135,7 +141,8 @@ export const SAFETY_LIMITS: Record<SafetyCategory, SafetyLimit> = {
     source: "NIH",
     isHardLimit: false,
     requiredUnit: "IU",
-    notes: "High doses may increase bleeding risk; 1000 IU = 670mg alpha-tocopherol",
+    notes:
+      "High doses may increase bleeding risk; 1000 IU = 670mg alpha-tocopherol",
   },
 
   // ============================================
@@ -147,7 +154,8 @@ export const SAFETY_LIMITS: Record<SafetyCategory, SafetyLimit> = {
     source: "FDA (Wegovy label)",
     isHardLimit: false,
     period: "weekly",
-    notes: "Maximum weekly maintenance dose for weight management; start at 0.25mg/week and titrate up",
+    notes:
+      "Maximum weekly maintenance dose for weight management; start at 0.25mg/week and titrate up",
   },
 };
 
@@ -155,7 +163,9 @@ export const SAFETY_LIMITS: Record<SafetyCategory, SafetyLimit> = {
  * Get the safety limit for a given safety category.
  * Returns undefined if no limit is defined.
  */
-export function getSafetyLimit(category: SafetyCategory): SafetyLimit | undefined {
+export function getSafetyLimit(
+  category: SafetyCategory,
+): SafetyLimit | undefined {
   return SAFETY_LIMITS[category];
 }
 
@@ -171,7 +181,7 @@ export function isHardLimit(category: SafetyCategory): boolean {
  */
 export function getHardLimitCategories(): SafetyCategory[] {
   return (Object.keys(SAFETY_LIMITS) as SafetyCategory[]).filter(
-    (cat) => SAFETY_LIMITS[cat].isHardLimit
+    (cat) => SAFETY_LIMITS[cat].isHardLimit,
   );
 }
 
@@ -180,7 +190,7 @@ export function getHardLimitCategories(): SafetyCategory[] {
  */
 export function getSoftLimitCategories(): SafetyCategory[] {
   return (Object.keys(SAFETY_LIMITS) as SafetyCategory[]).filter(
-    (cat) => !SAFETY_LIMITS[cat].isHardLimit
+    (cat) => !SAFETY_LIMITS[cat].isHardLimit,
   );
 }
 

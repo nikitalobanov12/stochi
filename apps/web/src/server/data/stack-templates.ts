@@ -62,7 +62,9 @@ export function isTemplateStack(stackName: string): boolean {
   return templateNames.includes(stackName);
 }
 
-export function getTemplateByName(stackName: string): StackTemplate | undefined {
+export function getTemplateByName(
+  stackName: string,
+): StackTemplate | undefined {
   return stackTemplates.find((t) => t.name === stackName);
 }
 

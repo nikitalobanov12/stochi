@@ -25,13 +25,15 @@ type PendingLog = {
 export function SafeCommandBar({ supplements }: SafeCommandBarProps) {
   const [isPending, startTransition] = useTransition();
   const [pendingLog, setPendingLog] = useState<PendingLog | null>(null);
-  const [safetyCheck, setSafetyCheck] = useState<SafetyCheckResult | null>(null);
+  const [safetyCheck, setSafetyCheck] = useState<SafetyCheckResult | null>(
+    null,
+  );
   const [showWarning, setShowWarning] = useState(false);
 
   async function handleLog(
     supplementId: string,
     dosage: number,
-    unit: "mg" | "mcg" | "g" | "IU" | "ml"
+    unit: "mg" | "mcg" | "g" | "IU" | "ml",
   ): Promise<void> {
     // Store the pending log details in case we need to retry with override
     setPendingLog({ supplementId, dosage, unit });
@@ -66,7 +68,7 @@ export function SafeCommandBar({ supplements }: SafeCommandBarProps) {
         pendingLog.dosage,
         pendingLog.unit,
         undefined, // loggedAt
-        true // forceOverride
+        true, // forceOverride
       );
 
       if (result.success) {

@@ -75,7 +75,7 @@ function convertToMg(dosage: number, unit: string): number | null {
 function convertDosage(
   dosage: number,
   fromUnit: string,
-  toUnit: string
+  toUnit: string,
 ): number | null {
   // Same unit, no conversion needed
   if (fromUnit === toUnit) return dosage;
@@ -112,7 +112,7 @@ function convertDosage(
  */
 export function calculateElementalDosage(
   compoundDosage: number,
-  elementalWeightPercent: number | null
+  elementalWeightPercent: number | null,
 ): number {
   // If no elemental weight defined, assume 100% (pure form)
   if (elementalWeightPercent === null || elementalWeightPercent === 0) {
@@ -129,18 +129,45 @@ export function calculateElementalDosage(
  * Get date range for a given period (daily or weekly).
  * @param period - "daily" for today only, "weekly" for last 7 days
  */
-function getDateRange(period: "daily" | "weekly" = "daily"): { start: Date; end: Date } {
+function getDateRange(period: "daily" | "weekly" = "daily"): {
+  start: Date;
+  end: Date;
+} {
   const now = new Date();
-  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-  
+  const end = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    23,
+    59,
+    59,
+    999,
+  );
+
   if (period === "weekly") {
     // Start from 6 days ago at midnight (7-day window including today)
-    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6, 0, 0, 0, 0);
+    const start = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() - 6,
+      0,
+      0,
+      0,
+      0,
+    );
     return { start, end };
   }
-  
+
   // Daily: midnight to midnight today
-  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+  const start = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    0,
+    0,
+    0,
+    0,
+  );
   return { start, end };
 }
 
@@ -157,7 +184,7 @@ export async function getElementalTotal(
   userId: string,
   safetyCategory: SafetyCategory,
   targetUnit: "mg" | "mcg" | "IU",
-  period: "daily" | "weekly" = "daily"
+  period: "daily" | "weekly" = "daily",
 ): Promise<number> {
   const { start, end } = getDateRange(period);
 
@@ -174,7 +201,7 @@ export async function getElementalTotal(
 
   const supplementIds = supplementsInCategory.map((s) => s.id);
   const elementalWeightMap = new Map(
-    supplementsInCategory.map((s) => [s.id, s.elementalWeight])
+    supplementsInCategory.map((s) => [s.id, s.elementalWeight]),
   );
 
   // Get today's logs for these supplements
@@ -182,7 +209,7 @@ export async function getElementalTotal(
     where: and(
       eq(log.userId, userId),
       gte(log.loggedAt, start),
-      lte(log.loggedAt, end)
+      lte(log.loggedAt, end),
     ),
     columns: {
       supplementId: true,
@@ -192,13 +219,19 @@ export async function getElementalTotal(
   });
 
   // Filter to only logs for supplements in this category
-  const relevantLogs = logs.filter((l) => supplementIds.includes(l.supplementId));
+  const relevantLogs = logs.filter((l) =>
+    supplementIds.includes(l.supplementId),
+  );
 
   // Sum the elemental amounts
   let total = 0;
   for (const logEntry of relevantLogs) {
-    const elementalWeight = elementalWeightMap.get(logEntry.supplementId) ?? 100;
-    const elementalDosage = calculateElementalDosage(logEntry.dosage, elementalWeight);
+    const elementalWeight =
+      elementalWeightMap.get(logEntry.supplementId) ?? 100;
+    const elementalDosage = calculateElementalDosage(
+      logEntry.dosage,
+      elementalWeight,
+    );
 
     // Convert to target unit
     const converted = convertDosage(elementalDosage, logEntry.unit, targetUnit);
@@ -230,7 +263,7 @@ export async function checkSafetyLimit(
   userId: string,
   supplementData: SupplementWithSafety,
   dosage: number,
-  unit: string
+  unit: string,
 ): Promise<SafetyCheckResult> {
   // Research chemicals bypass safety limits - return experimental status
   if (supplementData.isResearchChemical) {
@@ -301,11 +334,15 @@ export async function checkSafetyLimit(
   // Calculate elemental dosage of the new dose
   const elementalDosage = calculateElementalDosage(
     dosage,
-    supplementData.elementalWeight
+    supplementData.elementalWeight,
   );
 
   // Convert to the limit's unit
-  const convertedDosage = convertDosage(elementalDosage, unit, safetyLimit.unit);
+  const convertedDosage = convertDosage(
+    elementalDosage,
+    unit,
+    safetyLimit.unit,
+  );
 
   // If we can't convert (IU mismatch), check if units match directly
   let newDoseInLimitUnit: number;
@@ -338,7 +375,7 @@ export async function checkSafetyLimit(
     userId,
     category,
     safetyLimit.unit as "mg" | "mcg" | "IU",
-    period
+    period,
   );
 
   const totalWithNewDose = existingTotal + newDoseInLimitUnit;
@@ -394,7 +431,7 @@ export async function checkStackSafety(
     supplement: SupplementWithSafety;
     dosage: number;
     unit: string;
-  }>
+  }>,
 ): Promise<SafetyCheckResult | null> {
   // Group items by safety category to calculate combined totals
   const categoryTotals = new Map<SafetyCategory, number>();
@@ -427,11 +464,15 @@ export async function checkStackSafety(
     // Calculate elemental dosage
     const elementalDosage = calculateElementalDosage(
       item.dosage,
-      item.supplement.elementalWeight
+      item.supplement.elementalWeight,
     );
 
     // Convert to limit unit
-    const convertedDosage = convertDosage(elementalDosage, item.unit, safetyLimit.unit);
+    const convertedDosage = convertDosage(
+      elementalDosage,
+      item.unit,
+      safetyLimit.unit,
+    );
     const doseInLimitUnit =
       convertedDosage !== null
         ? convertedDosage
@@ -461,7 +502,7 @@ export async function checkStackSafety(
       userId,
       category,
       safetyLimit.unit as "mg" | "mcg" | "IU",
-      period
+      period,
     );
 
     const totalWithStack = existingTotal + stackTotal;

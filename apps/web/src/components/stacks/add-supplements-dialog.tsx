@@ -2,7 +2,14 @@
 
 import { useState, useTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Loader2, Search, Check, AlertTriangle } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Loader2,
+  Search,
+  Check,
+  AlertTriangle,
+} from "lucide-react";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -54,7 +61,7 @@ type AddSupplementsDialogProps = {
   supplements: Supplement[];
   addStackItems: (
     stackId: string,
-    items: Array<{ supplementId: string; dosage: number; unit: string }>
+    items: Array<{ supplementId: string; dosage: number; unit: string }>,
   ) => Promise<void>;
   children?: React.ReactNode;
 };
@@ -73,15 +80,19 @@ export function AddSupplementsDialog({
 
   // Form state
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedSupplement, setSelectedSupplement] = useState<Supplement | null>(null);
+  const [selectedSupplement, setSelectedSupplement] =
+    useState<Supplement | null>(null);
   const [dosage, setDosage] = useState("");
   const [unit, setUnit] = useState<"mg" | "mcg" | "g" | "IU" | "ml">("mg");
   const [showDropdown, setShowDropdown] = useState(false);
 
   // Filter out supplements already in pending list
   const availableSupplements = useMemo(
-    () => supplements.filter((s) => !pendingItems.some((item) => item.supplementId === s.id)),
-    [supplements, pendingItems]
+    () =>
+      supplements.filter(
+        (s) => !pendingItems.some((item) => item.supplementId === s.id),
+      ),
+    [supplements, pendingItems],
   );
 
   // Fuzzy search results
@@ -89,7 +100,10 @@ export function AddSupplementsDialog({
     if (!searchQuery.trim()) {
       return availableSupplements.slice(0, 8); // Show first 8 when no query
     }
-    return fuzzySearchSupplements(availableSupplements, searchQuery).slice(0, 8);
+    return fuzzySearchSupplements(availableSupplements, searchQuery).slice(
+      0,
+      8,
+    );
   }, [availableSupplements, searchQuery]);
 
   function handleSelectSupplement(supplement: Supplement) {
@@ -105,7 +119,9 @@ export function AddSupplementsDialog({
     }
 
     // Check if already in list
-    if (pendingItems.some((item) => item.supplementId === selectedSupplement.id)) {
+    if (
+      pendingItems.some((item) => item.supplementId === selectedSupplement.id)
+    ) {
       return;
     }
 
@@ -129,7 +145,7 @@ export function AddSupplementsDialog({
 
   function handleRemoveFromList(supplementId: string) {
     setPendingItems((prev) =>
-      prev.filter((item) => item.supplementId !== supplementId)
+      prev.filter((item) => item.supplementId !== supplementId),
     );
   }
 
@@ -143,7 +159,7 @@ export function AddSupplementsDialog({
           supplementId: item.supplementId,
           dosage: item.dosage,
           unit: item.unit,
-        }))
+        })),
       );
       setPendingItems([]);
       setOpen(false);
@@ -220,17 +236,22 @@ export function AddSupplementsDialog({
       >
         {/* Discard confirmation overlay */}
         {showDiscardConfirm && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center rounded-lg bg-background/95">
+          <div className="bg-background/95 absolute inset-0 z-50 flex items-center justify-center rounded-lg">
             <div className="flex flex-col items-center gap-4 p-6 text-center">
               <AlertTriangle className="h-10 w-10 text-yellow-500" />
               <div>
                 <p className="font-medium">Discard unsaved changes?</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  You have {pendingItems.length} supplement{pendingItems.length !== 1 ? "s" : ""} not yet added to the stack.
+                <p className="text-muted-foreground mt-1 text-sm">
+                  You have {pendingItems.length} supplement
+                  {pendingItems.length !== 1 ? "s" : ""} not yet added to the
+                  stack.
                 </p>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setShowDiscardConfirm(false)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowDiscardConfirm(false)}
+                >
                   Keep Editing
                 </Button>
                 <Button variant="destructive" onClick={handleConfirmDiscard}>
@@ -244,7 +265,8 @@ export function AddSupplementsDialog({
         <DialogHeader>
           <DialogTitle className="font-mono">Add Supplements</DialogTitle>
           <DialogDescription>
-            Search by name or alias (e.g., &quot;k2&quot;, &quot;omega 3&quot;, &quot;mag&quot;)
+            Search by name or alias (e.g., &quot;k2&quot;, &quot;omega 3&quot;,
+            &quot;mag&quot;)
           </DialogDescription>
         </DialogHeader>
 
@@ -257,7 +279,7 @@ export function AddSupplementsDialog({
                 Supplement
               </Label>
               <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
                 <Input
                   id="supplement-search"
                   placeholder="Search supplements..."
@@ -267,7 +289,7 @@ export function AddSupplementsDialog({
                   onBlur={(e) => {
                     // Delay closing to allow clicking on dropdown items
                     const relatedTarget = e.relatedTarget as HTMLElement | null;
-                    if (relatedTarget?.closest('[data-dropdown-item]')) {
+                    if (relatedTarget?.closest("[data-dropdown-item]")) {
                       return;
                     }
                     setTimeout(() => setShowDropdown(false), 150);
@@ -284,7 +306,7 @@ export function AddSupplementsDialog({
                 />
                 {/* Dropdown */}
                 {showDropdown && searchResults.length > 0 && (
-                  <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-lg">
+                  <div className="bg-popover absolute z-50 mt-1 w-full rounded-md border shadow-lg">
                     <div className="max-h-[200px] overflow-y-auto py-1">
                       {searchResults.map((supplement) => (
                         <button
@@ -295,22 +317,26 @@ export function AddSupplementsDialog({
                           className={cn(
                             "flex w-full items-center justify-between px-3 py-2 text-left text-sm transition-colors",
                             "hover:bg-accent",
-                            selectedSupplement?.id === supplement.id && "bg-primary/10 text-primary"
+                            selectedSupplement?.id === supplement.id &&
+                              "bg-primary/10 text-primary",
                           )}
                         >
                           <div>
                             <div className="font-medium">{supplement.name}</div>
                             {supplement.form && (
-                              <div className={cn(
-                                "text-xs text-muted-foreground",
-                                selectedSupplement?.id === supplement.id && "text-primary/70"
-                              )}>
+                              <div
+                                className={cn(
+                                  "text-muted-foreground text-xs",
+                                  selectedSupplement?.id === supplement.id &&
+                                    "text-primary/70",
+                                )}
+                              >
                                 {supplement.form}
                               </div>
                             )}
                           </div>
                           {selectedSupplement?.id === supplement.id && (
-                            <Check className="h-4 w-4 text-primary" />
+                            <Check className="text-primary h-4 w-4" />
                           )}
                         </button>
                       ))}
@@ -318,7 +344,7 @@ export function AddSupplementsDialog({
                   </div>
                 )}
                 {showDropdown && searchQuery && searchResults.length === 0 && (
-                  <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover p-3 text-center text-sm text-muted-foreground shadow-lg">
+                  <div className="bg-popover text-muted-foreground absolute z-50 mt-1 w-full rounded-md border p-3 text-center text-sm shadow-lg">
                     No supplements found
                   </div>
                 )}
@@ -353,7 +379,10 @@ export function AddSupplementsDialog({
                 <Label htmlFor="unit" className="text-xs">
                   Unit
                 </Label>
-                <Select value={unit} onValueChange={(v) => setUnit(v as typeof unit)}>
+                <Select
+                  value={unit}
+                  onValueChange={(v) => setUnit(v as typeof unit)}
+                >
                   <SelectTrigger onFocus={() => setShowDropdown(false)}>
                     <SelectValue />
                   </SelectTrigger>
@@ -385,7 +414,7 @@ export function AddSupplementsDialog({
           {pendingItems.length > 0 ? (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label className="text-xs text-muted-foreground">
+                <Label className="text-muted-foreground text-xs">
                   Supplements to Add
                 </Label>
                 <Badge variant="secondary" className="font-mono">
@@ -409,7 +438,7 @@ export function AddSupplementsDialog({
                             {item.supplementName}
                           </div>
                           {item.supplementForm && (
-                            <div className="text-xs text-muted-foreground">
+                            <div className="text-muted-foreground text-xs">
                               {item.supplementForm}
                             </div>
                           )}
@@ -423,8 +452,10 @@ export function AddSupplementsDialog({
                             type="button"
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 text-destructive hover:text-destructive"
-                            onClick={() => handleRemoveFromList(item.supplementId)}
+                            className="text-destructive hover:text-destructive h-7 w-7"
+                            onClick={() =>
+                              handleRemoveFromList(item.supplementId)
+                            }
                           >
                             <Trash2 className="h-3 w-3" />
                           </Button>
@@ -436,7 +467,7 @@ export function AddSupplementsDialog({
               </div>
             </div>
           ) : (
-            <div className="rounded-md border border-dashed py-6 text-center text-sm text-muted-foreground">
+            <div className="text-muted-foreground rounded-md border border-dashed py-6 text-center text-sm">
               No supplements added yet
             </div>
           )}

@@ -36,7 +36,9 @@ export function EditStackItemDialog({
 }: EditStackItemDialogProps) {
   const [open, setOpen] = useState(false);
   const [dosage, setDosage] = useState(currentDosage.toString());
-  const [unit, setUnit] = useState<"mg" | "mcg" | "g" | "IU" | "ml">(currentUnit);
+  const [unit, setUnit] = useState<"mg" | "mcg" | "g" | "IU" | "ml">(
+    currentUnit,
+  );
   const [isPending, startTransition] = useTransition();
 
   function handleSubmit(e: React.FormEvent) {
@@ -55,7 +57,7 @@ export function EditStackItemDialog({
       <DialogTrigger asChild>
         <button
           type="button"
-          className="p-1 text-muted-foreground/50 opacity-0 transition-all hover:text-foreground group-hover:opacity-100"
+          className="text-muted-foreground/50 hover:text-foreground p-1 opacity-0 transition-all group-hover:opacity-100"
         >
           <Pencil className="h-3.5 w-3.5" />
         </button>
@@ -84,7 +86,10 @@ export function EditStackItemDialog({
                 autoFocus
               />
             </div>
-            <Select value={unit} onValueChange={(v) => setUnit(v as typeof unit)}>
+            <Select
+              value={unit}
+              onValueChange={(v) => setUnit(v as typeof unit)}
+            >
               <SelectTrigger className="w-24">
                 <SelectValue />
               </SelectTrigger>

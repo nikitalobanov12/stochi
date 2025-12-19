@@ -58,8 +58,8 @@ export function ToxicityWarningDialog({
         <DialogHeader>
           <div className="flex items-center gap-3">
             {isHardLimit ? (
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10">
-                <XOctagon className="h-5 w-5 text-destructive" />
+              <div className="bg-destructive/10 flex h-10 w-10 items-center justify-center rounded-full">
+                <XOctagon className="text-destructive h-5 w-5" />
               </div>
             ) : (
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/10">
@@ -75,16 +75,16 @@ export function ToxicityWarningDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="rounded-md bg-muted/50 p-4">
+        <div className="bg-muted/50 rounded-md p-4">
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="font-mono text-xs uppercase text-muted-foreground">
+              <p className="text-muted-foreground font-mono text-xs uppercase">
                 Category
               </p>
               <p className="mt-1 font-medium">{categoryDisplay}</p>
             </div>
             <div>
-              <p className="font-mono text-xs uppercase text-muted-foreground">
+              <p className="text-muted-foreground font-mono text-xs uppercase">
                 Daily Limit
               </p>
               <p className="mt-1 font-medium">
@@ -93,7 +93,7 @@ export function ToxicityWarningDialog({
               </p>
             </div>
             <div>
-              <p className="font-mono text-xs uppercase text-muted-foreground">
+              <p className="text-muted-foreground font-mono text-xs uppercase">
                 Your Total
               </p>
               <p className="mt-1 font-medium">
@@ -102,7 +102,7 @@ export function ToxicityWarningDialog({
               </p>
             </div>
             <div>
-              <p className="font-mono text-xs uppercase text-muted-foreground">
+              <p className="text-muted-foreground font-mono text-xs uppercase">
                 % of Limit
               </p>
               <p
@@ -119,7 +119,7 @@ export function ToxicityWarningDialog({
             </div>
           </div>
           {safetyCheck.source && (
-            <p className="mt-3 text-xs text-muted-foreground">
+            <p className="text-muted-foreground mt-3 text-xs">
               Source: {safetyCheck.source}
             </p>
           )}

@@ -1,7 +1,17 @@
 "use client";
 
 import { useState, useEffect, useTransition, useRef } from "react";
-import { ExternalLink, ChevronDown, Lightbulb, Zap, AlertTriangle, Clock, Scale, Sparkles, Loader2 } from "lucide-react";
+import {
+  ExternalLink,
+  ChevronDown,
+  Lightbulb,
+  Zap,
+  AlertTriangle,
+  Clock,
+  Scale,
+  Sparkles,
+  Loader2,
+} from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -10,14 +20,24 @@ import {
   CollapsibleTrigger,
 } from "~/components/ui/collapsible";
 import { cn } from "~/lib/utils";
-import type { InteractionWarning, TimingWarning, RatioWarning } from "~/server/actions/interactions";
-import { generateDosageExplanation, type DosageExplanationResponse } from "~/server/actions/ai-suggestions";
+import type {
+  InteractionWarning,
+  TimingWarning,
+  RatioWarning,
+} from "~/server/actions/interactions";
+import {
+  generateDosageExplanation,
+  type DosageExplanationResponse,
+} from "~/server/actions/ai-suggestions";
 
 // ============================================================================
 // Shared Utilities
 // ============================================================================
 
-function getSeverityStyles(severity: "low" | "medium" | "critical", isSynergy = false) {
+function getSeverityStyles(
+  severity: "low" | "medium" | "critical",
+  isSynergy = false,
+) {
   if (isSynergy) {
     return {
       border: "border-green-500/30",
@@ -26,7 +46,7 @@ function getSeverityStyles(severity: "low" | "medium" | "critical", isSynergy = 
       icon: "text-green-500",
     };
   }
-  
+
   switch (severity) {
     case "critical":
       return {
@@ -52,23 +72,32 @@ function getSeverityStyles(severity: "low" | "medium" | "critical", isSynergy = 
   }
 }
 
-function SeverityBadge({ severity, isSynergy }: { severity: string; isSynergy?: boolean }) {
+function SeverityBadge({
+  severity,
+  isSynergy,
+}: {
+  severity: string;
+  isSynergy?: boolean;
+}) {
   if (isSynergy) {
     return (
-      <Badge className="bg-green-500/20 text-green-600 text-xs">
-        synergy
-      </Badge>
+      <Badge className="bg-green-500/20 text-xs text-green-600">synergy</Badge>
     );
   }
-  
+
   const styles = {
     critical: "bg-destructive/20 text-destructive",
     medium: "bg-yellow-500/20 text-yellow-600",
     low: "bg-muted text-muted-foreground",
   };
-  
+
   return (
-    <Badge className={cn("text-xs", styles[severity as keyof typeof styles] ?? styles.low)}>
+    <Badge
+      className={cn(
+        "text-xs",
+        styles[severity as keyof typeof styles] ?? styles.low,
+      )}
+    >
       {severity}
     </Badge>
   );
@@ -83,12 +112,16 @@ type InteractionCardProps = {
   defaultExpanded?: boolean;
 };
 
-export function InteractionCard({ interaction, defaultExpanded = false }: InteractionCardProps) {
+export function InteractionCard({
+  interaction,
+  defaultExpanded = false,
+}: InteractionCardProps) {
   const [isOpen, setIsOpen] = useState(defaultExpanded);
   const isSynergy = interaction.type === "synergy";
   const styles = getSeverityStyles(interaction.severity, isSynergy);
-  
-  const hasDetails = interaction.mechanism || interaction.suggestion || interaction.researchUrl;
+
+  const hasDetails =
+    interaction.mechanism || interaction.suggestion || interaction.researchUrl;
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -102,10 +135,12 @@ export function InteractionCard({ interaction, defaultExpanded = false }: Intera
             {isSynergy ? (
               <Zap className={cn("mt-0.5 h-4 w-4 shrink-0", styles.icon)} />
             ) : (
-              <AlertTriangle className={cn("mt-0.5 h-4 w-4 shrink-0", styles.icon)} />
+              <AlertTriangle
+                className={cn("mt-0.5 h-4 w-4 shrink-0", styles.icon)}
+              />
             )}
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-medium">
                   {interaction.source.name}
                 </span>
@@ -115,11 +150,14 @@ export function InteractionCard({ interaction, defaultExpanded = false }: Intera
                 <span className="text-sm font-medium">
                   {interaction.target.name}
                 </span>
-                <SeverityBadge severity={interaction.severity} isSynergy={isSynergy} />
+                <SeverityBadge
+                  severity={interaction.severity}
+                  isSynergy={isSynergy}
+                />
               </div>
               {/* Preview of mechanism - always visible */}
               {interaction.mechanism && !isOpen && (
-                <p className="mt-1.5 text-xs text-muted-foreground line-clamp-1">
+                <p className="text-muted-foreground mt-1.5 line-clamp-1 text-xs">
                   {interaction.mechanism}
                 </p>
               )}
@@ -127,8 +165,8 @@ export function InteractionCard({ interaction, defaultExpanded = false }: Intera
             {hasDetails && (
               <ChevronDown
                 className={cn(
-                  "h-4 w-4 shrink-0 text-muted-foreground transition-transform",
-                  isOpen && "rotate-180"
+                  "text-muted-foreground h-4 w-4 shrink-0 transition-transform",
+                  isOpen && "rotate-180",
                 )}
               />
             )}
@@ -136,21 +174,25 @@ export function InteractionCard({ interaction, defaultExpanded = false }: Intera
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <div className="mt-3 space-y-3 border-t border-border/50 pt-3">
+          <div className="border-border/50 mt-3 space-y-3 border-t pt-3">
             {/* Mechanism - full text */}
             {interaction.mechanism && (
               <div>
-                <p className="text-xs font-medium text-muted-foreground mb-1">Why this happens</p>
+                <p className="text-muted-foreground mb-1 text-xs font-medium">
+                  Why this happens
+                </p>
                 <p className="text-sm">{interaction.mechanism}</p>
               </div>
             )}
 
             {/* Suggestion */}
             {interaction.suggestion && (
-              <div className="flex gap-2 rounded-md bg-background/50 p-2">
-                <Lightbulb className="h-4 w-4 shrink-0 text-primary mt-0.5" />
+              <div className="bg-background/50 flex gap-2 rounded-md p-2">
+                <Lightbulb className="text-primary mt-0.5 h-4 w-4 shrink-0" />
                 <div>
-                  <p className="text-xs font-medium text-primary mb-0.5">What to do</p>
+                  <p className="text-primary mb-0.5 text-xs font-medium">
+                    What to do
+                  </p>
                   <p className="text-sm">{interaction.suggestion}</p>
                 </div>
               </div>
@@ -190,7 +232,10 @@ type TimingCardProps = {
   defaultExpanded?: boolean;
 };
 
-export function TimingCard({ warning, defaultExpanded = false }: TimingCardProps) {
+export function TimingCard({
+  warning,
+  defaultExpanded = false,
+}: TimingCardProps) {
   const [isOpen, setIsOpen] = useState(defaultExpanded);
   const styles = getSeverityStyles(warning.severity);
 
@@ -204,7 +249,7 @@ export function TimingCard({ warning, defaultExpanded = false }: TimingCardProps
           >
             <Clock className={cn("mt-0.5 h-4 w-4 shrink-0", styles.icon)} />
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-medium">
                   {warning.source.name}
                 </span>
@@ -218,50 +263,60 @@ export function TimingCard({ warning, defaultExpanded = false }: TimingCardProps
                 </Badge>
               </div>
               {!isOpen && (
-                <p className="mt-1.5 text-xs text-muted-foreground">
-                  Taken {warning.actualHoursApart}h apart, need {warning.minHoursApart}h+
+                <p className="text-muted-foreground mt-1.5 text-xs">
+                  Taken {warning.actualHoursApart}h apart, need{" "}
+                  {warning.minHoursApart}h+
                 </p>
               )}
             </div>
             <ChevronDown
               className={cn(
-                "h-4 w-4 shrink-0 text-muted-foreground transition-transform",
-                isOpen && "rotate-180"
+                "text-muted-foreground h-4 w-4 shrink-0 transition-transform",
+                isOpen && "rotate-180",
               )}
             />
           </button>
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <div className="mt-3 space-y-3 border-t border-border/50 pt-3">
+          <div className="border-border/50 mt-3 space-y-3 border-t pt-3">
             {/* Timing Details */}
             <div className="flex gap-4 text-sm">
               <div>
-                <p className="text-xs text-muted-foreground">Current gap</p>
-                <p className="font-mono font-medium">{warning.actualHoursApart}h</p>
+                <p className="text-muted-foreground text-xs">Current gap</p>
+                <p className="font-mono font-medium">
+                  {warning.actualHoursApart}h
+                </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Recommended</p>
-                <p className="font-mono font-medium">{warning.minHoursApart}h+</p>
+                <p className="text-muted-foreground text-xs">Recommended</p>
+                <p className="font-mono font-medium">
+                  {warning.minHoursApart}h+
+                </p>
               </div>
             </div>
 
             {/* Reason */}
             {warning.reason && (
               <div>
-                <p className="text-xs font-medium text-muted-foreground mb-1">Why timing matters</p>
+                <p className="text-muted-foreground mb-1 text-xs font-medium">
+                  Why timing matters
+                </p>
                 <p className="text-sm">{warning.reason}</p>
               </div>
             )}
 
             {/* Suggestion */}
-            <div className="flex gap-2 rounded-md bg-background/50 p-2">
-              <Lightbulb className="h-4 w-4 shrink-0 text-primary mt-0.5" />
+            <div className="bg-background/50 flex gap-2 rounded-md p-2">
+              <Lightbulb className="text-primary mt-0.5 h-4 w-4 shrink-0" />
               <div>
-                <p className="text-xs font-medium text-primary mb-0.5">What to do</p>
+                <p className="text-primary mb-0.5 text-xs font-medium">
+                  What to do
+                </p>
                 <p className="text-sm">
-                  Take {warning.source.name} at least {warning.minHoursApart} hours{" "}
-                  {warning.minHoursApart >= 6 ? "before" : "apart from"} {warning.target.name}
+                  Take {warning.source.name} at least {warning.minHoursApart}{" "}
+                  hours {warning.minHoursApart >= 6 ? "before" : "apart from"}{" "}
+                  {warning.target.name}
                 </p>
               </div>
             </div>
@@ -303,9 +358,14 @@ type AdjustmentSuggestion = {
   explanation: string;
 } | null;
 
-export function RatioCard({ warning, defaultExpanded = false }: RatioCardProps) {
+export function RatioCard({
+  warning,
+  defaultExpanded = false,
+}: RatioCardProps) {
   const [isOpen, setIsOpen] = useState(defaultExpanded);
-  const [aiInsight, setAiInsight] = useState<DosageExplanationResponse | null>(null);
+  const [aiInsight, setAiInsight] = useState<DosageExplanationResponse | null>(
+    null,
+  );
   const [isPending, startTransition] = useTransition();
   const loadAttemptedRef = useRef(false);
   const styles = getSeverityStyles(warning.severity);
@@ -313,17 +373,17 @@ export function RatioCard({ warning, defaultExpanded = false }: RatioCardProps) 
   // Calculate what adjustment is needed - returns a range
   const getAdjustmentSuggestion = (): AdjustmentSuggestion => {
     const { currentRatio, minRatio, maxRatio, source, target } = warning;
-    
+
     // Need both min and max to calculate a meaningful range
     if (minRatio === null || maxRatio === null) return null;
     if (source.dosage === 0 || target.dosage === 0) return null;
-    
+
     if (currentRatio < minRatio) {
       // Ratio too low - need more source (or less target)
       // Calculate source needed to hit min and max ratios
       const sourceForMin = target.dosage * minRatio;
       const sourceForMax = target.dosage * maxRatio;
-      
+
       return {
         action: "increase",
         supplement: source.name,
@@ -336,7 +396,7 @@ export function RatioCard({ warning, defaultExpanded = false }: RatioCardProps) 
       // Calculate target needed to hit min and max ratios
       const targetForMax = source.dosage / minRatio; // More target = lower ratio
       const targetForMin = source.dosage / maxRatio; // Less target = higher ratio
-      
+
       return {
         action: "increase",
         supplement: target.name,
@@ -345,7 +405,7 @@ export function RatioCard({ warning, defaultExpanded = false }: RatioCardProps) 
         explanation: `With ${source.dosage}${source.unit} ${source.name}, aim for ${minRatio}-${maxRatio}:1`,
       };
     }
-    
+
     return null;
   };
 
@@ -357,7 +417,7 @@ export function RatioCard({ warning, defaultExpanded = false }: RatioCardProps) 
 
     // Mark as attempted before starting transition (ref doesn't trigger re-render)
     loadAttemptedRef.current = true;
-    
+
     startTransition(async () => {
       try {
         const result = await generateDosageExplanation({
@@ -395,7 +455,7 @@ export function RatioCard({ warning, defaultExpanded = false }: RatioCardProps) 
           >
             <Scale className={cn("mt-0.5 h-4 w-4 shrink-0", styles.icon)} />
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-medium">
                   {warning.source.name}
                 </span>
@@ -409,70 +469,93 @@ export function RatioCard({ warning, defaultExpanded = false }: RatioCardProps) 
                 </Badge>
               </div>
               {!isOpen && (
-                <p className="mt-1.5 text-xs text-muted-foreground">
-                  {warning.currentRatio}:1 ratio (optimal: {warning.minRatio}-{warning.maxRatio}:1)
+                <p className="text-muted-foreground mt-1.5 text-xs">
+                  {warning.currentRatio}:1 ratio (optimal: {warning.minRatio}-
+                  {warning.maxRatio}:1)
                 </p>
               )}
             </div>
             <ChevronDown
               className={cn(
-                "h-4 w-4 shrink-0 text-muted-foreground transition-transform",
-                isOpen && "rotate-180"
+                "text-muted-foreground h-4 w-4 shrink-0 transition-transform",
+                isOpen && "rotate-180",
               )}
             />
           </button>
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <div className="mt-3 space-y-3 border-t border-border/50 pt-3">
+          <div className="border-border/50 mt-3 space-y-3 border-t pt-3">
             {/* Ratio Details */}
             <div className="flex gap-4 text-sm">
               <div>
-                <p className="text-xs text-muted-foreground">Current ratio</p>
-                <p className="font-mono font-medium">{warning.currentRatio}:1</p>
+                <p className="text-muted-foreground text-xs">Current ratio</p>
+                <p className="font-mono font-medium">
+                  {warning.currentRatio}:1
+                </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Optimal range</p>
-                <p className="font-mono font-medium">{warning.minRatio}-{warning.maxRatio}:1</p>
+                <p className="text-muted-foreground text-xs">Optimal range</p>
+                <p className="font-mono font-medium">
+                  {warning.minRatio}-{warning.maxRatio}:1
+                </p>
               </div>
               {warning.optimalRatio && (
                 <div>
-                  <p className="text-xs text-muted-foreground">Ideal</p>
-                  <p className="font-mono font-medium">{warning.optimalRatio}:1</p>
+                  <p className="text-muted-foreground text-xs">Ideal</p>
+                  <p className="font-mono font-medium">
+                    {warning.optimalRatio}:1
+                  </p>
                 </div>
               )}
             </div>
 
             {/* Current Dosages */}
             <div className="text-sm">
-              <p className="text-xs text-muted-foreground mb-1">Your current dosages</p>
+              <p className="text-muted-foreground mb-1 text-xs">
+                Your current dosages
+              </p>
               <p>
-                {warning.source.name}: <span className="font-mono">{warning.source.dosage}{warning.source.unit}</span>
+                {warning.source.name}:{" "}
+                <span className="font-mono">
+                  {warning.source.dosage}
+                  {warning.source.unit}
+                </span>
                 {" • "}
-                {warning.target.name}: <span className="font-mono">{warning.target.dosage}{warning.target.unit}</span>
+                {warning.target.name}:{" "}
+                <span className="font-mono">
+                  {warning.target.dosage}
+                  {warning.target.unit}
+                </span>
               </p>
             </div>
 
             {/* Message */}
             {warning.message && (
               <div>
-                <p className="text-xs font-medium text-muted-foreground mb-1">Why this matters</p>
+                <p className="text-muted-foreground mb-1 text-xs font-medium">
+                  Why this matters
+                </p>
                 <p className="text-sm">{warning.message}</p>
               </div>
             )}
 
             {/* Adjustment Suggestion - Now with range */}
             {suggestion && (
-              <div className="flex gap-2 rounded-md bg-background/50 p-2">
-                <Lightbulb className="h-4 w-4 shrink-0 text-primary mt-0.5" />
+              <div className="bg-background/50 flex gap-2 rounded-md p-2">
+                <Lightbulb className="text-primary mt-0.5 h-4 w-4 shrink-0" />
                 <div>
-                  <p className="text-xs font-medium text-primary mb-0.5">How to optimize</p>
+                  <p className="text-primary mb-0.5 text-xs font-medium">
+                    How to optimize
+                  </p>
                   <p className="text-sm font-medium">
                     {suggestion.action === "increase" ? "Increase" : "Decrease"}{" "}
                     {suggestion.supplement} to{" "}
-                    <span className="font-mono">{suggestion.rangeMin}-{suggestion.rangeMax}</span>
+                    <span className="font-mono">
+                      {suggestion.rangeMin}-{suggestion.rangeMax}
+                    </span>
                   </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="text-muted-foreground mt-0.5 text-xs">
                     {suggestion.explanation}
                   </p>
                 </div>
@@ -481,32 +564,37 @@ export function RatioCard({ warning, defaultExpanded = false }: RatioCardProps) 
 
             {/* AI Insight Section */}
             {suggestion && (
-              <div className="rounded-md border border-primary/20 bg-primary/5 p-2.5">
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <Sparkles className="h-3.5 w-3.5 text-primary" />
-                  <p className="text-xs font-medium text-primary">AI Insight</p>
+              <div className="border-primary/20 bg-primary/5 rounded-md border p-2.5">
+                <div className="mb-1.5 flex items-center gap-1.5">
+                  <Sparkles className="text-primary h-3.5 w-3.5" />
+                  <p className="text-primary text-xs font-medium">AI Insight</p>
                   {aiInsight?.cached && (
-                    <Badge variant="outline" className="text-[10px] px-1 py-0 h-4">
+                    <Badge
+                      variant="outline"
+                      className="h-4 px-1 py-0 text-[10px]"
+                    >
                       cached
                     </Badge>
                   )}
                 </div>
                 {isPending ? (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="text-muted-foreground flex items-center gap-2 text-xs">
                     <Loader2 className="h-3 w-3 animate-spin" />
                     <span>Generating explanation...</span>
                   </div>
                 ) : aiInsight ? (
                   <div className="space-y-2">
-                    <p className="text-sm leading-relaxed">{aiInsight.explanation}</p>
+                    <p className="text-sm leading-relaxed">
+                      {aiInsight.explanation}
+                    </p>
                     {aiInsight.researchSnippet && (
-                      <p className="text-xs text-muted-foreground border-l-2 border-primary/30 pl-2">
+                      <p className="text-muted-foreground border-primary/30 border-l-2 pl-2 text-xs">
                         {aiInsight.researchSnippet}
                       </p>
                     )}
                   </div>
                 ) : (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     Expand card to load AI insight
                   </p>
                 )}
@@ -519,7 +607,7 @@ export function RatioCard({ warning, defaultExpanded = false }: RatioCardProps) 
                 href={warning.researchUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-xs transition-colors"
               >
                 <ExternalLink className="h-3 w-3" />
                 <span>View research on Examine.com</span>
@@ -527,7 +615,7 @@ export function RatioCard({ warning, defaultExpanded = false }: RatioCardProps) 
             )}
 
             {/* Disclaimer */}
-            <p className="text-[10px] text-muted-foreground/70 border-t border-border/30 pt-2">
+            <p className="text-muted-foreground/70 border-border/30 border-t pt-2 text-[10px]">
               Analysis based on indexed research. Not medical advice.
             </p>
           </div>

@@ -16,7 +16,7 @@ export default async function AuthPage({
   const { path } = await params;
 
   return (
-    <main className="relative flex min-h-screen flex-col items-center justify-center bg-background p-4">
+    <main className="bg-background relative flex min-h-screen flex-col items-center justify-center p-4">
       {/* Noise texture overlay */}
       <div
         className="pointer-events-none fixed inset-0 z-[1] opacity-[0.02]"
@@ -44,11 +44,11 @@ export default async function AuthPage({
             className="mx-auto h-10 w-auto"
             priority
           />
-          <p className="mt-3 font-mono text-sm text-muted-foreground">
+          <p className="text-muted-foreground mt-3 font-mono text-sm">
             Balance your chemistry.
           </p>
         </div>
-        <div className="rounded-xl border border-border bg-card p-6">
+        <div className="border-border bg-card rounded-xl border p-6">
           <AuthView path={path[0] ?? "sign-in"} />
         </div>
       </div>

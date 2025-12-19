@@ -35,14 +35,12 @@ export function SystemStatus({
     day: "numeric",
   });
 
-  const formattedLastLog = lastLogAt
-    ? formatTimeAgo(lastLogAt)
-    : null;
+  const formattedLastLog = lastLogAt ? formatTimeAgo(lastLogAt) : null;
 
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
       {/* Date */}
-      <div className="flex items-center gap-1.5 text-muted-foreground">
+      <div className="text-muted-foreground flex items-center gap-1.5">
         <Calendar className="h-3 w-3" />
         <span className="font-mono text-xs">{formattedDate}</span>
       </div>
@@ -53,13 +51,13 @@ export function SystemStatus({
           <Flame
             className={cn(
               "h-3 w-3",
-              streak >= 7 ? "text-orange-500" : "text-muted-foreground"
+              streak >= 7 ? "text-orange-500" : "text-muted-foreground",
             )}
           />
           <span
             className={cn(
               "font-mono text-xs tabular-nums",
-              streak >= 7 ? "text-orange-500" : "text-muted-foreground"
+              streak >= 7 ? "text-orange-500" : "text-muted-foreground",
             )}
           >
             {streak}d streak
@@ -68,7 +66,7 @@ export function SystemStatus({
       )}
 
       {/* Today's log count */}
-      <div className="flex items-center gap-1.5 text-muted-foreground">
+      <div className="text-muted-foreground flex items-center gap-1.5">
         <Pill className="h-3 w-3" />
         <span className="font-mono text-xs tabular-nums">
           {todayLogCount} log{todayLogCount !== 1 ? "s" : ""} today
@@ -77,7 +75,7 @@ export function SystemStatus({
 
       {/* Last log */}
       {formattedLastLog && (
-        <span className="font-mono text-[10px] text-muted-foreground/60">
+        <span className="text-muted-foreground/60 font-mono text-[10px]">
           Last: {formattedLastLog}
         </span>
       )}

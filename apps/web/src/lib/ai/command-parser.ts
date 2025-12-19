@@ -9,8 +9,10 @@ import { supplementAliases } from "~/server/data/supplement-aliases";
 
 // Regex patterns for structured extraction
 const DOSAGE_PATTERN = /(\d+(?:\.\d+)?)\s*(mg|mcg|g|iu|ml)\b/gi;
-const TIME_PATTERN = /\b(morning|afternoon|evening|night|breakfast|lunch|dinner|before\s+bed)\b/gi;
-const QUANTITY_PATTERN = /\b(\d+)\s*(caps?(?:ules?)?|tabs?(?:lets?)?|pills?|softgels?|drops?)\b/gi;
+const TIME_PATTERN =
+  /\b(morning|afternoon|evening|night|breakfast|lunch|dinner|before\s+bed)\b/gi;
+const QUANTITY_PATTERN =
+  /\b(\d+)\s*(caps?(?:ules?)?|tabs?(?:lets?)?|pills?|softgels?|drops?)\b/gi;
 
 export type ParsedDosage = {
   value: number;
@@ -52,7 +54,8 @@ export function parseCommand(input: string): ParsedCommand {
   if (dosageMatch?.[1] && dosageMatch[2]) {
     const value = parseFloat(dosageMatch[1]);
     const unitRaw = dosageMatch[2].toLowerCase();
-    const unit = unitRaw === "iu" ? "IU" : (unitRaw as "mg" | "mcg" | "g" | "ml");
+    const unit =
+      unitRaw === "iu" ? "IU" : (unitRaw as "mg" | "mcg" | "g" | "ml");
     dosage = { value, unit };
     supplementQuery = supplementQuery.replace(dosageMatch[0], "").trim();
   }

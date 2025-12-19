@@ -44,13 +44,13 @@ export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
         "flex items-stretch rounded-lg border transition-colors",
         isComplete
           ? "border-emerald-500/30 bg-emerald-500/5"
-          : "border-border/40 bg-card/30"
+          : "border-border/40 bg-card/30",
       )}
     >
       {/* Zone A: The Briefing (Navigate to detail) */}
       <Link
         href={`/dashboard/stacks/${stackId}`}
-        className="flex flex-1 items-center gap-3 px-4 py-3 transition-colors hover:bg-card/50"
+        className="hover:bg-card/50 flex flex-1 items-center gap-3 px-4 py-3 transition-colors"
       >
         {/* Status Indicator */}
         <div className="relative flex h-5 w-5 shrink-0 items-center justify-center">
@@ -84,7 +84,7 @@ export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
           )}
           {isIdle && (
             <Circle
-              className="h-5 w-5 text-muted-foreground/40"
+              className="text-muted-foreground/40 h-5 w-5"
               strokeWidth={2}
             />
           )}
@@ -93,7 +93,7 @@ export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
         {/* Stack Name & Progress */}
         <div className="min-w-0 flex-1">
           <p className="truncate font-mono text-sm font-medium">{stackName}</p>
-          <p className="font-mono text-[10px] text-muted-foreground">
+          <p className="text-muted-foreground font-mono text-[10px]">
             {isComplete ? (
               <span className="text-emerald-500">COMPLETE</span>
             ) : (
@@ -101,7 +101,7 @@ export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
                 <span className="tabular-nums">{loggedItems}</span>
                 <span className="text-muted-foreground/60">/</span>
                 <span className="tabular-nums">{totalItems}</span>
-                <span className="ml-1 text-muted-foreground/60">logged</span>
+                <span className="text-muted-foreground/60 ml-1">logged</span>
               </>
             )}
           </p>
@@ -109,7 +109,7 @@ export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
       </Link>
 
       {/* Vertical Divider (explicit on mobile) */}
-      <div className="w-px bg-border/40" />
+      <div className="bg-border/40 w-px" />
 
       {/* Zone B: The Trigger (Execute) */}
       <div className="flex items-center px-2">
@@ -126,9 +126,9 @@ export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
             onClick={handleExecute}
             disabled={isPending || totalItems === 0}
             className={cn(
-              "h-11 min-w-[72px] gap-1.5 border-border/60 font-mono text-xs",
+              "border-border/60 h-11 min-w-[72px] gap-1.5 font-mono text-xs",
               "hover:border-primary hover:bg-primary hover:text-primary-foreground",
-              isPending && "pointer-events-none"
+              isPending && "pointer-events-none",
             )}
           >
             {isPending ? (
@@ -162,7 +162,7 @@ export function MissionControl({
 
   return (
     <section className="space-y-3">
-      <h2 className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+      <h2 className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
         Protocols
       </h2>
       <div className="space-y-2">

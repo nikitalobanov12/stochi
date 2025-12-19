@@ -3,7 +3,11 @@
 import { useState } from "react";
 import { ArrowRight, ArrowLeft } from "lucide-react";
 import { Button } from "~/components/ui/button";
-import { goals, type Goal, type GoalKey } from "~/server/data/goal-recommendations";
+import {
+  goals,
+  type Goal,
+  type GoalKey,
+} from "~/server/data/goal-recommendations";
 import { cn } from "~/lib/utils";
 
 type GoalStepProps = {
@@ -19,8 +23,10 @@ export function GoalStep({ onNext, onSkip, onBack }: GoalStepProps) {
     <div className="flex h-full flex-col">
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto">
         <div className="space-y-2">
-          <h2 className="font-mono text-xl font-bold">What&apos;s your goal?</h2>
-          <p className="text-sm text-muted-foreground">
+          <h2 className="font-mono text-xl font-bold">
+            What&apos;s your goal?
+          </h2>
+          <p className="text-muted-foreground text-sm">
             We&apos;ll suggest supplements based on your primary focus.
           </p>
         </div>
@@ -37,7 +43,7 @@ export function GoalStep({ onNext, onSkip, onBack }: GoalStepProps) {
         </div>
       </div>
 
-      <div className="flex shrink-0 gap-2 border-t border-border/40 pt-4">
+      <div className="border-border/40 flex shrink-0 gap-2 border-t pt-4">
         <Button variant="ghost" onClick={onBack} size="sm">
           <ArrowLeft className="mr-1 h-4 w-4" />
           Back
@@ -81,14 +87,16 @@ function GoalCard({
         "w-full rounded-lg border-2 p-3 text-left transition-all",
         selected
           ? "border-primary bg-primary/5"
-          : "border-transparent bg-muted/50 hover:border-muted-foreground/30",
+          : "bg-muted/50 hover:border-muted-foreground/30 border-transparent",
       )}
     >
       <div className="flex items-center gap-3">
         <span className="text-xl">{goal.icon}</span>
         <div>
           <div className="font-medium">{goal.name}</div>
-          <div className="text-xs text-muted-foreground">{goal.description}</div>
+          <div className="text-muted-foreground text-xs">
+            {goal.description}
+          </div>
         </div>
       </div>
     </button>

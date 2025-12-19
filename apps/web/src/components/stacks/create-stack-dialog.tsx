@@ -19,17 +19,35 @@ import { cn } from "~/lib/utils";
 
 type CreateStackDialogProps = {
   createStack: (formData: FormData) => Promise<void>;
-  createStackFromTemplate: (templateKey: string) => Promise<{ success: boolean; stackId?: string }>;
+  createStackFromTemplate: (
+    templateKey: string,
+  ) => Promise<{ success: boolean; stackId?: string }>;
   children?: React.ReactNode;
 };
 
 const quickTemplates = [
-  { key: "focus", name: "Focus Protocol", description: "Caffeine + L-Theanine + L-Tyrosine" },
-  { key: "mineral", name: "Mineral Balance", description: "Magnesium + Zinc + Iron" },
-  { key: "essentials", name: "Daily Essentials", description: "Vitamin D3 + K2 + Magnesium" },
+  {
+    key: "focus",
+    name: "Focus Protocol",
+    description: "Caffeine + L-Theanine + L-Tyrosine",
+  },
+  {
+    key: "mineral",
+    name: "Mineral Balance",
+    description: "Magnesium + Zinc + Iron",
+  },
+  {
+    key: "essentials",
+    name: "Daily Essentials",
+    description: "Vitamin D3 + K2 + Magnesium",
+  },
 ];
 
-export function CreateStackDialog({ createStack, createStackFromTemplate, children }: CreateStackDialogProps) {
+export function CreateStackDialog({
+  createStack,
+  createStackFromTemplate,
+  children,
+}: CreateStackDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -75,7 +93,9 @@ export function CreateStackDialog({ createStack, createStackFromTemplate, childr
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground">Quick Start Templates</Label>
+            <Label className="text-muted-foreground text-xs">
+              Quick Start Templates
+            </Label>
             <div className="space-y-2">
               {quickTemplates.map((template) => (
                 <button
@@ -83,22 +103,30 @@ export function CreateStackDialog({ createStack, createStackFromTemplate, childr
                   onClick={() => handleTemplateSelect(template.key)}
                   disabled={isPending}
                   className={cn(
-                    "w-full rounded-md border-2 border-muted-foreground/20 p-3 text-left transition-colors",
+                    "border-muted-foreground/20 w-full rounded-md border-2 p-3 text-left transition-colors",
                     "hover:border-primary hover:bg-primary/5",
                     "disabled:cursor-not-allowed disabled:opacity-50",
-                    isPending && selectedTemplate === template.key && "border-primary bg-primary/5"
+                    isPending &&
+                      selectedTemplate === template.key &&
+                      "border-primary bg-primary/5",
                   )}
                 >
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm text-primary">
-                      {isPending && selectedTemplate === template.key ? "" : ">"}
+                    <span className="text-primary font-mono text-sm">
+                      {isPending && selectedTemplate === template.key
+                        ? ""
+                        : ">"}
                     </span>
-                    <span className="font-mono text-sm font-medium">{template.name}</span>
+                    <span className="font-mono text-sm font-medium">
+                      {template.name}
+                    </span>
                     {isPending && selectedTemplate === template.key && (
-                      <Loader2 className="h-3 w-3 animate-spin text-primary" />
+                      <Loader2 className="text-primary h-3 w-3 animate-spin" />
                     )}
                   </div>
-                  <p className="mt-0.5 pl-5 text-xs text-muted-foreground">{template.description}</p>
+                  <p className="text-muted-foreground mt-0.5 pl-5 text-xs">
+                    {template.description}
+                  </p>
                 </button>
               ))}
             </div>
@@ -109,7 +137,9 @@ export function CreateStackDialog({ createStack, createStackFromTemplate, childr
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">or</span>
+              <span className="bg-background text-muted-foreground px-2">
+                or
+              </span>
             </div>
           </div>
 
@@ -125,7 +155,12 @@ export function CreateStackDialog({ createStack, createStackFromTemplate, childr
                 disabled={isPending}
               />
             </div>
-            <Button type="submit" variant="outline" className="w-full" disabled={isPending}>
+            <Button
+              type="submit"
+              variant="outline"
+              className="w-full"
+              disabled={isPending}
+            >
               {isPending && selectedTemplate === null ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

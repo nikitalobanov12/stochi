@@ -1,5 +1,8 @@
 import { env } from "~/env";
-import { type InteractionWarning, type TimingWarning } from "~/server/actions/interactions";
+import {
+  type InteractionWarning,
+  type TimingWarning,
+} from "~/server/actions/interactions";
 
 /**
  * Traffic light status from the Go engine
@@ -86,7 +89,7 @@ function getInternalAuthHeaders(userId: string): Record<string, string> {
 
 /**
  * Call the Go engine to analyze interactions between supplements
- * 
+ *
  * @param userId - The authenticated user's ID
  * @param supplementIds - Array of supplement IDs to analyze
  * @param options - Optional parameters for analysis
@@ -127,7 +130,7 @@ export async function analyzeInteractions(
 
 /**
  * Check the health of the Go engine
- * 
+ *
  * @returns true if the engine is healthy
  */
 export async function checkEngineHealth(): Promise<boolean> {
@@ -144,7 +147,7 @@ export async function checkEngineHealth(): Promise<boolean> {
       return false;
     }
 
-    const data = await response.json() as { status: string };
+    const data = (await response.json()) as { status: string };
     return data.status === "healthy";
   } catch {
     return false;

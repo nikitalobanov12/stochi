@@ -25,7 +25,7 @@ export type StackCompletionStatus = {
  * Get completion status for user's stacks (what's been logged today).
  */
 export async function getStackCompletionStatus(
-  userId: string
+  userId: string,
 ): Promise<StackCompletionStatus[]> {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);

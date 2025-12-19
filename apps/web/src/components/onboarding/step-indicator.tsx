@@ -16,7 +16,7 @@ export function StepIndicator({ current, total }: StepIndicatorProps) {
           className={cn(
             "h-2 w-2 rounded-full transition-all duration-300",
             i === current
-              ? "w-6 bg-primary"
+              ? "bg-primary w-6"
               : i < current
                 ? "bg-primary/60"
                 : "bg-muted-foreground/30",

@@ -157,7 +157,9 @@ export const supplement = pgTable(
     // Safety tracking - maps to SAFETY_LIMITS keys (e.g., "zinc", "magnesium", "iron")
     safetyCategory: text("safety_category"),
     // Research chemical / peptide support
-    isResearchChemical: boolean("is_research_chemical").default(false).notNull(),
+    isResearchChemical: boolean("is_research_chemical")
+      .default(false)
+      .notNull(),
     route: routeEnum("route").default("oral").notNull(),
     storageInstructions: text("storage_instructions"),
     createdAt: timestamp("created_at")

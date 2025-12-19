@@ -74,7 +74,7 @@ export default async function SettingsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+        <p className="text-muted-foreground text-[10px] tracking-wider uppercase">
           Settings
         </p>
         <h1 className="font-mono text-lg font-medium">Account & Data</h1>
@@ -82,22 +82,22 @@ export default async function SettingsPage() {
 
       {/* Profile Section */}
       <section className="space-y-3">
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+        <p className="text-muted-foreground text-[10px] tracking-wider uppercase">
           Profile
         </p>
-        <div className="rounded-lg border border-border/40 bg-card/30 p-4">
+        <div className="border-border/40 bg-card/30 rounded-lg border p-4">
           <div className="flex items-start gap-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border/40 bg-muted/30">
-              <User className="h-4 w-4 text-muted-foreground" />
+            <div className="border-border/40 bg-muted/30 flex h-10 w-10 items-center justify-center rounded-full border">
+              <User className="text-muted-foreground h-4 w-4" />
             </div>
             <div className="flex-1 space-y-3">
               <div>
                 <p className="font-mono text-sm font-medium">{user.name}</p>
-                <p className="font-mono text-xs text-muted-foreground">
+                <p className="text-muted-foreground font-mono text-xs">
                   {user.email}
                 </p>
               </div>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground/60">
+              <p className="text-muted-foreground/60 text-[10px] tracking-wider uppercase">
                 Member since {memberSince}
               </p>
             </div>
@@ -107,7 +107,7 @@ export default async function SettingsPage() {
 
       {/* Goals Section */}
       <section className="space-y-3">
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+        <p className="text-muted-foreground text-[10px] tracking-wider uppercase">
           Goals
         </p>
         <GoalsCard initialGoals={userGoals.map((g) => g.goal)} />
@@ -115,23 +115,23 @@ export default async function SettingsPage() {
 
       {/* Data Stats */}
       <section className="space-y-3">
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+        <p className="text-muted-foreground text-[10px] tracking-wider uppercase">
           Data Overview
         </p>
         <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-lg border border-border/40 bg-card/30 p-3">
+          <div className="border-border/40 bg-card/30 rounded-lg border p-3">
             <p className="font-mono text-2xl font-medium tabular-nums">
               {logCount.toLocaleString()}
             </p>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+            <p className="text-muted-foreground text-[10px] tracking-wider uppercase">
               Log Entries
             </p>
           </div>
-          <div className="rounded-lg border border-border/40 bg-card/30 p-3">
+          <div className="border-border/40 bg-card/30 rounded-lg border p-3">
             <p className="font-mono text-2xl font-medium tabular-nums">
               {stackCount}
             </p>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+            <p className="text-muted-foreground text-[10px] tracking-wider uppercase">
               Protocols
             </p>
           </div>
@@ -141,14 +141,14 @@ export default async function SettingsPage() {
       {/* Data Export */}
       <section className="space-y-3">
         <div className="flex items-center gap-2">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          <p className="text-muted-foreground text-[10px] tracking-wider uppercase">
             Data Export
           </p>
-          <Download className="h-3 w-3 text-muted-foreground/50" />
+          <Download className="text-muted-foreground/50 h-3 w-3" />
         </div>
-        <div className="rounded-lg border border-border/40 bg-card/30 p-4">
+        <div className="border-border/40 bg-card/30 rounded-lg border p-4">
           <div className="space-y-3">
-            <p className="font-mono text-xs text-muted-foreground">
+            <p className="text-muted-foreground font-mono text-xs">
               Your data belongs to you. Export supplement logs and protocol
               configurations in standard formats.
             </p>

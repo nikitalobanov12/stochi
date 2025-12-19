@@ -35,7 +35,7 @@ export function SupplementLink({
     <button
       type="button"
       onClick={() => openSheet(supplement)}
-      className={`cursor-pointer hover:underline underline-offset-2 text-left ${className}`}
+      className={`cursor-pointer text-left underline-offset-2 hover:underline ${className}`}
     >
       {children ?? supplement.name}
     </button>

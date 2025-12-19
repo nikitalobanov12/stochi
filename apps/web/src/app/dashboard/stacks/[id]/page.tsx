@@ -88,12 +88,12 @@ export default async function StackDetailPage({
       <div className="flex items-center gap-3">
         <Link
           href="/dashboard/stacks"
-          className="text-muted-foreground transition-colors hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <div className="flex-1">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          <p className="text-muted-foreground text-[10px] tracking-wider uppercase">
             Protocol
           </p>
           <h1 className="font-mono text-lg font-medium">{userStack.name}</h1>
@@ -114,7 +114,7 @@ export default async function StackDetailPage({
       {/* Supplements Section */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          <p className="text-muted-foreground text-[10px] tracking-wider uppercase">
             Compounds ({userStack.items.length})
           </p>
           <AddSupplementsDialog
@@ -124,42 +124,43 @@ export default async function StackDetailPage({
           />
         </div>
 
-        <div className="rounded-lg border border-border/40 bg-card/30">
+        <div className="border-border/40 bg-card/30 rounded-lg border">
           {userStack.items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <p className="font-mono text-sm text-muted-foreground">
+              <p className="text-muted-foreground font-mono text-sm">
                 No compounds added
               </p>
-              <p className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground/60">
+              <p className="text-muted-foreground/60 mt-1 text-[10px] tracking-wider uppercase">
                 Add supplements to build your protocol
               </p>
             </div>
           ) : (
-            <ul className="divide-y divide-border/40">
+            <ul className="divide-border/40 divide-y">
               {userStack.items.map((item) => (
                 <li
                   key={item.id}
                   className="group flex items-center gap-3 px-3 py-2.5"
                 >
-                  <div className="flex-1 min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
-                      <p className="font-mono text-sm truncate">
+                      <p className="truncate font-mono text-sm">
                         {item.supplement.name}
                       </p>
                       {item.supplement.isResearchChemical && (
                         <FlaskConical className="h-3.5 w-3.5 shrink-0 text-amber-500" />
                       )}
-                      {item.supplement.route && item.supplement.route !== "oral" && (
-                        <Syringe className="h-3.5 w-3.5 shrink-0 text-violet-400" />
-                      )}
+                      {item.supplement.route &&
+                        item.supplement.route !== "oral" && (
+                          <Syringe className="h-3.5 w-3.5 shrink-0 text-violet-400" />
+                        )}
                     </div>
                     {item.supplement.form && (
-                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                      <p className="text-muted-foreground text-[10px] tracking-wider uppercase">
                         {item.supplement.form}
                       </p>
                     )}
                   </div>
-                  <span className="font-mono text-xs tabular-nums text-muted-foreground">
+                  <span className="text-muted-foreground font-mono text-xs tabular-nums">
                     {item.dosage}
                     {item.unit}
                   </span>
@@ -172,7 +173,7 @@ export default async function StackDetailPage({
                   <form action={removeStackItem.bind(null, item.id)}>
                     <button
                       type="submit"
-                      className="p-1 text-muted-foreground/50 opacity-0 transition-all hover:text-destructive group-hover:opacity-100"
+                      className="text-muted-foreground/50 hover:text-destructive p-1 opacity-0 transition-all group-hover:opacity-100"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
@@ -193,16 +194,13 @@ export default async function StackDetailPage({
 
       {/* Settings Section */}
       <section className="space-y-3">
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+        <p className="text-muted-foreground text-[10px] tracking-wider uppercase">
           Settings
         </p>
-        <div className="rounded-lg border border-border/40 bg-card/30 p-3">
+        <div className="border-border/40 bg-card/30 rounded-lg border p-3">
           <form action={updateStackWithId} className="flex gap-2">
             <div className="flex-1">
-              <label
-                htmlFor="stack-name"
-                className="sr-only"
-              >
+              <label htmlFor="stack-name" className="sr-only">
                 Protocol Name
               </label>
               <Input
@@ -210,7 +208,7 @@ export default async function StackDetailPage({
                 name="name"
                 defaultValue={userStack.name}
                 placeholder="Protocol name"
-                className="h-8 border-border/40 bg-transparent font-mono text-sm"
+                className="border-border/40 h-8 bg-transparent font-mono text-sm"
               />
             </div>
             <Button
@@ -227,19 +225,22 @@ export default async function StackDetailPage({
 
       {/* Danger Zone */}
       <section className="space-y-3">
-        <p className="text-[10px] uppercase tracking-wider text-destructive/70">
+        <p className="text-destructive/70 text-[10px] tracking-wider uppercase">
           Danger Zone
         </p>
-        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3">
-          <form action={deleteStackWithId} className="flex items-center justify-between">
-            <p className="font-mono text-xs text-muted-foreground">
+        <div className="border-destructive/30 bg-destructive/5 rounded-lg border p-3">
+          <form
+            action={deleteStackWithId}
+            className="flex items-center justify-between"
+          >
+            <p className="text-muted-foreground font-mono text-xs">
               Permanently delete this protocol
             </p>
             <Button
               type="submit"
               variant="ghost"
               size="sm"
-              className="h-7 gap-1.5 font-mono text-xs text-destructive hover:bg-destructive hover:text-destructive-foreground"
+              className="text-destructive hover:bg-destructive hover:text-destructive-foreground h-7 gap-1.5 font-mono text-xs"
             >
               <Trash2 className="h-3 w-3" />
               Delete
@@ -272,13 +273,13 @@ function InteractionsPanel({
   if (!hasInteractions) {
     return (
       <section className="space-y-3">
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+        <p className="text-muted-foreground text-[10px] tracking-wider uppercase">
           Interactions
         </p>
-        <div className="rounded-lg border border-border/40 bg-card/30 p-3">
+        <div className="border-border/40 bg-card/30 rounded-lg border p-3">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-            <span className="font-mono text-xs text-muted-foreground">
+            <span className="text-muted-foreground font-mono text-xs">
               No interactions detected
             </span>
           </div>
@@ -297,7 +298,7 @@ function InteractionsPanel({
   return (
     <section className="space-y-3">
       <div className="flex items-center gap-2">
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+        <p className="text-muted-foreground text-[10px] tracking-wider uppercase">
           Interactions
         </p>
         {warnings.length + ratioWarnings.length > 0 && (

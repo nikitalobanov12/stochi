@@ -46,7 +46,7 @@ export default async function DashboardPage() {
       db.query.log.findMany({
         where: and(
           eq(log.userId, session.user.id),
-          gte(log.loggedAt, todayStart)
+          gte(log.loggedAt, todayStart),
         ),
         with: {
           supplement: true,
@@ -67,7 +67,9 @@ export default async function DashboardPage() {
     ]);
 
   // Get interactions and ratio warnings for today's supplements
-  const todaySupplementIds = [...new Set(todayLogs.map((l) => l.supplement.id))];
+  const todaySupplementIds = [
+    ...new Set(todayLogs.map((l) => l.supplement.id)),
+  ];
 
   // Build dosage data for ratio calculations
   const dosageMap = new Map<
@@ -85,7 +87,7 @@ export default async function DashboardPage() {
 
   const { interactions, ratioWarnings } = await checkInteractions(
     todaySupplementIds,
-    dosages
+    dosages,
   );
 
   // Check timing warnings for today's logs
@@ -93,8 +95,8 @@ export default async function DashboardPage() {
     checkTimingWarnings(
       session.user.id,
       logEntry.supplement.id,
-      new Date(logEntry.loggedAt)
-    )
+      new Date(logEntry.loggedAt),
+    ),
   );
   const timingWarningsArrays = await Promise.all(timingWarningsPromises);
 
@@ -155,14 +157,14 @@ export default async function DashboardPage() {
         {todayLogs.length > 0 && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+              <h2 className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
                 Activity Log
               </h2>
               <Button
                 variant="ghost"
                 size="sm"
                 asChild
-                className="h-auto py-1 font-mono text-[10px] text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground h-auto py-1 font-mono text-[10px]"
               >
                 <Link href="/dashboard/log">
                   VIEW ALL
@@ -176,12 +178,12 @@ export default async function DashboardPage() {
 
         {/* Empty State */}
         {todayLogs.length === 0 && userStacks.length > 0 && (
-          <div className="rounded-lg border border-dashed border-border/40 bg-card/30 py-12 text-center">
-            <Clock className="mx-auto mb-3 h-6 w-6 text-muted-foreground/30" />
-            <p className="font-mono text-xs text-muted-foreground">
+          <div className="border-border/40 bg-card/30 rounded-lg border border-dashed py-12 text-center">
+            <Clock className="text-muted-foreground/30 mx-auto mb-3 h-6 w-6" />
+            <p className="text-muted-foreground font-mono text-xs">
               No activity logged today
             </p>
-            <p className="mt-1 font-mono text-[10px] text-muted-foreground/60">
+            <p className="text-muted-foreground/60 mt-1 font-mono text-[10px]">
               Use command bar or tap a protocol
             </p>
           </div>
@@ -189,9 +191,9 @@ export default async function DashboardPage() {
 
         {/* No Stacks State */}
         {userStacks.length === 0 && !needsOnboarding && (
-          <div className="rounded-lg border border-dashed border-border/40 bg-card/30 py-12 text-center">
-            <Layers className="mx-auto mb-3 h-6 w-6 text-muted-foreground/30" />
-            <p className="font-mono text-xs text-muted-foreground">
+          <div className="border-border/40 bg-card/30 rounded-lg border border-dashed py-12 text-center">
+            <Layers className="text-muted-foreground/30 mx-auto mb-3 h-6 w-6" />
+            <p className="text-muted-foreground font-mono text-xs">
               No protocols configured
             </p>
             <Button
@@ -231,7 +233,7 @@ async function calculateStreak(userId: string): Promise<number> {
       where: and(
         eq(log.userId, userId),
         gte(log.loggedAt, dayStart),
-        lt(log.loggedAt, dayEnd)
+        lt(log.loggedAt, dayEnd),
       ),
       columns: { id: true },
     });

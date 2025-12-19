@@ -55,7 +55,8 @@ export function InteractionHeadsUp({
   const warnings = interactions.filter((i) => i.type !== "synergy");
   const synergies = interactions.filter((i) => i.type === "synergy");
 
-  const totalWarnings = warnings.length + ratioWarnings.length + timingWarnings.length;
+  const totalWarnings =
+    warnings.length + ratioWarnings.length + timingWarnings.length;
   const criticalCount =
     warnings.filter((w) => w.severity === "critical").length +
     ratioWarnings.filter((w) => w.severity === "critical").length +
@@ -102,7 +103,7 @@ export function InteractionHeadsUp({
 
   return (
     <section className="space-y-3">
-      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+      <p className="text-muted-foreground text-[10px] tracking-wider uppercase">
         Interaction Analysis
       </p>
 
@@ -111,7 +112,7 @@ export function InteractionHeadsUp({
           className={cn(
             "rounded-lg border transition-colors",
             config.border,
-            config.bg
+            config.bg,
           )}
         >
           {/* Header - Always Visible */}
@@ -127,7 +128,7 @@ export function InteractionHeadsUp({
                   <span
                     className={cn(
                       "font-mono text-xs font-medium",
-                      config.labelColor
+                      config.labelColor,
                     )}
                   >
                     {config.label}
@@ -162,8 +163,8 @@ export function InteractionHeadsUp({
               {hasAnyContent && (
                 <ChevronDown
                   className={cn(
-                    "h-4 w-4 text-muted-foreground transition-transform",
-                    isOpen && "rotate-180"
+                    "text-muted-foreground h-4 w-4 transition-transform",
+                    isOpen && "rotate-180",
                   )}
                 />
               )}
@@ -172,7 +173,7 @@ export function InteractionHeadsUp({
 
           {/* Expandable Content */}
           <CollapsibleContent>
-            <div className="space-y-2 border-t border-border/30 p-3">
+            <div className="border-border/30 space-y-2 border-t p-3">
               {/* Timing Warnings - Most time-sensitive */}
               {timingWarnings.map((warning) => (
                 <TimingCard
@@ -187,7 +188,9 @@ export function InteractionHeadsUp({
                 <RatioCard
                   key={warning.id}
                   warning={warning}
-                  defaultExpanded={ratioWarnings.length === 1 && timingWarnings.length === 0}
+                  defaultExpanded={
+                    ratioWarnings.length === 1 && timingWarnings.length === 0
+                  }
                 />
               ))}
 
@@ -207,14 +210,13 @@ export function InteractionHeadsUp({
               {/* Synergies - Positive, show last */}
               {synergies.length > 0 && (
                 <>
-                  {(warnings.length > 0 || ratioWarnings.length > 0 || timingWarnings.length > 0) && (
-                    <div className="my-2 border-t border-border/20" />
+                  {(warnings.length > 0 ||
+                    ratioWarnings.length > 0 ||
+                    timingWarnings.length > 0) && (
+                    <div className="border-border/20 my-2 border-t" />
                   )}
                   {synergies.map((synergy) => (
-                    <InteractionCard
-                      key={synergy.id}
-                      interaction={synergy}
-                    />
+                    <InteractionCard key={synergy.id} interaction={synergy} />
                   ))}
                 </>
               )}

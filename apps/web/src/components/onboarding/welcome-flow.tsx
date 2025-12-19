@@ -9,7 +9,10 @@ import { Button } from "~/components/ui/button";
 import { StepIndicator } from "./step-indicator";
 import { WelcomeStep } from "./steps/welcome-step";
 import { GoalStep } from "./steps/goal-step";
-import { BuildStackStep, type SelectedSupplement } from "./steps/build-stack-step";
+import {
+  BuildStackStep,
+  type SelectedSupplement,
+} from "./steps/build-stack-step";
 import { InteractionsStep } from "./steps/interactions-step";
 import { createStackFromOnboarding } from "~/server/actions/onboarding";
 import { type GoalKey } from "~/server/data/goal-recommendations";
@@ -48,7 +51,9 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(0);
   const [selectedGoal, setSelectedGoal] = useState<GoalKey | null>(null);
-  const [selectedSupplements, setSelectedSupplements] = useState<SelectedSupplement[]>([]);
+  const [selectedSupplements, setSelectedSupplements] = useState<
+    SelectedSupplement[]
+  >([]);
   const [stackName, setStackName] = useState("Morning Stack");
 
   const goNext = useCallback(() => {
@@ -61,10 +66,13 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
     setStep((s) => Math.max(s - 1, 0));
   }, []);
 
-  const handleGoalNext = useCallback((goalKey: GoalKey | null) => {
-    setSelectedGoal(goalKey);
-    goNext();
-  }, [goNext]);
+  const handleGoalNext = useCallback(
+    (goalKey: GoalKey | null) => {
+      setSelectedGoal(goalKey);
+      goNext();
+    },
+    [goNext],
+  );
 
   const handleGoalSkip = useCallback(() => {
     setSelectedGoal(null);
@@ -94,14 +102,14 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-background sm:bg-background/80 sm:backdrop-blur-sm">
-      <div className="relative flex h-full w-full flex-col bg-background sm:h-auto sm:max-h-[85vh] sm:w-full sm:max-w-lg sm:rounded-xl sm:border sm:shadow-xl lg:max-w-xl">
+    <div className="bg-background sm:bg-background/80 fixed inset-0 z-[60] flex items-center justify-center sm:backdrop-blur-sm">
+      <div className="bg-background relative flex h-full w-full flex-col sm:h-auto sm:max-h-[85vh] sm:w-full sm:max-w-lg sm:rounded-xl sm:border sm:shadow-xl lg:max-w-xl">
         {/* Close button - only show after first step */}
         {step > 0 && (
           <Button
             variant="ghost"
             size="icon"
-            className="absolute right-2 top-2 z-10 h-8 w-8"
+            className="absolute top-2 right-2 z-10 h-8 w-8"
             onClick={() => {
               // Could add confirmation dialog here if needed
               router.refresh();

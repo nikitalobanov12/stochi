@@ -34,7 +34,9 @@ const PROMPTS = [
 export function DashboardCommandBar({ supplements }: DashboardCommandBarProps) {
   const [isPending, startTransition] = useTransition();
   const [pendingLog, setPendingLog] = useState<PendingLog | null>(null);
-  const [safetyCheck, setSafetyCheck] = useState<SafetyCheckResult | null>(null);
+  const [safetyCheck, setSafetyCheck] = useState<SafetyCheckResult | null>(
+    null,
+  );
   const [showWarning, setShowWarning] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
@@ -53,7 +55,7 @@ export function DashboardCommandBar({ supplements }: DashboardCommandBarProps) {
   async function handleLog(
     supplementId: string,
     dosage: number,
-    unit: "mg" | "mcg" | "g" | "IU" | "ml"
+    unit: "mg" | "mcg" | "g" | "IU" | "ml",
   ): Promise<void> {
     setPendingLog({ supplementId, dosage, unit });
 
@@ -86,7 +88,7 @@ export function DashboardCommandBar({ supplements }: DashboardCommandBarProps) {
         pendingLog.dosage,
         pendingLog.unit,
         undefined,
-        true
+        true,
       );
 
       if (result.success) {
@@ -103,7 +105,11 @@ export function DashboardCommandBar({ supplements }: DashboardCommandBarProps) {
   // Listen for "/" key to expand
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "/" && !isExpanded && document.activeElement === document.body) {
+      if (
+        e.key === "/" &&
+        !isExpanded &&
+        document.activeElement === document.body
+      ) {
         e.preventDefault();
         setIsExpanded(true);
       } else if (e.key === "Escape" && isExpanded) {
@@ -122,21 +128,21 @@ export function DashboardCommandBar({ supplements }: DashboardCommandBarProps) {
         <button
           type="button"
           onClick={() => setIsExpanded(true)}
-          className="group relative w-full rounded-lg border border-primary/20 bg-card/50 px-4 py-3 text-left transition-all hover:border-primary/40 hover:shadow-[0_0_15px_rgba(16,185,129,0.1)]"
+          className="group border-primary/20 bg-card/50 hover:border-primary/40 relative w-full rounded-lg border px-4 py-3 text-left transition-all hover:shadow-[0_0_15px_rgba(16,185,129,0.1)]"
         >
           {/* Breathing border animation */}
-          <div className="absolute inset-0 rounded-lg border border-primary/10 animate-pulse" />
+          <div className="border-primary/10 absolute inset-0 animate-pulse rounded-lg border" />
 
           <div className="flex items-center gap-3">
-            <Search className="h-4 w-4 text-primary/60" />
-            <span className="font-mono text-sm text-muted-foreground transition-opacity">
+            <Search className="text-primary/60 h-4 w-4" />
+            <span className="text-muted-foreground font-mono text-sm transition-opacity">
               {PROMPTS[placeholderIndex]}
             </span>
           </div>
 
           {/* Keyboard hint */}
-          <div className="absolute right-4 top-1/2 -translate-y-1/2">
-            <kbd className="hidden rounded border border-border/40 bg-muted/50 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline-block">
+          <div className="absolute top-1/2 right-4 -translate-y-1/2">
+            <kbd className="border-border/40 bg-muted/50 text-muted-foreground hidden rounded border px-1.5 py-0.5 font-mono text-[10px] sm:inline-block">
               /
             </kbd>
           </div>
@@ -157,14 +163,14 @@ export function DashboardCommandBar({ supplements }: DashboardCommandBarProps) {
   // Expanded command bar view
   return (
     <>
-      <div className="relative rounded-lg border border-primary/30 bg-card/50 p-3 shadow-[0_0_20px_rgba(16,185,129,0.15)]">
+      <div className="border-primary/30 bg-card/50 relative rounded-lg border p-3 shadow-[0_0_20px_rgba(16,185,129,0.15)]">
         {/* Close button */}
         <button
           type="button"
           onClick={() => setIsExpanded(false)}
-          className="absolute right-2 top-2 rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+          className="text-muted-foreground hover:bg-muted hover:text-foreground absolute top-2 right-2 rounded p-1"
         >
-          <kbd className="rounded border border-border/40 bg-muted/50 px-1 py-0.5 font-mono text-[10px]">
+          <kbd className="border-border/40 bg-muted/50 rounded border px-1 py-0.5 font-mono text-[10px]">
             ESC
           </kbd>
         </button>

@@ -131,19 +131,19 @@
 
 .dark {
   --background: #0A0C10;
-  --foreground: #C9D1D9;
+  --foreground: #E6EDF3;
   --card: #0D1117;
-  --card-foreground: #C9D1D9;
+  --card-foreground: #E6EDF3;
   --popover: #161B22;
-  --popover-foreground: #C9D1D9;
+  --popover-foreground: #E6EDF3;
   --primary: #39FF14;
   --primary-foreground: #0A0C10;
   --secondary: #161B22;
-  --secondary-foreground: #C9D1D9;
+  --secondary-foreground: #E6EDF3;
   --muted: #161B22;
-  --muted-foreground: #8B949E;
+  --muted-foreground: #A8B1BB;
   --accent: #161B22;
-  --accent-foreground: #C9D1D9;
+  --accent-foreground: #E6EDF3;
   --destructive: #FF6B6B;
   --border: #30363D;
   --input: #30363D;
@@ -154,11 +154,11 @@
   --chart-4: #FF6B6B;
   --chart-5: #A855F7;
   --sidebar: #0A0C10;
-  --sidebar-foreground: #C9D1D9;
+  --sidebar-foreground: #E6EDF3;
   --sidebar-primary: #39FF14;
   --sidebar-primary-foreground: #0A0C10;
   --sidebar-accent: #161B22;
-  --sidebar-accent-foreground: #C9D1D9;
+  --sidebar-accent-foreground: #E6EDF3;
   --sidebar-border: #30363D;
   --sidebar-ring: #39FF14;
   --destructive-foreground: #0A0C10;
@@ -276,3 +276,131 @@
 .status-warning { color: #F0A500; }
 .status-danger { color: #FF6B6B; }
 .status-info { color: #00D4FF; }
+
+/* Landing page - Dashboard preview animations */
+@keyframes breathing-glow {
+  0%, 100% {
+    box-shadow: 
+      0 0 20px rgba(57, 255, 20, 0.05),
+      inset 0 0 20px rgba(57, 255, 20, 0.02);
+  }
+  50% {
+    box-shadow: 
+      0 0 40px rgba(57, 255, 20, 0.1),
+      inset 0 0 30px rgba(57, 255, 20, 0.04);
+  }
+}
+
+.animate-breathing-glow {
+  animation: breathing-glow 4s ease-in-out infinite;
+  border-radius: inherit;
+}
+
+/* Protocol execute animation */
+@keyframes protocol-execute {
+  0% {
+    stroke-dasharray: 0 50.27;
+  }
+  100% {
+    stroke-dasharray: 50.27 50.27;
+  }
+}
+
+.animate-protocol-execute {
+  animation: protocol-execute 0.6s ease-out forwards;
+}
+
+/* Terminal cursor blink */
+@keyframes cursor-blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
+}
+
+.animate-cursor-blink {
+  animation: cursor-blink 1s step-end infinite;
+}
+
+/* Terminal typing effect */
+@keyframes typing {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.animate-typing {
+  overflow: hidden;
+  white-space: nowrap;
+  animation: typing 0.5s steps(20) forwards;
+}
+
+/* Scan line effect for terminal */
+@keyframes scan-line {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.scan-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(57, 255, 20, 0.1),
+    transparent
+  );
+  animation: scan-line 3s linear infinite;
+}
+
+/* Reduced motion - disable animations for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .animate-float,
+  .animate-breathing-glow,
+  .animate-protocol-execute,
+  .animate-cursor-blink,
+  .animate-typing,
+  .animate-spin,
+  .scan-line {
+    animation: none !important;
+  }
+}
+
+/* Focus visible styles for better keyboard navigation */
+:focus-visible {
+  outline: 2px solid #39FF14;
+  outline-offset: 2px;
+}
+
+/* Screen reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

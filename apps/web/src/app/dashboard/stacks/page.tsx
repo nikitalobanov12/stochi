@@ -35,7 +35,7 @@ export default async function StacksPage() {
           <h1 className="font-mono text-lg font-medium tracking-tight">
             Protocols
           </h1>
-          <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+          <p className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
             {userStacks.length === 0
               ? "NO PROTOCOLS"
               : `${userStacks.length} PROTOCOL${userStacks.length !== 1 ? "S" : ""}`}
@@ -49,12 +49,12 @@ export default async function StacksPage() {
 
       {/* Stacks List */}
       {userStacks.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border/40 bg-card/30 py-16 text-center">
-          <Layers className="mx-auto mb-4 h-10 w-10 text-muted-foreground/30" />
-          <p className="font-mono text-sm text-muted-foreground">
+        <div className="border-border/40 bg-card/30 rounded-lg border border-dashed py-16 text-center">
+          <Layers className="text-muted-foreground/30 mx-auto mb-4 h-10 w-10" />
+          <p className="text-muted-foreground font-mono text-sm">
             No protocols yet
           </p>
-          <p className="mt-1 font-mono text-[10px] text-muted-foreground/60">
+          <p className="text-muted-foreground/60 mt-1 font-mono text-[10px]">
             Create your first protocol to batch-log supplements
           </p>
           <CreateStackDialog
@@ -64,7 +64,7 @@ export default async function StacksPage() {
             <Button
               variant="outline"
               size="sm"
-              className="mt-6 border-border/40 font-mono text-xs"
+              className="border-border/40 mt-6 font-mono text-xs"
             >
               <Plus className="mr-2 h-3 w-3" />
               Create Protocol
@@ -75,7 +75,7 @@ export default async function StacksPage() {
         <div className="space-y-2">
           {userStacks.map((s) => (
             <Link key={s.id} href={`/dashboard/stacks/${s.id}`}>
-              <div className="group flex items-center justify-between rounded-lg border border-border/40 bg-card/30 px-4 py-3 transition-colors hover:border-border/60 hover:bg-card/50">
+              <div className="group border-border/40 bg-card/30 hover:border-border/60 hover:bg-card/50 flex items-center justify-between rounded-lg border px-4 py-3 transition-colors">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-3">
                     <span className="font-mono text-sm font-medium">
@@ -88,7 +88,7 @@ export default async function StacksPage() {
                       {s.items.length}
                     </Badge>
                   </div>
-                  <p className="mt-0.5 truncate font-mono text-[10px] text-muted-foreground/60">
+                  <p className="text-muted-foreground/60 mt-0.5 truncate font-mono text-[10px]">
                     {s.items.length === 0
                       ? "Empty protocol"
                       : s.items
@@ -98,13 +98,13 @@ export default async function StacksPage() {
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
-                  <span className="font-mono text-[10px] text-muted-foreground/40">
+                  <span className="text-muted-foreground/40 font-mono text-[10px]">
                     {new Date(s.updatedAt).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
                     })}
                   </span>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5" />
+                  <ChevronRight className="text-muted-foreground/40 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </div>
               </div>
             </Link>

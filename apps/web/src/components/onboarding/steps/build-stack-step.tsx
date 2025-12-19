@@ -55,8 +55,12 @@ export function BuildStackStep({
   const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [pendingDosage, setPendingDosage] = useState("");
-  const [pendingUnit, setPendingUnit] = useState<"mg" | "mcg" | "g" | "IU" | "ml">("mg");
-  const [pendingSupplement, setPendingSupplement] = useState<Supplement | null>(null);
+  const [pendingUnit, setPendingUnit] = useState<
+    "mg" | "mcg" | "g" | "IU" | "ml"
+  >("mg");
+  const [pendingSupplement, setPendingSupplement] = useState<Supplement | null>(
+    null,
+  );
 
   // Get goal-based suggestions
   const goalRecommendations = selectedGoal ? getGoalByKey(selectedGoal) : null;
@@ -72,7 +76,10 @@ export function BuildStackStep({
     if (!searchQuery.trim()) {
       return availableSupplements.slice(0, 6);
     }
-    return fuzzySearchSupplements(availableSupplements, searchQuery).slice(0, 6);
+    return fuzzySearchSupplements(availableSupplements, searchQuery).slice(
+      0,
+      6,
+    );
   }, [availableSupplements, searchQuery]);
 
   // Goal-based suggestions (not yet added)
@@ -84,7 +91,11 @@ export function BuildStackStep({
         const supp = supplements.find((s) => s.name === rec.name);
         return supp ? { ...supp, recommended: rec } : null;
       })
-      .filter(Boolean) as Array<Supplement & { recommended: { dosage: number; unit: string; reason: string } }>;
+      .filter(Boolean) as Array<
+      Supplement & {
+        recommended: { dosage: number; unit: string; reason: string };
+      }
+    >;
   }, [goalRecommendations, selected, supplements]);
 
   // Get serving presets for pending supplement
@@ -115,7 +126,10 @@ export function BuildStackStep({
     resetForm();
   }
 
-  function handleAddWithPreset(dosage: number, unit: "mg" | "mcg" | "g" | "IU" | "ml") {
+  function handleAddWithPreset(
+    dosage: number,
+    unit: "mg" | "mcg" | "g" | "IU" | "ml",
+  ) {
     if (!pendingSupplement) return;
 
     const newSupplement: SelectedSupplement = {
@@ -159,14 +173,18 @@ export function BuildStackStep({
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pb-4">
         <div className="space-y-1">
           <h2 className="font-mono text-xl font-bold">Build your stack</h2>
-          <p className="text-sm text-muted-foreground">
-            Add supplements you take together. You&apos;ll be able to log them all with one tap.
+          <p className="text-muted-foreground text-sm">
+            Add supplements you take together. You&apos;ll be able to log them
+            all with one tap.
           </p>
         </div>
 
         {/* Stack name input */}
         <div className="space-y-1.5">
-          <label htmlFor="stack-name" className="text-xs font-medium text-muted-foreground">
+          <label
+            htmlFor="stack-name"
+            className="text-muted-foreground text-xs font-medium"
+          >
             Stack name
           </label>
           <Input
@@ -181,7 +199,7 @@ export function BuildStackStep({
         {/* Search and add form */}
         <div className="space-y-2 rounded-lg border p-3">
           <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
             <Input
               placeholder="Search supplements..."
               value={searchQuery}
@@ -194,19 +212,19 @@ export function BuildStackStep({
               className="pl-9 font-mono text-sm"
             />
             {showDropdown && searchResults.length > 0 && !pendingSupplement && (
-              <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-lg">
+              <div className="bg-popover absolute z-50 mt-1 w-full rounded-md border shadow-lg">
                 <div className="max-h-[150px] overflow-y-auto py-1">
                   {searchResults.map((supplement) => (
                     <button
                       key={supplement.id}
                       type="button"
                       onClick={() => handleSelectSupplement(supplement)}
-                      className="flex w-full items-center px-3 py-2 text-left text-sm hover:bg-muted"
+                      className="hover:bg-muted flex w-full items-center px-3 py-2 text-left text-sm"
                     >
                       <div>
                         <div className="font-medium">{supplement.name}</div>
                         {supplement.form && (
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-muted-foreground text-xs">
                             {supplement.form}
                           </div>
                         )}
@@ -223,7 +241,9 @@ export function BuildStackStep({
               {/* Serving presets */}
               {servingPresets.length > 0 && (
                 <div className="space-y-1.5">
-                  <p className="text-xs text-muted-foreground">Quick servings:</p>
+                  <p className="text-muted-foreground text-xs">
+                    Quick servings:
+                  </p>
                   <div className="flex flex-wrap gap-1.5">
                     {servingPresets.slice(0, 4).map((preset) => (
                       <Button
@@ -231,11 +251,14 @@ export function BuildStackStep({
                         variant="outline"
                         size="sm"
                         className="h-auto px-2 py-1 text-xs"
-                        onClick={() => handleAddWithPreset(preset.dosage, preset.unit)}
+                        onClick={() =>
+                          handleAddWithPreset(preset.dosage, preset.unit)
+                        }
                       >
                         {preset.label}
-                        <span className="ml-1 text-muted-foreground">
-                          ({preset.dosage}{preset.unit})
+                        <span className="text-muted-foreground ml-1">
+                          ({preset.dosage}
+                          {preset.unit})
                         </span>
                       </Button>
                     ))}
@@ -288,7 +311,7 @@ export function BuildStackStep({
         {/* Goal-based suggestions */}
         {suggestedSupplements.length > 0 && (
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <div className="text-muted-foreground flex items-center gap-2 text-xs">
               <Sparkles className="h-3 w-3" />
               <span>Suggested for {goalRecommendations?.name}</span>
             </div>
@@ -298,7 +321,7 @@ export function BuildStackStep({
                   key={supp.id}
                   type="button"
                   onClick={() => handleAddSuggestion(supp)}
-                  className="flex items-center gap-1.5 rounded-full border border-dashed border-primary/50 bg-primary/5 px-3 py-1.5 text-xs transition-colors hover:border-primary hover:bg-primary/10"
+                  className="border-primary/50 bg-primary/5 hover:border-primary hover:bg-primary/10 flex items-center gap-1.5 rounded-full border border-dashed px-3 py-1.5 text-xs transition-colors"
                 >
                   <Plus className="h-3 w-3" />
                   <span>{supp.name}</span>
@@ -315,7 +338,7 @@ export function BuildStackStep({
         {/* Selected supplements */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">
+            <span className="text-muted-foreground text-xs">
               Supplements in stack
             </span>
             {selected.length > 0 && (
@@ -325,7 +348,7 @@ export function BuildStackStep({
             )}
           </div>
           {selected.length === 0 ? (
-            <div className="rounded-lg border border-dashed py-6 text-center text-sm text-muted-foreground">
+            <div className="text-muted-foreground rounded-lg border border-dashed py-6 text-center text-sm">
               No supplements added yet
             </div>
           ) : (
@@ -333,11 +356,11 @@ export function BuildStackStep({
               {selected.map((supp) => (
                 <div
                   key={supp.id}
-                  className="flex items-center justify-between rounded-md bg-muted/50 px-3 py-2"
+                  className="bg-muted/50 flex items-center justify-between rounded-md px-3 py-2"
                 >
                   <div>
                     <span className="text-sm font-medium">{supp.name}</span>
-                    <span className="ml-2 font-mono text-xs text-muted-foreground">
+                    <span className="text-muted-foreground ml-2 font-mono text-xs">
                       {supp.dosage}
                       {supp.unit}
                     </span>
@@ -356,15 +379,15 @@ export function BuildStackStep({
         </div>
       </div>
 
-      <div className="flex shrink-0 gap-2 border-t border-border/40 pt-4">
+      <div className="border-border/40 flex shrink-0 gap-2 border-t pt-4">
         <Button variant="ghost" onClick={onBack} size="sm">
           <ArrowLeft className="mr-1 h-4 w-4" />
           Back
         </Button>
         <div className="flex-1" />
-        <Button 
-          onClick={onNext} 
-          disabled={selected.length === 0 || !stackName.trim()} 
+        <Button
+          onClick={onNext}
+          disabled={selected.length === 0 || !stackName.trim()}
           size="sm"
         >
           Continue

@@ -27,14 +27,16 @@ type NavLinkProps = {
 
 export function NavLink({ href, children, iconName }: NavLinkProps) {
   const pathname = usePathname();
-  const isActive = pathname === href || (href !== "/dashboard" && pathname.startsWith(`${href}/`));
+  const isActive =
+    pathname === href ||
+    (href !== "/dashboard" && pathname.startsWith(`${href}/`));
   const Icon = iconMap[iconName];
 
   return (
     <Link
       href={href}
       className={cn(
-        "flex items-center gap-2 text-sm font-medium transition-colors hover:text-foreground",
+        "hover:text-foreground flex items-center gap-2 text-sm font-medium transition-colors",
         isActive ? "text-foreground" : "text-muted-foreground",
       )}
     >
@@ -52,14 +54,16 @@ type MobileNavLinkProps = {
 
 export function MobileNavLink({ href, iconName, label }: MobileNavLinkProps) {
   const pathname = usePathname();
-  const isActive = pathname === href || (href !== "/dashboard" && pathname.startsWith(`${href}/`));
+  const isActive =
+    pathname === href ||
+    (href !== "/dashboard" && pathname.startsWith(`${href}/`));
   const Icon = iconMap[iconName];
 
   return (
     <Link
       href={href}
       className={cn(
-        "flex min-h-[44px] flex-col items-center justify-center gap-1 px-3 text-xs transition-colors hover:text-foreground",
+        "hover:text-foreground flex min-h-[44px] flex-col items-center justify-center gap-1 px-3 text-xs transition-colors",
         isActive ? "text-foreground" : "text-muted-foreground",
       )}
     >

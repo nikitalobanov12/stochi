@@ -34,11 +34,11 @@ export default async function DashboardLayout({
     <div className="relative flex min-h-screen flex-col">
       {/* Noise texture overlay */}
       <div className="hud-noise" />
-      
+
       {/* Vignette overlay */}
       <div className="hud-vignette" />
 
-      <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-md">
+      <header className="border-border bg-background/95 sticky top-0 z-50 border-b backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
           <nav className="hidden items-center gap-4 md:flex">
             <NavLink href="/dashboard" iconName="dashboard">
@@ -59,8 +59,11 @@ export default async function DashboardLayout({
                   variant="ghost"
                   className="relative h-8 w-8 rounded-full"
                 >
-                  <Avatar className="h-8 w-8 border border-border">
-                    <AvatarImage src={user.image ?? undefined} alt={user.name} />
+                  <Avatar className="border-border h-8 w-8 border">
+                    <AvatarImage
+                      src={user.image ?? undefined}
+                      alt={user.name}
+                    />
                     <AvatarFallback className="bg-secondary font-mono text-xs">
                       {user.name
                         .split(" ")
@@ -74,10 +77,10 @@ export default async function DashboardLayout({
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">
+                    <p className="text-sm leading-none font-medium">
                       {user.name}
                     </p>
-                    <p className="text-xs leading-none text-muted-foreground">
+                    <p className="text-muted-foreground text-xs leading-none">
                       {user.email}
                     </p>
                   </div>
@@ -118,12 +121,20 @@ export default async function DashboardLayout({
         <div className="mx-auto max-w-5xl px-4 py-6">{children}</div>
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background pb-safe md:hidden">
+      <nav className="border-border bg-background pb-safe fixed right-0 bottom-0 left-0 z-50 border-t md:hidden">
         <div className="flex items-center justify-around py-2">
           <MobileNavLink href="/dashboard" iconName="dashboard" label="Home" />
-          <MobileNavLink href="/dashboard/stacks" iconName="stacks" label="Stacks" />
+          <MobileNavLink
+            href="/dashboard/stacks"
+            iconName="stacks"
+            label="Stacks"
+          />
           <MobileNavLink href="/dashboard/log" iconName="log" label="Log" />
-          <MobileNavLink href="/dashboard/settings" iconName="settings" label="Settings" />
+          <MobileNavLink
+            href="/dashboard/settings"
+            iconName="settings"
+            label="Settings"
+          />
         </div>
       </nav>
     </div>

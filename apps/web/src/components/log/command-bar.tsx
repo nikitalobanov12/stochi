@@ -11,7 +11,10 @@ import {
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Terminal, X, Sparkles, Loader2 } from "lucide-react";
-import { getServingPresets, type ServingPreset } from "~/server/data/serving-presets";
+import {
+  getServingPresets,
+  type ServingPreset,
+} from "~/server/data/serving-presets";
 import { parseCommand, type ParsedDosage } from "~/lib/ai/command-parser";
 import {
   useSemanticSearch,
@@ -343,21 +346,18 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
 
   return (
     <div className="space-y-2">
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         Quick log: type a supplement name and dosage
       </p>
 
-      <Command
-        shouldFilter={false}
-        className="overflow-visible bg-transparent"
-      >
+      <Command shouldFilter={false} className="overflow-visible bg-transparent">
         <div className="relative">
-          <Terminal className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <div className="flex items-center gap-1 rounded-md border bg-background pl-10 pr-3">
+          <Terminal className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+          <div className="bg-background flex items-center gap-1 rounded-md border pr-3 pl-10">
             {selectedSupplement && (
               <Badge
                 variant="secondary"
-                className="shrink-0 cursor-pointer gap-1 font-mono hover:bg-secondary/80"
+                className="hover:bg-secondary/80 shrink-0 cursor-pointer gap-1 font-mono"
                 onClick={clearSelection}
               >
                 {selectedSupplement.name}
@@ -376,18 +376,18 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
                   ? "200mg, 5000IU..."
                   : "200mg mag, vitamin d 5000iu..."
               }
-              className="flex-1 bg-transparent py-2 font-mono text-sm outline-none placeholder:text-muted-foreground"
+              className="placeholder:text-muted-foreground flex-1 bg-transparent py-2 font-mono text-sm outline-none"
               disabled={isPending}
             />
             {isSearching && (
-              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />
             )}
           </div>
         </div>
 
         {showList && (
           <div className="relative mt-1">
-            <CommandList className="absolute z-10 w-full rounded-md border bg-popover shadow-md">
+            <CommandList className="bg-popover absolute z-10 w-full rounded-md border shadow-md">
               <CommandEmpty className="py-3 text-sm">
                 No supplements found.
               </CommandEmpty>
@@ -405,13 +405,13 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
                         <div>
                           <span className="font-medium">{s.name}</span>
                           {s.form && (
-                            <span className="ml-2 text-muted-foreground">
+                            <span className="text-muted-foreground ml-2">
                               ({s.form})
                             </span>
                           )}
                         </div>
                         {aiMatch && aiMatch.score > 0.5 && (
-                          <span className="flex items-center gap-1 text-xs text-primary/70">
+                          <span className="text-primary/70 flex items-center gap-1 text-xs">
                             <Sparkles className="h-3 w-3" />
                             {Math.round(aiMatch.score * 100)}%
                           </span>
@@ -445,12 +445,12 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
 
       {/* One-shot log hint */}
       {canOneShotLog && suggestions.length > 0 && open && (
-        <div className="flex items-center gap-2 rounded-md bg-primary/10 px-3 py-2">
-          <Sparkles className="h-3 w-3 text-primary" />
-          <span className="text-xs text-muted-foreground">
+        <div className="bg-primary/10 flex items-center gap-2 rounded-md px-3 py-2">
+          <Sparkles className="text-primary h-3 w-3" />
+          <span className="text-muted-foreground text-xs">
             Press Enter to log {parsedCommand.dosage?.value}
             {parsedCommand.dosage?.unit} of{" "}
-            <span className="font-medium text-foreground">
+            <span className="text-foreground font-medium">
               {suggestions[0]?.name}
             </span>
           </span>
@@ -458,8 +458,8 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
       )}
 
       {selectedSupplement && parsedDosage && (
-        <div className="flex items-center gap-2 rounded-md bg-primary/10 px-3 py-2">
-          <span className="text-xs text-muted-foreground">
+        <div className="bg-primary/10 flex items-center gap-2 rounded-md px-3 py-2">
+          <span className="text-muted-foreground text-xs">
             Press Enter to log {parsedDosage.value}
             {parsedDosage.unit} of {selectedSupplement.name}
           </span>
@@ -469,7 +469,7 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
       {/* Serving presets - show when supplement is selected and no dosage entered yet */}
       {selectedSupplement && !parsedDosage && servingPresets.length > 0 && (
         <div className="space-y-1.5">
-          <p className="text-xs text-muted-foreground">Quick servings:</p>
+          <p className="text-muted-foreground text-xs">Quick servings:</p>
           <div className="flex flex-wrap gap-1.5">
             {servingPresets.map((preset) => (
               <Button
@@ -481,7 +481,7 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
                 disabled={isPending}
               >
                 {preset.label}
-                <span className="ml-1 text-muted-foreground">
+                <span className="text-muted-foreground ml-1">
                   ({preset.dosage}
                   {preset.unit})
                 </span>

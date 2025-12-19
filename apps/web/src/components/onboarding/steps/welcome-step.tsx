@@ -40,9 +40,9 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
 
 function FeatureItem({ text }: { text: string }) {
   return (
-    <div className="flex items-center gap-3 rounded-md bg-muted/50 px-4 py-3">
-      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
-        <Check className="h-3.5 w-3.5 text-primary" />
+    <div className="bg-muted/50 flex items-center gap-3 rounded-md px-4 py-3">
+      <div className="bg-primary/10 flex h-6 w-6 items-center justify-center rounded-full">
+        <Check className="text-primary h-3.5 w-3.5" />
       </div>
       <span className="text-sm">{text}</span>
     </div>

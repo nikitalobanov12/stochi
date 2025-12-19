@@ -1,16 +1,32 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { ArrowLeft, AlertTriangle, Sparkles, Plus, CheckCircle2, Lightbulb, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  AlertTriangle,
+  Sparkles,
+  Plus,
+  CheckCircle2,
+  Lightbulb,
+  Loader2,
+} from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { type SelectedSupplement } from "./build-stack-step";
-import { checkInteractions, type InteractionWarning } from "~/server/actions/interactions";
+import {
+  checkInteractions,
+  type InteractionWarning,
+} from "~/server/actions/interactions";
 import { getSuggestions, type Suggestion } from "~/server/actions/suggestions";
 
 type InteractionsStepProps = {
   supplements: SelectedSupplement[];
-  allSupplements: Array<{ id: string; name: string; form: string | null; defaultUnit: "mg" | "mcg" | "g" | "IU" | "ml" | null }>;
+  allSupplements: Array<{
+    id: string;
+    name: string;
+    form: string | null;
+    defaultUnit: "mg" | "mcg" | "g" | "IU" | "ml" | null;
+  }>;
   onAddSupplement: (supplement: SelectedSupplement) => void;
   onComplete: () => Promise<void>;
   onBack: () => void;
@@ -32,17 +48,17 @@ export function InteractionsStep({
     async function loadData() {
       setLoading(true);
       const supplementIds = supplements.map((s) => s.id);
-      
+
       const [interactionsResult, suggestionsResult] = await Promise.all([
         checkInteractions(supplementIds),
         getSuggestions(supplementIds),
       ]);
-      
+
       setInteractions(interactionsResult.interactions);
       setSuggestions(suggestionsResult);
       setLoading(false);
     }
-    
+
     void loadData();
   }, [supplements]);
 
@@ -71,15 +87,17 @@ export function InteractionsStep({
     <div className="flex h-full flex-col">
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pb-4">
         <div className="space-y-1">
-          <h2 className="font-mono text-xl font-bold">Here&apos;s what we found</h2>
-          <p className="text-sm text-muted-foreground">
+          <h2 className="font-mono text-xl font-bold">
+            Here&apos;s what we found
+          </h2>
+          <p className="text-muted-foreground text-sm">
             Based on your {supplements.length} supplements
           </p>
         </div>
 
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <div className="border-primary h-6 w-6 animate-spin rounded-full border-2 border-t-transparent" />
           </div>
         ) : (
           <div className="space-y-4">
@@ -92,9 +110,10 @@ export function InteractionsStep({
                 </Badge>
               )}
               {synergies.length > 0 && (
-                <Badge className="bg-green-500/10 text-green-600 font-mono">
+                <Badge className="bg-green-500/10 font-mono text-green-600">
                   <Sparkles className="mr-1 h-3 w-3" />
-                  {synergies.length} synerg{synergies.length !== 1 ? "ies" : "y"}
+                  {synergies.length} synerg
+                  {synergies.length !== 1 ? "ies" : "y"}
                 </Badge>
               )}
               {warnings.length === 0 && synergies.length === 0 && (
@@ -108,18 +127,22 @@ export function InteractionsStep({
             {/* Warnings */}
             {warnings.length > 0 && (
               <div className="space-y-2">
-                <h3 className="flex items-center gap-2 text-sm font-medium text-destructive">
+                <h3 className="text-destructive flex items-center gap-2 text-sm font-medium">
                   <AlertTriangle className="h-4 w-4" />
                   Warnings
                 </h3>
                 {warnings.map((warning) => (
                   <div
                     key={warning.id}
-                    className="rounded-md bg-destructive/10 p-3 text-sm"
+                    className="bg-destructive/10 rounded-md p-3 text-sm"
                   >
                     <div className="flex items-center gap-2">
                       <Badge
-                        variant={warning.severity === "critical" ? "destructive" : "secondary"}
+                        variant={
+                          warning.severity === "critical"
+                            ? "destructive"
+                            : "secondary"
+                        }
                         className="text-[10px]"
                       >
                         {warning.severity}
@@ -129,7 +152,7 @@ export function InteractionsStep({
                       </span>
                     </div>
                     {warning.mechanism && (
-                      <p className="mt-1 text-xs text-muted-foreground">
+                      <p className="text-muted-foreground mt-1 text-xs">
                         {warning.mechanism}
                       </p>
                     )}
@@ -154,7 +177,7 @@ export function InteractionsStep({
                       {synergy.source.name} + {synergy.target.name}
                     </span>
                     {synergy.mechanism && (
-                      <p className="mt-1 text-xs text-muted-foreground">
+                      <p className="text-muted-foreground mt-1 text-xs">
                         {synergy.mechanism}
                       </p>
                     )}
@@ -184,7 +207,7 @@ export function InteractionsStep({
                           {suggestion.type}
                         </Badge>
                       </div>
-                      <p className="mt-0.5 text-xs text-muted-foreground">
+                      <p className="text-muted-foreground mt-0.5 text-xs">
                         {suggestion.reason}
                       </p>
                     </div>
@@ -203,7 +226,7 @@ export function InteractionsStep({
         )}
       </div>
 
-      <div className="flex shrink-0 gap-2 border-t border-border/40 pt-4">
+      <div className="border-border/40 flex shrink-0 gap-2 border-t pt-4">
         <Button variant="ghost" onClick={onBack} size="sm" disabled={isPending}>
           <ArrowLeft className="mr-1 h-4 w-4" />
           Back

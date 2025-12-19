@@ -5,7 +5,12 @@
  * Uses the quantized all-MiniLM-L6-v2 model (~23MB) for fast similarity search.
  */
 
-import { pipeline, env, type FeatureExtractionPipeline, type ProgressInfo } from "@huggingface/transformers";
+import {
+  pipeline,
+  env,
+  type FeatureExtractionPipeline,
+  type ProgressInfo,
+} from "@huggingface/transformers";
 
 // Configure transformers.js for browser environment
 env.allowLocalModels = false;
@@ -14,7 +19,12 @@ env.allowLocalModels = false;
 type WorkerMessage =
   | { type: "init" }
   | { type: "embed"; id: string; text: string }
-  | { type: "search"; id: string; query: string; candidates: SupplementCandidate[] }
+  | {
+      type: "search";
+      id: string;
+      query: string;
+      candidates: SupplementCandidate[];
+    }
   | { type: "precompute"; id: string; supplements: SupplementCandidate[] };
 
 type SupplementCandidate = {
@@ -49,7 +59,7 @@ class PipelineSingleton {
   static initPromise: Promise<FeatureExtractionPipeline> | null = null;
 
   static async getInstance(
-    progressCallback?: (progress: number) => void
+    progressCallback?: (progress: number) => void,
   ): Promise<FeatureExtractionPipeline> {
     if (this.instance) return this.instance;
 
@@ -64,11 +74,15 @@ class PipelineSingleton {
         "Xenova/all-MiniLM-L6-v2",
         {
           progress_callback: (data: ProgressInfo) => {
-            if ("progress" in data && data.progress !== undefined && progressCallback) {
+            if (
+              "progress" in data &&
+              data.progress !== undefined &&
+              progressCallback
+            ) {
               progressCallback(data.progress);
             }
           },
-        }
+        },
       );
       this.instance = extractor;
       return extractor;
@@ -95,7 +109,7 @@ async function generateEmbedding(text: string): Promise<Float32Array> {
  */
 async function searchSupplements(
   query: string,
-  candidates: SupplementCandidate[]
+  candidates: SupplementCandidate[],
 ): Promise<SearchResult[]> {
   // Generate query embedding
   const queryEmbedding = await generateEmbedding(query.toLowerCase());
@@ -144,7 +158,7 @@ async function searchSupplements(
  * Precompute embeddings for all supplements
  */
 async function precomputeEmbeddings(
-  supplements: SupplementCandidate[]
+  supplements: SupplementCandidate[],
 ): Promise<void> {
   for (const supplement of supplements) {
     const searchTexts = [
@@ -181,7 +195,11 @@ self.addEventListener("message", (event: MessageEvent<WorkerMessage>) => {
         case "embed": {
           const { id, text } = event.data;
           const embedding = await generateEmbedding(text);
-          self.postMessage({ type: "embedding", id, embedding: Array.from(embedding) });
+          self.postMessage({
+            type: "embedding",
+            id,
+            embedding: Array.from(embedding),
+          });
           break;
         }
 

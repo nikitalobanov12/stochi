@@ -34,7 +34,7 @@ export async function createLog(
   dosage: number,
   unit: DosageUnit,
   loggedAt?: Date,
-  forceOverride?: boolean
+  forceOverride?: boolean,
 ): Promise<CreateLogResult> {
   const session = await getSession();
   if (!session) {
@@ -77,7 +77,7 @@ export async function createLog(
     session.user.id,
     supp as SupplementWithSafety,
     dosage,
-    unit
+    unit,
   );
 
   // If not safe, check if we should block or warn
@@ -153,7 +153,7 @@ export async function getLogs(options?: { startDate?: Date; endDate?: Date }) {
 export async function preCheckSafety(
   supplementId: string,
   dosage: number,
-  unit: DosageUnit
+  unit: DosageUnit,
 ): Promise<SafetyCheckResult | null> {
   const session = await getSession();
   if (!session) {
@@ -179,6 +179,6 @@ export async function preCheckSafety(
     session.user.id,
     supp as SupplementWithSafety,
     dosage,
-    unit
+    unit,
   );
 }

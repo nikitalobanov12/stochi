@@ -71,7 +71,7 @@ export default async function LogPage() {
   ];
   const { interactions, ratioWarnings } = await checkInteractions(
     todaySupplementIds,
-    dosages
+    dosages,
   );
 
   // Check timing warnings for today's logs
@@ -79,8 +79,8 @@ export default async function LogPage() {
     checkTimingWarnings(
       session.user.id,
       logEntry.supplement.id,
-      new Date(logEntry.loggedAt)
-    )
+      new Date(logEntry.loggedAt),
+    ),
   );
   const timingWarningsArrays = await Promise.all(timingWarningsPromises);
 
@@ -101,7 +101,7 @@ export default async function LogPage() {
       {/* Header */}
       <div>
         <h1 className="font-mono text-lg font-medium tracking-tight">Log</h1>
-        <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+        <p className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
           {todaysLogs.length === 0
             ? "NO ENTRIES TODAY"
             : `${todaysLogs.length} LOG${todaysLogs.length !== 1 ? "S" : ""} TODAY`}
@@ -118,14 +118,14 @@ export default async function LogPage() {
       )}
 
       {/* Command Bar */}
-      <div className="rounded-lg border border-border/40 bg-card/30 p-3">
+      <div className="border-border/40 bg-card/30 rounded-lg border p-3">
         <SafeCommandBar supplements={allSupplements} />
       </div>
 
       {/* Quick Log Stacks */}
       {userStacks.length > 0 && (
         <div className="space-y-3">
-          <h2 className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+          <h2 className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
             Quick Log
           </h2>
           <div className="flex flex-wrap gap-2">
@@ -135,13 +135,13 @@ export default async function LogPage() {
                   type="submit"
                   variant="outline"
                   size="sm"
-                  className="border-border/40 bg-card/30 font-mono text-xs hover:border-border/60 hover:bg-card/50"
+                  className="border-border/40 bg-card/30 hover:border-border/60 hover:bg-card/50 font-mono text-xs"
                   disabled={s.items.length === 0}
                 >
                   {s.name}
                   <Badge
                     variant="secondary"
-                    className="ml-2 bg-muted/50 font-mono text-[10px] tabular-nums"
+                    className="bg-muted/50 ml-2 font-mono text-[10px] tabular-nums"
                   >
                     {s.items.length}
                   </Badge>
@@ -154,15 +154,15 @@ export default async function LogPage() {
 
       {/* Today's Logs */}
       <div className="space-y-3">
-        <h2 className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+        <h2 className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
           Today&apos;s Activity
         </h2>
         {todaysLogs.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-border/40 bg-card/30 py-12 text-center">
-            <p className="font-mono text-xs text-muted-foreground">
+          <div className="border-border/40 bg-card/30 rounded-lg border border-dashed py-12 text-center">
+            <p className="text-muted-foreground font-mono text-xs">
               No logs yet today
             </p>
-            <p className="mt-1 font-mono text-[10px] text-muted-foreground/60">
+            <p className="text-muted-foreground/60 mt-1 font-mono text-[10px]">
               Use command bar or tap a protocol
             </p>
           </div>
@@ -171,10 +171,10 @@ export default async function LogPage() {
             {todaysLogs.map((entry) => (
               <div
                 key={entry.id}
-                className="group flex items-center justify-between rounded-lg border border-border/40 bg-card/30 px-3 py-2 transition-colors hover:border-border/60"
+                className="group border-border/40 bg-card/30 hover:border-border/60 flex items-center justify-between rounded-lg border px-3 py-2 transition-colors"
               >
                 <div className="flex min-w-0 flex-1 items-center gap-3">
-                  <span className="shrink-0 font-mono text-[10px] tabular-nums text-muted-foreground/60">
+                  <span className="text-muted-foreground/60 shrink-0 font-mono text-[10px] tabular-nums">
                     {formatTime(new Date(entry.loggedAt))}
                   </span>
                   <div className="min-w-0 flex-1">
@@ -182,14 +182,14 @@ export default async function LogPage() {
                       {entry.supplement.name}
                     </span>
                     {entry.supplement.form && (
-                      <span className="ml-2 font-mono text-[10px] text-muted-foreground/60">
+                      <span className="text-muted-foreground/60 ml-2 font-mono text-[10px]">
                         {entry.supplement.form}
                       </span>
                     )}
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
-                  <span className="font-mono text-xs tabular-nums text-muted-foreground">
+                  <span className="text-muted-foreground font-mono text-xs tabular-nums">
                     {entry.dosage}
                     {entry.unit}
                   </span>
@@ -198,7 +198,7 @@ export default async function LogPage() {
                       type="submit"
                       variant="ghost"
                       size="icon"
-                      className="h-6 w-6 text-destructive/70 opacity-0 transition-opacity hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
+                      className="text-destructive/70 hover:bg-destructive/10 hover:text-destructive h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
@@ -212,7 +212,7 @@ export default async function LogPage() {
 
       {/* Recent History */}
       <div className="space-y-3">
-        <h2 className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+        <h2 className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
           History
         </h2>
         <RecentLogsGrouped logs={recentLogs} />
@@ -236,8 +236,8 @@ type LogEntry = {
 function RecentLogsGrouped({ logs }: { logs: LogEntry[] }) {
   if (logs.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-border/40 bg-card/30 py-8 text-center">
-        <p className="font-mono text-xs text-muted-foreground">
+      <div className="border-border/40 bg-card/30 rounded-lg border border-dashed py-8 text-center">
+        <p className="text-muted-foreground font-mono text-xs">
           No recent logs
         </p>
       </div>
@@ -251,31 +251,31 @@ function RecentLogsGrouped({ logs }: { logs: LogEntry[] }) {
       acc[date].push(entry);
       return acc;
     },
-    {} as Record<string, LogEntry[]>
+    {} as Record<string, LogEntry[]>,
   );
 
   return (
     <div className="max-h-[400px] space-y-4 overflow-y-auto">
       {Object.entries(grouped).map(([date, entries]) => (
         <div key={date}>
-          <h4 className="mb-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60">
+          <h4 className="text-muted-foreground/60 mb-2 font-mono text-[10px] tracking-wider uppercase">
             {date}
           </h4>
           <div className="space-y-1">
             {entries.map((entry) => (
               <div
                 key={entry.id}
-                className="flex items-center justify-between rounded-lg border border-border/20 bg-card/20 px-3 py-1.5"
+                className="border-border/20 bg-card/20 flex items-center justify-between rounded-lg border px-3 py-1.5"
               >
                 <div className="flex min-w-0 flex-1 items-center gap-3">
-                  <span className="shrink-0 font-mono text-[10px] tabular-nums text-muted-foreground/40">
+                  <span className="text-muted-foreground/40 shrink-0 font-mono text-[10px] tabular-nums">
                     {formatTime(new Date(entry.loggedAt))}
                   </span>
-                  <span className="truncate font-mono text-xs text-muted-foreground">
+                  <span className="text-muted-foreground truncate font-mono text-xs">
                     {entry.supplement.name}
                   </span>
                 </div>
-                <span className="shrink-0 font-mono text-[10px] tabular-nums text-muted-foreground/60">
+                <span className="text-muted-foreground/60 shrink-0 font-mono text-[10px] tabular-nums">
                   {entry.dosage}
                   {entry.unit}
                 </span>

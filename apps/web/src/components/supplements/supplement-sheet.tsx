@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  type ReactNode,
+} from "react";
 import { ExternalLink, Syringe, Thermometer, FlaskConical } from "lucide-react";
 
 import {
@@ -34,12 +40,15 @@ type SupplementSheetContextValue = {
   closeSheet: () => void;
 };
 
-const SupplementSheetContext = createContext<SupplementSheetContextValue | null>(null);
+const SupplementSheetContext =
+  createContext<SupplementSheetContextValue | null>(null);
 
 export function useSupplementSheet() {
   const context = useContext(SupplementSheetContext);
   if (!context) {
-    throw new Error("useSupplementSheet must be used within SupplementSheetProvider");
+    throw new Error(
+      "useSupplementSheet must be used within SupplementSheetProvider",
+    );
   }
   return context;
 }
@@ -118,7 +127,7 @@ export function SupplementSheetProvider({ children }: { children: ReactNode }) {
                     {supplement.isResearchChemical && (
                       <Badge
                         variant="outline"
-                        className="shrink-0 bg-amber-500/10 text-amber-500 border-amber-500/20"
+                        className="shrink-0 border-amber-500/20 bg-amber-500/10 text-amber-500"
                       >
                         <FlaskConical className="mr-1 h-3 w-3" />
                         Research Compound
@@ -130,8 +139,9 @@ export function SupplementSheetProvider({ children }: { children: ReactNode }) {
 
               <div className="mt-6 space-y-6">
                 {/* Route & Storage Section (for peptides/research chemicals) */}
-                {(supplement.route && supplement.route !== "oral") || supplement.storageInstructions ? (
-                  <div className="rounded-lg bg-muted/50 p-4 space-y-3">
+                {(supplement.route && supplement.route !== "oral") ||
+                supplement.storageInstructions ? (
+                  <div className="bg-muted/50 space-y-3 rounded-lg p-4">
                     {supplement.route && supplement.route !== "oral" && (
                       <div className="flex items-center gap-2 text-sm">
                         <Syringe className="h-4 w-4 text-violet-400" />
@@ -143,7 +153,7 @@ export function SupplementSheetProvider({ children }: { children: ReactNode }) {
                     )}
                     {supplement.storageInstructions && (
                       <div className="flex items-start gap-2 text-sm">
-                        <Thermometer className="h-4 w-4 text-blue-400 mt-0.5" />
+                        <Thermometer className="mt-0.5 h-4 w-4 text-blue-400" />
                         <span className="font-medium">Storage:</span>
                         <span className="text-muted-foreground">
                           {supplement.storageInstructions}
@@ -155,7 +165,7 @@ export function SupplementSheetProvider({ children }: { children: ReactNode }) {
                 {/* Mechanism Section */}
                 {supplement.mechanism && (
                   <div className="space-y-2">
-                    <h3 className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                    <h3 className="text-muted-foreground text-[10px] font-medium tracking-[0.2em] uppercase">
                       Mechanism
                     </h3>
                     <p className="text-sm leading-relaxed">
@@ -167,7 +177,7 @@ export function SupplementSheetProvider({ children }: { children: ReactNode }) {
                 {/* Why Take It Section */}
                 {supplement.description && (
                   <div className="space-y-2">
-                    <h3 className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                    <h3 className="text-muted-foreground text-[10px] font-medium tracking-[0.2em] uppercase">
                       Why Take It
                     </h3>
                     <p className="text-sm leading-relaxed">
@@ -177,28 +187,29 @@ export function SupplementSheetProvider({ children }: { children: ReactNode }) {
                 )}
 
                 {/* Goals Section */}
-                {supplement.commonGoals && supplement.commonGoals.length > 0 && (
-                  <div className="space-y-2">
-                    <h3 className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
-                      Common Goals
-                    </h3>
-                    <div className="flex flex-wrap gap-1.5">
-                      {supplement.commonGoals.map((goal) => (
-                        <Badge
-                          key={goal}
-                          variant="secondary"
-                          className="text-xs"
-                        >
-                          {goalLabels[goal] ?? goal}
-                        </Badge>
-                      ))}
+                {supplement.commonGoals &&
+                  supplement.commonGoals.length > 0 && (
+                    <div className="space-y-2">
+                      <h3 className="text-muted-foreground text-[10px] font-medium tracking-[0.2em] uppercase">
+                        Common Goals
+                      </h3>
+                      <div className="flex flex-wrap gap-1.5">
+                        {supplement.commonGoals.map((goal) => (
+                          <Badge
+                            key={goal}
+                            variant="secondary"
+                            className="text-xs"
+                          >
+                            {goalLabels[goal] ?? goal}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
                 {/* Research Link */}
                 {supplement.researchUrl && (
-                  <div className="pt-4 border-t">
+                  <div className="border-t pt-4">
                     <Button
                       variant="outline"
                       size="sm"

@@ -20,7 +20,9 @@ export type Suggestion = {
  * 1. Balance supplements (e.g., Copper if taking high-dose Zinc)
  * 2. Synergy partners (e.g., K2 if taking D3)
  */
-export async function getSuggestions(supplementIds: string[]): Promise<Suggestion[]> {
+export async function getSuggestions(
+  supplementIds: string[],
+): Promise<Suggestion[]> {
   if (supplementIds.length === 0) {
     return [];
   }
@@ -97,7 +99,8 @@ export async function getSuggestions(supplementIds: string[]): Promise<Suggestio
         type: "synergy",
         supplementId: syn.targetId,
         supplementName: syn.target.name,
-        reason: syn.mechanism ?? `Works synergistically with ${syn.source.name}`,
+        reason:
+          syn.mechanism ?? `Works synergistically with ${syn.source.name}`,
         dosage: getDefaultDosage(syn.target.name),
         unit: syn.target.defaultUnit ?? "mg",
         priority: "low",
@@ -107,7 +110,8 @@ export async function getSuggestions(supplementIds: string[]): Promise<Suggestio
         type: "synergy",
         supplementId: syn.sourceId,
         supplementName: syn.source.name,
-        reason: syn.mechanism ?? `Works synergistically with ${syn.target.name}`,
+        reason:
+          syn.mechanism ?? `Works synergistically with ${syn.target.name}`,
         dosage: getDefaultDosage(syn.source.name),
         unit: syn.source.defaultUnit ?? "mg",
         priority: "low",
@@ -119,7 +123,10 @@ export async function getSuggestions(supplementIds: string[]): Promise<Suggestio
   const seen = new Map<string, Suggestion>();
   for (const suggestion of suggestions) {
     const existing = seen.get(suggestion.supplementId);
-    if (!existing || priorityValue(suggestion.priority) > priorityValue(existing.priority)) {
+    if (
+      !existing ||
+      priorityValue(suggestion.priority) > priorityValue(existing.priority)
+    ) {
       seen.set(suggestion.supplementId, suggestion);
     }
   }

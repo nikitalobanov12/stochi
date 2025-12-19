@@ -7,7 +7,13 @@ import drizzle from "eslint-plugin-drizzle";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts", "drizzle/**"]),
+  globalIgnores([
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+    "drizzle/**",
+  ]),
   {
     files: ["**/*.ts", "**/*.tsx"],
     plugins: {

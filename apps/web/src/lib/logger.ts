@@ -16,7 +16,11 @@ interface LogOptions {
   data?: unknown;
 }
 
-function formatMessage(level: LogLevel, message: string, options?: LogOptions): string {
+function formatMessage(
+  level: LogLevel,
+  message: string,
+  options?: LogOptions,
+): string {
   const timestamp = new Date().toISOString().slice(11, 23); // HH:mm:ss.SSS
   const context = options?.context ? `[${options.context}]` : "";
   return `${timestamp} ${level.toUpperCase().padEnd(5)} ${context} ${message}`.trim();
@@ -31,7 +35,10 @@ export const logger = {
    */
   debug(message: string, options?: LogOptions): void {
     if (!isDev) return;
-    console.debug(formatMessage("debug", message, options), options?.data ?? "");
+    console.debug(
+      formatMessage("debug", message, options),
+      options?.data ?? "",
+    );
   },
 
   /**
@@ -57,7 +64,10 @@ export const logger = {
   error(message: string, options?: LogOptions): void {
     // Errors are logged in all environments, but without sensitive data
     if (isDev) {
-      console.error(formatMessage("error", message, options), options?.data ?? "");
+      console.error(
+        formatMessage("error", message, options),
+        options?.data ?? "",
+      );
     } else {
       // In production, only log the message without potentially sensitive data
       console.error(formatMessage("error", message));

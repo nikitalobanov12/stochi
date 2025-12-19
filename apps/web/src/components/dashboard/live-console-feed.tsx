@@ -1,12 +1,21 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { type InteractionWarning, type RatioWarning, type TimingWarning } from "~/server/actions/interactions";
+import {
+  type InteractionWarning,
+  type RatioWarning,
+  type TimingWarning,
+} from "~/server/actions/interactions";
 import { type SafetyCheckResult } from "~/server/services/safety";
 
 export type ConsoleEntry = {
   timestamp: Date;
-  module: "SAFETY_CHECK" | "RATIO_ENGINE" | "TIMING_CHECK" | "INTERACTION" | "SYSTEM";
+  module:
+    | "SAFETY_CHECK"
+    | "RATIO_ENGINE"
+    | "TIMING_CHECK"
+    | "INTERACTION"
+    | "SYSTEM";
   message: string;
   status: "PASS" | "FAIL" | "WARN" | "INFO";
 };
@@ -25,7 +34,7 @@ function generateConsoleEntries(
   interactions: InteractionWarning[],
   ratioWarnings: RatioWarning[],
   timingWarnings: TimingWarning[],
-  safetyChecks: SafetyCheckResult[] = []
+  safetyChecks: SafetyCheckResult[] = [],
 ): ConsoleEntry[] {
   const entries: ConsoleEntry[] = [];
   const now = new Date();
@@ -33,7 +42,7 @@ function generateConsoleEntries(
   // Safety checks
   for (const check of safetyChecks) {
     if (!check.category) continue;
-    
+
     const categoryDisplay = check.category.toUpperCase().replace("-", "_");
     if (check.isSafe) {
       entries.push({
@@ -55,8 +64,10 @@ function generateConsoleEntries(
   // Ratio warnings
   for (const warning of ratioWarnings) {
     const ratioStr = `${warning.source.name.split(" ")[0]}:${warning.target.name.split(" ")[0]}`;
-    const optimalStr = warning.optimalRatio ? `optimal ${warning.optimalRatio}:1` : "";
-    
+    const optimalStr = warning.optimalRatio
+      ? `optimal ${warning.optimalRatio}:1`
+      : "";
+
     entries.push({
       timestamp: now,
       module: "RATIO_ENGINE",
@@ -157,7 +168,7 @@ export function LiveConsoleFeed({
     interactions,
     ratioWarnings,
     timingWarnings,
-    safetyChecks
+    safetyChecks,
   );
 
   // Auto-scroll to bottom when entries change
@@ -169,12 +180,12 @@ export function LiveConsoleFeed({
 
   return (
     <div className="space-y-2">
-      <h2 className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+      <h2 className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
         System Console
       </h2>
       <div
         ref={containerRef}
-        className="h-24 overflow-hidden rounded-lg border border-border/40 bg-black/20 p-2 font-mono text-[10px] leading-relaxed opacity-60 hover:opacity-100 transition-opacity"
+        className="border-border/40 h-24 overflow-hidden rounded-lg border bg-black/20 p-2 font-mono text-[10px] leading-relaxed opacity-60 transition-opacity hover:opacity-100"
       >
         {entries.map((entry, index) => (
           <div key={index} className="flex gap-2">
@@ -190,11 +201,11 @@ export function LiveConsoleFeed({
             </span>
           </div>
         ))}
-        
+
         {/* Blinking cursor effect */}
-        <div className="flex items-center gap-1 mt-1">
+        <div className="mt-1 flex items-center gap-1">
           <span className="text-muted-foreground/60">&gt;</span>
-          <span className="w-2 h-3 bg-emerald-500/70 animate-pulse" />
+          <span className="h-3 w-2 animate-pulse bg-emerald-500/70" />
         </div>
       </div>
     </div>

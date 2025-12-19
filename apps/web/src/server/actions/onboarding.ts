@@ -4,7 +4,13 @@ import { revalidatePath } from "next/cache";
 import { eq, and, inArray, gte } from "drizzle-orm";
 
 import { db } from "~/server/db";
-import { stack, stackItem, log, supplement, userGoal } from "~/server/db/schema";
+import {
+  stack,
+  stackItem,
+  log,
+  supplement,
+  userGoal,
+} from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
 import { getTemplateByKey } from "~/server/data/stack-templates";
 import { type GoalKey, goals } from "~/server/data/goal-recommendations";
@@ -13,7 +19,9 @@ import { type GoalKey, goals } from "~/server/data/goal-recommendations";
  * Instantiate a template stack for the user.
  * Creates: stack + stack items + today's logs for each supplement.
  */
-export async function instantiateTemplate(templateKey: string): Promise<{ success: boolean; stackId?: string; error?: string }> {
+export async function instantiateTemplate(
+  templateKey: string,
+): Promise<{ success: boolean; stackId?: string; error?: string }> {
   const session = await getSession();
   if (!session) {
     return { success: false, error: "Not authenticated" };
@@ -33,9 +41,14 @@ export async function instantiateTemplate(templateKey: string): Promise<{ succes
   const supplementMap = new Map(supplements.map((s) => [s.name, s.id]));
 
   // Verify all supplements exist
-  const missingSupplements = supplementNames.filter((name) => !supplementMap.has(name));
+  const missingSupplements = supplementNames.filter(
+    (name) => !supplementMap.has(name),
+  );
   if (missingSupplements.length > 0) {
-    return { success: false, error: `Missing supplements: ${missingSupplements.join(", ")}` };
+    return {
+      success: false,
+      error: `Missing supplements: ${missingSupplements.join(", ")}`,
+    };
   }
 
   // Create stack
@@ -85,7 +98,11 @@ export async function instantiateTemplate(templateKey: string): Promise<{ succes
 /**
  * Create an empty stack for users who want to start from scratch.
  */
-export async function createEmptyStack(): Promise<{ success: boolean; stackId?: string; error?: string }> {
+export async function createEmptyStack(): Promise<{
+  success: boolean;
+  stackId?: string;
+  error?: string;
+}> {
   const session = await getSession();
   if (!session) {
     return { success: false, error: "Not authenticated" };
@@ -113,7 +130,9 @@ export async function createEmptyStack(): Promise<{ success: boolean; stackId?: 
  * Fork a template stack (rename it to remove template detection).
  * Just renames the stack by appending "(Custom)".
  */
-export async function forkStack(stackId: string): Promise<{ success: boolean; error?: string }> {
+export async function forkStack(
+  stackId: string,
+): Promise<{ success: boolean; error?: string }> {
   const session = await getSession();
   if (!session) {
     return { success: false, error: "Not authenticated" };
@@ -130,7 +149,7 @@ export async function forkStack(stackId: string): Promise<{ success: boolean; er
   // Rename to break template detection
   await db
     .update(stack)
-    .set({ 
+    .set({
       name: `${userStack.name} (Custom)`,
       updatedAt: new Date(),
     })
@@ -147,7 +166,9 @@ export async function forkStack(stackId: string): Promise<{ success: boolean; er
  * Clear template data (nuclear option).
  * Deletes the stack AND all logs from today for its supplements.
  */
-export async function clearTemplateData(stackId: string): Promise<{ success: boolean; error?: string }> {
+export async function clearTemplateData(
+  stackId: string,
+): Promise<{ success: boolean; error?: string }> {
   const session = await getSession();
   if (!session) {
     return { success: false, error: "Not authenticated" };
@@ -180,8 +201,8 @@ export async function clearTemplateData(stackId: string): Promise<{ success: boo
         and(
           eq(log.userId, session.user.id),
           inArray(log.supplementId, supplementIds),
-          gte(log.loggedAt, todayStart)
-        )
+          gte(log.loggedAt, todayStart),
+        ),
       );
   }
 
@@ -281,7 +302,7 @@ export async function createStackFromOnboarding(data: {
   if (data.goal) {
     // Delete any existing goals first (shouldn't have any for new users, but just in case)
     await db.delete(userGoal).where(eq(userGoal.userId, session.user.id));
-    
+
     // Insert the selected goal
     await db.insert(userGoal).values({
       userId: session.user.id,
@@ -302,7 +323,9 @@ export async function createStackFromOnboarding(data: {
  * Create a stack from template WITHOUT creating logs.
  * Used for the "New Stack" dialog on the stacks page.
  */
-export async function createStackFromTemplate(templateKey: string): Promise<{ success: boolean; stackId?: string; error?: string }> {
+export async function createStackFromTemplate(
+  templateKey: string,
+): Promise<{ success: boolean; stackId?: string; error?: string }> {
   const session = await getSession();
   if (!session) {
     return { success: false, error: "Not authenticated" };
@@ -322,9 +345,14 @@ export async function createStackFromTemplate(templateKey: string): Promise<{ su
   const supplementMap = new Map(supplements.map((s) => [s.name, s.id]));
 
   // Verify all supplements exist
-  const missingSupplements = supplementNames.filter((name) => !supplementMap.has(name));
+  const missingSupplements = supplementNames.filter(
+    (name) => !supplementMap.has(name),
+  );
   if (missingSupplements.length > 0) {
-    return { success: false, error: `Missing supplements: ${missingSupplements.join(", ")}` };
+    return {
+      success: false,
+      error: `Missing supplements: ${missingSupplements.join(", ")}`,
+    };
   }
 
   // Create stack

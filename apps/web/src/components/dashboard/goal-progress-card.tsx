@@ -23,10 +23,10 @@ export function GoalProgressCard({ progress }: GoalProgressCardProps) {
     return (
       <div className="rounded-lg border border-dashed p-4">
         <div className="flex items-center gap-3">
-          <Target className="h-5 w-5 text-muted-foreground" />
+          <Target className="text-muted-foreground h-5 w-5" />
           <div className="flex-1">
             <p className="text-sm font-medium">No goals set</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               Set your optimization goals to get personalized recommendations
             </p>
           </div>
@@ -43,21 +43,21 @@ export function GoalProgressCard({ progress }: GoalProgressCardProps) {
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div className="rounded-lg border bg-card">
+      <div className="bg-card rounded-lg border">
         <CollapsibleTrigger asChild>
           <button
             type="button"
-            className="flex w-full items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors"
+            className="hover:bg-muted/50 flex w-full items-center gap-3 p-4 text-left transition-colors"
           >
-            <Target className="h-5 w-5 text-primary" />
+            <Target className="text-primary h-5 w-5" />
             <div className="flex-1">
               <p className="font-mono text-sm font-medium">Goal Progress</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 {progress.length} active goal{progress.length !== 1 ? "s" : ""}
               </p>
             </div>
             <ChevronDown
-              className={`h-4 w-4 text-muted-foreground transition-transform ${
+              className={`text-muted-foreground h-4 w-4 transition-transform ${
                 isOpen ? "rotate-180" : ""
               }`}
             />
@@ -65,12 +65,12 @@ export function GoalProgressCard({ progress }: GoalProgressCardProps) {
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <div className="border-t px-4 pb-4 pt-2 space-y-4">
+          <div className="space-y-4 border-t px-4 pt-2 pb-4">
             {progress.map((p) => (
               <GoalProgressItem key={p.goal.key} progress={p} />
             ))}
-            
-            <div className="pt-2 border-t">
+
+            <div className="border-t pt-2">
               <Button variant="ghost" size="sm" asChild className="w-full">
                 <Link href="/dashboard/settings">
                   <Settings className="mr-2 h-4 w-4" />
@@ -96,13 +96,13 @@ function GoalProgressItem({ progress }: { progress: GoalProgress }) {
           <span className="text-base">{goal.icon}</span>
           <span className="font-mono text-sm font-medium">{goal.name}</span>
         </div>
-        <span className="font-mono text-sm tabular-nums text-muted-foreground">
+        <span className="text-muted-foreground font-mono text-sm tabular-nums">
           {percentage}%
         </span>
       </div>
 
       {/* Progress Bar */}
-      <div className="h-2 rounded-full bg-muted overflow-hidden">
+      <div className="bg-muted h-2 overflow-hidden rounded-full">
         <div
           className={`h-full rounded-full transition-all ${
             percentage >= 75
@@ -118,7 +118,7 @@ function GoalProgressItem({ progress }: { progress: GoalProgress }) {
       {/* Taking & Missing */}
       <div className="space-y-1">
         {taking.length > 0 && (
-          <p className="text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-xs">
             <span className="text-green-600">Taking:</span>{" "}
             {taking.slice(0, 3).join(", ")}
             {taking.length > 3 && ` +${taking.length - 3} more`}
@@ -126,11 +126,15 @@ function GoalProgressItem({ progress }: { progress: GoalProgress }) {
         )}
         {missing.length > 0 && (
           <div className="flex items-center gap-2">
-            <p className="text-xs text-muted-foreground flex-1">
-              <span className="text-orange-600">Consider:</span>{" "}
-              {missing[0]}
+            <p className="text-muted-foreground flex-1 text-xs">
+              <span className="text-orange-600">Consider:</span> {missing[0]}
             </p>
-            <Button variant="ghost" size="sm" className="h-6 text-xs px-2" asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2 text-xs"
+              asChild
+            >
               <Link href="/dashboard/stacks">
                 <Plus className="mr-1 h-3 w-3" />
                 Add

@@ -2,7 +2,13 @@ import { type dosageUnitEnum } from "~/server/db/schema";
 
 type DosageUnit = (typeof dosageUnitEnum.enumValues)[number];
 
-export type GoalKey = "focus" | "sleep" | "energy" | "stress" | "health" | "longevity";
+export type GoalKey =
+  | "focus"
+  | "sleep"
+  | "energy"
+  | "stress"
+  | "health"
+  | "longevity";
 
 export type GoalSupplement = {
   name: string;
@@ -46,7 +52,9 @@ export const goals: Goal[] = [
         unit: "mg",
       },
     ],
-    synergies: ["Caffeine + L-Theanine reduces jitters while maintaining alertness"],
+    synergies: [
+      "Caffeine + L-Theanine reduces jitters while maintaining alertness",
+    ],
   },
   {
     key: "sleep",
@@ -205,4 +213,11 @@ export function getGoalSupplements(key: GoalKey): GoalSupplement[] {
   return getGoalByKey(key)?.supplements ?? [];
 }
 
-export const goalKeys: GoalKey[] = ["focus", "sleep", "energy", "stress", "health", "longevity"];
+export const goalKeys: GoalKey[] = [
+  "focus",
+  "sleep",
+  "energy",
+  "stress",
+  "health",
+  "longevity",
+];

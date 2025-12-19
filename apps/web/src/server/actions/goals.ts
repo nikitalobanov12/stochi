@@ -72,7 +72,7 @@ export async function setUserGoals(goalKeys: GoalKey[]): Promise<void> {
         goal: key,
         priority: index + 1,
         createdAt: new Date(),
-      }))
+      })),
     );
   }
 
@@ -118,9 +118,7 @@ export async function removeUserGoal(goalId: string): Promise<void> {
   const session = await getSession();
   if (!session) throw new Error("Not authenticated");
 
-  await db
-    .delete(userGoal)
-    .where(eq(userGoal.id, goalId));
+  await db.delete(userGoal).where(eq(userGoal.id, goalId));
 
   // Re-number priorities
   const remaining = await db.query.userGoal.findMany({
@@ -165,7 +163,7 @@ export async function getGoalProgress(): Promise<GoalProgress[]> {
   const userSupplementNames = new Set(
     userStackItems
       .filter((item) => item.stack.userId === session.user.id)
-      .map((item) => item.supplement.name)
+      .map((item) => item.supplement.name),
   );
 
   // Also check supplements that have this goal in commonGoals
@@ -196,12 +194,14 @@ export async function getGoalProgress(): Promise<GoalProgress[]> {
         (s) =>
           s.commonGoals?.includes(ug.goal) &&
           userSupplementNames.has(s.name) &&
-          !recommended.includes(s.name)
+          !recommended.includes(s.name),
       )
       .map((s) => s.name);
 
     const allTaking = [...taking, ...alternativeTaking];
-    const missing = recommended.filter((name) => !userSupplementNames.has(name));
+    const missing = recommended.filter(
+      (name) => !userSupplementNames.has(name),
+    );
 
     // Coverage based on recommended supplements
     const coverage =
