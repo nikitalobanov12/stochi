@@ -341,9 +341,19 @@ export async function checkRatioWarnings(
     // Note: This is simplified - real implementation would normalize units
     const ratio = sourceDosage.dosage / targetDosage.dosage;
 
-    // Check if ratio is outside acceptable range
-    const isBelowMin = rule.minRatio !== null && ratio < rule.minRatio;
-    const isAboveMax = rule.maxRatio !== null && ratio > rule.maxRatio;
+    // Check if ratio is outside acceptable range with a 15% tolerance buffer
+    // This prevents warnings for ratios that are close enough (e.g., 33:1 when min is 40:1)
+    // Ratios within 15% of the boundary are considered acceptable
+    const toleranceFactor = 0.15;
+    const effectiveMinRatio = rule.minRatio !== null 
+      ? rule.minRatio * (1 - toleranceFactor) 
+      : null;
+    const effectiveMaxRatio = rule.maxRatio !== null 
+      ? rule.maxRatio * (1 + toleranceFactor) 
+      : null;
+
+    const isBelowMin = effectiveMinRatio !== null && ratio < effectiveMinRatio;
+    const isAboveMax = effectiveMaxRatio !== null && ratio > effectiveMaxRatio;
 
     if (isBelowMin || isAboveMax) {
       warnings.push({

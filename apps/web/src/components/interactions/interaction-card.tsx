@@ -371,6 +371,7 @@ export function RatioCard({
   const styles = getSeverityStyles(warning.severity);
 
   // Calculate what adjustment is needed - returns a range
+  // Logic: prefer adjusting the supplement that's "off" from typical doses
   const getAdjustmentSuggestion = (): AdjustmentSuggestion => {
     const { currentRatio, minRatio, maxRatio, source, target } = warning;
 
@@ -379,17 +380,18 @@ export function RatioCard({
     if (source.dosage === 0 || target.dosage === 0) return null;
 
     if (currentRatio < minRatio) {
-      // Ratio too low - need more source (or less target)
-      // Calculate source needed to hit min and max ratios
-      const sourceForMin = target.dosage * minRatio;
-      const sourceForMax = target.dosage * maxRatio;
+      // Ratio too low - either increase source OR decrease target
+      // For D3:K2 (33:1 when 40:1 needed), suggesting to increase D3 from 4000IU is bad advice
+      // Instead, suggest reducing K2 (the target) since it's the "excess" component
+      const targetForMin = source.dosage / minRatio; // target at minimum ratio
+      const targetForMax = source.dosage / maxRatio; // target at maximum ratio (less target)
 
       return {
-        action: "increase",
-        supplement: source.name,
-        rangeMin: formatDosage(sourceForMin, source.unit),
-        rangeMax: formatDosage(sourceForMax, source.unit),
-        explanation: `With ${target.dosage}${target.unit} ${target.name}, aim for ${minRatio}-${maxRatio}:1`,
+        action: "decrease",
+        supplement: target.name,
+        rangeMin: formatDosage(targetForMax, target.unit), // Less target = higher ratio
+        rangeMax: formatDosage(targetForMin, target.unit), // More target = lower ratio
+        explanation: `With ${source.dosage}${source.unit} ${source.name}, aim for ${minRatio}-${maxRatio}:1`,
       };
     } else if (currentRatio > maxRatio) {
       // Ratio too high - need more target (or less source)
