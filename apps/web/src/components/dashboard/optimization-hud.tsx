@@ -321,6 +321,29 @@ function ExclusionZoneCard({
               <div className="text-muted-foreground mt-2 font-mono text-[10px] leading-relaxed">
                 {zone.reason}
               </div>
+              {/* Prominent Set Alert button for hero card */}
+              {permission !== "denied" && !reminded && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mt-3 h-8 w-full border-[#00D4FF]/30 font-mono text-[10px] text-[#00D4FF] hover:bg-[#00D4FF]/10 hover:text-[#00D4FF]"
+                  onClick={handleRemind}
+                >
+                  <Bell className="mr-1.5 h-3 w-3" />
+                  SET ALERT
+                </Button>
+              )}
+              {permission !== "denied" && reminded && (
+                <div className="mt-3 flex items-center justify-center gap-1.5 rounded-md bg-[#00D4FF]/10 py-2 font-mono text-[10px] text-[#00D4FF]">
+                  <Bell className="h-3 w-3" />
+                  ALERT SET
+                </div>
+              )}
+              {permission === "denied" && (
+                <div className="text-muted-foreground/50 mt-3 text-center font-mono text-[9px]">
+                  Notifications blocked in browser settings
+                </div>
+              )}
             </>
           ) : (
             // Compact card layout
@@ -346,24 +369,27 @@ function ExclusionZoneCard({
             </>
           )}
         </div>
-        {permission === "denied" ? (
-          <div className="text-muted-foreground/50" title="Notifications blocked">
-            <Bell className="h-3 w-3" />
-          </div>
-        ) : !reminded ? (
-          <Button
-            size="sm"
-            variant="ghost"
-            className="text-muted-foreground hover:text-foreground h-7 px-2"
-            onClick={handleRemind}
-            title="Remind me when available"
-          >
-            <Bell className="h-3 w-3" />
-          </Button>
-        ) : (
-          <div className="text-[#00D4FF]" title="Reminder set">
-            <Bell className="h-3 w-3" />
-          </div>
+        {/* Only show side button for non-hero cards */}
+        {!isHero && (
+          permission === "denied" ? (
+            <div className="text-muted-foreground/50" title="Notifications blocked">
+              <Bell className="h-3 w-3" />
+            </div>
+          ) : !reminded ? (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-muted-foreground hover:text-foreground h-7 px-2"
+              onClick={handleRemind}
+              title="Remind me when available"
+            >
+              <Bell className="h-3 w-3" />
+            </Button>
+          ) : (
+            <div className="text-[#00D4FF]" title="Reminder set">
+              <Bell className="h-3 w-3" />
+            </div>
+          )
         )}
       </div>
     </div>
