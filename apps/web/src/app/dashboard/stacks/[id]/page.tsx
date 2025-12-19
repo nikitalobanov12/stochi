@@ -82,7 +82,7 @@ export default async function StackDetailPage({
   const updateStackWithId = updateStack.bind(null, userStack.id);
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Link

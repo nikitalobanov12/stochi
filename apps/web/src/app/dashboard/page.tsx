@@ -120,7 +120,7 @@ export default async function DashboardPage() {
     <>
       <WelcomeFlow open={needsOnboarding} supplements={allSupplements} />
 
-      <div className="mx-auto max-w-2xl space-y-6">
+      <div className="space-y-6">
         {/* Zone 1: System Status - Minimal header */}
         <SystemStatus
           streak={streak}

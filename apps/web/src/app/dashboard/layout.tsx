@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { Settings, LogOut } from "lucide-react";
 
 import { getSession } from "~/server/better-auth/server";
@@ -41,32 +40,17 @@ export default async function DashboardLayout({
 
       <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-          <div className="flex items-center gap-6">
-            <Link href="/dashboard" className="flex items-center gap-2">
-              <Image
-                src="/logo.svg"
-                alt="Stochi"
-                width={24}
-                height={24}
-                className="h-6 w-6"
-              />
-              <span className="font-mono text-sm font-medium tracking-tight">
-                stochi<span className="text-primary">_</span>
-              </span>
-            </Link>
-
-            <nav className="hidden items-center gap-4 md:flex">
-              <NavLink href="/dashboard" iconName="dashboard">
-                Dashboard
-              </NavLink>
-              <NavLink href="/dashboard/stacks" iconName="stacks">
-                Stacks
-              </NavLink>
-              <NavLink href="/dashboard/log" iconName="log">
-                Log
-              </NavLink>
-            </nav>
-          </div>
+          <nav className="hidden items-center gap-4 md:flex">
+            <NavLink href="/dashboard" iconName="dashboard">
+              Dashboard
+            </NavLink>
+            <NavLink href="/dashboard/stacks" iconName="stacks">
+              Stacks
+            </NavLink>
+            <NavLink href="/dashboard/log" iconName="log">
+              Log
+            </NavLink>
+          </nav>
 
           <div className="flex items-center gap-4">
             <DropdownMenu>

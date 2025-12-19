@@ -97,7 +97,7 @@ export default async function LogPage() {
   const timingWarnings = Array.from(timingWarningsMap.values());
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="font-mono text-lg font-medium tracking-tight">Log</h1>

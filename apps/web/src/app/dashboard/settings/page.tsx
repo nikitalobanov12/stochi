@@ -71,7 +71,7 @@ export default async function SettingsPage() {
   });
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div>
         <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
