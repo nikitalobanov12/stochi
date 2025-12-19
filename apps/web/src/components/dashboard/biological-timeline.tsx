@@ -136,20 +136,25 @@ type MemoizedAreaProps = {
   index: number;
   allSupplementIds: string[];
   name: string;
+  isHighlighted: boolean | null; // null = no hover, true = this is hovered, false = another is hovered
 };
 
-const MemoizedArea = memo(function MemoizedArea({ id, index, allSupplementIds, name }: MemoizedAreaProps) {
+const MemoizedArea = memo(function MemoizedArea({ id, index, allSupplementIds, name, isHighlighted }: MemoizedAreaProps) {
   // Use consistent color based on original index in allSupplementIds
   const colorIndex = allSupplementIds.indexOf(id);
+  // Dim other curves when one is highlighted
+  const opacity = isHighlighted === null ? 1 : isHighlighted ? 1 : 0.15;
+  const strokeOpacity = isHighlighted === null ? 1 : isHighlighted ? 1 : 0.3;
   return (
     <Area
       type="monotone"
       dataKey={`concentrations.${id}`}
       name={name}
       stroke={getCompoundColor(colorIndex >= 0 ? colorIndex : index)}
-      strokeWidth={2}
+      strokeWidth={isHighlighted ? 3 : 2}
+      strokeOpacity={strokeOpacity}
       fill={`url(#gradient-${id})`}
-      fillOpacity={1}
+      fillOpacity={opacity}
       isAnimationActive={false}
     />
   );
@@ -169,6 +174,8 @@ export function BiologicalTimeline({
   const [showAll, setShowAll] = useState(false);
   // Track manually hidden compounds (for fine-grained control)
   const [hiddenCompounds, setHiddenCompounds] = useState<Set<string>>(new Set());
+  // Track hovered compound for highlighting (null = no hover)
+  const [hoveredCompoundId, setHoveredCompoundId] = useState<string | null>(null);
 
   // Build supplement name map
   const supplementNames = useMemo(() => {
@@ -356,6 +363,8 @@ export function BiologicalTimeline({
             {/* Concentration areas - memoized for performance */}
             {visibleSupplementIds.map((id) => {
               const colorIndex = allSupplementIds.indexOf(id);
+              // Determine highlight state: null if nothing hovered, true if this is hovered, false if another is hovered
+              const isHighlighted = hoveredCompoundId === null ? null : hoveredCompoundId === id;
               return (
                 <MemoizedArea
                   key={id}
@@ -363,6 +372,7 @@ export function BiologicalTimeline({
                   index={colorIndex}
                   allSupplementIds={allSupplementIds}
                   name={supplementNames.get(id) ?? "Unknown"}
+                  isHighlighted={isHighlighted}
                 />
               );
             })}
@@ -372,7 +382,7 @@ export function BiologicalTimeline({
 
       {/* Legend with Show All toggle */}
       <div className="mt-3 space-y-2">
-        {/* Compound pills - clickable to toggle */}
+        {/* Compound pills - clickable to toggle, hoverable to highlight */}
         <div className="flex flex-wrap items-center gap-2">
           {(showAll ? allSupplementIds : allSupplementIds.slice(0, defaultVisibleCount)).map((id) => {
             const colorIndex = allSupplementIds.indexOf(id);
@@ -381,16 +391,21 @@ export function BiologicalTimeline({
             const phase = compound?.phase ?? "cleared";
             const isHidden = hiddenCompounds.has(id);
             const concentration = compound?.concentrationPercent ?? 0;
+            const isHovered = hoveredCompoundId === id;
 
             return (
               <button
                 key={id}
                 type="button"
                 onClick={() => toggleCompound(id)}
+                onMouseEnter={() => !isHidden && setHoveredCompoundId(id)}
+                onMouseLeave={() => setHoveredCompoundId(null)}
                 className={`flex items-center gap-1.5 rounded-full border px-2 py-0.5 font-mono text-[10px] transition-all ${
                   isHidden
                     ? "border-border/30 bg-transparent text-muted-foreground/50"
-                    : "border-border/50 bg-card/50 text-foreground hover:bg-card"
+                    : isHovered
+                      ? "border-foreground/50 bg-card text-foreground ring-1 ring-foreground/20"
+                      : "border-border/50 bg-card/50 text-foreground hover:bg-card"
                 }`}
               >
                 {isHidden ? (
