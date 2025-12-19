@@ -31,6 +31,15 @@ export const dosageUnitEnum = pgEnum("dosage_unit", [
   "ml",
 ]);
 
+export const routeEnum = pgEnum("route_of_administration", [
+  "oral",
+  "subq_injection",
+  "im_injection",
+  "intranasal",
+  "transdermal",
+  "topical",
+]);
+
 // ============================================================================
 // Ratio Rules (for stoichiometric imbalance detection)
 // ============================================================================
@@ -127,6 +136,7 @@ export const supplementCategoryEnum = pgEnum("supplement_category", [
   "nootropic",
   "antioxidant",
   "omega",
+  "peptide",
   "other",
 ]);
 
@@ -146,6 +156,10 @@ export const supplement = pgTable(
     commonGoals: text("common_goals").array(), // ["sleep", "focus", "longevity"]
     // Safety tracking - maps to SAFETY_LIMITS keys (e.g., "zinc", "magnesium", "iron")
     safetyCategory: text("safety_category"),
+    // Research chemical / peptide support
+    isResearchChemical: boolean("is_research_chemical").default(false).notNull(),
+    route: routeEnum("route").default("oral").notNull(),
+    storageInstructions: text("storage_instructions"),
     createdAt: timestamp("created_at")
       .$defaultFn(() => new Date())
       .notNull(),

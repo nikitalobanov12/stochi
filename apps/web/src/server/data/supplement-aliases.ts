@@ -91,6 +91,25 @@ export const supplementAliases: Record<string, string[]> = {
   "Creatine Monohydrate": ["creatine", "creapure"],
   "Collagen": ["collagen peptides", "hydrolyzed collagen", "collagen powder"],
   "Melatonin": ["mel", "sleep hormone"],
+
+  // ============================================
+  // PEPTIDES & RESEARCH COMPOUNDS
+  // ============================================
+  "BPC-157": ["bpc", "bpc157", "body protection compound", "bpc 157"],
+  "TB-500": ["tb500", "tb 500", "thymosin beta-4", "thymosin", "tb4"],
+  "Semaglutide": ["sema", "ozempic", "wegovy", "glp-1", "glp1"],
+  "GHK-Cu": ["ghk", "ghk copper", "copper peptide", "ghkcu"],
+  "Ipamorelin": ["ipam", "ipa", "ipamorelin acetate"],
+  "CJC-1295": ["cjc", "cjc1295", "mod grf", "mod grf 1-29", "cjc 1295"],
+
+  // ============================================
+  // RUSSIAN NOOTROPICS
+  // ============================================
+  "Semax": ["semax nasal", "n-acetyl semax", "acth 4-10"],
+  "Selank": ["selank nasal", "tp-7", "tuftsin analog"],
+  "Noopept": ["noopept powder", "omberacetam", "gvs-111", "n-phenylacetyl-l-prolylglycine"],
+  "Bromantane": ["ladasten", "bromantan", "adamantylbromphenylamine"],
+  "Phenylpiracetam": ["phenotropil", "carphedon", "fonturacetam", "phenyl piracetam"],
 };
 
 /**

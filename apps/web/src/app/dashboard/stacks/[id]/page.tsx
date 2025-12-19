@@ -8,6 +8,8 @@ import {
   AlertTriangle,
   Zap,
   CheckCircle2,
+  FlaskConical,
+  Syringe,
 } from "lucide-react";
 
 import { db } from "~/server/db";
@@ -139,9 +141,17 @@ export default async function StackDetailPage({
                   className="group flex items-center gap-3 px-3 py-2.5"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="font-mono text-sm truncate">
-                      {item.supplement.name}
-                    </p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="font-mono text-sm truncate">
+                        {item.supplement.name}
+                      </p>
+                      {item.supplement.isResearchChemical && (
+                        <FlaskConical className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+                      )}
+                      {item.supplement.route && item.supplement.route !== "oral" && (
+                        <Syringe className="h-3.5 w-3.5 shrink-0 text-violet-400" />
+                      )}
+                    </div>
                     {item.supplement.form && (
                       <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
                         {item.supplement.form}

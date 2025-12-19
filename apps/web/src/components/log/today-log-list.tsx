@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import Link from "next/link";
-import { X } from "lucide-react";
+import { X, FlaskConical, Syringe } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "~/components/ui/button";
@@ -17,6 +17,9 @@ type LogEntry = {
   supplement: {
     id: string;
     name: string;
+    isResearchChemical?: boolean;
+    route?: string | null;
+    category?: string | null;
   };
 };
 
@@ -49,7 +52,15 @@ function LogRow({ entry }: { entry: LogEntry }) {
         <span className="font-mono text-xs text-muted-foreground">
           {formatTime(new Date(entry.loggedAt))}
         </span>
-        <span className="text-sm font-medium">{entry.supplement.name}</span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-sm font-medium">{entry.supplement.name}</span>
+          {entry.supplement.isResearchChemical && (
+            <FlaskConical className="h-3.5 w-3.5 text-amber-500" />
+          )}
+          {entry.supplement.route && entry.supplement.route !== "oral" && (
+            <Syringe className="h-3.5 w-3.5 text-violet-400" />
+          )}
+        </div>
       </div>
       <div className="flex items-center gap-2">
         <span className="font-mono text-sm text-muted-foreground">

@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Syringe, Thermometer, FlaskConical } from "lucide-react";
 
 import {
   Sheet,
@@ -23,6 +23,10 @@ type SupplementData = {
   category: string | null;
   commonGoals: string[] | null;
   defaultUnit: string | null;
+  // Peptide/research chemical fields
+  isResearchChemical?: boolean;
+  route?: string | null;
+  storageInstructions?: string | null;
 };
 
 type SupplementSheetContextValue = {
@@ -48,7 +52,17 @@ const categoryColors: Record<string, string> = {
   nootropic: "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
   antioxidant: "bg-rose-500/10 text-rose-500 border-rose-500/20",
   omega: "bg-sky-500/10 text-sky-500 border-sky-500/20",
+  peptide: "bg-violet-500/10 text-violet-400 border-violet-500/20",
   other: "bg-gray-500/10 text-gray-500 border-gray-500/20",
+};
+
+const routeLabels: Record<string, string> = {
+  oral: "Oral",
+  subq_injection: "Subcutaneous Injection",
+  im_injection: "Intramuscular Injection",
+  intranasal: "Intranasal",
+  transdermal: "Transdermal",
+  topical: "Topical",
 };
 
 const goalLabels: Record<string, string> = {
@@ -92,18 +106,52 @@ export function SupplementSheetProvider({ children }: { children: ReactNode }) {
                       </SheetDescription>
                     )}
                   </div>
-                  {supplement.category && (
-                    <Badge
-                      variant="outline"
-                      className={`shrink-0 ${categoryColors[supplement.category] ?? categoryColors.other}`}
-                    >
-                      {supplement.category}
-                    </Badge>
-                  )}
+                  <div className="flex flex-col items-end gap-1.5">
+                    {supplement.category && (
+                      <Badge
+                        variant="outline"
+                        className={`shrink-0 ${categoryColors[supplement.category] ?? categoryColors.other}`}
+                      >
+                        {supplement.category}
+                      </Badge>
+                    )}
+                    {supplement.isResearchChemical && (
+                      <Badge
+                        variant="outline"
+                        className="shrink-0 bg-amber-500/10 text-amber-500 border-amber-500/20"
+                      >
+                        <FlaskConical className="mr-1 h-3 w-3" />
+                        Research Compound
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </SheetHeader>
 
               <div className="mt-6 space-y-6">
+                {/* Route & Storage Section (for peptides/research chemicals) */}
+                {(supplement.route && supplement.route !== "oral") || supplement.storageInstructions ? (
+                  <div className="rounded-lg bg-muted/50 p-4 space-y-3">
+                    {supplement.route && supplement.route !== "oral" && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Syringe className="h-4 w-4 text-violet-400" />
+                        <span className="font-medium">Route:</span>
+                        <span className="text-muted-foreground">
+                          {routeLabels[supplement.route] ?? supplement.route}
+                        </span>
+                      </div>
+                    )}
+                    {supplement.storageInstructions && (
+                      <div className="flex items-start gap-2 text-sm">
+                        <Thermometer className="h-4 w-4 text-blue-400 mt-0.5" />
+                        <span className="font-medium">Storage:</span>
+                        <span className="text-muted-foreground">
+                          {supplement.storageInstructions}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ) : null}
                 {/* Mechanism Section */}
                 {supplement.mechanism && (
                   <div className="space-y-2">

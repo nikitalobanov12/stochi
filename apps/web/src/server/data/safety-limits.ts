@@ -20,7 +20,8 @@ export type SafetyCategory =
   | "vitamin-b6"
   | "vitamin-c"
   | "vitamin-e"
-  | "vitamin-a";
+  | "vitamin-a"
+  | "semaglutide";
 
 export type SafetyLimit = {
   /** Upper limit value (elemental amount) */
@@ -35,6 +36,8 @@ export type SafetyLimit = {
   requiredUnit?: "IU";
   /** Additional notes about the limit */
   notes?: string;
+  /** Time period for the limit: "daily" (default) or "weekly" */
+  period?: "daily" | "weekly";
 };
 
 /**
@@ -133,6 +136,18 @@ export const SAFETY_LIMITS: Record<SafetyCategory, SafetyLimit> = {
     isHardLimit: false,
     requiredUnit: "IU",
     notes: "High doses may increase bleeding risk; 1000 IU = 670mg alpha-tocopherol",
+  },
+
+  // ============================================
+  // WEEKLY LIMITS - Special period handling
+  // ============================================
+  semaglutide: {
+    limit: 2.4,
+    unit: "mg",
+    source: "FDA (Wegovy label)",
+    isHardLimit: false,
+    period: "weekly",
+    notes: "Maximum weekly maintenance dose for weight management; start at 0.25mg/week and titrate up",
   },
 };
 

@@ -10,6 +10,8 @@ import {
 // Types
 // ============================================================================
 
+export type SafetyStatus = "safe" | "warning" | "blocked" | "experimental";
+
 export type SafetyCheckResult = {
   /** Whether the dosage is safe */
   isSafe: boolean;
@@ -29,6 +31,8 @@ export type SafetyCheckResult = {
   message: string | null;
   /** Source of the limit (NIH, etc.) */
   source: string | null;
+  /** Safety status: safe, warning, blocked, or experimental */
+  status: SafetyStatus;
 };
 
 export type SupplementWithSafety = {
@@ -37,6 +41,7 @@ export type SupplementWithSafety = {
   elementalWeight: number | null;
   safetyCategory: string | null;
   defaultUnit: string | null;
+  isResearchChemical?: boolean;
 };
 
 // ============================================================================
@@ -121,29 +126,40 @@ export function calculateElementalDosage(
 // ============================================================================
 
 /**
- * Get today's date range in user's timezone (midnight to midnight).
+ * Get date range for a given period (daily or weekly).
+ * @param period - "daily" for today only, "weekly" for last 7 days
  */
-function getTodayRange(): { start: Date; end: Date } {
+function getDateRange(period: "daily" | "weekly" = "daily"): { start: Date; end: Date } {
   const now = new Date();
-  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
   const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+  
+  if (period === "weekly") {
+    // Start from 6 days ago at midnight (7-day window including today)
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6, 0, 0, 0, 0);
+    return { start, end };
+  }
+  
+  // Daily: midnight to midnight today
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
   return { start, end };
 }
 
 /**
- * Get the daily elemental total for a safety category.
- * Sums all logs from today that belong to supplements with the given safetyCategory.
+ * Get the elemental total for a safety category over a given period.
+ * Sums all logs from the period that belong to supplements with the given safetyCategory.
  *
  * @param userId - The user's ID
  * @param safetyCategory - The safety category to sum (e.g., "zinc", "magnesium")
  * @param targetUnit - The unit to convert all dosages to
+ * @param period - "daily" (default) or "weekly" for 7-day aggregation
  */
-export async function getDailyElementalTotal(
+export async function getElementalTotal(
   userId: string,
   safetyCategory: SafetyCategory,
-  targetUnit: "mg" | "mcg" | "IU"
+  targetUnit: "mg" | "mcg" | "IU",
+  period: "daily" | "weekly" = "daily"
 ): Promise<number> {
-  const { start, end } = getTodayRange();
+  const { start, end } = getDateRange(period);
 
   // Get all supplements with this safety category
   const supplementsInCategory = await db.query.supplement.findMany({
@@ -202,8 +218,8 @@ export async function getDailyElementalTotal(
 // ============================================================================
 
 /**
- * Check if a dosage is safe based on daily limits.
- * This considers all logs from today plus the proposed new dose.
+ * Check if a dosage is safe based on daily/weekly limits.
+ * This considers all logs from the period plus the proposed new dose.
  *
  * @param userId - The user's ID
  * @param supplementData - The supplement being logged
@@ -216,6 +232,22 @@ export async function checkSafetyLimit(
   dosage: number,
   unit: string
 ): Promise<SafetyCheckResult> {
+  // Research chemicals bypass safety limits - return experimental status
+  if (supplementData.isResearchChemical) {
+    return {
+      isSafe: true,
+      isHardLimit: false,
+      category: null,
+      currentTotal: dosage,
+      limit: 0,
+      unit: unit,
+      percentOfLimit: 0,
+      message: "Research compound - no established safety limits",
+      source: null,
+      status: "experimental",
+    };
+  }
+
   // No safety category = no limit to check
   if (!supplementData.safetyCategory) {
     return {
@@ -228,6 +260,7 @@ export async function checkSafetyLimit(
       percentOfLimit: 0,
       message: null,
       source: null,
+      status: "safe",
     };
   }
 
@@ -245,6 +278,7 @@ export async function checkSafetyLimit(
       percentOfLimit: 0,
       message: null,
       source: null,
+      status: "safe",
     };
   }
 
@@ -260,6 +294,7 @@ export async function checkSafetyLimit(
       percentOfLimit: 0,
       message: `${supplementData.name} must be logged in ${safetyLimit.requiredUnit}. Please enter the dosage in ${safetyLimit.requiredUnit}.`,
       source: safetyLimit.source,
+      status: "blocked",
     };
   }
 
@@ -290,19 +325,35 @@ export async function checkSafetyLimit(
       percentOfLimit: 0,
       message: null,
       source: safetyLimit.source,
+      status: "safe",
     };
   }
 
-  // Get today's existing total for this category
-  const existingTotal = await getDailyElementalTotal(
+  // Determine the period for aggregation (daily or weekly)
+  const period = safetyLimit.period ?? "daily";
+  const periodLabel = period === "weekly" ? "weekly" : "daily";
+
+  // Get existing total for this category over the period
+  const existingTotal = await getElementalTotal(
     userId,
     category,
-    safetyLimit.unit as "mg" | "mcg" | "IU"
+    safetyLimit.unit as "mg" | "mcg" | "IU",
+    period
   );
 
   const totalWithNewDose = existingTotal + newDoseInLimitUnit;
   const percentOfLimit = (totalWithNewDose / safetyLimit.limit) * 100;
   const isSafe = totalWithNewDose <= safetyLimit.limit;
+
+  // Determine status
+  let status: SafetyStatus;
+  if (isSafe) {
+    status = "safe";
+  } else if (safetyLimit.isHardLimit) {
+    status = "blocked";
+  } else {
+    status = "warning";
+  }
 
   // Build warning message
   let message: string | null = null;
@@ -313,9 +364,9 @@ export async function checkSafetyLimit(
       .join(" ");
 
     if (safetyLimit.isHardLimit) {
-      message = `This dose would put you at ${Math.round(percentOfLimit)}% of the safe daily limit for ${categoryDisplay} (${safetyLimit.limit}${safetyLimit.unit}). ${safetyLimit.notes ?? ""}`;
+      message = `This dose would put you at ${Math.round(percentOfLimit)}% of the safe ${periodLabel} limit for ${categoryDisplay} (${safetyLimit.limit}${safetyLimit.unit}). ${safetyLimit.notes ?? ""}`;
     } else {
-      message = `This dose would put you at ${Math.round(percentOfLimit)}% of the recommended daily limit for ${categoryDisplay} (${safetyLimit.limit}${safetyLimit.unit}). ${safetyLimit.notes ?? ""}`;
+      message = `This dose would put you at ${Math.round(percentOfLimit)}% of the recommended ${periodLabel} limit for ${categoryDisplay} (${safetyLimit.limit}${safetyLimit.unit}). ${safetyLimit.notes ?? ""}`;
     }
   }
 
@@ -329,6 +380,7 @@ export async function checkSafetyLimit(
     percentOfLimit: Math.round(percentOfLimit),
     message,
     source: safetyLimit.source,
+    status,
   };
 }
 
@@ -348,6 +400,8 @@ export async function checkStackSafety(
   const categoryTotals = new Map<SafetyCategory, number>();
 
   for (const item of items) {
+    // Skip research chemicals - they have no safety limits
+    if (item.supplement.isResearchChemical) continue;
     if (!item.supplement.safetyCategory) continue;
 
     const category = item.supplement.safetyCategory as SafetyCategory;
@@ -366,6 +420,7 @@ export async function checkStackSafety(
         percentOfLimit: 0,
         message: `${item.supplement.name} must be logged in ${safetyLimit.requiredUnit}.`,
         source: safetyLimit.source,
+        status: "blocked",
       };
     }
 
@@ -397,11 +452,16 @@ export async function checkStackSafety(
     const safetyLimit = SAFETY_LIMITS[category];
     if (!safetyLimit) continue;
 
-    // Get existing daily total
-    const existingTotal = await getDailyElementalTotal(
+    // Determine the period for aggregation (daily or weekly)
+    const period = safetyLimit.period ?? "daily";
+    const periodLabel = period === "weekly" ? "weekly" : "daily";
+
+    // Get existing total for this category over the period
+    const existingTotal = await getElementalTotal(
       userId,
       category,
-      safetyLimit.unit as "mg" | "mcg" | "IU"
+      safetyLimit.unit as "mg" | "mcg" | "IU",
+      period
     );
 
     const totalWithStack = existingTotal + stackTotal;
@@ -421,8 +481,9 @@ export async function checkStackSafety(
         limit: safetyLimit.limit,
         unit: safetyLimit.unit,
         percentOfLimit: Math.round(percentOfLimit),
-        message: `This stack would put you at ${Math.round(percentOfLimit)}% of the safe daily limit for ${categoryDisplay} (${safetyLimit.limit}${safetyLimit.unit}).`,
+        message: `This stack would put you at ${Math.round(percentOfLimit)}% of the safe ${periodLabel} limit for ${categoryDisplay} (${safetyLimit.limit}${safetyLimit.unit}).`,
         source: safetyLimit.source,
+        status: safetyLimit.isHardLimit ? "blocked" : "warning",
       };
 
       // Prioritize hard limits over soft limits
