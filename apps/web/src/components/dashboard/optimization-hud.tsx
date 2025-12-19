@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Clock, Zap, AlertTriangle, ChevronRight, Bell, Check, BellRing } from "lucide-react";
+import { Clock, Zap, AlertTriangle, ChevronRight, Bell, Check, BellRing, X } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import {
@@ -371,27 +371,44 @@ function ExclusionZoneCard({
 }
 
 // ============================================================================
-// Synergy Card - with improved contrast
+// Synergy Card - with improved contrast and dismiss button
 // ============================================================================
 
-function SynergyCard({ optimization }: { optimization: OptimizationOpportunity }) {
+function SynergyCard({
+  optimization,
+  onDismiss,
+}: {
+  optimization: OptimizationOpportunity;
+  onDismiss?: () => void;
+}) {
   const isActive = optimization.title.startsWith("Active synergy");
 
   return (
     <div
-      className={`rounded-lg border p-3 ${
+      className={`group relative rounded-lg border p-3 ${
         isActive 
           ? "border-[#39FF14]/30 bg-[#39FF14]/5" 
           : "border-[#00D4FF]/20 bg-[#00D4FF]/5"
       }`}
     >
+      {/* Dismiss button - visible on hover for suggestions */}
+      {onDismiss && (
+        <button
+          type="button"
+          onClick={onDismiss}
+          className="absolute right-1 top-1 rounded p-1 text-muted-foreground/50 opacity-0 transition-opacity hover:bg-muted/30 hover:text-muted-foreground group-hover:opacity-100"
+          title="Dismiss suggestion"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      )}
       <div className="flex items-start gap-2">
         <Zap
           className={`mt-0.5 h-4 w-4 shrink-0 ${
             isActive ? "text-[#39FF14]" : "text-[#00D4FF]"
           }`}
         />
-        <div className="min-w-0">
+        <div className="min-w-0 pr-4">
           <div className="text-foreground font-mono text-xs">
             {isActive 
               ? optimization.title.replace("Active synergy: ", "")
@@ -418,6 +435,8 @@ export function OptimizationHUD({
   const { permission, requestPermission } = useNotificationPermission();
   const [bioSyncModalOpen, setBioSyncModalOpen] = useState(false);
   const [pendingZone, setPendingZone] = useState<ExclusionZone | null>(null);
+  // Track dismissed suggestion indices (persists only for this session)
+  const [dismissedSuggestions, setDismissedSuggestions] = useState<Set<number>>(new Set());
 
   // Handle permission request from a zone card
   const handleRequestPermission = useCallback((zone: ExclusionZone) => {
@@ -553,9 +572,18 @@ export function OptimizationHUD({
               </span>
             </div>
             <div className="space-y-2">
-              {suggestions.slice(0, 3).map((opt, i) => (
-                <SynergyCard key={i} optimization={opt} />
-              ))}
+              {suggestions.slice(0, 3).map((opt, i) => {
+                if (dismissedSuggestions.has(i)) return null;
+                return (
+                  <SynergyCard
+                    key={i}
+                    optimization={opt}
+                    onDismiss={() => {
+                      setDismissedSuggestions((prev) => new Set(prev).add(i));
+                    }}
+                  />
+                );
+              })}
             </div>
           </div>
         )}
