@@ -15,12 +15,21 @@ import { Button } from "~/components/ui/button";
 import { WelcomeFlow } from "~/components/onboarding/welcome-flow";
 import { TodayLogList } from "~/components/log/today-log-list";
 import { getStackCompletionStatus } from "~/server/services/analytics";
+import {
+  getBiologicalState,
+  getTimelineData,
+} from "~/server/services/biological-state";
 
 // New V2 Components
 import { SystemStatus } from "~/components/dashboard/system-status";
 import { InteractionHeadsUp } from "~/components/dashboard/interaction-heads-up";
 import { MissionControl } from "~/components/dashboard/protocol-card";
 import { DashboardCommandBar } from "./dashboard-command-bar";
+
+// Biological State Engine Components
+import { BiologicalTimeline, ActiveCompoundsList } from "~/components/dashboard/biological-timeline";
+import { BioScore } from "~/components/dashboard/bio-score";
+import { OptimizationHUD } from "~/components/dashboard/optimization-hud";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -29,7 +38,7 @@ export default async function DashboardPage() {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
-  const [userStacks, todayLogs, allSupplements, stackCompletion, streak] =
+  const [userStacks, todayLogs, allSupplements, stackCompletion, streak, biologicalState, timelineData] =
     await Promise.all([
       db.query.stack.findMany({
         where: eq(stack.userId, session.user.id),
@@ -64,6 +73,8 @@ export default async function DashboardPage() {
       }),
       getStackCompletionStatus(session.user.id),
       calculateStreak(session.user.id),
+      getBiologicalState(session.user.id),
+      getTimelineData(session.user.id),
     ]);
 
   // Get interactions and ratio warnings for today's supplements
@@ -130,8 +141,68 @@ export default async function DashboardPage() {
           lastLogAt={lastLogAt}
         />
 
-        {/* Zone 2: Interaction HUD - PRIMARY FEATURE */}
-        {todayLogs.length > 0 && (
+        {/* Zone 2: Command Bar - Primary Input */}
+        <DashboardCommandBar supplements={allSupplements} />
+
+        {/* Zone 3: Biological State Engine - 2-Column Layout */}
+        {todayLogs.length > 0 && timelineData.length > 0 && (
+          <div className="grid gap-6 lg:grid-cols-3">
+            {/* Left: Timeline (66%) */}
+            <div className="space-y-4 lg:col-span-2">
+              {/* Bio-Score + Timeline Header */}
+              <div className="flex items-center justify-between">
+                <h2 className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
+                  Biological Timeline
+                </h2>
+                <div className="w-32">
+                  <BioScore
+                    score={biologicalState.bioScore}
+                    exclusionZones={biologicalState.exclusionZones}
+                    optimizations={biologicalState.optimizations}
+                  />
+                </div>
+              </div>
+
+              {/* Timeline Chart */}
+              <div className="border-border/40 bg-card/30 rounded-lg border p-4">
+                <BiologicalTimeline
+                  timelineData={timelineData}
+                  activeCompounds={biologicalState.activeCompounds}
+                  currentTime={new Date().toISOString()}
+                  focusModeEnabled={true}
+                />
+              </div>
+
+              {/* Active Compounds List */}
+              {biologicalState.activeCompounds.length > 0 && (
+                <div className="border-border/40 bg-card/30 rounded-lg border p-4">
+                  <div className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
+                    Active Compounds
+                  </div>
+                  <ActiveCompoundsList
+                    compounds={biologicalState.activeCompounds.filter(
+                      (c) => c.phase !== "cleared",
+                    )}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Right: Optimization HUD (33%) */}
+            <div className="lg:sticky lg:top-4 lg:self-start">
+              <div className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
+                Optimization HUD
+              </div>
+              <OptimizationHUD
+                exclusionZones={biologicalState.exclusionZones}
+                optimizations={biologicalState.optimizations}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Zone 4: Interaction HUD - Legacy (show if no timeline data) */}
+        {todayLogs.length > 0 && timelineData.length === 0 && (
           <InteractionHeadsUp
             interactions={interactions}
             ratioWarnings={ratioWarnings}
@@ -139,10 +210,7 @@ export default async function DashboardPage() {
           />
         )}
 
-        {/* Zone 3: Command Bar - Primary Input */}
-        <DashboardCommandBar supplements={allSupplements} />
-
-        {/* Zone 4: Mission Control - Stack Status */}
+        {/* Zone 5: Mission Control - Stack Status */}
         {stackCompletion.length > 0 && (
           <MissionControl
             stacks={stackCompletion}
