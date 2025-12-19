@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Clock, Zap, AlertTriangle, ChevronRight, Bell, Check } from "lucide-react";
 import { Button } from "~/components/ui/button";
+import { Skeleton } from "~/components/ui/skeleton";
 import type { ExclusionZone, OptimizationOpportunity } from "~/server/services/biological-state";
 
 // ============================================================================
@@ -301,6 +302,59 @@ export function OptimizationHUD({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ============================================================================
+// Skeleton Component
+// ============================================================================
+
+export function OptimizationHUDSkeleton() {
+  return (
+    <div className="space-y-4">
+      {/* Timing Windows Skeleton */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-3 w-3 rounded" />
+          <Skeleton className="h-3 w-24" />
+        </div>
+        <div className="space-y-2">
+          {[1, 2].map((i) => (
+            <div key={i} className="border-border/40 bg-card/30 rounded-lg border p-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-4 rounded" />
+                    <Skeleton className="h-3 w-28" />
+                    <Skeleton className="h-3 w-16" />
+                  </div>
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-3/4" />
+                </div>
+                <Skeleton className="h-7 w-7 rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Active Synergies Skeleton */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-3 w-3 rounded" />
+          <Skeleton className="h-3 w-28" />
+        </div>
+        <div className="border-border/40 bg-card/30 rounded-lg border p-3">
+          <div className="flex items-start gap-2">
+            <Skeleton className="mt-0.5 h-4 w-4 rounded" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-3 w-36" />
+              <Skeleton className="h-3 w-full" />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

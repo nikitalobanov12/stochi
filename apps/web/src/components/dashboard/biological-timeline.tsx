@@ -11,6 +11,7 @@ import {
   Tooltip,
 } from "recharts";
 import { Eye, EyeOff, Focus } from "lucide-react";
+import { Skeleton } from "~/components/ui/skeleton";
 import type { TimelineDataPoint, ActiveCompound } from "~/server/services/biological-state";
 
 // ============================================================================
@@ -476,6 +477,67 @@ function CompoundRow({
           {Math.round(compound.concentrationPercent)}%
         </span>
       </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// Skeleton Components
+// ============================================================================
+
+export function BiologicalTimelineSkeleton() {
+  return (
+    <div className="h-[200px] w-full">
+      {/* Chart area skeleton */}
+      <div className="bg-muted/20 relative h-full w-full rounded-md">
+        {/* Y-axis skeleton */}
+        <div className="absolute left-0 top-0 flex h-full w-10 flex-col justify-between py-2">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-3 w-8" />
+          ))}
+        </div>
+        {/* Chart placeholder lines */}
+        <div className="absolute inset-0 ml-10 flex flex-col justify-center gap-4 p-4">
+          <Skeleton className="h-px w-full opacity-30" />
+          <Skeleton className="h-px w-full opacity-30" />
+          <Skeleton className="h-px w-full opacity-30" />
+        </div>
+        {/* X-axis skeleton */}
+        <div className="absolute bottom-0 left-10 right-0 flex justify-between px-4 pb-2">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-3 w-10" />
+          ))}
+        </div>
+      </div>
+      {/* Legend skeleton */}
+      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="flex items-center gap-1.5">
+            <Skeleton className="h-2 w-2 rounded-full" />
+            <Skeleton className="h-3 w-20" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function ActiveCompoundsListSkeleton() {
+  return (
+    <div className="space-y-2">
+      {[0, 1, 2].map((i) => (
+        <div key={i} className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-2 w-2 rounded-full" />
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-3 w-10" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-1.5 w-16 rounded-full" />
+            <Skeleton className="h-3 w-8" />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
