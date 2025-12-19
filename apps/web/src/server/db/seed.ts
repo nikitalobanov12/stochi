@@ -1372,10 +1372,10 @@ async function seed() {
     {
       sourceSupplementId: supplementMap.get("Vitamin D3")!,
       targetSupplementId: supplementMap.get("Vitamin K2 MK-7")!,
-      minRatio: 50,
+      minRatio: 40,
       maxRatio: 200,
       optimalRatio: 100,
-      warningMessage: "D3:K2 ratio outside optimal range (50-200:1). K2 helps direct calcium to bones, preventing arterial calcification.",
+      warningMessage: "D3:K2 ratio outside optimal range (40-200:1). K2 helps direct calcium to bones, preventing arterial calcification.",
       severity: "low" as const,
       researchUrl: "https://examine.com/supplements/vitamin-k/#interactions-with-other-nutrients_vitamin-d",
     },

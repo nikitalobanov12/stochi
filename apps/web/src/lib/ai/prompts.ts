@@ -69,13 +69,23 @@ Explain in 1-2 sentences why this ratio matters and what benefit the user will n
 
 /**
  * Fallback explanation when AI is unavailable.
- * Uses the mechanism text from the database.
+ * Builds a meaningful explanation from database metadata.
  */
 export function buildFallbackExplanation(context: DosagePromptContext): string {
-  const mechanism = context.sourceMechanism ?? context.targetMechanism;
-  if (!mechanism) {
-    return `Maintaining the ${context.minRatio}-${context.maxRatio}:1 ratio between ${context.sourceName} and ${context.targetName} helps ensure optimal absorption and prevents imbalances.`;
+  // Build a useful explanation from available mechanism data
+  const parts: string[] = [];
+  
+  if (context.sourceMechanism) {
+    parts.push(`${context.sourceName}: ${context.sourceMechanism}`);
   }
-
-  return mechanism;
+  if (context.targetMechanism && context.targetMechanism !== context.sourceMechanism) {
+    parts.push(`${context.targetName}: ${context.targetMechanism}`);
+  }
+  
+  if (parts.length > 0) {
+    return parts.join(" • ");
+  }
+  
+  // Generic fallback if no mechanism data
+  return `Maintaining the ${context.minRatio}-${context.maxRatio}:1 ratio between ${context.sourceName} and ${context.targetName} helps ensure optimal absorption and prevents imbalances.`;
 }

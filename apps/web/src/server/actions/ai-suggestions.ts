@@ -278,9 +278,11 @@ export async function generateDosageExplanation(
   const aiExplanation = await callHuggingFaceAPI(messages);
 
   // Build response
+  // Only include researchSnippet if we have a real AI explanation
+  // (avoids showing the same mechanism text twice when falling back)
   const response: DosageExplanationResponse = {
     explanation: aiExplanation ?? buildFallbackExplanation(promptContext),
-    researchSnippet,
+    researchSnippet: aiExplanation ? researchSnippet : null,
     cached: false,
   };
 
