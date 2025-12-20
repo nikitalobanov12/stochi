@@ -1,10 +1,17 @@
 import { eq, and, gte, lte } from "drizzle-orm";
 import { db } from "~/server/db";
-import { log, supplement } from "~/server/db/schema";
+import { log, supplement, type mealContextEnum } from "~/server/db/schema";
 import {
   SAFETY_LIMITS,
   type SafetyCategory,
 } from "~/server/data/safety-limits";
+import {
+  getBioavailabilityRule,
+  isMealContextOptimal,
+  type BioavailabilityModifier,
+} from "~/server/data/bioavailability-rules";
+
+type MealContext = (typeof mealContextEnum.enumValues)[number];
 
 // ============================================================================
 // Types
@@ -540,4 +547,121 @@ export async function checkStackSafety(
   }
 
   return worstViolation;
+}
+
+// ============================================================================
+// Meal Context Checking
+// ============================================================================
+
+export type MealContextCheckResult = {
+  /** Whether the meal context is optimal for this supplement */
+  isOptimal: boolean;
+  /** Warning message if not optimal */
+  warning?: string;
+  /** Bioavailability multiplier (1.0 = baseline, 1.5 = 50% better absorption) */
+  multiplier: number;
+  /** The bioavailability rule that matched (if any) */
+  rule?: BioavailabilityModifier;
+  /** Mechanism explanation */
+  mechanism?: string;
+  /** Research URL for citation */
+  researchUrl?: string;
+};
+
+/**
+ * Check if the meal context is optimal for a given supplement.
+ * Returns warnings for fat-soluble vitamins taken without fat,
+ * amino acids taken with protein, etc.
+ *
+ * @param supplementName - Name of the supplement
+ * @param mealContext - The meal context (fasted, with_meal, with_fat, post_meal)
+ * @param safetyCategory - Optional safety category for matching
+ */
+export function checkMealContext(
+  supplementName: string,
+  mealContext: MealContext | null | undefined,
+  safetyCategory?: string | null,
+): MealContextCheckResult {
+  const rule = getBioavailabilityRule(supplementName, safetyCategory);
+  
+  if (!rule) {
+    return { isOptimal: true, multiplier: 1.0 };
+  }
+  
+  const result = isMealContextOptimal(supplementName, mealContext, safetyCategory);
+  
+  return {
+    ...result,
+    rule,
+    mechanism: rule.mechanism,
+    researchUrl: rule.researchUrl,
+  };
+}
+
+/**
+ * Check meal context for multiple supplements (e.g., a stack).
+ * Returns all warnings for supplements with suboptimal meal context.
+ */
+export function checkStackMealContext(
+  items: Array<{
+    supplementName: string;
+    safetyCategory?: string | null;
+  }>,
+  mealContext: MealContext | null | undefined,
+): MealContextCheckResult[] {
+  const warnings: MealContextCheckResult[] = [];
+  
+  for (const item of items) {
+    const result = checkMealContext(
+      item.supplementName,
+      mealContext,
+      item.safetyCategory,
+    );
+    
+    if (!result.isOptimal && result.warning) {
+      warnings.push(result);
+    }
+  }
+  
+  return warnings;
+}
+
+/**
+ * Get a summary of bioavailability impact for a log entry.
+ * Used for the mechanistic feed display.
+ */
+export function getBioavailabilitySummary(
+  supplementName: string,
+  mealContext: MealContext | null | undefined,
+  safetyCategory?: string | null,
+): {
+  hasImpact: boolean;
+  description: string;
+  percentChange: number;
+} {
+  const result = checkMealContext(supplementName, mealContext, safetyCategory);
+  
+  if (!result.rule) {
+    return {
+      hasImpact: false,
+      description: "No specific meal timing recommendations.",
+      percentChange: 0,
+    };
+  }
+  
+  const percentChange = Math.round((result.multiplier - 1) * 100);
+  
+  if (result.isOptimal) {
+    return {
+      hasImpact: true,
+      description: `Optimal absorption: +${percentChange}% bioavailability with current meal context.`,
+      percentChange,
+    };
+  }
+  
+  return {
+    hasImpact: true,
+    description: result.warning ?? "Suboptimal meal context for absorption.",
+    percentChange: 0, // Not getting the bonus
+  };
 }
