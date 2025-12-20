@@ -41,9 +41,9 @@ export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
   return (
     <div
       className={cn(
-        "flex items-stretch rounded-lg border transition-colors",
+        "flex items-stretch rounded-2xl border transition-colors",
         isComplete
-          ? "border-emerald-500/30 bg-emerald-500/5"
+          ? "border-status-optimized bg-status-optimized"
           : "border-border/40 bg-card/30",
       )}
     >
@@ -75,10 +75,9 @@ export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
                 cy="10"
                 r="8"
                 fill="none"
-                stroke="currentColor"
+                stroke="var(--chart-3)"
                 strokeWidth="2"
                 strokeDasharray={`${(loggedItems / totalItems) * 50.27} 50.27`}
-                className="text-amber-500"
               />
             </svg>
           )}
@@ -92,10 +91,10 @@ export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
 
         {/* Stack Name & Progress */}
         <div className="min-w-0 flex-1">
-          <p className="truncate font-mono text-sm font-medium">{stackName}</p>
+          <p className="truncate font-sans text-sm font-medium">{stackName}</p>
           <p className="text-muted-foreground font-mono text-[10px]">
             {isComplete ? (
-              <span className="text-emerald-500">COMPLETE</span>
+              <span className="status-optimized">COMPLETE</span>
             ) : (
               <>
                 <span className="tabular-nums">{loggedItems}</span>
@@ -114,8 +113,8 @@ export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
       {/* Zone B: The Trigger (Execute) */}
       <div className="flex items-center px-2">
         {isComplete ? (
-          <div className="flex h-11 min-w-[72px] items-center justify-center rounded-md bg-emerald-500/10 px-3">
-            <span className="font-mono text-[10px] font-medium text-emerald-500">
+          <div className="flex h-11 min-w-[72px] items-center justify-center rounded-xl bg-status-optimized px-3">
+            <span className="font-mono text-[10px] font-medium status-optimized">
               DONE
             </span>
           </div>
@@ -126,7 +125,7 @@ export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
             onClick={handleExecute}
             disabled={isPending || totalItems === 0}
             className={cn(
-              "border-border/60 h-11 min-w-[72px] gap-1.5 font-mono text-xs",
+              "border-border/60 h-11 min-w-[72px] gap-1.5 rounded-xl font-mono text-xs",
               "hover:border-primary hover:bg-primary hover:text-primary-foreground",
               isPending && "pointer-events-none",
             )}

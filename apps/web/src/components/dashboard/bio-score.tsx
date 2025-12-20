@@ -32,11 +32,20 @@ type ScoreBreakdownItem = {
 // Helper Functions
 // ============================================================================
 
-function getScoreColor(score: number): string {
-  if (score >= 80) return "#39FF14"; // Green - optimal
-  if (score >= 60) return "#00D4FF"; // Cyan - good
-  if (score >= 40) return "#F0A500"; // Amber - warning
-  return "#FF6B6B"; // Red - critical
+// Semantic color classes for bio-score levels
+function getScoreColorClass(score: number): string {
+  if (score >= 80) return "status-optimized"; // Green - optimal
+  if (score >= 60) return "status-info"; // Cyan - good
+  if (score >= 40) return "status-conflict"; // Amber - warning
+  return "status-critical"; // Red - critical
+}
+
+// CSS variable colors for SVG elements (Recharts-compatible)
+function getScoreColorVar(score: number): string {
+  if (score >= 80) return "var(--chart-1)"; // Emerald - optimal
+  if (score >= 60) return "var(--chart-2)"; // Cyan - good
+  if (score >= 40) return "var(--chart-3)"; // Amber - warning
+  return "var(--chart-4)"; // Red - critical
 }
 
 function getScoreLabel(score: number): string {
@@ -92,7 +101,8 @@ function calculateBreakdown(
 // ============================================================================
 
 function ScoreGauge({ score }: { score: number }) {
-  const color = getScoreColor(score);
+  const colorVar = getScoreColorVar(score);
+  const colorClass = getScoreColorClass(score);
   const circumference = 2 * Math.PI * 36; // r=36
   const strokeDashoffset = circumference - (score / 100) * circumference;
 
@@ -114,7 +124,7 @@ function ScoreGauge({ score }: { score: number }) {
           cx="40"
           cy="40"
           r="36"
-          stroke={color}
+          stroke={colorVar}
           strokeWidth="6"
           fill="none"
           strokeLinecap="round"
@@ -125,10 +135,7 @@ function ScoreGauge({ score }: { score: number }) {
       </svg>
       {/* Score value */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span
-          className="font-mono text-2xl font-bold tabular-nums"
-          style={{ color }}
-        >
+        <span className={`font-mono text-2xl font-bold tabular-nums ${colorClass}`}>
           {score}
         </span>
         <span className="text-muted-foreground font-mono text-[8px] tracking-wider">
@@ -147,13 +154,14 @@ function BreakdownModal({
 }: BioScoreProps & { children: React.ReactNode }) {
   const breakdown = calculateBreakdown(exclusionZones, optimizations);
   const hasItems = breakdown.length > 0;
+  const scoreColorClass = getScoreColorClass(score);
 
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="border-border/50 bg-card max-w-sm">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 font-mono text-sm">
+          <DialogTitle className="flex items-center gap-2 font-sans text-sm font-medium">
             <Activity className="h-4 w-4" />
             Bio-Score Breakdown
           </DialogTitle>
@@ -161,21 +169,15 @@ function BreakdownModal({
 
         <div className="space-y-4">
           {/* Score summary */}
-          <div className="flex items-center justify-between rounded-lg bg-black/20 p-4">
+          <div className="flex items-center justify-between rounded-2xl bg-black/20 p-4">
             <div>
-              <div className="text-muted-foreground font-mono text-xs">
+              <div className="text-muted-foreground font-sans text-xs">
                 Current Score
               </div>
-              <div
-                className="font-mono text-3xl font-bold tabular-nums"
-                style={{ color: getScoreColor(score) }}
-              >
+              <div className={`font-mono text-3xl font-bold tabular-nums ${scoreColorClass}`}>
                 {score}
               </div>
-              <div
-                className="font-mono text-[10px]"
-                style={{ color: getScoreColor(score) }}
-              >
+              <div className={`font-mono text-[10px] ${scoreColorClass}`}>
                 {getScoreLabel(score)}
               </div>
             </div>
@@ -191,25 +193,23 @@ function BreakdownModal({
               {breakdown.map((item, i) => (
                 <div
                   key={i}
-                  className="flex items-center justify-between rounded-md bg-black/10 px-3 py-2"
+                  className="flex items-center justify-between rounded-lg bg-black/10 px-3 py-2"
                 >
                   <div className="flex min-w-0 flex-1 items-center gap-2">
                     {item.type === "penalty" ? (
                       <AlertTriangle
-                        className="h-3 w-3 shrink-0"
-                        style={{
-                          color:
-                            item.severity === "critical"
-                              ? "#FF6B6B"
-                              : item.severity === "medium"
-                                ? "#F0A500"
-                                : "#A8B1BB",
-                        }}
+                        className={`h-3 w-3 shrink-0 ${
+                          item.severity === "critical"
+                            ? "status-critical"
+                            : item.severity === "medium"
+                              ? "status-conflict"
+                              : "text-muted-foreground"
+                        }`}
                       />
                     ) : (
-                      <Zap className="h-3 w-3 shrink-0 text-[#39FF14]" />
+                      <Zap className="h-3 w-3 shrink-0 status-optimized" />
                     )}
-                    <span className="text-foreground truncate font-mono text-xs">
+                    <span className="text-foreground truncate font-sans text-xs">
                       {item.label}
                     </span>
                     {item.researchUrl && (
@@ -218,7 +218,7 @@ function BreakdownModal({
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="text-muted-foreground hover:text-[#00D4FF] shrink-0 transition-colors"
+                        className="text-muted-foreground hover:status-info shrink-0 transition-colors"
                         title="View PubMed citation"
                       >
                         <ExternalLink className="h-3 w-3" />
@@ -226,10 +226,9 @@ function BreakdownModal({
                     )}
                   </div>
                   <span
-                    className="ml-2 shrink-0 font-mono text-xs tabular-nums"
-                    style={{
-                      color: item.type === "penalty" ? "#FF6B6B" : "#39FF14",
-                    }}
+                    className={`ml-2 shrink-0 font-mono text-xs tabular-nums ${
+                      item.type === "penalty" ? "status-critical" : "status-optimized"
+                    }`}
                   >
                     {item.value > 0 ? "+" : ""}
                     {item.value}
@@ -238,22 +237,22 @@ function BreakdownModal({
               ))}
             </div>
           ) : (
-            <div className="text-muted-foreground py-4 text-center font-mono text-xs">
+            <div className="text-muted-foreground py-4 text-center font-sans text-xs">
               No active modifiers
             </div>
           )}
 
           {/* Formula explanation */}
-          <div className="border-border/30 rounded-md border p-3">
+          <div className="border-border/30 rounded-lg border p-3">
             <div className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
               Scoring Formula
             </div>
-            <div className="text-muted-foreground mt-2 space-y-1 font-mono text-[10px]">
+            <div className="text-muted-foreground mt-2 space-y-1 font-sans text-[10px]">
               <div>Base: 100</div>
-              <div className="text-[#FF6B6B]">Critical conflict: -50</div>
-              <div className="text-[#F0A500]">Medium conflict: -25</div>
+              <div className="status-critical">Critical conflict: -50</div>
+              <div className="status-conflict">Medium conflict: -25</div>
               <div className="text-muted-foreground">Low conflict: -15</div>
-              <div className="text-[#39FF14]">Active synergy: +5 (max +20)</div>
+              <div className="status-optimized">Active synergy: +5 (max +20)</div>
             </div>
           </div>
         </div>
@@ -267,7 +266,8 @@ function BreakdownModal({
 // ============================================================================
 
 export function BioScore({ score, exclusionZones, optimizations }: BioScoreProps) {
-  const color = getScoreColor(score);
+  const colorClass = getScoreColorClass(score);
+  const colorVar = getScoreColorVar(score);
   const label = getScoreLabel(score);
   const hasModifiers = exclusionZones.length > 0 || optimizations.some(
     (o) => o.type === "synergy" && o.title.startsWith("Active synergy"),
@@ -281,15 +281,15 @@ export function BioScore({ score, exclusionZones, optimizations }: BioScoreProps
     >
       <button
         type="button"
-        className="border-border/40 bg-card/30 hover:bg-card/50 group flex w-full items-center justify-between rounded-lg border p-3 transition-colors"
+        className="border-border/40 bg-card/30 hover:bg-card/50 group flex w-full items-center justify-between rounded-2xl border p-3 transition-colors"
       >
         <div className="flex items-center gap-3">
           <div className="relative">
-            <Activity className="h-5 w-5" style={{ color }} />
+            <Activity className={`h-5 w-5 ${colorClass}`} />
             {hasModifiers && (
               <div
                 className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full"
-                style={{ backgroundColor: color }}
+                style={{ backgroundColor: colorVar }}
               />
             )}
           </div>
@@ -297,10 +297,7 @@ export function BioScore({ score, exclusionZones, optimizations }: BioScoreProps
             <div className="text-foreground font-mono text-sm tabular-nums">
               {score}
             </div>
-            <div
-              className="font-mono text-[10px]"
-              style={{ color }}
-            >
+            <div className={`font-mono text-[10px] ${colorClass}`}>
               {label}
             </div>
           </div>

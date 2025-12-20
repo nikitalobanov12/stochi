@@ -89,11 +89,11 @@ function BioSyncModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="border-border/50 bg-card max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 font-mono text-base">
-            <BellRing className="h-5 w-5 text-[#00D4FF]" />
+          <DialogTitle className="flex items-center gap-2 font-sans text-base font-medium">
+            <BellRing className="h-5 w-5 status-info" />
             Enable Bio-Sync
           </DialogTitle>
-          <DialogDescription className="text-muted-foreground font-mono text-sm">
+          <DialogDescription className="text-muted-foreground font-sans text-sm">
             Receive precision alerts when absorption windows open
           </DialogDescription>
         </DialogHeader>
@@ -101,15 +101,15 @@ function BioSyncModal({
         <div className="space-y-5 pt-2">
           {/* Value proposition */}
           <div className="rounded-lg bg-black/20 p-4">
-            <div className="text-foreground font-mono text-sm">
+            <div className="text-foreground font-sans text-sm">
               Your next window for{" "}
-              <span className="text-[#00D4FF]">{targetSupplementName}</span>{" "}
+              <span className="status-info">{targetSupplementName}</span>{" "}
               opens in{" "}
-              <span className="tabular-nums text-[#39FF14]">
+              <span className="font-mono tabular-nums status-optimized">
                 {formatTime(minutesRemaining)}
               </span>
             </div>
-            <div className="text-muted-foreground mt-2 font-mono text-xs">
+            <div className="text-muted-foreground mt-2 font-sans text-xs leading-relaxed">
               Bio-Sync will notify you at the optimal moment to maximize
               bioavailability and avoid transporter competition.
             </div>
@@ -118,20 +118,20 @@ function BioSyncModal({
           {/* Features list */}
           <div className="space-y-2.5">
             <div className="flex items-center gap-2.5">
-              <div className="h-2 w-2 rounded-full bg-[#39FF14]" />
-              <span className="text-muted-foreground font-mono text-xs">
+              <div className="h-2 w-2 rounded-full bg-status-optimized" />
+              <span className="text-muted-foreground font-sans text-xs">
                 Precision timing based on pharmacokinetic half-life
               </span>
             </div>
             <div className="flex items-center gap-2.5">
-              <div className="h-2 w-2 rounded-full bg-[#39FF14]" />
-              <span className="text-muted-foreground font-mono text-xs">
+              <div className="h-2 w-2 rounded-full bg-status-optimized" />
+              <span className="text-muted-foreground font-sans text-xs">
                 Automatic exclusion zone tracking
               </span>
             </div>
             <div className="flex items-center gap-2.5">
-              <div className="h-2 w-2 rounded-full bg-[#39FF14]" />
-              <span className="text-muted-foreground font-mono text-xs">
+              <div className="h-2 w-2 rounded-full bg-status-optimized" />
+              <span className="text-muted-foreground font-sans text-xs">
                 One-tap logging from notification
               </span>
             </div>
@@ -147,7 +147,7 @@ function BioSyncModal({
               NOT NOW
             </Button>
             <Button
-              className="flex-1 bg-[#00D4FF] font-mono text-sm text-black hover:bg-[#00D4FF]/90"
+              className="flex-1 bg-emerald-500 font-mono text-sm text-black hover:bg-emerald-400"
               onClick={onEnable}
             >
               <Bell className="mr-2 h-4 w-4" />
@@ -156,7 +156,7 @@ function BioSyncModal({
           </div>
 
           {/* Privacy note */}
-          <div className="text-muted-foreground/70 text-center font-mono text-xs">
+          <div className="text-muted-foreground/70 text-center font-sans text-xs">
             Notifications are processed locally. No data leaves your device.
           </div>
         </div>
@@ -206,14 +206,39 @@ function formatCountdown(minutes: number, seconds: number): string {
   return `${minutes}m ${seconds.toString().padStart(2, "0")}s`;
 }
 
-function getSeverityColor(severity: "critical" | "medium" | "low"): string {
+// Semantic color classes for severity levels
+function getSeverityColorClass(severity: "critical" | "medium" | "low"): string {
   switch (severity) {
     case "critical":
-      return "#FF6B6B";
+      return "status-critical";
     case "medium":
-      return "#F0A500";
+      return "status-conflict";
     case "low":
-      return "#A8B1BB";
+      return "text-muted-foreground";
+  }
+}
+
+// Border classes using semantic system
+function getSeverityBorderClass(severity: "critical" | "medium" | "low"): string {
+  switch (severity) {
+    case "critical":
+      return "border-status-critical";
+    case "medium":
+      return "border-status-conflict";
+    case "low":
+      return "border-border/40";
+  }
+}
+
+// Background classes using semantic system
+function getSeverityBgClass(severity: "critical" | "medium" | "low"): string {
+  switch (severity) {
+    case "critical":
+      return "bg-status-critical";
+    case "medium":
+      return "bg-status-conflict";
+    case "low":
+      return "bg-card/30";
   }
 }
 
@@ -257,30 +282,25 @@ function ExclusionZoneCard({
     }, delayMs);
   }, [zone, minutes, seconds, permission, onRequestPermission]);
 
-  // Severity-based border colors
-  const borderColor = {
-    critical: "border-[#FF6B6B]/40",
-    medium: "border-[#F0A500]/40",
-    low: "border-border/40",
-  }[zone.severity];
+  // Severity-based styling classes
+  const borderClass = getSeverityBorderClass(zone.severity);
+  const bgClass = getSeverityBgClass(zone.severity);
+  const colorClass = getSeverityColorClass(zone.severity);
 
-  const bgColor = {
-    critical: "bg-[#FF6B6B]/5",
-    medium: "bg-[#F0A500]/5",
-    low: "bg-card/30",
-  }[zone.severity];
+  // Determine if window is imminent (<30min) for emerald highlight
+  const isImminent = minutes < 30;
 
   if (isExpired) {
     return (
-      <div className="rounded-lg border border-[#39FF14]/40 bg-[#39FF14]/5 p-3">
+      <div className="rounded-2xl border border-status-optimized bg-status-optimized p-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Check className="h-4 w-4 text-[#39FF14]" />
+          <div className="flex items-center gap-3">
+            <Check className="h-5 w-5 status-optimized" />
             <div>
-              <div className="text-foreground font-mono text-xs">
+              <div className="text-foreground font-sans text-sm font-medium">
                 {zone.targetSupplementName}
               </div>
-              <div className="font-mono text-[10px] text-[#39FF14]">
+              <div className="font-mono text-[10px] uppercase tracking-wider status-optimized">
                 WINDOW OPEN
               </div>
             </div>
@@ -288,7 +308,7 @@ function ExclusionZoneCard({
           {onLogSupplement && (
             <Button
               size="sm"
-              className="h-7 bg-[#39FF14] font-mono text-[10px] text-black hover:bg-[#39FF14]/90"
+              className="h-8 bg-emerald-500 font-mono text-xs text-black hover:bg-emerald-400"
               onClick={() => onLogSupplement(zone.targetSupplementId)}
             >
               LOG NOW
@@ -300,70 +320,77 @@ function ExclusionZoneCard({
   }
 
   return (
-    <div className={`rounded-lg border ${borderColor} ${bgColor} p-3`}>
+    <div className={`rounded-2xl border ${borderClass} ${bgClass} ${isHero ? "p-5" : "p-3"}`}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1">
           {isHero ? (
-            // Hero card layout - larger, more prominent
-            <>
-              <div className="text-muted-foreground mb-1 font-mono text-[10px] uppercase tracking-wider">
-                Next Window
-              </div>
-              <div className="text-foreground font-mono text-sm font-medium">
-                {zone.targetSupplementName}
-              </div>
-              <div
-                className="mt-1 font-mono text-2xl font-bold tabular-nums"
-                style={{ color: getSeverityColor(zone.severity) }}
-              >
-                {formatCountdown(minutes, seconds)}
-              </div>
-              <div className="text-muted-foreground mt-2 font-mono text-[10px] leading-relaxed">
-                {zone.reason}
-              </div>
-              {/* Prominent Set Alert button for hero card */}
-              {permission !== "denied" && !reminded && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="mt-3 h-8 w-full border-[#00D4FF]/30 font-mono text-[10px] text-[#00D4FF] hover:bg-[#00D4FF]/10 hover:text-[#00D4FF]"
-                  onClick={handleRemind}
-                >
-                  <Bell className="mr-1.5 h-3 w-3" />
-                  SET ALERT
-                </Button>
+            // Hero card layout - "Next Window" prompt with prominent countdown
+            <div className="relative">
+              {/* Ambient glow for imminent windows */}
+              {isImminent && (
+                <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-emerald-500/10 blur-3xl" />
               )}
-              {permission !== "denied" && reminded && (
-                <div className="mt-3 flex items-center justify-center gap-1.5 rounded-md bg-[#00D4FF]/10 py-2 font-mono text-[10px] text-[#00D4FF]">
-                  <Bell className="h-3 w-3" />
-                  ALERT SET
+              
+              <div className="relative">
+                {/* Label - Sans-serif for prose */}
+                <div className="font-sans text-sm text-white/50">
+                  Optimal Window Opens In
                 </div>
-              )}
-              {permission === "denied" && (
-                <div className="text-muted-foreground/50 mt-3 text-center font-mono text-[9px]">
-                  Notifications blocked in browser settings
+                
+                {/* Countdown - Large, prominent, JetBrains Mono for precision */}
+                <div className={`mt-2 font-mono text-4xl font-bold tabular-nums ${isImminent ? "status-optimized" : colorClass}`}>
+                  {formatCountdown(minutes, seconds)}
                 </div>
-              )}
-            </>
+                
+                {/* Target supplement - Sans-serif */}
+                <div className="mt-3 font-sans text-lg font-medium text-white/90">
+                  {zone.targetSupplementName}
+                </div>
+                
+                {/* Mechanistic reason - Sans-serif prose */}
+                <div className="mt-2 font-sans text-sm leading-relaxed text-white/50">
+                  {zone.reason}
+                </div>
+                
+                {/* Set Alert button - Soft permission flow */}
+                {permission !== "denied" && !reminded && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="mt-4 h-9 w-full border-emerald-400/30 bg-emerald-500/10 font-mono text-xs text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300"
+                    onClick={handleRemind}
+                  >
+                    <Bell className="mr-2 h-4 w-4" />
+                    SET ALERT
+                  </Button>
+                )}
+                {permission !== "denied" && reminded && (
+                  <div className="mt-4 flex items-center justify-center gap-2 rounded-lg bg-emerald-500/10 py-2.5 font-mono text-xs text-emerald-400">
+                    <Bell className="h-4 w-4" />
+                    ALERT SET
+                  </div>
+                )}
+                {permission === "denied" && (
+                  <div className="mt-4 text-center font-sans text-xs text-white/30">
+                    Notifications blocked in browser settings
+                  </div>
+                )}
+              </div>
+            </div>
           ) : (
-            // Compact card layout
+            // Compact card layout - for additional windows
             <>
               <div className="flex items-center gap-2">
-                <Clock
-                  className="h-4 w-4"
-                  style={{ color: getSeverityColor(zone.severity) }}
-                />
-                <span className="text-foreground font-mono text-xs">
+                <Clock className={`h-4 w-4 ${colorClass}`} />
+                <span className="text-foreground font-sans text-sm">
                   {zone.targetSupplementName}
                 </span>
-                <span
-                  className="font-mono text-[10px] tabular-nums"
-                  style={{ color: getSeverityColor(zone.severity) }}
-                >
+                <span className={`font-mono text-xs tabular-nums ${colorClass}`}>
                   {formatCountdown(minutes, seconds)}
                 </span>
               </div>
-              <div className="text-muted-foreground mt-1 font-mono text-[10px] leading-relaxed">
+              {/* Mechanistic reason - Sans-serif prose */}
+              <div className="text-muted-foreground mt-1.5 font-sans text-xs leading-relaxed">
                 {zone.reason}
               </div>
             </>
@@ -386,7 +413,7 @@ function ExclusionZoneCard({
               <Bell className="h-3 w-3" />
             </Button>
           ) : (
-            <div className="text-[#00D4FF]" title="Reminder set">
+            <div className="status-info" title="Reminder set">
               <Bell className="h-3 w-3" />
             </div>
           )
@@ -412,12 +439,12 @@ function SynergyCard({
 
   return (
     <div
-      className={`group relative rounded-lg border p-3 ${
+      className={`group relative rounded-2xl border p-3 ${
         hasSafetyWarning
-          ? "border-[#F0A500]/30 bg-[#F0A500]/5"
+          ? "border-status-conflict bg-status-conflict"
           : isActive 
-            ? "border-[#39FF14]/30 bg-[#39FF14]/5" 
-            : "border-[#00D4FF]/20 bg-[#00D4FF]/5"
+            ? "border-status-optimized bg-status-optimized" 
+            : "border-status-info bg-status-info"
       }`}
     >
       {/* Dismiss button - visible on hover for suggestions */}
@@ -433,27 +460,27 @@ function SynergyCard({
       )}
       <div className="flex items-start gap-2">
         {hasSafetyWarning ? (
-          <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-[#F0A500]" />
+          <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 status-conflict" />
         ) : (
           <Zap
             className={`mt-0.5 h-4 w-4 shrink-0 ${
-              isActive ? "text-[#39FF14]" : "text-[#00D4FF]"
+              isActive ? "status-optimized" : "status-info"
             }`}
           />
         )}
         <div className="min-w-0 pr-4">
-          <div className="text-foreground font-mono text-xs">
+          <div className="text-foreground font-sans text-sm">
             {isActive 
               ? optimization.title.replace("Active synergy: ", "")
               : optimization.title.replace(/^Enhance .+ with /, "Add ")}
           </div>
-          <div className="text-muted-foreground mt-0.5 font-mono text-[10px] leading-relaxed">
+          <div className="text-muted-foreground mt-0.5 font-sans text-xs leading-relaxed">
             {optimization.description}
           </div>
           {hasSafetyWarning && (
-            <div className="mt-1.5 flex items-start gap-1.5 rounded bg-[#F0A500]/10 px-2 py-1">
-              <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0 text-[#F0A500]" />
-              <span className="font-mono text-[9px] leading-relaxed text-[#F0A500]">
+            <div className="mt-1.5 flex items-start gap-1.5 rounded-lg bg-status-conflict px-2 py-1">
+              <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0 status-conflict" />
+              <span className="font-sans text-[10px] leading-relaxed status-conflict">
                 {optimization.safetyWarning}
               </span>
             </div>
@@ -567,7 +594,7 @@ export function OptimizationHUD({
         {sortedZones.length > 1 && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="h-3 w-3 text-[#F0A500]" />
+              <AlertTriangle className="h-3 w-3 status-conflict" />
               <span className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
                 Other Windows
               </span>
@@ -590,7 +617,7 @@ export function OptimizationHUD({
         {activeSynergies.length > 0 && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Zap className="h-3 w-3 text-[#39FF14]" />
+              <Zap className="h-3 w-3 status-optimized" />
               <span className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
                 Active Synergies
               </span>
@@ -607,7 +634,7 @@ export function OptimizationHUD({
         {suggestions.length > 0 && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <ChevronRight className="h-3 w-3 text-[#00D4FF]" />
+              <ChevronRight className="h-3 w-3 status-info" />
               <span className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
                 Suggestions
               </span>

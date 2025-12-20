@@ -242,13 +242,33 @@
   animation: fade-in 0.5s ease-out forwards;
 }
 
+/* ============================================================================
+ * CLS Prevention - Dashboard Card Min-Heights
+ * ============================================================================
+ * Define strict min-heights to prevent Cumulative Layout Shift during hydration.
+ * These values are calibrated for the dashboard's data density requirements.
+ */
+:root {
+  --dashboard-timeline-height: 280px;
+  --dashboard-hud-height: 400px;
+  --dashboard-protocols-height: 160px;
+  --dashboard-bio-score-height: 80px;
+  --dashboard-status-height: 48px;
+}
+
+.dashboard-timeline { min-height: var(--dashboard-timeline-height); }
+.dashboard-hud { min-height: var(--dashboard-hud-height); }
+.dashboard-protocols { min-height: var(--dashboard-protocols-height); }
+.dashboard-bio-score { min-height: var(--dashboard-bio-score-height); }
+.dashboard-status { min-height: var(--dashboard-status-height); }
+
 /* HUD-style utilities for dark theme */
 .dark .hud-noise {
   position: fixed;
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  opacity: 0.0075; /* Reduced from 0.015 for professional HUD aesthetics */
+  opacity: 0.0075; /* Attio-level cleanliness - reduced for professional aesthetics */
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
 }
 
@@ -271,29 +291,49 @@
   border-bottom-color: #30363D;
 }
 
-/* 
+/* ============================================================================
+ * Semantic Status Colors - Dashboard "Scientific Laboratory" Aesthetic
+ * ============================================================================
+ * 
  * Color Semantic System:
- * - Green (#39FF14): ONLY for Success, Synergy, "Optimized", Actionable NOW
- * - Cyan (#00D4FF): Standard data, logs, timestamps, neutral info
- * - Amber (#F0A500): Warnings, timing conflicts, ratio imbalance
- * - Red (#FF6B6B): Critical, hard limits, blocking errors
+ * - Optimized (Emerald): Success, Synergy, "Actionable NOW", peak states
+ * - Conflict (Amber): Timing conflicts, ratio imbalances, warnings
+ * - Critical (Red): Hard limits, dangerous interactions, blocking errors
+ * - Info (Cyan): Standard data, logs, timestamps, neutral information
+ * 
+ * Usage: Prefer semantic classes over hardcoded hex values for maintainability.
  */
-.status-safe { color: #39FF14; }      /* Success/Synergy only */
-.status-warning { color: #F0A500; }   /* Warnings/Conflicts */
-.status-danger { color: #FF6B6B; }    /* Critical/Blocking */
-.status-info { color: #00D4FF; }      /* Neutral data/logs */
 
-/* Semantic background variants */
-.bg-status-safe { background-color: rgba(57, 255, 20, 0.1); }
-.bg-status-warning { background-color: rgba(240, 165, 0, 0.1); }
-.bg-status-danger { background-color: rgba(255, 107, 107, 0.1); }
-.bg-status-info { background-color: rgba(0, 212, 255, 0.1); }
+/* Optimized/Synergy - Emerald for "actionable now" states */
+.status-optimized { color: var(--chart-1); }
+.bg-status-optimized { background-color: rgba(57, 255, 20, 0.08); }
+.border-status-optimized { border-color: rgba(57, 255, 20, 0.3); }
 
-/* Semantic border variants */
+/* Conflict/Warning - Amber for timing conflicts, ratio imbalances */
+.status-conflict { color: var(--chart-3); }
+.bg-status-conflict { background-color: rgba(240, 165, 0, 0.08); }
+.border-status-conflict { border-color: rgba(240, 165, 0, 0.3); }
+
+/* Critical/Blocking - Red for hard limits, dangerous interactions */
+.status-critical { color: var(--chart-4); }
+.bg-status-critical { background-color: rgba(255, 107, 107, 0.08); }
+.border-status-critical { border-color: rgba(255, 107, 107, 0.3); }
+
+/* Info/Neutral - Cyan for standard data, logs, timestamps */
+.status-info { color: var(--chart-2); }
+.bg-status-info { background-color: rgba(0, 212, 255, 0.08); }
+.border-status-info { border-color: rgba(0, 212, 255, 0.3); }
+
+/* Legacy aliases for backwards compatibility */
+.status-safe { color: var(--chart-1); }
+.status-warning { color: var(--chart-3); }
+.status-danger { color: var(--chart-4); }
+.bg-status-safe { background-color: rgba(57, 255, 20, 0.08); }
+.bg-status-warning { background-color: rgba(240, 165, 0, 0.08); }
+.bg-status-danger { background-color: rgba(255, 107, 107, 0.08); }
 .border-status-safe { border-color: rgba(57, 255, 20, 0.3); }
 .border-status-warning { border-color: rgba(240, 165, 0, 0.3); }
 .border-status-danger { border-color: rgba(255, 107, 107, 0.3); }
-.border-status-info { border-color: rgba(0, 212, 255, 0.3); }
 
 /* Landing page - Dashboard preview animations */
 @keyframes breathing-glow {

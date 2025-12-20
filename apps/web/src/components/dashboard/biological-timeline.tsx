@@ -33,20 +33,21 @@ type BiologicalTimelineProps = {
 // Color Palette for Compounds
 // ============================================================================
 
-// HUD-consistent colors (rotating palette)
-const COMPOUND_COLORS = [
-  "#00D4FF", // Cyan - primary data color
-  "#39FF14", // Green - synergy/active
-  "#F0A500", // Amber - secondary
-  "#A855F7", // Purple - tertiary
-  "#FF6B6B", // Red - quaternary
+// Fallback hex values for Recharts (doesn't support CSS variables)
+// Maps to chart-2/1/3/5/4 from globals.css theme
+const COMPOUND_COLORS_HEX = [
+  "#00D4FF", // Cyan
+  "#39FF14", // Emerald
+  "#F0A500", // Amber
+  "#A855F7", // Purple
+  "#FF6B6B", // Red
   "#00FFA3", // Mint
   "#FF00FF", // Magenta
   "#FFD700", // Gold
 ];
 
 function getCompoundColor(index: number): string {
-  return COMPOUND_COLORS[index % COMPOUND_COLORS.length]!;
+  return COMPOUND_COLORS_HEX[index % COMPOUND_COLORS_HEX.length]!;
 }
 
 // ============================================================================
@@ -309,10 +310,10 @@ export function BiologicalTimeline({
             <XAxis
               dataKey="minutesFromStart"
               tickFormatter={formatXAxis}
-              stroke="#30363D"
-              tick={{ fill: "#A8B1BB", fontSize: 10, fontFamily: "monospace" }}
-              tickLine={{ stroke: "#30363D" }}
-              axisLine={{ stroke: "#30363D" }}
+              stroke="var(--border)"
+              tick={{ fill: "var(--muted-foreground)", fontSize: 10, fontFamily: "var(--font-mono)" }}
+              tickLine={{ stroke: "var(--border)" }}
+              axisLine={{ stroke: "var(--border)" }}
               interval="preserveStartEnd"
               minTickGap={60}
             />
@@ -320,10 +321,10 @@ export function BiologicalTimeline({
             <YAxis
               domain={[0, 120]}
               tickFormatter={(value) => `${value}%`}
-              stroke="#30363D"
-              tick={{ fill: "#A8B1BB", fontSize: 10, fontFamily: "monospace" }}
-              tickLine={{ stroke: "#30363D" }}
-              axisLine={{ stroke: "#30363D" }}
+              stroke="var(--border)"
+              tick={{ fill: "var(--muted-foreground)", fontSize: 10, fontFamily: "var(--font-mono)" }}
+              tickLine={{ stroke: "var(--border)" }}
+              axisLine={{ stroke: "var(--border)" }}
               width={40}
             />
 
@@ -339,15 +340,15 @@ export function BiologicalTimeline({
             {currentMinutesFromStart !== null && (
               <ReferenceLine
                 x={currentMinutesFromStart}
-                stroke="#39FF14"
+                stroke="var(--chart-1)"
                 strokeDasharray="3 3"
                 strokeWidth={1}
                 label={{
                   value: "NOW",
                   position: "top",
-                  fill: "#39FF14",
+                  fill: "var(--chart-1)",
                   fontSize: 9,
-                  fontFamily: "monospace",
+                  fontFamily: "var(--font-mono)",
                 }}
               />
             )}
@@ -355,7 +356,7 @@ export function BiologicalTimeline({
             {/* Peak zone reference (100% line) */}
             <ReferenceLine
               y={100}
-              stroke="#30363D"
+              stroke="var(--border)"
               strokeDasharray="2 2"
               strokeWidth={1}
             />
@@ -425,7 +426,7 @@ export function BiologicalTimeline({
                   </span>
                 )}
                 {!isHidden && phase === "peak" && (
-                  <span className="text-[#39FF14]">PEAK</span>
+                  <span className="status-optimized">PEAK</span>
                 )}
               </button>
             );
@@ -466,18 +467,19 @@ type ActiveCompoundsListProps = {
 };
 
 // Human-readable phase labels with explanations
+// Typography: Phase labels use font-mono for pharmacokinetic precision
 const PHASE_CONFIG = {
   absorbing: {
     label: "Absorbing",
     shortLabel: "ABS",
     description: "Entering bloodstream",
-    className: "text-[#00D4FF]",
+    className: "status-info", // Cyan - neutral phase indicator
   },
   peak: {
     label: "Peak",
     shortLabel: "PEAK",
     description: "Maximum concentration",
-    className: "text-[#39FF14]",
+    className: "status-optimized", // Emerald - optimal state
   },
   eliminating: {
     label: "Clearing",
