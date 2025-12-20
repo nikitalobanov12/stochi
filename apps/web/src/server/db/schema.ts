@@ -33,11 +33,20 @@ export const dosageUnitEnum = pgEnum("dosage_unit", [
 
 export const routeEnum = pgEnum("route_of_administration", [
   "oral",
+  "sublingual",
   "subq_injection",
   "im_injection",
   "intranasal",
   "transdermal",
   "topical",
+  "rectal",
+]);
+
+export const mealContextEnum = pgEnum("meal_context", [
+  "fasted",
+  "with_meal",
+  "with_fat",
+  "post_meal",
 ]);
 
 // ============================================================================
@@ -268,6 +277,10 @@ export const log = pgTable(
       .references(() => supplement.id, { onDelete: "cascade" }),
     dosage: real("dosage").notNull(),
     unit: dosageUnitEnum("unit").notNull(),
+    // Route of administration (defaults to supplement's default route)
+    route: routeEnum("route").default("oral"),
+    // Meal context for bioavailability optimization
+    mealContext: mealContextEnum("meal_context"),
     loggedAt: timestamp("logged_at", { withTimezone: true }).notNull(),
     createdAt: timestamp("created_at")
       .$defaultFn(() => new Date())
@@ -298,6 +311,49 @@ export const timingRule = pgTable("timing_rule", {
     .notNull(),
 });
 
+// CYP450 enzyme pathway enum
+export const cyp450EnzymeEnum = pgEnum("cyp450_enzyme", [
+  "CYP1A2",
+  "CYP2C9",
+  "CYP2C19",
+  "CYP2D6",
+  "CYP3A4",
+  "CYP2E1",
+]);
+
+export const cyp450EffectEnum = pgEnum("cyp450_effect", [
+  "substrate",   // Metabolized by this enzyme
+  "inhibitor",   // Inhibits this enzyme (slows metabolism of substrates)
+  "inducer",     // Induces this enzyme (speeds up metabolism of substrates)
+]);
+
+// CYP450 enzyme pathway interactions
+// Used for detecting drug/supplement interactions via shared metabolic pathways
+export const cyp450Pathway = pgTable(
+  "cyp450_pathway",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    supplementId: uuid("supplement_id")
+      .notNull()
+      .references(() => supplement.id, { onDelete: "cascade" }),
+    enzyme: cyp450EnzymeEnum("enzyme").notNull(),
+    effect: cyp450EffectEnum("effect").notNull(),
+    // Strength of the effect (e.g., strong inhibitor vs weak)
+    strength: text("strength"), // "strong" | "moderate" | "weak"
+    // Clinical significance note
+    clinicalNote: text("clinical_note"),
+    // Research citation
+    researchUrl: text("research_url"),
+    createdAt: timestamp("created_at")
+      .$defaultFn(() => new Date())
+      .notNull(),
+  },
+  (t) => [
+    index("cyp450_supplement_idx").on(t.supplementId),
+    index("cyp450_enzyme_idx").on(t.enzyme),
+  ],
+);
+
 // ============================================================================
 // Relations
 // ============================================================================
@@ -325,6 +381,7 @@ export const supplementRelations = relations(supplement, ({ many }) => ({
   targetRatioRules: many(ratioRule, { relationName: "ratioTarget" }),
   sourceTimingRules: many(timingRule, { relationName: "timingSource" }),
   targetTimingRules: many(timingRule, { relationName: "timingTarget" }),
+  cyp450Pathways: many(cyp450Pathway),
   stackItems: many(stackItem),
   logs: many(log),
 }));
@@ -391,4 +448,11 @@ export const timingRuleRelations = relations(timingRule, ({ one }) => ({
 
 export const userGoalRelations = relations(userGoal, ({ one }) => ({
   user: one(user, { fields: [userGoal.userId], references: [user.id] }),
+}));
+
+export const cyp450PathwayRelations = relations(cyp450Pathway, ({ one }) => ({
+  supplement: one(supplement, {
+    fields: [cyp450Pathway.supplementId],
+    references: [supplement.id],
+  }),
 }));
