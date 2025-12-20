@@ -1,11 +1,13 @@
-import { type dosageUnitEnum } from "~/server/db/schema";
+import { type dosageUnitEnum, type routeEnum } from "~/server/db/schema";
 
 type DosageUnit = (typeof dosageUnitEnum.enumValues)[number];
+type RouteOfAdministration = (typeof routeEnum.enumValues)[number];
 
 export type StackTemplateItem = {
   supplementName: string;
   dosage: number;
   unit: DosageUnit;
+  route?: RouteOfAdministration; // Optional route override (defaults to supplement's default)
 };
 
 export type StackTemplate = {
@@ -16,6 +18,8 @@ export type StackTemplate = {
   source?: string;
   /** Authority level for sorting */
   authority?: "high" | "medium" | "community";
+  /** Whether this stack contains research chemicals/peptides */
+  isResearchStack?: boolean;
   interactions: Array<{
     type: "synergy" | "conflict";
     count: number;
@@ -158,6 +162,132 @@ export const stackTemplates: StackTemplate[] = [
       { supplementName: "Zinc Carnosine", dosage: 75, unit: "mg" },
     ],
   },
+
+  // ============================================================================
+  // Research Chemical / Peptide Stacks
+  // ============================================================================
+  {
+    key: "bpc-157-healing",
+    name: "BPC-157 Healing Protocol",
+    description: "Tissue repair and gut healing peptide",
+    source: "Research Literature",
+    authority: "community",
+    isResearchStack: true,
+    interactions: [],
+    supplements: [
+      { supplementName: "BPC-157", dosage: 250, unit: "mcg", route: "subq_injection" },
+    ],
+  },
+  {
+    key: "tb500-recovery",
+    name: "TB-500 Recovery",
+    description: "Thymosin Beta-4 for injury recovery",
+    source: "Research Literature",
+    authority: "community",
+    isResearchStack: true,
+    interactions: [],
+    supplements: [
+      { supplementName: "TB-500", dosage: 2.5, unit: "mg", route: "subq_injection" },
+    ],
+  },
+  {
+    key: "healing-peptide-combo",
+    name: "Healing Peptide Stack",
+    description: "BPC-157 + TB-500 synergistic healing",
+    source: "Research Literature",
+    authority: "community",
+    isResearchStack: true,
+    interactions: [{ type: "synergy", count: 1 }],
+    supplements: [
+      { supplementName: "BPC-157", dosage: 250, unit: "mcg", route: "subq_injection" },
+      { supplementName: "TB-500", dosage: 2, unit: "mg", route: "subq_injection" },
+    ],
+  },
+  {
+    key: "semax-cognitive",
+    name: "SEMAX Cognitive",
+    description: "Nootropic peptide for focus and memory",
+    source: "Research Literature",
+    authority: "community",
+    isResearchStack: true,
+    interactions: [],
+    supplements: [
+      { supplementName: "SEMAX", dosage: 600, unit: "mcg", route: "intranasal" },
+    ],
+  },
+  {
+    key: "selank-anxiolytic",
+    name: "Selank Calm",
+    description: "Anxiolytic peptide for stress reduction",
+    source: "Research Literature",
+    authority: "community",
+    isResearchStack: true,
+    interactions: [],
+    supplements: [
+      { supplementName: "Selank", dosage: 400, unit: "mcg", route: "intranasal" },
+    ],
+  },
+  {
+    key: "cognitive-peptide-combo",
+    name: "Cognitive Peptide Stack",
+    description: "SEMAX + Selank nootropic synergy",
+    source: "Research Literature",
+    authority: "community",
+    isResearchStack: true,
+    interactions: [{ type: "synergy", count: 1 }],
+    supplements: [
+      { supplementName: "SEMAX", dosage: 400, unit: "mcg", route: "intranasal" },
+      { supplementName: "Selank", dosage: 300, unit: "mcg", route: "intranasal" },
+    ],
+  },
+  {
+    key: "ghk-cu-skin",
+    name: "GHK-Cu Skin Repair",
+    description: "Copper peptide for skin regeneration",
+    source: "Research Literature",
+    authority: "community",
+    isResearchStack: true,
+    interactions: [],
+    supplements: [
+      { supplementName: "GHK-Cu", dosage: 1, unit: "mg", route: "subq_injection" },
+    ],
+  },
+  {
+    key: "bromantane-energy",
+    name: "Bromantane Protocol",
+    description: "Adaptogenic stimulant for energy and focus",
+    source: "Research Literature",
+    authority: "community",
+    isResearchStack: true,
+    interactions: [],
+    supplements: [
+      { supplementName: "Bromantane", dosage: 50, unit: "mg", route: "sublingual" },
+    ],
+  },
+  {
+    key: "epithalon-longevity",
+    name: "Epithalon Longevity",
+    description: "Telomerase-activating peptide",
+    source: "Research Literature",
+    authority: "community",
+    isResearchStack: true,
+    interactions: [],
+    supplements: [
+      { supplementName: "Epithalon", dosage: 5, unit: "mg", route: "subq_injection" },
+    ],
+  },
+  {
+    key: "ll-37-immunity",
+    name: "LL-37 Immune Support",
+    description: "Antimicrobial peptide for immune modulation",
+    source: "Research Literature",
+    authority: "community",
+    isResearchStack: true,
+    interactions: [],
+    supplements: [
+      { supplementName: "LL-37", dosage: 100, unit: "mcg", route: "subq_injection" },
+    ],
+  },
 ];
 
 // Template names for detection
@@ -187,4 +317,18 @@ export function getTemplatesByAuthority(): StackTemplate[] {
     const bOrder = authorityOrder[b.authority ?? "community"];
     return aOrder - bOrder;
   });
+}
+
+/**
+ * Get only research chemical / peptide stacks
+ */
+export function getResearchStacks(): StackTemplate[] {
+  return stackTemplates.filter((t) => t.isResearchStack);
+}
+
+/**
+ * Get only non-research stacks (safe supplements)
+ */
+export function getSafeStacks(): StackTemplate[] {
+  return stackTemplates.filter((t) => !t.isResearchStack);
 }
