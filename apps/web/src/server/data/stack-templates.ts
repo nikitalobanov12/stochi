@@ -52,7 +52,7 @@ export const stackTemplates: StackTemplate[] = [
     goals: ["sleep"],
     interactions: [{ type: "synergy", count: 2 }],
     supplements: [
-      { supplementName: "Magnesium Threonate", dosage: 145, unit: "mg", timing: "30-60 min before bed" },
+      { supplementName: "Magnesium L-Threonate", dosage: 145, unit: "mg", timing: "30-60 min before bed" },
       { supplementName: "L-Theanine", dosage: 200, unit: "mg", timing: "30-60 min before bed" },
       { supplementName: "Apigenin", dosage: 50, unit: "mg", timing: "30-60 min before bed" },
     ],
@@ -83,10 +83,10 @@ export const stackTemplates: StackTemplate[] = [
     goals: ["longevity", "health"],
     interactions: [{ type: "synergy", count: 2 }],
     supplements: [
-      { supplementName: "Omega-3 (EPA/DHA)", dosage: 2000, unit: "mg", timing: "With fatty breakfast" },
+      { supplementName: "Omega-3 Fish Oil", dosage: 2000, unit: "mg", timing: "With fatty breakfast" },
       { supplementName: "Vitamin D3", dosage: 5000, unit: "IU", timing: "With fatty breakfast" },
       { supplementName: "Vitamin K2 MK-7", dosage: 100, unit: "mcg", timing: "With fatty breakfast" },
-      { supplementName: "Magnesium", dosage: 400, unit: "mg", timing: "Evening" },
+      { supplementName: "Magnesium Glycinate", dosage: 400, unit: "mg", timing: "Evening" },
     ],
   },
   {
@@ -163,7 +163,7 @@ export const stackTemplates: StackTemplate[] = [
     goals: ["stress", "energy"],
     interactions: [{ type: "synergy", count: 1 }],
     supplements: [
-      { supplementName: "Ashwagandha KSM-66", dosage: 600, unit: "mg", timing: "Morning with food" },
+      { supplementName: "Ashwagandha", dosage: 600, unit: "mg", timing: "Morning with food" },
       { supplementName: "Rhodiola Rosea", dosage: 200, unit: "mg", timing: "Morning, before noon" },
     ],
   },
@@ -192,9 +192,9 @@ export const stackTemplates: StackTemplate[] = [
     goals: ["health"],
     interactions: [{ type: "synergy", count: 1 }],
     supplements: [
-      { supplementName: "Collagen Peptides", dosage: 10, unit: "g", timing: "Morning, any time" },
+      { supplementName: "Collagen", dosage: 10, unit: "g", timing: "Morning, any time" },
       { supplementName: "Vitamin C", dosage: 500, unit: "mg", timing: "With collagen" },
-      { supplementName: "Omega-3 (EPA/DHA)", dosage: 2000, unit: "mg", timing: "With food" },
+      { supplementName: "Omega-3 Fish Oil", dosage: 2000, unit: "mg", timing: "With food" },
     ],
   },
   {
@@ -236,7 +236,7 @@ export const stackTemplates: StackTemplate[] = [
     goals: ["stress", "health"],
     interactions: [{ type: "synergy", count: 1 }],
     supplements: [
-      { supplementName: "Omega-3 (EPA/DHA)", dosage: 2000, unit: "mg", timing: "With food" },
+      { supplementName: "Omega-3 Fish Oil", dosage: 2000, unit: "mg", timing: "With food" },
       { supplementName: "Vitamin D3", dosage: 5000, unit: "IU", timing: "With fatty meal" },
       { supplementName: "Magnesium Glycinate", dosage: 400, unit: "mg", timing: "Evening" },
     ],
@@ -253,7 +253,7 @@ export const stackTemplates: StackTemplate[] = [
     supplements: [
       { supplementName: "Magnesium Glycinate", dosage: 400, unit: "mg", timing: "Before bed" },
       { supplementName: "Zinc Picolinate", dosage: 30, unit: "mg", timing: "With lunch" },
-      { supplementName: "Potassium Citrate", dosage: 500, unit: "mg", timing: "With food" },
+      { supplementName: "Potassium", dosage: 500, unit: "mg", timing: "With food" },
     ],
   },
   {
@@ -269,7 +269,7 @@ export const stackTemplates: StackTemplate[] = [
     supplements: [
       { supplementName: "Lutein", dosage: 20, unit: "mg", timing: "With fatty meal" },
       { supplementName: "Zeaxanthin", dosage: 4, unit: "mg", timing: "With fatty meal" },
-      { supplementName: "Omega-3 (EPA/DHA)", dosage: 1000, unit: "mg", timing: "With fatty meal" },
+      { supplementName: "Omega-3 Fish Oil", dosage: 1000, unit: "mg", timing: "With fatty meal" },
     ],
   },
 
@@ -314,7 +314,7 @@ export const stackTemplates: StackTemplate[] = [
     interactions: [],
     supplements: [
       { supplementName: "Biotin", dosage: 5000, unit: "mcg", timing: "Morning" },
-      { supplementName: "Collagen Peptides", dosage: 10, unit: "g", timing: "Any time" },
+      { supplementName: "Collagen", dosage: 10, unit: "g", timing: "Any time" },
       { supplementName: "Silica", dosage: 10, unit: "mg", timing: "With food" },
     ],
   },
@@ -348,7 +348,7 @@ export const stackTemplates: StackTemplate[] = [
     goals: ["focus", "stress"],
     interactions: [{ type: "synergy", count: 1 }],
     supplements: [
-      { supplementName: "SEMAX", dosage: 600, unit: "mcg", route: "intranasal", timing: "Morning" },
+      { supplementName: "Semax", dosage: 600, unit: "mcg", route: "intranasal", timing: "Morning" },
       { supplementName: "Selank", dosage: 400, unit: "mcg", route: "intranasal", timing: "Morning or as needed" },
     ],
   },

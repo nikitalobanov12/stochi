@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, ArrowLeft } from "lucide-react";
+import { ArrowRight, ArrowLeft, Check } from "lucide-react";
 import { Button } from "~/components/ui/button";
+import { Badge } from "~/components/ui/badge";
 import {
   goals,
   type Goal,
@@ -11,23 +12,32 @@ import {
 import { cn } from "~/lib/utils";
 
 type GoalStepProps = {
-  onNext: (goalKey: GoalKey | null) => void;
+  onNext: (goalKeys: GoalKey[]) => void;
   onSkip: () => void;
   onBack: () => void;
 };
 
 export function GoalStep({ onNext, onSkip, onBack }: GoalStepProps) {
-  const [selectedGoal, setSelectedGoal] = useState<GoalKey | null>(null);
+  const [selectedGoals, setSelectedGoals] = useState<GoalKey[]>([]);
+
+  function toggleGoal(goalKey: GoalKey) {
+    setSelectedGoals((prev) =>
+      prev.includes(goalKey)
+        ? prev.filter((g) => g !== goalKey)
+        : [...prev, goalKey],
+    );
+  }
 
   return (
     <div className="flex h-full flex-col">
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto">
         <div className="space-y-2">
           <h2 className="font-mono text-xl font-bold">
-            What&apos;s your goal?
+            What are your goals?
           </h2>
           <p className="text-muted-foreground text-sm">
-            We&apos;ll suggest supplements based on your primary focus.
+            Select all that apply. We&apos;ll suggest supplements based on your
+            focus areas.
           </p>
         </div>
 
@@ -36,18 +46,23 @@ export function GoalStep({ onNext, onSkip, onBack }: GoalStepProps) {
             <GoalCard
               key={goal.key}
               goal={goal}
-              selected={selectedGoal === goal.key}
-              onSelect={() => setSelectedGoal(goal.key)}
+              selected={selectedGoals.includes(goal.key)}
+              onToggle={() => toggleGoal(goal.key)}
             />
           ))}
         </div>
       </div>
 
-      <div className="border-border/40 flex shrink-0 gap-2 border-t pt-4">
+      <div className="border-border/40 flex shrink-0 items-center gap-2 border-t pt-4">
         <Button variant="ghost" onClick={onBack} size="sm">
           <ArrowLeft className="mr-1 h-4 w-4" />
           Back
         </Button>
+        {selectedGoals.length > 0 && (
+          <Badge variant="secondary" className="font-mono text-xs">
+            {selectedGoals.length} selected
+          </Badge>
+        )}
         <div className="flex-1" />
         <Button
           variant="ghost"
@@ -58,8 +73,8 @@ export function GoalStep({ onNext, onSkip, onBack }: GoalStepProps) {
           Skip
         </Button>
         <Button
-          onClick={() => onNext(selectedGoal)}
-          disabled={!selectedGoal}
+          onClick={() => onNext(selectedGoals)}
+          disabled={selectedGoals.length === 0}
           size="sm"
         >
           Continue
@@ -73,16 +88,16 @@ export function GoalStep({ onNext, onSkip, onBack }: GoalStepProps) {
 function GoalCard({
   goal,
   selected,
-  onSelect,
+  onToggle,
 }: {
   goal: Goal;
   selected: boolean;
-  onSelect: () => void;
+  onToggle: () => void;
 }) {
   return (
     <button
       type="button"
-      onClick={onSelect}
+      onClick={onToggle}
       className={cn(
         "w-full rounded-lg border-2 p-3 text-left transition-all",
         selected
@@ -92,12 +107,17 @@ function GoalCard({
     >
       <div className="flex items-center gap-3">
         <span className="text-xl">{goal.icon}</span>
-        <div>
+        <div className="flex-1">
           <div className="font-medium">{goal.name}</div>
           <div className="text-muted-foreground text-xs">
             {goal.description}
           </div>
         </div>
+        {selected && (
+          <div className="bg-primary text-primary-foreground flex h-5 w-5 items-center justify-center rounded-full">
+            <Check className="h-3 w-3" />
+          </div>
+        )}
       </div>
     </button>
   );

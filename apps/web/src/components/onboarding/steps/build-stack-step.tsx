@@ -33,7 +33,7 @@ export type SelectedSupplement = {
 
 type BuildStackStepProps = {
   supplements: Supplement[];
-  selectedGoal: GoalKey | null;
+  selectedGoals: GoalKey[];
   selected: SelectedSupplement[];
   stackName: string;
   onChangeSupplements: (supplements: SelectedSupplement[]) => void;
@@ -44,7 +44,7 @@ type BuildStackStepProps = {
 
 export function BuildStackStep({
   supplements,
-  selectedGoal,
+  selectedGoals,
   selected,
   stackName,
   onChangeSupplements,
@@ -62,8 +62,10 @@ export function BuildStackStep({
     null,
   );
 
-  // Get goal-based suggestions
-  const goalRecommendations = selectedGoal ? getGoalByKey(selectedGoal) : null;
+  // Get goal-based suggestions from all selected goals
+  const goalRecommendations = selectedGoals
+    .map((g) => getGoalByKey(g))
+    .filter(Boolean);
 
   // Filter out already selected supplements
   const availableSupplements = useMemo(
@@ -82,10 +84,31 @@ export function BuildStackStep({
     );
   }, [availableSupplements, searchQuery]);
 
-  // Goal-based suggestions (not yet added)
+  // Goal-based suggestions (not yet added) - combine from all selected goals
   const suggestedSupplements = useMemo(() => {
-    if (!goalRecommendations) return [];
-    return goalRecommendations.supplements
+    if (goalRecommendations.length === 0) return [];
+
+    // Collect all recommended supplements from all goals, avoiding duplicates
+    const seenNames = new Set<string>();
+    const allRecommendations: Array<{
+      name: string;
+      dosage: number;
+      unit: string;
+      reason: string;
+      goalName: string;
+    }> = [];
+
+    for (const goal of goalRecommendations) {
+      if (!goal) continue;
+      for (const rec of goal.supplements) {
+        if (!seenNames.has(rec.name)) {
+          seenNames.add(rec.name);
+          allRecommendations.push({ ...rec, goalName: goal.name });
+        }
+      }
+    }
+
+    return allRecommendations
       .filter((rec) => !selected.some((sel) => sel.name === rec.name))
       .map((rec) => {
         const supp = supplements.find((s) => s.name === rec.name);
@@ -93,7 +116,12 @@ export function BuildStackStep({
       })
       .filter(Boolean) as Array<
       Supplement & {
-        recommended: { dosage: number; unit: string; reason: string };
+        recommended: {
+          dosage: number;
+          unit: string;
+          reason: string;
+          goalName: string;
+        };
       }
     >;
   }, [goalRecommendations, selected, supplements]);
@@ -145,7 +173,9 @@ export function BuildStackStep({
   }
 
   function handleAddSuggestion(
-    supplement: Supplement & { recommended: { dosage: number; unit: string } },
+    supplement: Supplement & {
+      recommended: { dosage: number; unit: string; goalName: string };
+    },
   ) {
     const newSupplement: SelectedSupplement = {
       id: supplement.id,
@@ -313,7 +343,10 @@ export function BuildStackStep({
           <div className="space-y-2">
             <div className="text-muted-foreground flex items-center gap-2 text-xs">
               <Sparkles className="h-3 w-3" />
-              <span>Suggested for {goalRecommendations?.name}</span>
+              <span>
+                Suggested for{" "}
+                {goalRecommendations.map((g) => g?.name).join(", ")}
+              </span>
             </div>
             <div className="flex flex-wrap gap-2">
               {suggestedSupplements.map((supp) => (

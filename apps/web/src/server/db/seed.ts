@@ -1373,6 +1373,257 @@ const supplements = [
     absorptionWindowMinutes: 60,
     bioavailabilityPercent: 100, // Well-absorbed racetam
   },
+
+  // ============================================
+  // ADDITIONAL SUPPLEMENTS FOR STACK TEMPLATES
+  // ============================================
+  {
+    name: "Apigenin",
+    form: "Apigenin",
+    elementalWeight: 100,
+    defaultUnit: "mg" as const,
+    aliases: ["chamomile extract", "apigenin extract"],
+    description:
+      "Flavonoid from chamomile with anxiolytic and sleep-promoting properties",
+    mechanism:
+      "Binds GABA-A receptors as positive allosteric modulator; inhibits CD38 preserving NAD+",
+    researchUrl: "https://examine.com/supplements/apigenin/",
+    category: "other" as SupplementCategory,
+    commonGoals: ["sleep", "stress", "longevity"],
+    safetyCategory: null as SafetyCategoryKey,
+    peakMinutes: 60,
+    halfLifeMinutes: 720, // ~12h
+    absorptionWindowMinutes: 90,
+    bioavailabilityPercent: 30,
+  },
+  {
+    name: "Alpha-GPC",
+    form: "L-Alpha Glycerylphosphorylcholine",
+    elementalWeight: 100,
+    defaultUnit: "mg" as const,
+    aliases: ["alpha gpc", "choline alfoscerate", "agpc"],
+    description:
+      "Highly bioavailable choline source supporting acetylcholine synthesis and cognitive function",
+    mechanism:
+      "Crosses BBB efficiently; provides choline for acetylcholine and phosphatidylcholine synthesis",
+    researchUrl: "https://examine.com/supplements/alpha-gpc/",
+    category: "nootropic" as SupplementCategory,
+    commonGoals: ["focus", "energy"],
+    safetyCategory: null as SafetyCategoryKey,
+    peakMinutes: 60,
+    halfLifeMinutes: 240, // ~4h
+    absorptionWindowMinutes: 90,
+    bioavailabilityPercent: 90,
+  },
+  {
+    name: "NMN",
+    form: "Nicotinamide Mononucleotide",
+    elementalWeight: 100,
+    defaultUnit: "mg" as const,
+    aliases: ["nmn", "nicotinamide mononucleotide"],
+    description:
+      "Direct NAD+ precursor supporting cellular energy and longevity pathways",
+    mechanism:
+      "Converted to NAD+ via NMNAT enzymes; supports sirtuins and PARP activity",
+    researchUrl: "https://examine.com/supplements/nmn/",
+    category: "other" as SupplementCategory,
+    commonGoals: ["longevity", "energy"],
+    safetyCategory: null as SafetyCategoryKey,
+    peakMinutes: 60,
+    halfLifeMinutes: 180, // ~3h plasma
+    absorptionWindowMinutes: 60,
+    bioavailabilityPercent: 30, // Sublingual higher
+  },
+  {
+    name: "Resveratrol",
+    form: "Trans-Resveratrol",
+    elementalWeight: 100,
+    defaultUnit: "mg" as const,
+    aliases: ["trans-resveratrol", "grape extract"],
+    description:
+      "Polyphenol activating sirtuins and providing cardiovascular protection",
+    mechanism:
+      "SIRT1 activator; enhances mitochondrial biogenesis via PGC-1α pathway",
+    researchUrl: "https://examine.com/supplements/resveratrol/",
+    category: "antioxidant" as SupplementCategory,
+    commonGoals: ["longevity", "health"],
+    safetyCategory: null as SafetyCategoryKey,
+    peakMinutes: 90,
+    halfLifeMinutes: 60, // Very short t½, rapid metabolism
+    absorptionWindowMinutes: 60,
+    bioavailabilityPercent: 1, // Very low; take with fat
+  },
+  {
+    name: "Omega-3 Fish Oil",
+    form: "EPA/DHA Concentrate",
+    elementalWeight: 100,
+    defaultUnit: "mg" as const,
+    aliases: ["omega-3", "omega 3", "fish oil", "epa dha", "epa/dha"],
+    description:
+      "Combined EPA and DHA omega-3 fatty acids for cardiovascular and brain health",
+    mechanism:
+      "EPA reduces inflammation via resolvins; DHA supports neuronal membrane fluidity",
+    researchUrl: "https://examine.com/supplements/fish-oil/",
+    category: "omega" as SupplementCategory,
+    commonGoals: ["health", "longevity", "focus"],
+    safetyCategory: null as SafetyCategoryKey,
+    peakMinutes: 300, // ~5h
+    halfLifeMinutes: 2880, // 48h
+    absorptionWindowMinutes: 360,
+    bioavailabilityPercent: 25,
+  },
+  {
+    name: "Beta-Alanine",
+    form: "Beta-Alanine",
+    elementalWeight: 100,
+    defaultUnit: "g" as const,
+    aliases: ["beta alanine", "ba"],
+    description:
+      "Amino acid increasing muscle carnosine for enhanced exercise capacity and endurance",
+    mechanism:
+      "Rate-limiting precursor for carnosine synthesis; buffers intramuscular pH during high-intensity exercise",
+    researchUrl: "https://examine.com/supplements/beta-alanine/",
+    category: "amino-acid" as SupplementCategory,
+    commonGoals: ["energy", "health"],
+    safetyCategory: null as SafetyCategoryKey,
+    peakMinutes: 45,
+    halfLifeMinutes: 180, // ~3h
+    absorptionWindowMinutes: 60,
+    bioavailabilityPercent: 90,
+  },
+  {
+    name: "L-Citrulline",
+    form: "L-Citrulline",
+    elementalWeight: 100,
+    defaultUnit: "g" as const,
+    aliases: ["citrulline", "l citrulline"],
+    description:
+      "Amino acid boosting nitric oxide production for blood flow and exercise performance",
+    mechanism:
+      "Converted to L-arginine in kidneys; substrate for nitric oxide synthase",
+    researchUrl: "https://examine.com/supplements/citrulline/",
+    category: "amino-acid" as SupplementCategory,
+    commonGoals: ["energy", "health"],
+    safetyCategory: null as SafetyCategoryKey,
+    peakMinutes: 60,
+    halfLifeMinutes: 60, // ~1h
+    absorptionWindowMinutes: 60,
+    bioavailabilityPercent: 80,
+  },
+  {
+    name: "L-Glutamine",
+    form: "L-Glutamine",
+    elementalWeight: 100,
+    defaultUnit: "mg" as const,
+    aliases: ["glutamine", "l glutamine"],
+    description:
+      "Conditionally essential amino acid supporting gut integrity and immune function",
+    mechanism:
+      "Primary fuel for enterocytes and immune cells; maintains intestinal barrier function",
+    researchUrl: "https://examine.com/supplements/glutamine/",
+    category: "amino-acid" as SupplementCategory,
+    commonGoals: ["health"],
+    safetyCategory: null as SafetyCategoryKey,
+    peakMinutes: 30,
+    halfLifeMinutes: 60, // ~1h
+    absorptionWindowMinutes: 30,
+    bioavailabilityPercent: 70,
+  },
+  {
+    name: "Zinc Carnosine",
+    form: "Zinc L-Carnosine",
+    elementalWeight: 23,
+    defaultUnit: "mg" as const,
+    aliases: ["zinc carnosine", "pepzin gi", "polaprezinc"],
+    description:
+      "Chelated zinc-carnosine complex specifically for gastric and intestinal healing",
+    mechanism:
+      "Adheres to ulcer sites; stimulates mucus secretion and tissue repair; antioxidant in GI tract",
+    researchUrl: "https://examine.com/supplements/zinc-carnosine/",
+    category: "mineral" as SupplementCategory,
+    commonGoals: ["health"],
+    safetyCategory: "zinc" as SafetyCategoryKey,
+    peakMinutes: 120,
+    halfLifeMinutes: 300, // ~5h
+    absorptionWindowMinutes: 180,
+    bioavailabilityPercent: 40,
+  },
+  {
+    name: "Tart Cherry Extract",
+    form: "Prunus cerasus Extract",
+    elementalWeight: 100,
+    defaultUnit: "mg" as const,
+    aliases: ["tart cherry", "montmorency cherry", "sour cherry"],
+    description:
+      "Natural source of melatonin and anthocyanins supporting sleep and recovery",
+    mechanism:
+      "Contains natural melatonin; anthocyanins reduce oxidative stress and inflammation",
+    researchUrl: "https://examine.com/supplements/tart-cherry/",
+    category: "other" as SupplementCategory,
+    commonGoals: ["sleep", "health"],
+    safetyCategory: null as SafetyCategoryKey,
+    peakMinutes: 90,
+    halfLifeMinutes: 240, // ~4h for anthocyanins
+    absorptionWindowMinutes: 120,
+    bioavailabilityPercent: 15,
+  },
+  {
+    name: "Lutein",
+    form: "Lutein",
+    elementalWeight: 100,
+    defaultUnit: "mg" as const,
+    aliases: ["lutein", "marigold extract"],
+    description:
+      "Carotenoid concentrated in the macula supporting eye health and blue light protection",
+    mechanism:
+      "Filters high-energy blue light; antioxidant protecting retinal photoreceptors from oxidative damage",
+    researchUrl: "https://examine.com/supplements/lutein/",
+    category: "antioxidant" as SupplementCategory,
+    commonGoals: ["health"],
+    safetyCategory: null as SafetyCategoryKey,
+    peakMinutes: 960, // ~16h
+    halfLifeMinutes: 11520, // ~8 days tissue
+    absorptionWindowMinutes: 480,
+    bioavailabilityPercent: 20, // Needs fat
+  },
+  {
+    name: "Zeaxanthin",
+    form: "Zeaxanthin",
+    elementalWeight: 100,
+    defaultUnit: "mg" as const,
+    aliases: ["zeaxanthin", "meso-zeaxanthin"],
+    description:
+      "Macular carotenoid working synergistically with lutein for retinal protection",
+    mechanism:
+      "Concentrated in fovea; filters blue light and neutralizes reactive oxygen species in retina",
+    researchUrl: "https://examine.com/supplements/lutein/",
+    category: "antioxidant" as SupplementCategory,
+    commonGoals: ["health"],
+    safetyCategory: null as SafetyCategoryKey,
+    peakMinutes: 960,
+    halfLifeMinutes: 11520, // Similar to lutein
+    absorptionWindowMinutes: 480,
+    bioavailabilityPercent: 20,
+  },
+  {
+    name: "Silica",
+    form: "Orthosilicic Acid",
+    elementalWeight: 100,
+    defaultUnit: "mg" as const,
+    aliases: ["silicon", "orthosilicic acid", "bamboo extract"],
+    description:
+      "Trace mineral supporting collagen formation and connective tissue strength",
+    mechanism:
+      "Cofactor for prolyl hydroxylase in collagen synthesis; supports bone mineralization",
+    researchUrl: "https://examine.com/supplements/silicon/",
+    category: "mineral" as SupplementCategory,
+    commonGoals: ["health"],
+    safetyCategory: null as SafetyCategoryKey,
+    peakMinutes: 120,
+    halfLifeMinutes: 240, // ~4h
+    absorptionWindowMinutes: 120,
+    bioavailabilityPercent: 50, // Orthosilicic acid form
+  },
 ];
 
 async function seed() {

@@ -149,8 +149,8 @@ async function checkInteractionsViaEngine(
           unit: d.unit,
         })),
       }),
-      // Short timeout - fall back to TS if engine is slow
-      signal: AbortSignal.timeout(3000),
+      // Allow 8s for cold start on Fly.io, fall back to TS if engine is slow
+      signal: AbortSignal.timeout(8000),
     });
 
     if (!response.ok) {

@@ -236,7 +236,7 @@ export async function checkNeedsOnboarding(): Promise<boolean> {
 /**
  * Create a stack from onboarding flow data.
  * Takes user-selected supplements with dosages and creates a new stack.
- * Optionally saves the selected goal.
+ * Optionally saves the selected goals.
  */
 export async function createStackFromOnboarding(data: {
   stackName: string;
@@ -245,7 +245,7 @@ export async function createStackFromOnboarding(data: {
     dosage: number;
     unit: "mg" | "mcg" | "g" | "IU" | "ml";
   }>;
-  goal?: GoalKey;
+  goals?: GoalKey[];
 }): Promise<{ success: boolean; stackId?: string; error?: string }> {
   const session = await getSession();
   if (!session) {
@@ -270,9 +270,14 @@ export async function createStackFromOnboarding(data: {
     return { success: false, error: "Some supplements not found" };
   }
 
-  // Validate goal if provided
-  if (data.goal && !goals.some((g) => g.key === data.goal)) {
-    return { success: false, error: "Invalid goal" };
+  // Validate goals if provided
+  if (data.goals && data.goals.length > 0) {
+    const invalidGoals = data.goals.filter(
+      (g) => !goals.some((goal) => goal.key === g),
+    );
+    if (invalidGoals.length > 0) {
+      return { success: false, error: "Invalid goals" };
+    }
   }
 
   // Create stack
@@ -298,18 +303,20 @@ export async function createStackFromOnboarding(data: {
 
   await db.insert(stackItem).values(stackItems);
 
-  // Save goal if provided (as primary goal with priority 1)
-  if (data.goal) {
+  // Save goals if provided (with priority based on selection order)
+  if (data.goals && data.goals.length > 0) {
     // Delete any existing goals first (shouldn't have any for new users, but just in case)
     await db.delete(userGoal).where(eq(userGoal.userId, session.user.id));
 
-    // Insert the selected goal
-    await db.insert(userGoal).values({
+    // Insert all selected goals with priority based on order
+    const goalInserts = data.goals.map((goal, index) => ({
       userId: session.user.id,
-      goal: data.goal,
-      priority: 1,
+      goal,
+      priority: index + 1,
       createdAt: new Date(),
-    });
+    }));
+
+    await db.insert(userGoal).values(goalInserts);
   }
 
   revalidatePath("/dashboard");

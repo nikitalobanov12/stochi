@@ -50,7 +50,7 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(0);
-  const [selectedGoal, setSelectedGoal] = useState<GoalKey | null>(null);
+  const [selectedGoals, setSelectedGoals] = useState<GoalKey[]>([]);
   const [selectedSupplements, setSelectedSupplements] = useState<
     SelectedSupplement[]
   >([]);
@@ -67,15 +67,15 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
   }, []);
 
   const handleGoalNext = useCallback(
-    (goalKey: GoalKey | null) => {
-      setSelectedGoal(goalKey);
+    (goalKeys: GoalKey[]) => {
+      setSelectedGoals(goalKeys);
       goNext();
     },
     [goNext],
   );
 
   const handleGoalSkip = useCallback(() => {
-    setSelectedGoal(null);
+    setSelectedGoals([]);
     goNext();
   }, [goNext]);
 
@@ -91,13 +91,13 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
         dosage: s.dosage,
         unit: s.unit,
       })),
-      goal: selectedGoal ?? undefined,
+      goals: selectedGoals.length > 0 ? selectedGoals : undefined,
     });
 
     if (result.success) {
       router.refresh();
     }
-  }, [stackName, selectedSupplements, selectedGoal, router]);
+  }, [stackName, selectedSupplements, selectedGoals, router]);
 
   if (!open) return null;
 
@@ -151,7 +151,7 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
               {step === 2 && (
                 <BuildStackStep
                   supplements={supplements}
-                  selectedGoal={selectedGoal}
+                  selectedGoals={selectedGoals}
                   selected={selectedSupplements}
                   stackName={stackName}
                   onChangeSupplements={setSelectedSupplements}
