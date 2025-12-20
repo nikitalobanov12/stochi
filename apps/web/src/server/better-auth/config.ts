@@ -8,6 +8,11 @@ export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
   }),
+  user: {
+    deleteUser: {
+      enabled: true,
+    },
+  },
   socialProviders: {
     ...(env.BETTER_AUTH_GITHUB_CLIENT_ID &&
       env.BETTER_AUTH_GITHUB_CLIENT_SECRET && {

@@ -12,6 +12,9 @@ import {
   Check,
   Zap,
   AlertTriangle,
+  Clock,
+  ExternalLink,
+  FlaskConical,
 } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
@@ -131,33 +134,42 @@ function TemplateCard({
       )}
     >
       <div className="flex items-start justify-between gap-2">
-        <div className="flex-1">
+        <div className="flex-1 space-y-2">
           {/* Header */}
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-foreground font-mono text-sm font-medium">
               {template.name}
             </span>
             <AuthorityBadge authority={template.authority} />
+            {template.isResearchStack && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-purple-500/10 px-2 py-0.5 font-mono text-[9px] text-purple-400">
+                <FlaskConical className="h-2.5 w-2.5" />
+                RESEARCH
+              </span>
+            )}
           </div>
 
           {/* Description */}
-          <p className="text-muted-foreground mt-1 font-mono text-xs">
+          <p className="text-muted-foreground font-mono text-xs">
             {template.description}
           </p>
 
-          {/* Source */}
-          {template.source && (
-            <p className="text-muted-foreground/60 mt-1 font-mono text-[10px]">
-              Source: {template.source}
-            </p>
+          {/* Usage notes */}
+          {template.usage && (
+            <div className="flex items-start gap-1.5 rounded bg-white/5 px-2 py-1.5">
+              <Clock className="text-muted-foreground mt-0.5 h-3 w-3 shrink-0" />
+              <p className="text-muted-foreground font-mono text-[10px] leading-relaxed">
+                {template.usage}
+              </p>
+            </div>
           )}
 
           {/* Supplements preview */}
-          <div className="text-muted-foreground mt-2 flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1">
             {template.supplements.map((supp, i) => (
               <span
                 key={i}
-                className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[10px]"
+                className="text-muted-foreground rounded bg-white/5 px-1.5 py-0.5 font-mono text-[10px]"
               >
                 {supp.supplementName} {supp.dosage}
                 {supp.unit}
@@ -165,8 +177,23 @@ function TemplateCard({
             ))}
           </div>
 
-          {/* Interactions */}
-          <div className="mt-2">
+          {/* Footer: Source + Interactions */}
+          <div className="flex items-center justify-between">
+            {/* Source */}
+            {template.source && (
+              <p className="text-muted-foreground/60 font-mono text-[10px]">
+                {template.sourceUrl ? (
+                  <span className="inline-flex items-center gap-1">
+                    {template.source}
+                    <ExternalLink className="h-2 w-2" />
+                  </span>
+                ) : (
+                  template.source
+                )}
+              </p>
+            )}
+
+            {/* Interactions */}
             <InteractionBadges interactions={template.interactions} />
           </div>
         </div>
@@ -205,12 +232,13 @@ export function ProtocolLibraryDialog({
 
   const templates = getTemplatesByAuthority();
 
-  // Group by authority
-  const highAuthority = templates.filter((t) => t.authority === "high");
-  const mediumAuthority = templates.filter((t) => t.authority === "medium");
+  // Group by authority, separating research stacks
+  const highAuthority = templates.filter((t) => t.authority === "high" && !t.isResearchStack);
+  const mediumAuthority = templates.filter((t) => t.authority === "medium" && !t.isResearchStack);
   const communityAuthority = templates.filter(
-    (t) => t.authority === "community" || !t.authority,
+    (t) => (t.authority === "community" || !t.authority) && !t.isResearchStack,
   );
+  const researchStacks = templates.filter((t) => t.isResearchStack);
 
   function handleSelect(templateKey: string) {
     setLoadingKey(templateKey);
@@ -319,6 +347,30 @@ export function ProtocolLibraryDialog({
               </h3>
               <div className="space-y-2">
                 {communityAuthority.map((template) => (
+                  <TemplateCard
+                    key={template.key}
+                    template={template}
+                    onSelect={() => handleSelect(template.key)}
+                    isLoading={loadingKey === template.key && isPending}
+                    isImported={importedKeys.has(template.key)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Research/Peptide Stacks */}
+          {researchStacks.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="flex items-center gap-2 font-mono text-[10px] tracking-wider uppercase text-purple-400">
+                <FlaskConical className="h-3 w-3" />
+                Research Compounds
+              </h3>
+              <p className="text-muted-foreground/70 font-mono text-[10px]">
+                Peptides and research chemicals. For experienced users only.
+              </p>
+              <div className="space-y-2">
+                {researchStacks.map((template) => (
                   <TemplateCard
                     key={template.key}
                     template={template}

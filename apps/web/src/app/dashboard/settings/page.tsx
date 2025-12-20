@@ -7,6 +7,7 @@ import { getSession } from "~/server/better-auth/server";
 import { getUserGoals } from "~/server/actions/goals";
 import { ExportButton } from "~/components/settings/export-button";
 import { GoalsCard } from "~/components/settings/goals-card";
+import { DeleteAccountCard } from "~/components/settings/delete-account-card";
 
 // Limit export to last 10,000 entries to prevent memory issues
 const EXPORT_LIMIT = 10000;
@@ -163,6 +164,14 @@ export default async function SettingsPage() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Danger Zone */}
+      <section className="space-y-3">
+        <p className="text-destructive/80 text-[10px] tracking-wider uppercase">
+          Danger Zone
+        </p>
+        <DeleteAccountCard logCount={logCount} stackCount={stackCount} />
       </section>
     </div>
   );
