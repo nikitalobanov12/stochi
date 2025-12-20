@@ -1,26 +1,28 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { CommandBar } from "~/components/log/command-bar";
+import { CommandBar, type LogOptions } from "~/components/log/command-bar";
 import { ToxicityWarningDialog } from "~/components/ui/toxicity-warning-dialog";
 import { createLog, type CreateLogResult } from "~/server/actions/logs";
 import { type SafetyCheckResult } from "~/server/services/safety";
+import { type routeEnum } from "~/server/db/schema";
+
+type RouteOfAdministration = (typeof routeEnum.enumValues)[number];
 
 type Supplement = {
   id: string;
   name: string;
   form: string | null;
+  route?: RouteOfAdministration | null;
+  isResearchChemical?: boolean | null;
+  safetyCategory?: string | null;
 };
 
 type SafeCommandBarProps = {
   supplements: Supplement[];
 };
 
-type PendingLog = {
-  supplementId: string;
-  dosage: number;
-  unit: "mg" | "mcg" | "g" | "IU" | "ml";
-};
+type PendingLog = LogOptions;
 
 export function SafeCommandBar({ supplements }: SafeCommandBarProps) {
   const [isPending, startTransition] = useTransition();
@@ -30,20 +32,23 @@ export function SafeCommandBar({ supplements }: SafeCommandBarProps) {
   );
   const [showWarning, setShowWarning] = useState(false);
 
-  async function handleLog(
-    supplementId: string,
-    dosage: number,
-    unit: "mg" | "mcg" | "g" | "IU" | "ml",
-  ): Promise<void> {
+  async function handleLog(options: LogOptions): Promise<void> {
     // Store the pending log details in case we need to retry with override
-    setPendingLog({ supplementId, dosage, unit });
+    setPendingLog(options);
 
-    const result: CreateLogResult = await createLog(supplementId, dosage, unit);
+    const result: CreateLogResult = await createLog({
+      supplementId: options.supplementId,
+      dosage: options.dosage,
+      unit: options.unit,
+      route: options.route,
+      mealContext: options.mealContext,
+    });
 
     if (result.success) {
       // Clear pending state
       setPendingLog(null);
       setSafetyCheck(null);
+      // Note: mealContextWarning is informational only, not blocking
       return;
     }
 
@@ -63,13 +68,14 @@ export function SafeCommandBar({ supplements }: SafeCommandBarProps) {
 
     startTransition(async () => {
       // Retry with force override (soft limits only)
-      const result = await createLog(
-        pendingLog.supplementId,
-        pendingLog.dosage,
-        pendingLog.unit,
-        undefined, // loggedAt
-        true, // forceOverride
-      );
+      const result = await createLog({
+        supplementId: pendingLog.supplementId,
+        dosage: pendingLog.dosage,
+        unit: pendingLog.unit,
+        route: pendingLog.route,
+        mealContext: pendingLog.mealContext,
+        forceOverride: true,
+      });
 
       if (result.success) {
         setPendingLog(null);

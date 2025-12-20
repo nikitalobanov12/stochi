@@ -10,7 +10,7 @@ import {
 } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Terminal, X, Sparkles, Loader2 } from "lucide-react";
+import { Terminal, X, Sparkles, Loader2, Salad, Syringe } from "lucide-react";
 import {
   getServingPresets,
   type ServingPreset,
@@ -28,20 +28,35 @@ import {
   CommandItem,
   CommandList,
 } from "~/components/ui/command";
+import {
+  getBioavailabilityRule,
+  type BioavailabilityModifier,
+} from "~/server/data/bioavailability-rules";
+import { type routeEnum, type mealContextEnum } from "~/server/db/schema";
+
+type RouteOfAdministration = (typeof routeEnum.enumValues)[number];
+type MealContext = (typeof mealContextEnum.enumValues)[number];
 
 type Supplement = {
   id: string;
   name: string;
   form: string | null;
+  route?: RouteOfAdministration | null;
+  isResearchChemical?: boolean | null;
+  safetyCategory?: string | null;
+};
+
+export type LogOptions = {
+  supplementId: string;
+  dosage: number;
+  unit: "mg" | "mcg" | "g" | "IU" | "ml";
+  route?: RouteOfAdministration;
+  mealContext?: MealContext;
 };
 
 type CommandBarProps = {
   supplements: Supplement[];
-  onLog: (
-    supplementId: string,
-    dosage: number,
-    unit: "mg" | "mcg" | "g" | "IU" | "ml",
-  ) => Promise<void>;
+  onLog: (options: LogOptions) => Promise<void>;
 };
 
 const UNITS = ["mg", "mcg", "g", "IU", "ml"] as const;
@@ -185,6 +200,22 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
     return getServingPresets(selectedSupplement.name);
   }, [selectedSupplement]);
 
+  // Get bioavailability rule for the selected supplement
+  const bioRule: BioavailabilityModifier | undefined = useMemo(() => {
+    if (!selectedSupplement) return undefined;
+    return getBioavailabilityRule(
+      selectedSupplement.name,
+      selectedSupplement.safetyCategory,
+    );
+  }, [selectedSupplement]);
+
+  // Check if supplement is injectable (non-oral route)
+  const isInjectable = useMemo(() => {
+    if (!selectedSupplement) return false;
+    const route = selectedSupplement.route;
+    return route && ["subq_injection", "im_injection", "intranasal", "sublingual"].includes(route);
+  }, [selectedSupplement]);
+
   const canSubmit = selectedSupplement && parsedDosage;
 
   // Check if we can do a one-shot log (supplement + dosage in one input)
@@ -264,7 +295,12 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
 
     startTransition(async () => {
       try {
-        await onLog(targetSupplement.id, targetDosage.value, targetDosage.unit);
+        await onLog({
+          supplementId: targetSupplement.id,
+          dosage: targetDosage.value,
+          unit: targetDosage.unit,
+          route: targetSupplement.route ?? undefined,
+        });
         setFeedback({
           type: "success",
           message: `Logged ${pendingMessage}`,
@@ -285,6 +321,7 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
     const pendingMessage = `${preset.label} (${preset.dosage}${preset.unit}) ${selectedSupplement.name}`;
     const suppName = selectedSupplement.name;
     const suppId = selectedSupplement.id;
+    const suppRoute = selectedSupplement.route;
     setFeedback({
       type: "pending",
       message: `Logging ${pendingMessage}...`,
@@ -294,7 +331,12 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
 
     startTransition(async () => {
       try {
-        await onLog(suppId, preset.dosage, preset.unit);
+        await onLog({
+          supplementId: suppId,
+          dosage: preset.dosage,
+          unit: preset.unit,
+          route: suppRoute ?? undefined,
+        });
         setFeedback({
           type: "success",
           message: `Logged ${preset.label} (${preset.dosage}${preset.unit}) ${suppName}`,
@@ -487,6 +529,52 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
                 </span>
               </Button>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Bioavailability hint - show when supplement needs special meal context */}
+      {selectedSupplement && bioRule && (
+        <div className="bg-amber-500/10 flex items-start gap-2 rounded-md px-3 py-2">
+          <Salad className="h-4 w-4 shrink-0 text-amber-500" />
+          <div className="space-y-0.5">
+            <p className="text-foreground text-xs font-medium">
+              {bioRule.optimalMultiplier > 1
+                ? `+${Math.round((bioRule.optimalMultiplier - 1) * 100)}% absorption`
+                : "Optimal timing"}
+            </p>
+            <p className="text-muted-foreground text-xs">
+              {bioRule.optimalContexts.includes("with_fat")
+                ? "Take with a meal containing fat"
+                : bioRule.optimalContexts.includes("fasted")
+                  ? "Take on an empty stomach"
+                  : "Take with food"}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Route hint - show for injectable/non-oral supplements */}
+      {selectedSupplement && isInjectable && (
+        <div className="bg-blue-500/10 flex items-start gap-2 rounded-md px-3 py-2">
+          <Syringe className="h-4 w-4 shrink-0 text-blue-500" />
+          <div className="space-y-0.5">
+            <p className="text-foreground text-xs font-medium">
+              {selectedSupplement.route === "subq_injection"
+                ? "Subcutaneous injection"
+                : selectedSupplement.route === "im_injection"
+                  ? "Intramuscular injection"
+                  : selectedSupplement.route === "intranasal"
+                    ? "Intranasal spray"
+                    : selectedSupplement.route === "sublingual"
+                      ? "Sublingual (under tongue)"
+                      : selectedSupplement.route}
+            </p>
+            {selectedSupplement.isResearchChemical && (
+              <p className="text-muted-foreground text-xs">
+                Research compound - consult usage guidelines
+              </p>
+            )}
           </div>
         </div>
       )}

@@ -2,26 +2,28 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { Search } from "lucide-react";
-import { CommandBar } from "~/components/log/command-bar";
+import { CommandBar, type LogOptions } from "~/components/log/command-bar";
 import { ToxicityWarningDialog } from "~/components/ui/toxicity-warning-dialog";
 import { createLog, type CreateLogResult } from "~/server/actions/logs";
 import { type SafetyCheckResult } from "~/server/services/safety";
+import { type routeEnum } from "~/server/db/schema";
+
+type RouteOfAdministration = (typeof routeEnum.enumValues)[number];
 
 type Supplement = {
   id: string;
   name: string;
   form: string | null;
+  route?: RouteOfAdministration | null;
+  isResearchChemical?: boolean | null;
+  safetyCategory?: string | null;
 };
 
 type DashboardCommandBarProps = {
   supplements: Supplement[];
 };
 
-type PendingLog = {
-  supplementId: string;
-  dosage: number;
-  unit: "mg" | "mcg" | "g" | "IU" | "ml";
-};
+type PendingLog = LogOptions;
 
 const PROMPTS = [
   "Log Stack...",
@@ -52,14 +54,16 @@ export function DashboardCommandBar({ supplements }: DashboardCommandBarProps) {
     return () => clearInterval(interval);
   }, [isExpanded]);
 
-  async function handleLog(
-    supplementId: string,
-    dosage: number,
-    unit: "mg" | "mcg" | "g" | "IU" | "ml",
-  ): Promise<void> {
-    setPendingLog({ supplementId, dosage, unit });
+  async function handleLog(options: LogOptions): Promise<void> {
+    setPendingLog(options);
 
-    const result: CreateLogResult = await createLog(supplementId, dosage, unit);
+    const result: CreateLogResult = await createLog({
+      supplementId: options.supplementId,
+      dosage: options.dosage,
+      unit: options.unit,
+      route: options.route,
+      mealContext: options.mealContext,
+    });
 
     if (result.success) {
       setPendingLog(null);
@@ -83,13 +87,14 @@ export function DashboardCommandBar({ supplements }: DashboardCommandBarProps) {
     if (!pendingLog) return;
 
     startTransition(async () => {
-      const result = await createLog(
-        pendingLog.supplementId,
-        pendingLog.dosage,
-        pendingLog.unit,
-        undefined,
-        true,
-      );
+      const result = await createLog({
+        supplementId: pendingLog.supplementId,
+        dosage: pendingLog.dosage,
+        unit: pendingLog.unit,
+        route: pendingLog.route,
+        mealContext: pendingLog.mealContext,
+        forceOverride: true,
+      });
 
       if (result.success) {
         setPendingLog(null);
