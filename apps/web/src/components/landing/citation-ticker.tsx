@@ -1,12 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { cn } from "~/lib/utils";
 
 /**
- * CitationTicker - Horizontal scrolling ticker showing real-time PMID citations
+ * CitationTicker - Attio-inspired horizontal ticker showing PMID citations
  *
- * Displays PMIDs being "interpreted" to establish scientific authority.
- * Links are clickable and go directly to PubMed.
+ * Design updates:
+ * - Translucent card with softer borders
+ * - Gradient accent instead of solid green
+ * - Cleaner typography
+ * - Smoother animations
  */
 
 // Real PMIDs from the interaction database and additional research
@@ -73,43 +77,44 @@ export function CitationTicker() {
   if (!current) return null;
 
   return (
-    <div className="overflow-hidden rounded-lg border border-[#30363D] bg-[#0D1117]">
+    <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.02] backdrop-blur-sm">
       <div className="flex items-center gap-3 px-4 py-3">
         {/* Pulsing indicator */}
         <div className="relative flex h-2 w-2 shrink-0">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#39FF14] opacity-75" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-[#39FF14]" />
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
         </div>
 
         {/* Status label */}
-        <span className="shrink-0 font-mono text-[10px] tracking-widest text-[#A8B1BB] uppercase">
+        <span className="shrink-0 text-xs font-medium tracking-wide text-white/30">
           Interpreting
         </span>
 
         {/* Citation content - animated */}
         <div
-          className={`flex min-w-0 flex-1 items-center gap-2 transition-opacity duration-300 ${
+          className={cn(
+            "flex min-w-0 flex-1 items-center gap-2 transition-opacity duration-300",
             isAnimating ? "opacity-0" : "opacity-100"
-          }`}
+          )}
         >
           <a
             href={`https://pubmed.ncbi.nlm.nih.gov/${current.pmid}/`}
             target="_blank"
             rel="noopener noreferrer"
-            className="shrink-0 font-mono text-xs text-[#39FF14] transition-colors hover:underline"
+            className="shrink-0 font-mono text-xs text-emerald-400 transition-colors hover:text-emerald-300 hover:underline"
           >
             PMID:{current.pmid}
           </a>
-          <span className="text-[#30363D]" aria-hidden="true">
+          <span className="text-white/20" aria-hidden="true">
             →
           </span>
-          <span className="truncate font-mono text-xs text-[#E6EDF3]">
+          <span className="truncate text-xs text-white/50">
             {current.finding}
           </span>
         </div>
 
         {/* Counter */}
-        <span className="shrink-0 font-mono text-[10px] text-[#A8B1BB]/50 tabular-nums">
+        <span className="shrink-0 font-mono text-[10px] text-white/30 tabular-nums">
           {currentIndex + 1}/{CITATIONS.length}
         </span>
       </div>
@@ -125,10 +130,10 @@ export function CitationTicker() {
  */
 export function CitationMarquee() {
   return (
-    <div className="relative overflow-hidden rounded-lg border border-[#30363D] bg-[#0D1117] py-3">
+    <div className="relative overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.02] py-3 backdrop-blur-sm">
       {/* Gradient masks */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-[#0D1117] to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-[#0D1117] to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-[#0A0C10] to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-[#0A0C10] to-transparent" />
 
       {/* Scrolling content */}
       <div className="animate-marquee flex gap-8 whitespace-nowrap">
@@ -139,12 +144,12 @@ export function CitationMarquee() {
             href={`https://pubmed.ncbi.nlm.nih.gov/${citation.pmid}/`}
             target="_blank"
             rel="noopener noreferrer"
-            className="group inline-flex items-center gap-2 font-mono text-xs"
+            className="group inline-flex items-center gap-2 text-xs"
           >
-            <span className="text-[#39FF14] group-hover:underline">
+            <span className="font-mono text-emerald-400 group-hover:text-emerald-300 group-hover:underline">
               PMID:{citation.pmid}
             </span>
-            <span className="text-[#A8B1BB]">{citation.finding}</span>
+            <span className="text-white/50">{citation.finding}</span>
           </a>
         ))}
       </div>

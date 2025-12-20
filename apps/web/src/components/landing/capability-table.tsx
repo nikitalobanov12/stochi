@@ -82,20 +82,20 @@ function SupportIcon({ support }: { support: FeatureSupport }) {
   switch (support) {
     case "full":
       return (
-        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#39FF14]/10">
-          <Check className="h-3 w-3 text-[#39FF14]" strokeWidth={3} />
+        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/10">
+          <Check className="h-3 w-3 text-emerald-400" strokeWidth={3} />
         </div>
       );
     case "partial":
       return (
-        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#F0A500]/10">
-          <Minus className="h-3 w-3 text-[#F0A500]" strokeWidth={3} />
+        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500/10">
+          <Minus className="h-3 w-3 text-amber-400" strokeWidth={3} />
         </div>
       );
     case "none":
       return (
-        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#FF6B6B]/10">
-          <X className="h-3 w-3 text-[#FF6B6B]" strokeWidth={3} />
+        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500/10">
+          <X className="h-3 w-3 text-red-400" strokeWidth={3} />
         </div>
       );
   }
@@ -103,37 +103,37 @@ function SupportIcon({ support }: { support: FeatureSupport }) {
 
 export function CapabilityTable() {
   return (
-    <div className="overflow-x-auto rounded-xl border border-[#30363D] bg-[#0D1117]">
+    <div className="overflow-x-auto rounded-2xl border border-white/[0.08] bg-white/[0.02] backdrop-blur-sm">
       <div className="min-w-[480px]">
         {/* Header */}
-        <div className="grid grid-cols-4 gap-4 border-b border-[#30363D] bg-[#161B22] px-4 py-3">
-          <div className="font-mono text-[10px] tracking-widest text-[#A8B1BB] uppercase">
+        <div className="grid grid-cols-4 gap-4 border-b border-white/[0.06] bg-white/[0.02] px-4 py-3">
+          <div className="text-[10px] font-medium uppercase tracking-widest text-white/40">
             Feature
           </div>
-          <div className="text-center font-mono text-[10px] tracking-widest text-[#39FF14] uppercase">
+          <div className="text-center text-[10px] font-medium uppercase tracking-widest text-emerald-400">
             Stochi
           </div>
-          <div className="text-center font-mono text-[10px] tracking-widest text-[#A8B1BB] uppercase">
+          <div className="text-center text-[10px] font-medium uppercase tracking-widest text-white/40">
             Generic Apps
           </div>
-          <div className="text-center font-mono text-[10px] tracking-widest text-[#A8B1BB] uppercase">
+          <div className="text-center text-[10px] font-medium uppercase tracking-widest text-white/40">
             Spreadsheet
           </div>
         </div>
 
         {/* Rows */}
-        <div className="divide-y divide-[#30363D]/50">
+        <div className="divide-y divide-white/[0.04]">
           {FEATURES.map((feature) => (
             <div
               key={feature.name}
-              className="grid grid-cols-4 gap-4 px-4 py-3 transition-colors hover:bg-[#161B22]/50"
+              className="grid grid-cols-4 gap-4 px-4 py-3 transition-colors hover:bg-white/[0.02]"
             >
               <div>
-                <p className="font-mono text-xs font-medium text-[#E6EDF3]">
+                <p className="text-xs font-medium text-white/90">
                   {feature.name}
                 </p>
                 {feature.description && (
-                  <p className="mt-0.5 text-[10px] text-[#A8B1BB]">
+                  <p className="mt-0.5 text-[10px] text-white/40">
                     {feature.description}
                   </p>
                 )}
@@ -152,11 +152,11 @@ export function CapabilityTable() {
         </div>
 
         {/* Footer stats */}
-        <div className="flex items-center justify-between border-t border-[#30363D] bg-[#161B22] px-4 py-2">
-          <span className="font-mono text-[10px] text-[#A8B1BB]">
-            <span className="text-[#39FF14]">8</span>/8 features
+        <div className="flex items-center justify-between border-t border-white/[0.06] bg-white/[0.02] px-4 py-2">
+          <span className="font-mono text-[10px] text-white/50">
+            <span className="text-emerald-400">8</span>/8 features
           </span>
-          <span className="font-mono text-[10px] text-[#A8B1BB]/50">
+          <span className="font-mono text-[10px] text-white/30">
             Updated Dec 2025
           </span>
         </div>
@@ -176,16 +176,16 @@ export function CapabilityTableCompact() {
       {keyFeatures.map((feature) => (
         <div
           key={feature.name}
-          className="flex items-center justify-between rounded-lg border border-[#30363D] bg-[#0D1117] px-3 py-2"
+          className="flex items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.02] px-3 py-2"
         >
           <div className="flex items-center gap-2">
             <SupportIcon support={feature.stochi} />
-            <span className="font-mono text-xs text-[#E6EDF3]">
+            <span className="text-xs text-white/90">
               {feature.name}
             </span>
           </div>
           <div className="flex items-center gap-4 font-mono text-[10px]">
-            <span className="text-[#A8B1BB]/50">Generic: </span>
+            <span className="text-white/30">Generic: </span>
             <SupportIcon support={feature.genericApps} />
           </div>
         </div>

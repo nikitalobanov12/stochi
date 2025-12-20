@@ -2,9 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { ChevronRight } from "lucide-react";
-import { motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { ChevronRight, Zap } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { Button } from "~/components/ui/button";
 import { HeroInteractionAlert } from "~/components/landing/hero-interaction-alert";
@@ -14,6 +14,13 @@ import {
   CompoundTicker,
   CompoundBadgeGrid,
 } from "~/components/landing/compound-ticker";
+import { BentoSection } from "~/components/landing/bento-grid";
+import { BentoCard } from "~/components/landing/bento-card";
+import { LandingTimeline } from "~/components/landing/landing-timeline";
+import { LandingBioScore } from "~/components/landing/landing-bio-score";
+import { MechanisticFeed } from "~/components/landing/mechanistic-feed";
+import { ExpertStacks } from "~/components/landing/expert-stacks";
+import { RiskCardCompact } from "~/components/landing/risk-card-compact";
 
 // ============================================================================
 // Animation Variants
@@ -146,8 +153,27 @@ const INTERACTION_DATABASE: Record<
 // ============================================================================
 
 export function LandingPage() {
+  const heroCTARef = useRef<HTMLDivElement>(null);
+  const [showStickyCTA, setShowStickyCTA] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        // Show sticky CTA when hero CTA is NOT visible
+        setShowStickyCTA(!entry?.isIntersecting);
+      },
+      { threshold: 0, rootMargin: "-50px 0px 0px 0px" }
+    );
+
+    if (heroCTARef.current) {
+      observer.observe(heroCTARef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <main className="relative min-h-screen bg-[#0A0C10] font-sans text-[#E6EDF3]">
+    <main className="relative min-h-screen bg-[#0A0C10] font-sans text-white/90">
       {/* Decorative overlays - hidden from screen readers */}
       <div aria-hidden="true">
         {/* Noise texture overlay */}
@@ -171,17 +197,17 @@ export function LandingPage() {
         <div className="pointer-events-none fixed inset-0 z-[1]">
           {/* Main grid */}
           <div
-            className="absolute inset-0 opacity-[0.04]"
+            className="absolute inset-0 opacity-[0.015]"
             style={{
               backgroundImage: `
-                linear-gradient(to right, #39FF14 1px, transparent 1px),
-                linear-gradient(to bottom, #39FF14 1px, transparent 1px)
+                linear-gradient(to right, rgba(16,185,129,0.4) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(16,185,129,0.4) 1px, transparent 1px)
               `,
               backgroundSize: "80px 80px",
             }}
           />
           {/* Crosshairs at intersections */}
-          <svg className="absolute inset-0 h-full w-full opacity-[0.08]">
+          <svg className="absolute inset-0 h-full w-full opacity-[0.03]">
             <defs>
               <pattern
                 id="crosshairs"
@@ -191,7 +217,7 @@ export function LandingPage() {
               >
                 <path
                   d="M40 38v4M38 40h4"
-                  stroke="#39FF14"
+                  stroke="rgb(16,185,129)"
                   strokeWidth="1"
                   fill="none"
                 />
@@ -207,15 +233,36 @@ export function LandingPage() {
         {/* Skip to main content link for keyboard users */}
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded focus:bg-[#39FF14] focus:px-4 focus:py-2 focus:text-[#0A0C10] focus:outline-none"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded focus:bg-emerald-500 focus:px-4 focus:py-2 focus:text-white focus:outline-none"
         >
           Skip to main content
         </a>
 
-        {/* Navigation */}
+        {/* Sticky CTA - appears when hero CTA scrolls out of view */}
+        <AnimatePresence>
+          {showStickyCTA && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.2 }}
+              className="fixed right-4 top-4 z-50"
+            >
+              <Button
+                asChild
+                size="sm"
+                className="rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 px-4 text-xs font-medium text-white shadow-lg shadow-emerald-500/25 transition-all hover:shadow-xl hover:shadow-emerald-500/30 hover:brightness-110"
+              >
+                <Link href="/auth/sign-up">Get Started</Link>
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Navigation - scrollable */}
         <nav
           aria-label="Main navigation"
-          className="fixed top-0 right-0 left-0 z-50 border-b border-[#30363D]/50 bg-[#0A0C10]/95 backdrop-blur-md"
+          className="border-b border-white/[0.06] bg-[#0A0C10]"
         >
           <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
             <Link href="/" className="flex items-center gap-2">
@@ -226,8 +273,8 @@ export function LandingPage() {
                 height={24}
                 className="h-6 w-6"
               />
-              <span className="font-mono text-sm font-medium tracking-tight text-[#E6EDF3]">
-                stochi<span className="text-[#39FF14]">_</span>
+              <span className="text-sm font-medium tracking-tight text-white/90">
+                stochi<span className="text-emerald-400">_</span>
               </span>
             </Link>
             <div className="flex items-center gap-3">
@@ -235,16 +282,16 @@ export function LandingPage() {
                 asChild
                 variant="ghost"
                 size="sm"
-                className="font-mono text-xs text-[#A8B1BB] hover:text-[#E6EDF3]"
+                className="text-xs text-white/50 hover:text-white/90"
               >
                 <Link href="/auth/sign-in">Sign in</Link>
               </Button>
               <Button
                 asChild
                 size="sm"
-                className="bg-[#39FF14] font-mono text-xs text-[#0A0C10] hover:bg-[#39FF14]/90"
+                className="rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-xs font-medium text-white transition-all hover:brightness-110"
               >
-                <Link href="/auth/sign-up">Run Your Stack Audit</Link>
+                <Link href="/auth/sign-up">Get Started</Link>
               </Button>
             </div>
           </div>
@@ -254,58 +301,62 @@ export function LandingPage() {
         <section
           id="main-content"
           aria-labelledby="hero-heading"
-          className="flex min-h-screen flex-col items-center justify-center px-4 pt-20"
+          className="flex min-h-screen flex-col items-center justify-center px-4"
         >
           <div className="mx-auto w-full max-w-5xl">
             {/* The Hook - Loss Aversion Headline */}
             <motion.h1
               id="hero-heading"
-              className="text-center text-3xl leading-tight font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl"
+              className="text-center text-3xl leading-[1.1] font-semibold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
             >
-              <span className="text-[#E6EDF3]">Stop Blinding Your Biology.</span>
+              <span className="text-white/95">Stop Blinding Your Biology.</span>
               <br />
-              <span className="text-[#39FF14]">Master 89,000+ Supplement Interactions.</span>
+              <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+                Master 89,000+ Supplement Interactions.
+              </span>
             </motion.h1>
 
             {/* Subhead - Authority with specific scientific risks */}
             <motion.p 
-              className="mx-auto mt-6 max-w-2xl text-center text-base leading-relaxed text-[#A8B1BB] sm:text-lg"
+              className="mx-auto mt-6 max-w-2xl text-center text-base leading-relaxed text-white/50 sm:text-lg"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
             >
               Generic apps miss nutrient blocking and toxicity. Stochi analyzes
               your stack against PubMed-backed data to optimize ratios like{" "}
-              <span className="font-mono text-[#E6EDF3]">Zn:Cu</span> and prevent
+              <span className="font-mono text-white/80">Zn:Cu</span> and prevent
               serotonergic risks in real-time.
             </motion.p>
 
-            {/* Primary CTA - High-motivation prompt */}
-            <motion.div 
-              className="mt-10 flex flex-col items-center justify-center gap-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.4 }}
-            >
-              <Button
-                asChild
-                size="lg"
-                className="bg-[#39FF14] px-10 font-mono text-sm font-semibold text-[#0A0C10] shadow-[0_0_20px_rgba(57,255,20,0.3)] transition-all duration-200 hover:bg-[#32E612] hover:shadow-[0_0_30px_rgba(57,255,20,0.5)]"
+            {/* Primary CTA - Attio-style clean button */}
+            <div ref={heroCTARef}>
+              <motion.div 
+                className="mt-10 flex flex-col items-center justify-center gap-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.4 }}
               >
-                <Link href="/auth/sign-up">Run Your Stack Audit</Link>
-              </Button>
-            </motion.div>
+                <Button
+                  asChild
+                  size="lg"
+                  className="rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 px-8 text-sm font-medium text-white shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/30 hover:brightness-110"
+                >
+                  <Link href="/auth/sign-up">Run Your Stack Audit</Link>
+                </Button>
+              </motion.div>
+            </div>
 
             <motion.div 
-              className="mt-4 text-center font-mono text-[10px] tracking-wider text-[#A8B1BB]"
+              className="mt-4 text-center text-xs tracking-wide text-white/30"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.7, delay: 0.6 }}
             >
-              FREE • NO CREDIT CARD
+              Free forever • No credit card required
             </motion.div>
 
             {/* Hero Visual - High-contrast Interaction Warning */}
@@ -330,6 +381,126 @@ export function LandingPage() {
           </div>
         </section>
 
+        {/* Trust Badges - Authority Anchors */}
+        <motion.section
+          aria-label="Data sources and research partnerships"
+          className="mt-16 border-y border-white/[0.05] bg-white/[0.01] py-8 md:mt-24"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 2.0 }}
+        >
+          <div className="mx-auto max-w-4xl px-4">
+            <p className="mb-6 text-center text-xs text-white/40">
+              Data sources synchronized with global research databases
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
+              {/* NIH */}
+              <a
+                href="https://www.nih.gov"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex flex-col items-center gap-2 opacity-40 transition-opacity duration-300 hover:opacity-80"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/[0.04] text-lg font-bold text-white/60 transition-colors group-hover:bg-white/[0.08]">
+                  NIH
+                </div>
+                <span className="text-[10px] text-white/40 group-hover:text-white/60">
+                  National Institutes of Health
+                </span>
+              </a>
+              
+              {/* PubMed */}
+              <a
+                href="https://pubmed.ncbi.nlm.nih.gov"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex flex-col items-center gap-2 opacity-40 transition-opacity duration-300 hover:opacity-80"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/[0.04] text-xs font-bold text-white/60 transition-colors group-hover:bg-white/[0.08]">
+                  PM
+                </div>
+                <span className="text-[10px] text-white/40 group-hover:text-white/60">
+                  PubMed Database
+                </span>
+              </a>
+              
+              {/* EFSA */}
+              <a
+                href="https://www.efsa.europa.eu"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex flex-col items-center gap-2 opacity-40 transition-opacity duration-300 hover:opacity-80"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/[0.04] text-xs font-bold text-white/60 transition-colors group-hover:bg-white/[0.08]">
+                  EFSA
+                </div>
+                <span className="text-[10px] text-white/40 group-hover:text-white/60">
+                  European Food Safety Authority
+                </span>
+              </a>
+              
+              {/* Examine.com */}
+              <a
+                href="https://examine.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex flex-col items-center gap-2 opacity-40 transition-opacity duration-300 hover:opacity-80"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/[0.04] text-xs font-bold text-white/60 transition-colors group-hover:bg-white/[0.08]">
+                  Ex
+                </div>
+                <span className="text-[10px] text-white/40 group-hover:text-white/60">
+                  Examine.com
+                </span>
+              </a>
+            </div>
+          </div>
+        </motion.section>
+
+        {/* Bento Grid - Feature Showcase */}
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={staggerContainer}
+        >
+          <BentoSection
+            number="01"
+            label="Real-time Analysis"
+            title="See Your Stack in Motion"
+            description="Pharmacokinetic modeling, interaction detection, and biological state optimization—all running continuously."
+          >
+            {/* Row 1: Timeline (2/3) + Bio Score (1/3) */}
+            <BentoCard span="two-thirds" aspect="timeline" showGlow>
+              <div className="p-4 lg:p-6">
+                <LandingTimeline />
+              </div>
+            </BentoCard>
+            <BentoCard span="one-third" aspect="score">
+              <div className="p-4 lg:p-6">
+                <LandingBioScore />
+              </div>
+            </BentoCard>
+
+            {/* Row 2: Feed (1/3) + Expert Stacks (1/3) + Risk Detection (1/3) */}
+            <BentoCard span="one-third" aspect="feed">
+              <div className="p-4 lg:p-5">
+                <MechanisticFeed />
+              </div>
+            </BentoCard>
+            <BentoCard span="one-third" aspect="stack">
+              <div className="p-4 lg:p-5">
+                <ExpertStacks limit={3} />
+              </div>
+            </BentoCard>
+            <BentoCard span="one-third" aspect="stack">
+              <div className="p-4 lg:p-5">
+                <RiskCardCompact limit={3} />
+              </div>
+            </BentoCard>
+          </BentoSection>
+        </motion.div>
+
         {/* Interactive Terminal Section - MOVED TO SECTION 2 (Freemium Hook) */}
         <motion.section
           aria-labelledby="analyzer-heading"
@@ -342,11 +513,11 @@ export function LandingPage() {
           <div className="mx-auto w-full max-w-2xl">
             <h2
               id="analyzer-heading"
-              className="mb-4 text-center font-mono text-xl font-semibold text-[#E6EDF3] sm:text-2xl md:text-3xl"
+              className="mb-4 text-center text-xl font-semibold text-white/90 sm:text-2xl md:text-3xl"
             >
               Try the analyzer.
             </h2>
-            <p className="mx-auto mb-8 text-center text-sm text-[#A8B1BB] sm:text-base">
+            <p className="mx-auto mb-8 text-center text-sm text-white/50 sm:text-base">
               See how Stochi detects interactions instantly. No signup required.
             </p>
 
@@ -366,13 +537,13 @@ export function LandingPage() {
           <div className="mx-auto max-w-4xl">
             <motion.h2
               id="beyond-vitamins-heading"
-              className="mb-4 font-mono text-2xl font-semibold text-[#E6EDF3] sm:text-3xl"
+              className="mb-4 text-2xl font-semibold text-white/90 sm:text-3xl"
               variants={fadeInUp}
             >
               Beyond vitamins.
             </motion.h2>
             <motion.p 
-              className="mb-8 max-w-2xl text-base leading-relaxed text-[#A8B1BB]"
+              className="mb-8 max-w-2xl text-base leading-relaxed text-white/50"
               variants={fadeInUp}
             >
               First-class support for compounds others ignore. Track research
@@ -392,7 +563,7 @@ export function LandingPage() {
 
             {/* Capability Comparison Table */}
             <motion.div className="mt-12" variants={fadeInUp}>
-              <h3 className="mb-4 font-mono text-sm font-semibold text-[#E6EDF3]">
+              <h3 className="mb-4 text-sm font-semibold text-white/90">
                 Why Stochi vs. alternatives
               </h3>
               <CapabilityTable />
@@ -415,25 +586,25 @@ export function LandingPage() {
               <motion.div variants={fadeInUp}>
                 <h2
                   id="protocol-heading"
-                  className="mb-4 font-mono text-2xl font-semibold text-[#E6EDF3] sm:text-3xl"
+                  className="mb-4 text-2xl font-semibold text-white/90 sm:text-3xl"
                 >
                   Execute. Don&apos;t log.
                 </h2>
-                <p className="mb-6 text-base leading-relaxed text-[#A8B1BB]">
+                <p className="mb-6 text-base leading-relaxed text-white/50">
                   Batch your intake into Protocols. Log your entire morning
                   stack in 300ms. Frictionless compliance.
                 </p>
-                <ul className="space-y-3 text-base text-[#A8B1BB]" role="list">
+                <ul className="space-y-3 text-base text-white/60" role="list">
                   <li className="flex items-center gap-2">
-                    <span className="text-[#39FF14]" aria-hidden="true">+</span>
+                    <span className="text-emerald-400" aria-hidden="true">+</span>
                     One-tap logging for entire stacks
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="text-[#39FF14]" aria-hidden="true">+</span>
+                    <span className="text-emerald-400" aria-hidden="true">+</span>
                     Progress tracking with visual indicators
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="text-[#39FF14]" aria-hidden="true">+</span>
+                    <span className="text-emerald-400" aria-hidden="true">+</span>
                     Morning, evening, and custom protocols
                   </li>
                 </ul>
@@ -459,13 +630,13 @@ export function LandingPage() {
           <div className="mx-auto max-w-4xl">
             <motion.h2
               id="tracking-failed-heading"
-              className="mb-4 font-mono text-2xl font-semibold text-[#E6EDF3] sm:text-3xl"
+              className="mb-4 text-2xl font-semibold text-white/95 sm:text-3xl"
               variants={fadeInUp}
             >
               Manual tracking failed you.
             </motion.h2>
             <motion.p 
-              className="mb-12 max-w-2xl text-base leading-relaxed text-[#A8B1BB]"
+              className="mb-12 max-w-2xl text-base leading-relaxed text-white/50"
               variants={fadeInUp}
             >
               You tracked the dosage. You missed the pharmacokinetics. Your
@@ -479,81 +650,81 @@ export function LandingPage() {
             >
               {/* What You Tracked */}
               <motion.div 
-                className="rounded-xl border border-[#30363D] bg-[#0D1117] p-6"
+                className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 backdrop-blur-sm"
                 variants={staggerItem}
               >
                 <div className="mb-4 flex items-center justify-between">
-                  <span className="font-mono text-[10px] tracking-[0.2em] text-[#A8B1BB] uppercase">
+                  <span className="text-[10px] font-medium uppercase tracking-widest text-white/40">
                     What You Tracked
                   </span>
-                  <span className="font-mono text-[10px] text-[#A8B1BB]/50">
+                  <span className="text-[10px] font-medium text-white/30">
                     INCOMPLETE
                   </span>
                 </div>
-                <div className="space-y-2 font-mono text-xs">
-                  <div className="flex justify-between border-b border-[#30363D] pb-2">
-                    <span className="text-[#E6EDF3]">Zinc Picolinate</span>
-                    <span className="text-[#A8B1BB] tabular-nums">50mg</span>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between border-b border-white/[0.06] pb-2">
+                    <span className="text-white/80">Zinc Picolinate</span>
+                    <span className="font-mono text-white/50 tabular-nums">50mg</span>
                   </div>
-                  <div className="flex justify-between border-b border-[#30363D] pb-2">
-                    <span className="text-[#E6EDF3]">Magnesium Glycinate</span>
-                    <span className="text-[#A8B1BB] tabular-nums">400mg</span>
+                  <div className="flex justify-between border-b border-white/[0.06] pb-2">
+                    <span className="text-white/80">Magnesium Glycinate</span>
+                    <span className="font-mono text-white/50 tabular-nums">400mg</span>
                   </div>
-                  <div className="flex justify-between border-b border-[#30363D] pb-2">
-                    <span className="text-[#E6EDF3]">Vitamin D3</span>
-                    <span className="text-[#A8B1BB] tabular-nums">5000IU</span>
+                  <div className="flex justify-between border-b border-white/[0.06] pb-2">
+                    <span className="text-white/80">Vitamin D3</span>
+                    <span className="font-mono text-white/50 tabular-nums">5000IU</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#E6EDF3]">Iron</span>
-                    <span className="text-[#A8B1BB] tabular-nums">18mg</span>
+                    <span className="text-white/80">Iron</span>
+                    <span className="font-mono text-white/50 tabular-nums">18mg</span>
                   </div>
                 </div>
-                <div className="mt-4 rounded border border-[#30363D] bg-[#161B22] p-3 text-center font-mono text-xs text-[#A8B1BB]">
+                <div className="mt-4 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 text-center text-xs text-white/40">
                   No interaction data. No ratio analysis.
                 </div>
               </motion.div>
 
               {/* What You Missed */}
               <motion.div
-                className="rounded-xl border border-[#FF6B6B]/30 bg-[#FF6B6B]/5 p-6"
+                className="rounded-2xl border border-red-500/20 bg-red-500/[0.04] p-6 backdrop-blur-sm"
                 role="list"
                 aria-label="What you missed: 3 errors"
                 variants={staggerItem}
               >
                 <div className="mb-4 flex items-center justify-between">
-                  <span className="font-mono text-[10px] tracking-[0.2em] text-[#FF6B6B] uppercase">
+                  <span className="text-[10px] font-medium uppercase tracking-widest text-red-400">
                     What You Missed
                   </span>
-                  <span className="font-mono text-[10px] text-[#FF6B6B]">
+                  <span className="text-[10px] font-medium text-red-400">
                     3 ERRORS
                   </span>
                 </div>
-                <div className="space-y-3 font-mono text-xs">
+                <div className="space-y-3 text-sm">
                   <div className="flex items-start gap-2" role="listitem">
-                    <span className="mt-0.5 text-[#FF6B6B]" aria-hidden="true">×</span>
+                    <span className="mt-0.5 text-red-400" aria-hidden="true">×</span>
                     <div>
-                      <span className="text-[#E6EDF3]">Zn:Cu ratio 50:1</span>
-                      <p className="mt-0.5 text-[#A8B1BB]">
+                      <span className="text-white/80">Zn:Cu ratio <span className="font-mono">50:1</span></span>
+                      <p className="mt-0.5 text-white/50">
                         No copper to balance zinc intake
                       </p>
                     </div>
                   </div>
                   <div className="flex items-start gap-2" role="listitem">
-                    <span className="mt-0.5 text-[#F0A500]" aria-hidden="true">!</span>
+                    <span className="mt-0.5 text-amber-400" aria-hidden="true">!</span>
                     <div>
-                      <span className="text-[#E6EDF3]">
+                      <span className="text-white/80">
                         Mg + Zn competition
                       </span>
-                      <p className="mt-0.5 text-[#A8B1BB]">
+                      <p className="mt-0.5 text-white/50">
                         Same transporter, reduced absorption
                       </p>
                     </div>
                   </div>
                   <div className="flex items-start gap-2" role="listitem">
-                    <span className="mt-0.5 text-[#F0A500]" aria-hidden="true">!</span>
+                    <span className="mt-0.5 text-amber-400" aria-hidden="true">!</span>
                     <div>
-                      <span className="text-[#E6EDF3]">D3 timing unknown</span>
-                      <p className="mt-0.5 text-[#A8B1BB]">
+                      <span className="text-white/80">D3 timing unknown</span>
+                      <p className="mt-0.5 text-white/50">
                         Fat-soluble, requires meal context
                       </p>
                     </div>
@@ -576,13 +747,13 @@ export function LandingPage() {
           <div className="mx-auto max-w-4xl">
             <motion.h2
               id="failure-modes-heading"
-              className="mb-4 text-2xl font-bold text-[#E6EDF3] sm:text-3xl"
+              className="mb-4 text-2xl font-bold text-white/90 sm:text-3xl"
               variants={fadeInUp}
             >
               Your Spreadsheet is Missing These Lethal Errors.
             </motion.h2>
             <motion.p 
-              className="mb-12 max-w-2xl text-base text-[#A8B1BB]"
+              className="mb-12 max-w-2xl text-base text-white/50"
               variants={fadeInUp}
             >
               These pharmacokinetic patterns exist in most stacks. Your
@@ -657,29 +828,29 @@ export function LandingPage() {
           <div className="mx-auto max-w-4xl">
             <h2
               id="case-study-heading"
-              className="mb-12 font-mono text-2xl font-semibold text-[#E6EDF3] sm:text-3xl"
+              className="mb-12 text-2xl font-semibold text-white/90 sm:text-3xl"
             >
               Field report.
             </h2>
 
-            <div className="overflow-hidden rounded-xl border border-[#30363D] bg-[#0D1117]">
+            <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.02] backdrop-blur-sm">
               {/* Case header */}
-              <div className="border-b border-[#30363D] bg-[#161B22] px-6 py-4">
+              <div className="border-b border-white/[0.08] bg-white/[0.03] px-6 py-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded bg-[#30363D] font-mono text-sm text-[#E6EDF3]">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/[0.06] font-mono text-sm text-white/90">
                       492
                     </div>
                     <div>
-                      <div className="font-mono text-sm text-[#E6EDF3]">
+                      <div className="text-sm font-medium text-white/90">
                         Subject 492
                       </div>
-                      <div className="font-mono text-[10px] tracking-wider text-[#A8B1BB] uppercase">
+                      <div className="text-xs text-white/50">
                         The &quot;Optimized&quot; Stack
                       </div>
                     </div>
                   </div>
-                  <div className="rounded bg-[#FF6B6B]/10 px-2 py-1 font-mono text-[10px] tracking-wider text-[#FF6B6B] uppercase">
+                  <div className="rounded-full bg-red-500/10 px-3 py-1 text-xs font-medium text-red-400">
                     3 Critical Errors
                   </div>
                 </div>
@@ -690,29 +861,29 @@ export function LandingPage() {
                 <div className="grid gap-6 md:grid-cols-2">
                   {/* Profile */}
                   <div>
-                    <div className="mb-3 font-mono text-[10px] tracking-[0.2em] text-[#A8B1BB] uppercase">
+                    <div className="mb-3 text-xs font-medium uppercase tracking-wide text-white/40">
                       Profile
                     </div>
-                    <div className="space-y-2 font-mono text-xs">
+                    <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-[#A8B1BB]">Tracking method</span>
-                        <span className="text-[#E6EDF3]">
+                        <span className="text-white/50">Tracking method</span>
+                        <span className="text-white/90">
                           Excel spreadsheet
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#A8B1BB]">Duration</span>
-                        <span className="text-[#E6EDF3] tabular-nums">
+                        <span className="text-white/50">Duration</span>
+                        <span className="font-mono text-white/90 tabular-nums">
                           4 years
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#A8B1BB]">Daily compounds</span>
-                        <span className="text-[#E6EDF3] tabular-nums">12+</span>
+                        <span className="text-white/50">Daily compounds</span>
+                        <span className="font-mono text-white/90 tabular-nums">12+</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#A8B1BB]">Self-assessment</span>
-                        <span className="text-[#E6EDF3]">
+                        <span className="text-white/50">Self-assessment</span>
+                        <span className="text-white/90">
                           &quot;Plateaued, fatigued&quot;
                         </span>
                       </div>
@@ -721,25 +892,25 @@ export function LandingPage() {
 
                   {/* Findings */}
                   <div>
-                    <div className="mb-3 font-mono text-[10px] tracking-[0.2em] text-[#FF6B6B] uppercase">
+                    <div className="mb-3 text-xs font-medium uppercase tracking-wide text-red-400">
                       Stochi Findings
                     </div>
-                    <div className="space-y-2 font-mono text-xs">
-                      <div className="rounded border border-[#FF6B6B]/20 bg-[#FF6B6B]/5 p-2">
-                        <span className="text-[#FF6B6B]">CRITICAL:</span>{" "}
-                        <span className="text-[#E6EDF3]">
-                          50mg Zinc daily, 0mg Copper
+                    <div className="space-y-2 text-sm">
+                      <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-2">
+                        <span className="font-medium text-red-400">CRITICAL:</span>{" "}
+                        <span className="text-white/80">
+                          <span className="font-mono">50mg</span> Zinc daily, <span className="font-mono">0mg</span> Copper
                         </span>
                       </div>
-                      <div className="rounded border border-[#F0A500]/20 bg-[#F0A500]/5 p-2">
-                        <span className="text-[#F0A500]">WARNING:</span>{" "}
-                        <span className="text-[#E6EDF3]">
-                          D3 taken at 10pm (no meal)
+                      <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-2">
+                        <span className="font-medium text-amber-400">WARNING:</span>{" "}
+                        <span className="text-white/80">
+                          D3 taken at <span className="font-mono">10pm</span> (no meal)
                         </span>
                       </div>
-                      <div className="rounded border border-[#F0A500]/20 bg-[#F0A500]/5 p-2">
-                        <span className="text-[#F0A500]">WARNING:</span>{" "}
-                        <span className="text-[#E6EDF3]">
+                      <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-2">
+                        <span className="font-medium text-amber-400">WARNING:</span>{" "}
+                        <span className="text-white/80">
                           Ca + Mg + Zn simultaneous
                         </span>
                       </div>
@@ -748,15 +919,15 @@ export function LandingPage() {
                 </div>
 
                 {/* Outcome */}
-                <div className="mt-6 border-t border-[#30363D] pt-6">
-                  <div className="mb-3 font-mono text-[10px] tracking-[0.2em] text-[#A8B1BB] uppercase">
+                <div className="mt-6 border-t border-white/[0.08] pt-6">
+                  <div className="mb-3 text-xs font-medium uppercase tracking-wide text-white/40">
                     Outcome
                   </div>
-                  <p className="text-base leading-relaxed text-[#A8B1BB]">
+                  <p className="text-base leading-relaxed text-white/60">
                     &quot;I thought the fatigue was just aging. Stochi found the
-                    Zinc/Copper imbalance on day one. Added 5mg Copper, split my
+                    Zinc/Copper imbalance on day one. Added <span className="font-mono">5mg</span> Copper, split my
                     mineral timing.{" "}
-                    <span className="text-[#39FF14]">
+                    <span className="font-medium text-emerald-400">
                       Energy returned within 3 weeks.
                     </span>{" "}
                     Four years of spreadsheets missed what Stochi caught
@@ -780,11 +951,11 @@ export function LandingPage() {
           <div className="mx-auto max-w-xl text-center">
             <h2
               id="cta-heading"
-              className="font-mono text-2xl font-semibold text-[#E6EDF3] sm:text-3xl"
+              className="text-2xl font-semibold text-white/90 sm:text-3xl"
             >
               Stop guessing.
             </h2>
-            <p className="mt-3 text-base text-[#A8B1BB]">
+            <p className="mt-3 text-base text-white/50">
               Your stack might be fine. Or it might be working against you. Only
               a diagnostic will tell.
             </p>
@@ -792,7 +963,7 @@ export function LandingPage() {
               <Button
                 asChild
                 size="lg"
-                className="bg-[#39FF14] px-10 font-mono text-sm font-semibold text-[#0A0C10] shadow-[0_0_20px_rgba(57,255,20,0.3)] transition-all duration-200 hover:bg-[#32E612] hover:shadow-[0_0_30px_rgba(57,255,20,0.5)]"
+                className="bg-gradient-to-r from-emerald-500 to-cyan-500 px-10 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition-all duration-200 hover:shadow-xl hover:shadow-emerald-500/30"
               >
                 <Link href="/auth/sign-up">Run Your Stack Audit</Link>
               </Button>
@@ -801,17 +972,53 @@ export function LandingPage() {
         </motion.section>
 
         {/* Footer */}
-        <footer className="border-t border-[#30363D] py-8">
+        <footer className="border-t border-white/[0.06] bg-white/[0.01] py-12">
           <div className="container mx-auto px-4">
-            <div className="flex flex-col items-center gap-4">
-              <p className="font-mono text-xs text-[#A8B1BB]">stochi_</p>
-              <div className="flex items-center gap-4 font-mono text-[10px] text-[#A8B1BB]/50 tabular-nums">
-                <span>v2025.01</span>
-                <span className="text-[#30363D]">•</span>
-                <span>1,423 compounds</span>
-                <span className="text-[#30363D]">•</span>
-                <span>89,412 interaction pairs</span>
+            <div className="flex flex-col items-center gap-6 md:flex-row md:justify-between">
+              {/* Logo and tagline */}
+              <div className="flex flex-col items-center gap-2 md:items-start">
+                <div className="flex items-center gap-2">
+                  <Image
+                    src="/logo.svg"
+                    alt="Stochi"
+                    width={24}
+                    height={24}
+                    className="opacity-80"
+                  />
+                  <span className="text-sm font-medium text-white/80">Stochi</span>
+                </div>
+                <p className="text-xs text-white/40">Pharmacokinetic intelligence for your supplement stack</p>
               </div>
+              
+              {/* Stats */}
+              <div className="flex items-center gap-6 text-xs text-white/40">
+                <div className="flex flex-col items-center gap-1">
+                  <span className="font-mono text-lg font-semibold text-white/70">1,423</span>
+                  <span>Compounds</span>
+                </div>
+                <div className="h-8 w-px bg-white/[0.08]" />
+                <div className="flex flex-col items-center gap-1">
+                  <span className="font-mono text-lg font-semibold text-white/70">89,412</span>
+                  <span>Interactions</span>
+                </div>
+                <div className="h-8 w-px bg-white/[0.08]" />
+                <div className="flex flex-col items-center gap-1">
+                  <span className="font-mono text-lg font-semibold text-white/70">2025</span>
+                  <span>Database</span>
+                </div>
+              </div>
+              
+              {/* Links */}
+              <div className="flex items-center gap-4 text-xs text-white/40">
+                <Link href="/auth/sign-in" className="transition-colors hover:text-white/70">Sign In</Link>
+                <span className="text-white/20">•</span>
+                <Link href="/auth/sign-up" className="transition-colors hover:text-white/70">Get Started</Link>
+              </div>
+            </div>
+            
+            {/* Bottom bar */}
+            <div className="mt-8 border-t border-white/[0.04] pt-6 text-center text-xs text-white/30">
+              Not medical advice. Always consult a healthcare professional.
             </div>
           </div>
         </footer>
@@ -879,7 +1086,7 @@ function ProtocolDemo() {
 
   return (
     <div
-      className="rounded-xl border border-[#30363D] bg-[#0D1117] p-4"
+      className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 backdrop-blur-sm"
       role="region"
       aria-label="Protocol demo animation"
     >
@@ -895,7 +1102,7 @@ function ProtocolDemo() {
                 cy="20"
                 r="16"
                 fill="none"
-                stroke="#30363D"
+                stroke="rgba(255,255,255,0.1)"
                 strokeWidth="3"
               />
               {/* Progress circle */}
@@ -904,44 +1111,50 @@ function ProtocolDemo() {
                 cy="20"
                 r="16"
                 fill="none"
-                stroke="#39FF14"
+                stroke="url(#progressGradient)"
                 strokeWidth="3"
                 strokeLinecap="round"
                 strokeDasharray={`${(progress / 100) * 100.53} 100.53`}
-                className={`transition-all duration-300 ${phase === "executing" ? "drop-shadow-[0_0_6px_rgba(57,255,20,0.5)]" : ""}`}
+                className={`transition-all duration-300 ${phase === "executing" ? "drop-shadow-[0_0_6px_rgba(16,185,129,0.5)]" : ""}`}
               />
+              <defs>
+                <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#10b981" />
+                  <stop offset="100%" stopColor="#06b6d4" />
+                </linearGradient>
+              </defs>
             </svg>
             {/* Center percentage or checkmark */}
             <div className="absolute inset-0 flex items-center justify-center">
               {phase === "complete" ? (
-                <span className="text-[#39FF14] text-sm">✓</span>
+                <span className="text-emerald-400 text-sm">✓</span>
               ) : (
-                <span className="font-mono text-[10px] tabular-nums text-[#E6EDF3]">
+                <span className="font-mono text-[10px] tabular-nums text-white/80">
                   {progress}%
                 </span>
               )}
             </div>
             {/* Pulse effect when executing */}
             {phase === "executing" && (
-              <div className="absolute inset-0 animate-ping rounded-full border border-[#39FF14]/30" />
+              <div className="absolute inset-0 animate-ping rounded-full border border-emerald-400/30" />
             )}
           </div>
           <div>
-            <span className="font-mono text-sm font-medium text-[#E6EDF3]">
+            <span className="text-sm font-medium text-white/90">
               Morning Stack
             </span>
-            <p className="font-mono text-[10px] text-[#A8B1BB]">
+            <p className="text-xs text-white/50">
               {phase === "complete" ? "All logged" : `${loggedCount}/4 logged`}
             </p>
           </div>
         </div>
         <span
-          className={`rounded px-2 py-0.5 font-mono text-[10px] ${
+          className={`rounded-full px-2.5 py-1 text-xs font-medium ${
             phase === "complete" 
-              ? "bg-[#39FF14]/10 text-[#39FF14]" 
+              ? "bg-emerald-500/10 text-emerald-400" 
               : phase === "executing"
-                ? "bg-[#F0A500]/10 text-[#F0A500]"
-                : "bg-[#30363D]/50 text-[#A8B1BB]"
+                ? "bg-amber-500/10 text-amber-400"
+                : "bg-white/[0.06] text-white/50"
           }`}
           aria-live="polite"
         >
@@ -954,25 +1167,25 @@ function ProtocolDemo() {
         {items.map((item, i) => (
           <li
             key={item.name}
-            className={`flex items-center justify-between rounded border px-3 py-2 transition-all duration-300 ${
+            className={`flex items-center justify-between rounded-lg border px-3 py-2 transition-all duration-300 ${
               i < loggedCount
-                ? "border-[#39FF14]/30 bg-[#39FF14]/5"
-                : "border-[#30363D] bg-[#161B22]"
+                ? "border-emerald-500/20 bg-emerald-500/5"
+                : "border-white/[0.06] bg-white/[0.02]"
             }`}
           >
             <div className="flex items-center gap-2">
               {/* Mini progress indicator per item */}
               <div className={`h-1.5 w-1.5 rounded-full transition-all ${
-                i < loggedCount ? "bg-[#39FF14]" : "bg-[#30363D]"
+                i < loggedCount ? "bg-emerald-400" : "bg-white/20"
               }`} />
               <span
-                className={`font-mono text-xs ${i < loggedCount ? "text-[#39FF14]" : "text-[#E6EDF3]"}`}
+                className={`text-sm ${i < loggedCount ? "text-emerald-400" : "text-white/80"}`}
               >
                 {i < loggedCount && <span className="sr-only">Logged: </span>}
                 {item.name}
               </span>
             </div>
-            <span className="font-mono text-xs text-[#A8B1BB] tabular-nums">
+            <span className="font-mono text-xs text-white/50 tabular-nums">
               {item.dose}
             </span>
           </li>
@@ -982,12 +1195,12 @@ function ProtocolDemo() {
       {/* Execute Button - decorative demo, not interactive */}
       <div
         aria-hidden="true"
-        className={`flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 font-mono text-sm font-medium transition-all ${
+        className={`flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-all ${
           phase === "complete"
-            ? "bg-[#39FF14] text-[#0A0C10] shadow-[0_0_20px_rgba(57,255,20,0.3)]"
+            ? "bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-lg shadow-emerald-500/20"
             : phase === "executing"
-              ? "bg-[#39FF14]/20 text-[#39FF14]"
-              : "border border-[#30363D] bg-[#161B22] text-[#E6EDF3]"
+              ? "bg-emerald-500/20 text-emerald-400"
+              : "border border-white/[0.08] bg-white/[0.03] text-white/80"
         }`}
       >
         {phase === "complete" ? (
@@ -1006,7 +1219,7 @@ function ProtocolDemo() {
       </div>
 
       {/* Performance claim */}
-      <p className="mt-3 text-center font-mono text-[10px] text-[#A8B1BB]/60">
+      <p className="mt-3 text-center text-xs text-white/40">
         Execute 15+ supplements in 300ms
       </p>
     </div>
@@ -1132,35 +1345,39 @@ function TerminalAnalyzer({
   };
 
   const getLineColor = (line: string) => {
-    if (line.includes("SYNERGY")) return "text-[#39FF14]";
-    if (line.includes("CRITICAL")) return "text-[#FF6B6B]";
-    if (line.includes("WARNING")) return "text-[#F0A500]";
-    if (line.includes("QUEUED")) return "text-[#00D4FF]";
-    if (line.startsWith("> →")) return "text-[#A8B1BB]";
-    return "text-[#E6EDF3]";
+    if (line.includes("SYNERGY")) return "text-emerald-400";
+    if (line.includes("CRITICAL")) return "text-red-400";
+    if (line.includes("WARNING")) return "text-amber-400";
+    if (line.includes("QUEUED")) return "text-cyan-400";
+    if (line.startsWith("> →")) return "text-white/50";
+    return "text-white/80";
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border border-[#30363D] bg-[#0D1117]">
-      {/* Terminal header - decorative */}
+    <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl">
+      {/* Card header */}
       <div
-        className="flex items-center gap-2 border-b border-[#30363D] bg-[#161B22] px-3 py-2 sm:px-4"
+        className="flex items-center justify-between border-b border-white/[0.06] bg-white/[0.02] px-4 py-3"
         aria-hidden="true"
       >
-        <div className="h-2.5 w-2.5 rounded-full bg-[#FF6B6B] sm:h-3 sm:w-3" />
-        <div className="h-2.5 w-2.5 rounded-full bg-[#F0A500] sm:h-3 sm:w-3" />
-        <div className="h-2.5 w-2.5 rounded-full bg-[#39FF14] sm:h-3 sm:w-3" />
-        <span className="ml-2 hidden font-mono text-[10px] text-[#A8B1BB] sm:inline">
-          stack_auditor.sh
+        <div className="flex items-center gap-2">
+          <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500/20 to-cyan-500/20">
+            <Zap className="h-3.5 w-3.5 text-emerald-400" />
+          </div>
+          <span className="text-sm font-medium text-white/70">
+            Interaction Checker
+          </span>
+        </div>
+        <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-400">
+          LIVE
         </span>
       </div>
 
-      {/* Terminal body */}
-      <div className="p-3 sm:p-4">
+      {/* Card body */}
+      <div className="p-4 sm:p-5">
         {/* Input fields */}
-        <div className="mb-3 flex flex-wrap items-center gap-2 sm:mb-4">
-          <div className={`flex min-w-0 flex-1 basis-[calc(50%-0.5rem)] items-center gap-1.5 rounded border bg-[#0A0C10] px-2 py-1.5 sm:basis-auto sm:gap-2 sm:px-3 sm:py-2 ${isTyping ? "border-[#39FF14]/50" : "border-[#30363D]"}`}>
-            <span className="font-mono text-[10px] text-[#39FF14] sm:text-xs" aria-hidden="true">$</span>
+        <div className="mb-4 flex flex-wrap items-center gap-2 sm:gap-3">
+          <div className={`flex min-w-0 flex-1 basis-[calc(50%-0.5rem)] items-center gap-2 rounded-xl border bg-white/[0.02] px-3 py-2.5 transition-colors sm:basis-auto ${isTyping ? "border-emerald-500/30" : "border-white/[0.08]"}`}>
             <label htmlFor="supplement-1" className="sr-only">
               First supplement name
             </label>
@@ -1170,15 +1387,14 @@ function TerminalAnalyzer({
               value={input1}
               onChange={(e) => setInput1(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && analyze()}
-              placeholder="Supplement 1"
-              className="w-full min-w-0 bg-transparent font-mono text-[10px] text-[#E6EDF3] placeholder-[#A8B1BB]/50 outline-none sm:text-xs"
+              placeholder="First supplement"
+              className="w-full min-w-0 bg-transparent text-sm text-white/90 placeholder-white/30 outline-none"
             />
           </div>
-          <span className="hidden font-mono text-xs text-[#A8B1BB] sm:block" aria-hidden="true">
+          <span className="hidden text-sm font-medium text-white/30 sm:block" aria-hidden="true">
             +
           </span>
-          <div className={`flex min-w-0 flex-1 basis-[calc(50%-0.5rem)] items-center gap-1.5 rounded border bg-[#0A0C10] px-2 py-1.5 sm:basis-auto sm:gap-2 sm:px-3 sm:py-2 ${isTyping ? "border-[#39FF14]/50" : "border-[#30363D]"}`}>
-            <span className="font-mono text-[10px] text-[#39FF14] sm:text-xs" aria-hidden="true">$</span>
+          <div className={`flex min-w-0 flex-1 basis-[calc(50%-0.5rem)] items-center gap-2 rounded-xl border bg-white/[0.02] px-3 py-2.5 transition-colors sm:basis-auto ${isTyping ? "border-emerald-500/30" : "border-white/[0.08]"}`}>
             <label htmlFor="supplement-2" className="sr-only">
               Second supplement name
             </label>
@@ -1188,22 +1404,22 @@ function TerminalAnalyzer({
               value={input2}
               onChange={(e) => setInput2(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && analyze()}
-              placeholder="Supplement 2"
-              className="w-full min-w-0 bg-transparent font-mono text-[10px] text-[#E6EDF3] placeholder-[#A8B1BB]/50 outline-none sm:text-xs"
+              placeholder="Second supplement"
+              className="w-full min-w-0 bg-transparent text-sm text-white/90 placeholder-white/30 outline-none"
             />
           </div>
           <button
             onClick={analyze}
-            className="flex w-full shrink-0 items-center justify-center gap-1.5 rounded bg-[#39FF14] px-3 py-1.5 font-mono text-[10px] font-medium text-[#0A0C10] transition-colors hover:bg-[#32E612] sm:w-auto sm:px-4 sm:py-2 sm:text-xs"
+            className="flex w-full shrink-0 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-emerald-500/20 transition-all hover:shadow-emerald-500/30 sm:w-auto"
           >
-            <ChevronRight className="h-3 w-3" aria-hidden="true" />
-            ANALYZE
+            <ChevronRight className="h-4 w-4" aria-hidden="true" />
+            Analyze
           </button>
         </div>
 
         {/* Quick examples */}
-        <div className="mb-3 flex flex-wrap items-center gap-1.5 sm:mb-4 sm:gap-2">
-          <span className="font-mono text-[9px] text-[#A8B1BB] sm:text-[10px]">Try:</span>
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <span className="text-xs text-white/40">Try:</span>
           {(
             [
               ["Zinc", "Copper"],
@@ -1218,7 +1434,7 @@ function TerminalAnalyzer({
                 setInput2(b);
               }}
               aria-label={`Try ${a} and ${b}`}
-              className="rounded border border-[#30363D] bg-[#161B22] px-1.5 py-0.5 font-mono text-[9px] text-[#A8B1BB] transition-colors hover:border-[#39FF14]/50 hover:text-[#E6EDF3] sm:px-2 sm:py-1 sm:text-[10px]"
+              className="rounded-lg border border-white/[0.08] bg-white/[0.02] px-2.5 py-1 text-xs text-white/50 transition-colors hover:border-emerald-500/30 hover:bg-white/[0.04] hover:text-white/70"
             >
               {a} + {b}
             </button>
@@ -1227,13 +1443,13 @@ function TerminalAnalyzer({
 
         {/* Output - live region for screen readers */}
         <div
-          className="min-h-[80px] rounded border border-[#30363D] bg-[#0A0C10] p-2 sm:min-h-[100px] sm:p-3"
+          className="min-h-[90px] rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 sm:min-h-[100px] sm:p-4"
           role="region"
           aria-label="Analysis results"
           aria-live="polite"
         >
           {result ? (
-            <div className="space-y-1 font-mono text-[10px] sm:text-xs">
+            <div className="space-y-1.5 font-mono text-xs">
               {result.lines.map((line, i) => (
                 <p key={i} className={getLineColor(line)}>
                   {line}
@@ -1242,19 +1458,20 @@ function TerminalAnalyzer({
               {result.type === "signup" && (
                 <Link
                   href="/auth/sign-up"
-                  className="mt-2 inline-flex items-center gap-1 text-[#39FF14] hover:underline"
+                  className="mt-3 inline-flex items-center gap-1 text-emerald-400 transition-colors hover:text-emerald-300"
                 >
                   Create free account <ChevronRight className="h-3 w-3" aria-hidden="true" />
                 </Link>
               )}
             </div>
           ) : (
-            <p className="font-mono text-[10px] text-[#A8B1BB] sm:text-xs">
+            <p className="text-sm text-white/40">
               {isTyping ? (
-                <span className="text-[#39FF14]">Analyzing stack...</span>
+                <span className="text-emerald-400">Analyzing stack...</span>
               ) : (
                 <>
-                  <span className="animate-cursor-blink" aria-hidden="true">_</span> Awaiting input...
+                  <span className="animate-pulse text-emerald-400/60" aria-hidden="true">●</span>
+                  {" "}Ready — enter two supplements to check for interactions
                 </>
               )}
             </p>
@@ -1286,35 +1503,37 @@ function RiskCard({
   const colors =
     type === "danger"
       ? {
-          border: "border-[#FF6B6B]/30",
-          bg: "bg-[#FF6B6B]/5",
-          text: "text-[#FF6B6B]",
-          iconBg: "bg-[#FF6B6B]/10",
+          border: "border-red-500/20",
+          bg: "bg-red-500/5",
+          text: "text-red-400",
+          iconBg: "bg-red-500/10",
           statusLabel: "CRITICAL",
+          gradient: "via-red-500/40",
         }
       : {
-          border: "border-[#F0A500]/30",
-          bg: "bg-[#F0A500]/5",
-          text: "text-[#F0A500]",
-          iconBg: "bg-[#F0A500]/10",
+          border: "border-amber-500/20",
+          bg: "bg-amber-500/5",
+          text: "text-amber-400",
+          iconBg: "bg-amber-500/10",
           statusLabel: "WARNING",
+          gradient: "via-amber-500/40",
         };
 
   const citationId = citation.id.split(":")[1];
 
   return (
     <article
-      className={`relative overflow-hidden rounded-xl border ${colors.border} ${colors.bg} p-6`}
+      className={`relative overflow-hidden rounded-2xl border ${colors.border} ${colors.bg} p-6 backdrop-blur-sm`}
       aria-labelledby={`risk-${citationId}-title`}
     >
       <div
-        className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent ${type === "danger" ? "via-[#FF6B6B]/50" : "via-[#F0A500]/50"} to-transparent`}
+        className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent ${colors.gradient} to-transparent`}
         aria-hidden="true"
       />
 
       <div className="mb-4 flex items-center justify-between">
         <span
-          className={`font-mono text-[10px] tracking-[0.15em] uppercase ${colors.text}`}
+          className={`text-[10px] font-medium tracking-[0.1em] uppercase ${colors.text}`}
         >
           {label}
         </span>
@@ -1327,19 +1546,19 @@ function RiskCard({
           onFocus={() => setShowCitation(true)}
           onBlur={() => setShowCitation(false)}
           aria-describedby={`citation-${citationId}`}
-          className="relative font-mono text-[10px] text-[#A8B1BB]/60 transition-colors hover:text-[#39FF14] focus:text-[#39FF14] focus:outline-none focus:ring-1 focus:ring-[#39FF14]/50 focus:rounded"
+          className="relative font-mono text-[10px] text-white/40 transition-colors hover:text-emerald-400 focus:text-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 focus:rounded"
         >
           [PMID:{citationId}]
           {showCitation && (
             <div
               id={`citation-${citationId}`}
               role="tooltip"
-              className="absolute right-0 bottom-full z-20 mb-2 w-56 rounded border border-[#30363D] bg-[#161B22] p-3 text-left shadow-xl"
+              className="absolute right-0 bottom-full z-20 mb-2 w-56 rounded-xl border border-white/[0.08] bg-[#0A0C10]/95 p-3 text-left shadow-xl backdrop-blur-xl"
             >
-              <p className="text-[10px] leading-relaxed text-[#E6EDF3]">
+              <p className="text-[10px] leading-relaxed text-white/80">
                 {citation.title}
               </p>
-              <p className="mt-1 text-[10px] text-[#A8B1BB]">
+              <p className="mt-1 text-[10px] text-white/50">
                 {citation.source}
               </p>
             </div>
@@ -1349,24 +1568,24 @@ function RiskCard({
 
       <h3
         id={`risk-${citationId}-title`}
-        className="mb-2 font-mono text-sm font-semibold text-[#E6EDF3]"
+        className="mb-2 text-sm font-semibold text-white/90"
       >
         {title}
       </h3>
-      <p className="mb-4 text-xs leading-relaxed text-[#A8B1BB]">
+      <p className="mb-4 text-xs leading-relaxed text-white/50">
         {description}
       </p>
 
-      <div className="rounded border border-[#30363D] bg-[#0A0C10] p-3 font-mono text-[11px]">
+      <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 text-[11px]">
         <div className="flex items-center gap-2">
           <span
-            className={`text-[10px] tracking-wider uppercase ${colors.text}`}
+            className={`text-[10px] font-medium tracking-wider uppercase ${colors.text}`}
           >
             {colors.statusLabel}
           </span>
-          <span className="text-[#E6EDF3]">{detection}</span>
+          <span className="text-white/80">{detection}</span>
         </div>
-        <div className="mt-1 text-[#A8B1BB]">
+        <div className="mt-1 text-white/50">
           <span aria-hidden="true">→ </span>
           {recommendation}
         </div>
