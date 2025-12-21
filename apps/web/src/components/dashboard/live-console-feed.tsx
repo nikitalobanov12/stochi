@@ -203,12 +203,12 @@ export function LiveConsoleFeed({
   }, [entries.length, isCollapsed]);
 
   return (
-    <div className="space-y-0">
+    <div className="overflow-hidden rounded-lg border border-white/10">
       {/* Header with toggle */}
       <button
         type="button"
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="flex w-full items-center justify-between rounded-t-lg border border-b-0 border-white/10 bg-black/30 px-3 py-2 transition-colors hover:bg-black/40"
+        className="flex w-full items-center justify-between bg-black/30 px-3 py-2 transition-colors hover:bg-black/40"
       >
         <div className="flex items-center gap-2">
           <Terminal className="h-3.5 w-3.5 text-emerald-500/70" />
@@ -245,33 +245,33 @@ export function LiveConsoleFeed({
       </button>
 
       {/* Console body - collapsible */}
-      <div
-        ref={containerRef}
-        className={`border-border/40 overflow-hidden rounded-b-lg border bg-black/20 p-2 font-mono text-[10px] leading-relaxed transition-all duration-200 ${
-          isCollapsed ? "h-0 border-t-0 p-0" : "h-32 overflow-y-auto"
-        }`}
-      >
-        {entries.map((entry, index) => (
-          <div key={index} className="flex gap-2">
-            <span className="text-muted-foreground/80 shrink-0">
-              [{formatTime(entry.timestamp)}]
-            </span>
-            <span className={`shrink-0 ${getModuleColor(entry.module)}`}>
-              {entry.module}:
-            </span>
-            <span className="text-foreground/80">{entry.message}</span>
-            <span className={`shrink-0 ${getStatusColor(entry.status)}`}>
-              [{entry.status}]
-            </span>
-          </div>
-        ))}
+      {!isCollapsed && (
+        <div
+          ref={containerRef}
+          className="h-32 overflow-y-auto border-t border-white/10 bg-black/20 p-2 font-mono text-[10px] leading-relaxed"
+        >
+          {entries.map((entry, index) => (
+            <div key={index} className="flex gap-2">
+              <span className="text-muted-foreground/80 shrink-0">
+                [{formatTime(entry.timestamp)}]
+              </span>
+              <span className={`shrink-0 ${getModuleColor(entry.module)}`}>
+                {entry.module}:
+              </span>
+              <span className="text-foreground/80">{entry.message}</span>
+              <span className={`shrink-0 ${getStatusColor(entry.status)}`}>
+                [{entry.status}]
+              </span>
+            </div>
+          ))}
 
-        {/* Blinking cursor effect */}
-        <div className="mt-1 flex items-center gap-1">
-          <span className="text-muted-foreground/80">&gt;</span>
-          <span className="h-3 w-2 animate-pulse bg-emerald-500/70" />
+          {/* Blinking cursor effect */}
+          <div className="mt-1 flex items-center gap-1">
+            <span className="text-muted-foreground/80">&gt;</span>
+            <span className="h-3 w-2 animate-pulse bg-emerald-500/70" />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
