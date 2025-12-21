@@ -50,12 +50,12 @@ export function RecommendedProtocols({
       <section className="space-y-3">
         <div className="flex items-center gap-2">
           <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-          <h2 className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
+          <h2 className="text-muted-foreground font-mono text-xs tracking-wider uppercase">
             Personalized Recommendations
           </h2>
         </div>
         <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
-          <p className="text-muted-foreground font-mono text-xs">
+          <p className="text-muted-foreground font-mono text-sm">
             Define your health goals in Settings to unlock personalized stack
             recommendations.
           </p>
@@ -128,13 +128,13 @@ export function RecommendedProtocols({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-          <h2 className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
+          <h2 className="text-muted-foreground font-mono text-xs tracking-wider uppercase">
             Recommended for {goalLabels}
           </h2>
         </div>
         <Link
           href="/dashboard/stacks"
-          className="text-muted-foreground hover:text-foreground flex items-center gap-1 font-mono text-[10px] transition-colors"
+          className="text-muted-foreground hover:text-foreground flex items-center gap-1 font-mono text-xs transition-colors"
         >
           <Library className="h-3 w-3" />
           View all
@@ -143,7 +143,7 @@ export function RecommendedProtocols({
 
       {/* Error message */}
       {error && (
-        <div className="rounded-md bg-red-500/10 p-2 font-mono text-[10px] text-red-400">
+        <div className="rounded-md bg-red-500/10 p-2 font-mono text-xs text-red-400">
           {error}
         </div>
       )}
@@ -196,9 +196,9 @@ function TemplateCard({
         <div className="min-w-0 flex-1 space-y-1">
           {/* Header */}
           <div className="flex items-center gap-2">
-            <span className="font-mono text-xs font-medium">{template.name}</span>
+            <span className="font-mono text-sm font-medium">{template.name}</span>
             {template.authority === "high" && (
-              <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/10 px-1.5 py-0.5 font-mono text-[8px] text-amber-400">
+              <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/10 px-1.5 py-0.5 font-mono text-[10px] text-amber-400">
                 <Sparkles className="h-2 w-2" />
                 EXPERT
               </span>
@@ -206,7 +206,7 @@ function TemplateCard({
           </div>
 
           {/* Description */}
-          <p className="text-muted-foreground line-clamp-1 font-mono text-[10px]">
+          <p className="text-muted-foreground line-clamp-1 font-mono text-xs">
             {template.description}
           </p>
 
@@ -215,14 +215,14 @@ function TemplateCard({
             {template.supplements.slice(0, 3).map((supp, i) => (
               <span
                 key={i}
-                className="text-muted-foreground/70 font-mono text-[9px]"
+                className="text-muted-foreground/70 font-mono text-xs"
               >
                 {supp.supplementName}
                 {i < Math.min(template.supplements.length, 3) - 1 && " •"}
               </span>
             ))}
             {template.supplements.length > 3 && (
-              <span className="text-muted-foreground/50 font-mono text-[9px]">
+              <span className="text-muted-foreground/50 font-mono text-xs">
                 +{template.supplements.length - 3}
               </span>
             )}

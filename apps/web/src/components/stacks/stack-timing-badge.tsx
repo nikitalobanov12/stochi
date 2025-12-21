@@ -101,7 +101,7 @@ export function StackTimingBadge({ items, className }: StackTimingBadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full bg-white/5 px-2 py-0.5 font-mono text-[10px]",
+        "inline-flex items-center gap-1 rounded-full bg-white/5 px-2 py-0.5 font-mono text-xs",
         display.colorClass,
         className,
       )}

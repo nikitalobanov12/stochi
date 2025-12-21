@@ -53,10 +53,10 @@ export default async function StacksPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-mono text-lg font-medium tracking-tight">
+          <h1 className="font-mono text-xl font-medium tracking-tight">
             Protocols
           </h1>
-          <p className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
+          <p className="text-muted-foreground font-mono text-xs tracking-wider uppercase">
             {userStacks.length === 0
               ? "NO PROTOCOLS"
               : `${userStacks.length} PROTOCOL${userStacks.length !== 1 ? "S" : ""}`}
@@ -71,7 +71,7 @@ export default async function StacksPage() {
       {/* Active Stacks Section */}
       <section className="space-y-3">
         {userStacks.length > 0 && (
-          <h2 className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
+          <h2 className="text-muted-foreground font-mono text-xs tracking-wider uppercase">
             Your Protocols
           </h2>
         )}
@@ -82,7 +82,7 @@ export default async function StacksPage() {
             <p className="text-muted-foreground font-mono text-sm">
               No protocols yet
             </p>
-            <p className="text-muted-foreground/60 mt-1 font-mono text-[10px]">
+            <p className="text-muted-foreground/60 mt-1 font-mono text-xs">
               Create your first protocol to batch-log supplements
             </p>
             <CreateStackDialog
@@ -112,12 +112,12 @@ export default async function StacksPage() {
                   className="min-w-0 flex-1"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="font-mono text-sm font-medium">
+                    <span className="font-mono text-base font-medium">
                       {s.name}
                     </span>
                     <Badge
                       variant="secondary"
-                      className="bg-muted/50 font-mono text-[10px] tabular-nums"
+                      className="bg-muted/50 font-mono text-xs tabular-nums"
                     >
                       {s.items.length}
                     </Badge>
@@ -127,7 +127,7 @@ export default async function StacksPage() {
                     <StackTimingBadge items={s.items} />
 
                     {/* Supplements preview */}
-                    <p className="text-muted-foreground/60 truncate font-mono text-[10px]">
+                    <p className="text-muted-foreground/60 truncate font-mono text-xs">
                       {s.items.length === 0
                         ? "Empty protocol"
                         : s.items
@@ -141,7 +141,7 @@ export default async function StacksPage() {
                 {/* Right side - Actions */}
                 <div className="flex shrink-0 items-center gap-3">
                   {/* Last logged indicator */}
-                  <span className="text-muted-foreground/50 font-mono text-[10px]">
+                  <span className="text-muted-foreground/50 font-mono text-xs">
                     {s.lastLoggedAt
                       ? formatRelativeTime(new Date(s.lastLoggedAt))
                       : "Never logged"}
