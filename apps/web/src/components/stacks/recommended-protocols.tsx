@@ -215,14 +215,14 @@ function TemplateCard({
             {template.supplements.slice(0, 3).map((supp, i) => (
               <span
                 key={i}
-                className="text-muted-foreground/70 font-mono text-xs"
+                className="text-muted-foreground font-mono text-xs"
               >
                 {supp.supplementName}
                 {i < Math.min(template.supplements.length, 3) - 1 && " •"}
               </span>
             ))}
             {template.supplements.length > 3 && (
-              <span className="text-muted-foreground/50 font-mono text-xs">
+              <span className="text-muted-foreground font-mono text-xs">
                 +{template.supplements.length - 3}
               </span>
             )}
