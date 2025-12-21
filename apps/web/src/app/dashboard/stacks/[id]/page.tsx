@@ -124,7 +124,7 @@ export default async function StackDetailPage({
           />
         </div>
 
-        <div className="border-white/5 bg-white/[0.02] rounded-lg border">
+        <div className="glass-card">
           {userStack.items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <p className="text-muted-foreground font-mono text-sm">
@@ -197,7 +197,7 @@ export default async function StackDetailPage({
         <p className="text-muted-foreground text-[10px] tracking-wider uppercase">
           Settings
         </p>
-        <div className="border-white/5 bg-white/[0.02] rounded-lg border p-3">
+        <div className="glass-card p-3">
           <form action={updateStackWithId} className="flex gap-2">
             <div className="flex-1">
               <label htmlFor="stack-name" className="sr-only">
@@ -276,7 +276,7 @@ function InteractionsPanel({
         <p className="text-muted-foreground text-[10px] tracking-wider uppercase">
           Interactions
         </p>
-        <div className="border-white/5 bg-white/[0.02] rounded-lg border p-3">
+        <div className="glass-card p-3">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
             <span className="text-muted-foreground font-mono text-xs">
@@ -293,7 +293,7 @@ function InteractionsPanel({
       ? "border-destructive/50"
       : mediumCount > 0
         ? "border-amber-500/50"
-        : "border-border/40";
+        : "border-white/10";
 
   return (
     <section className="space-y-3">
@@ -321,7 +321,7 @@ function InteractionsPanel({
         )}
       </div>
 
-      <div className={`rounded-lg border ${borderClass} bg-card/30 p-3`}>
+      <div className={`glass-card ${borderClass} p-3`}>
         <div className="space-y-2">
           {/* Ratio Warnings */}
           {ratioWarnings.map((warning) => (

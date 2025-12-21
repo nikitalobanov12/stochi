@@ -86,7 +86,7 @@ export default async function SettingsPage() {
         <p className="text-muted-foreground text-[10px] tracking-wider uppercase">
           Profile
         </p>
-        <div className="border-white/5 bg-white/[0.02] rounded-lg border p-4">
+        <div className="glass-card p-4">
           <div className="flex items-start gap-4">
             <div className="border-border/40 bg-muted/30 flex h-10 w-10 items-center justify-center rounded-full border">
               <User className="text-muted-foreground h-4 w-4" />
@@ -120,7 +120,7 @@ export default async function SettingsPage() {
           Data Overview
         </p>
         <div className="grid grid-cols-2 gap-3">
-          <div className="border-white/5 bg-white/[0.02] rounded-lg border p-3">
+          <div className="glass-card p-3">
             <p className="font-mono text-2xl font-medium tabular-nums">
               {logCount.toLocaleString()}
             </p>
@@ -128,7 +128,7 @@ export default async function SettingsPage() {
               Log Entries
             </p>
           </div>
-          <div className="border-white/5 bg-white/[0.02] rounded-lg border p-3">
+          <div className="glass-card p-3">
             <p className="font-mono text-2xl font-medium tabular-nums">
               {stackCount}
             </p>
@@ -147,7 +147,7 @@ export default async function SettingsPage() {
           </p>
           <Download className="text-muted-foreground/50 h-3 w-3" />
         </div>
-        <div className="border-white/5 bg-white/[0.02] rounded-lg border p-4">
+        <div className="glass-card p-4">
           <div className="space-y-3">
             <p className="text-muted-foreground font-mono text-xs">
               Your data belongs to you. Export supplement logs and protocol

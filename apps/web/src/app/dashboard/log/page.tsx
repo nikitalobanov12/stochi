@@ -118,7 +118,7 @@ export default async function LogPage() {
       )}
 
       {/* Command Bar */}
-      <div className="border-white/5 bg-white/[0.02] rounded-lg border p-3">
+      <div className="glass-card p-3">
         <SafeCommandBar supplements={allSupplements} />
       </div>
 
@@ -135,7 +135,7 @@ export default async function LogPage() {
                   type="submit"
                   variant="outline"
                   size="sm"
-                  className="border-white/5 bg-white/[0.02] hover:border-white/10 hover:bg-white/[0.04] font-mono text-xs"
+                  className="border-white/10 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.04] font-mono text-xs"
                   disabled={s.items.length === 0}
                 >
                   {s.name}
@@ -158,7 +158,7 @@ export default async function LogPage() {
           Today&apos;s Activity
         </h2>
         {todaysLogs.length === 0 ? (
-          <div className="border-white/5 bg-white/[0.02] rounded-lg border border-dashed py-12 text-center">
+          <div className="glass-card border-dashed py-12 text-center">
             <p className="text-muted-foreground font-mono text-xs">
               No logs yet today
             </p>
@@ -171,7 +171,7 @@ export default async function LogPage() {
             {todaysLogs.map((entry) => (
               <div
                 key={entry.id}
-                className="group border-white/5 bg-white/[0.02] hover:border-white/10 flex items-center justify-between rounded-lg border px-3 py-2 transition-colors"
+                className="group glass-card flex items-center justify-between px-3 py-2 transition-colors"
               >
                 <div className="flex min-w-0 flex-1 items-center gap-3">
                   <span className="text-muted-foreground/60 shrink-0 font-mono text-[10px] tabular-nums">
@@ -236,7 +236,7 @@ type LogEntry = {
 function RecentLogsGrouped({ logs }: { logs: LogEntry[] }) {
   if (logs.length === 0) {
     return (
-      <div className="border-white/5 bg-white/[0.02] rounded-lg border border-dashed py-8 text-center">
+      <div className="glass-card border-dashed py-8 text-center">
         <p className="text-muted-foreground font-mono text-xs">
           No recent logs
         </p>
@@ -265,7 +265,7 @@ function RecentLogsGrouped({ logs }: { logs: LogEntry[] }) {
             {entries.map((entry) => (
               <div
                 key={entry.id}
-                className="border-border/20 bg-card/20 flex items-center justify-between rounded-lg border px-3 py-1.5"
+                className="glass-card flex items-center justify-between px-3 py-1.5"
               >
                 <div className="flex min-w-0 flex-1 items-center gap-3">
                   <span className="text-muted-foreground/40 shrink-0 font-mono text-[10px] tabular-nums">

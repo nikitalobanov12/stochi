@@ -49,7 +49,7 @@ export default async function StacksPage() {
 
       {/* Stacks List */}
       {userStacks.length === 0 ? (
-        <div className="border-white/5 bg-white/[0.02] rounded-lg border border-dashed py-16 text-center">
+        <div className="glass-card border-dashed py-16 text-center">
           <Layers className="text-muted-foreground/30 mx-auto mb-4 h-10 w-10" />
           <p className="text-muted-foreground font-mono text-sm">
             No protocols yet
@@ -75,7 +75,7 @@ export default async function StacksPage() {
         <div className="space-y-2">
           {userStacks.map((s) => (
             <Link key={s.id} href={`/dashboard/stacks/${s.id}`}>
-              <div className="group border-white/5 bg-white/[0.02] hover:border-white/10 hover:bg-white/[0.04] flex items-center justify-between rounded-lg border px-4 py-3 transition-colors">
+              <div className="group glass-card flex items-center justify-between px-4 py-3 transition-colors">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-3">
                     <span className="font-mono text-sm font-medium">
