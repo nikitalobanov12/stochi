@@ -6,17 +6,6 @@
 
 ## Up Next
 
-- [ ] **Smart Suggestions Phase 3**: Edit log timestamps
-  - Add `updateLogTime(logId, newLoggedAt)` server action to `logs.ts`
-  - Add edit time dialog/popover on log entry rows (click timestamp to edit)
-  - Extend `command-parser.ts` to parse time from natural language:
-    - "vitamin d 5000iu at 8am"
-    - "mag glycinate 400mg 10pm"
-    - "zinc 30mg this morning"
-  - Pass parsed time to `createLog({ loggedAt: parsedTime })`
-
-## Planned
-
 - [ ] **Smart Suggestions Phase 4**: Richer supplement details before adding
   - Expand suggestion cards to show `mechanism` and `description` fields
   - Add expandable/collapsible detail section on suggestion cards
@@ -24,7 +13,18 @@
   - Link to full research (Examine.com `researchUrl`)
   - Enhance seed data with more detailed `mechanism` descriptions
 
+## Planned
+
+(moved to Ideas)
+
 ## Completed
+
+- [x] **Smart Suggestions Phase 3**: Edit log timestamps
+  - Added `updateLogTime(logId, newLoggedAt)` server action
+  - Extended `command-parser.ts` with clock time parsing ("8am", "10:30pm")
+  - Added relative time parsing ("this morning", "2 hours ago", "yesterday")
+  - Pass parsed time to `createLog({ loggedAt })` in command bar
+  - Added click-to-edit time UI on log entry rows
 
 - [x] **Smart Suggestions Phase 2**: Timing optimization suggestions
   - Added `optimalTimeOfDay` enum (`morning`, `afternoon`, `evening`, `bedtime`, `with_meals`, `any`)
