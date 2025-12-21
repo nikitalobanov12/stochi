@@ -32,7 +32,7 @@ import { BiologicalTimeline, ActiveCompoundsList } from "~/components/dashboard/
 import { OptimizationHUD } from "~/components/dashboard/optimization-hud";
 
 // Additional Components
-import { BioScore } from "~/components/dashboard/bio-score";
+import { BioScoreCard } from "~/components/dashboard/bio-score-card";
 import { MicroKPIRow } from "~/components/dashboard/micro-kpi-row";
 import { LiveConsoleFeed } from "~/components/dashboard/live-console-feed";
 
@@ -142,7 +142,7 @@ export default async function DashboardPage() {
       <div className="space-y-6">
         {/* ================================================================
          * Header Row (Full Width): System Status Bar
-         * Shows: Streak, Last Log, Bio-Score
+         * Shows: Streak, Last Log, Today's log count
          * ================================================================ */}
         <SystemStatus
           streak={streak}
@@ -156,69 +156,90 @@ export default async function DashboardPage() {
         <DashboardCommandBar supplements={allSupplements} />
 
         {/* ================================================================
-         * Bio-Score + Micro-KPIs Row
+         * Protocols Section (Full Width) - Primary Action
+         * Moved to top as the first thing users want to do
          * ================================================================ */}
-        {todayLogs.length > 0 && (
-          <div className="space-y-4">
-            {/* Bio-Score - Original compact style */}
-            <BioScore
-              score={biologicalState.bioScore}
-              exclusionZones={biologicalState.exclusionZones}
-              optimizations={biologicalState.optimizations}
-            />
-            
-            {/* Micro-KPI Row - Horizontal scrollable on mobile */}
-            <MicroKPIRow
-              ratioWarnings={ratioWarnings}
-              safetyHeadroom={safetyHeadroom}
-              exclusionZones={biologicalState.exclusionZones}
-            />
-          </div>
+        {stackCompletion.length > 0 && (
+          <MissionControl
+            stacks={stackCompletion}
+            onLogStack={async (stackId) => {
+              "use server";
+              await logStack(stackId);
+            }}
+          />
         )}
 
         {/* ================================================================
-         * Primary Row: 12-Column Bento Grid Layout
-         * - Biological Timeline (8 cols): 24-hour pharmacokinetic visualization
-         * - Right Column (4 cols): Optimization HUD + Active Compounds + Console
+         * Main Content: 12-Column Bento Grid Layout
+         * Left (8 cols): Timeline, Optimization HUD, Live Console
+         * Right (4 cols): Bio-Score Card, Micro-KPIs, Active Compounds
          * ================================================================ */}
-        {todayLogs.length > 0 && timelineData.length > 0 && (
-          <div className="bento-grid">
-            {/* Left: Timeline (8 columns on desktop) */}
+        {todayLogs.length > 0 && (
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+            {/* Left Column: Timeline + HUD + Console (8 cols) */}
             <div className="space-y-4 lg:col-span-8">
-              {/* Section Label */}
-              <h2 className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
-                Biological Timeline
-              </h2>
+              {/* Biological Timeline */}
+              {timelineData.length > 0 && (
+                <div>
+                  <h2 className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
+                    Biological Timeline
+                  </h2>
+                  <div className="glass-card p-4">
+                    <BiologicalTimeline
+                      timelineData={timelineData}
+                      activeCompounds={biologicalState.activeCompounds}
+                      currentTime={new Date().toISOString()}
+                    />
+                  </div>
+                </div>
+              )}
 
-              {/* Timeline Chart - Glass Card */}
-              <div className="glass-card p-4">
-                <BiologicalTimeline
-                  timelineData={timelineData}
-                  activeCompounds={biologicalState.activeCompounds}
-                  currentTime={new Date().toISOString()}
-                />
-              </div>
-            </div>
-
-            {/* Right Column: HUD + Compounds + Console (4 columns on desktop) */}
-            <div className="space-y-4 lg:col-span-4 lg:sticky lg:top-20 lg:self-start">
               {/* Optimization HUD */}
               <div>
-                <div className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
+                <h2 className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
                   Optimization HUD
-                </div>
+                </h2>
                 <OptimizationHUD
                   exclusionZones={biologicalState.exclusionZones}
                   optimizations={biologicalState.optimizations}
                 />
               </div>
 
+              {/* Live Console Feed */}
+              <LiveConsoleFeed
+                interactions={interactions}
+                ratioWarnings={ratioWarnings}
+                timingWarnings={timingWarnings}
+              />
+            </div>
+
+            {/* Right Column: Bio-Score + KPIs + Compounds (4 cols) */}
+            <div className="space-y-4 lg:col-span-4">
+              {/* Bio-Score Card */}
+              <BioScoreCard
+                score={biologicalState.bioScore}
+                exclusionZones={biologicalState.exclusionZones}
+                optimizations={biologicalState.optimizations}
+              />
+
+              {/* Micro-KPI Row - Vertical on desktop */}
+              <div className="glass-card p-4">
+                <h2 className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
+                  Key Metrics
+                </h2>
+                <MicroKPIRow
+                  ratioWarnings={ratioWarnings}
+                  safetyHeadroom={safetyHeadroom}
+                  exclusionZones={biologicalState.exclusionZones}
+                />
+              </div>
+
               {/* Active Compounds List */}
               {biologicalState.activeCompounds.filter(c => c.phase !== "cleared").length > 0 && (
                 <div className="glass-card p-4">
-                  <div className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
+                  <h2 className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
                     Active Compounds
-                  </div>
+                  </h2>
                   <ActiveCompoundsList
                     compounds={biologicalState.activeCompounds.filter(
                       (c) => c.phase !== "cleared",
@@ -226,39 +247,17 @@ export default async function DashboardPage() {
                   />
                 </div>
               )}
-
-              {/* Mechanistic Console Feed */}
-              <LiveConsoleFeed
-                interactions={interactions}
-                ratioWarnings={ratioWarnings}
-                timingWarnings={timingWarnings}
-              />
             </div>
           </div>
         )}
 
-        {/* Zone 4: Interaction HUD - Legacy (show if no timeline data) */}
+        {/* Legacy Interaction HUD (show if no timeline data but has logs) */}
         {todayLogs.length > 0 && timelineData.length === 0 && (
           <InteractionHeadsUp
             interactions={interactions}
             ratioWarnings={ratioWarnings}
             timingWarnings={timingWarnings}
           />
-        )}
-
-        {/* ================================================================
-         * Secondary Row: Protocols Section (Full Width)
-         * ================================================================ */}
-        {stackCompletion.length > 0 && (
-          <div>
-            <MissionControl
-              stacks={stackCompletion}
-              onLogStack={async (stackId) => {
-                "use server";
-                await logStack(stackId);
-              }}
-            />
-          </div>
         )}
 
         {/* Today's Activity Log - Compact */}
