@@ -8,6 +8,7 @@ import {
   YAxis,
   ResponsiveContainer,
   ReferenceLine,
+  ReferenceArea,
   Tooltip,
 } from "recharts";
 import { EyeOff, ChevronDown, ChevronUp } from "lucide-react";
@@ -39,6 +40,17 @@ const CHART_STROKE_WIDTH = 1;
 const CHART_STROKE_WIDTH_HIGHLIGHTED = 1.5;
 /** Fill opacity: 0 - strokes only, no area fills */
 const CHART_FILL_OPACITY_MAX = 0;
+/** Chart height for the timeline */
+const CHART_HEIGHT = 280;
+/** Zone band configuration - Clinical Precision v2.0 */
+const ZONE_BANDS = {
+  /** Optimal therapeutic window: 80-100% */
+  optimal: { y1: 80, y2: 100, color: "rgba(57, 255, 20, 0.04)" }, // Emerald glow
+  /** Caution zone: above 100% (potential overstimulation) */
+  caution: { y1: 100, y2: 120, color: "rgba(240, 165, 0, 0.04)" }, // Amber warning
+  /** Sub-therapeutic zone: below 30% */
+  subTherapeutic: { y1: 0, y2: 30, color: "rgba(255, 255, 255, 0.01)" }, // Subtle dim
+} as const;
 
 // ============================================================================
 // Color Palette for Compounds
@@ -195,10 +207,10 @@ export function BiologicalTimeline({
   timelineData,
   activeCompounds,
   currentTime,
-  defaultVisibleCount = 3,
+  defaultVisibleCount = 100, // Show all by default
 }: BiologicalTimelineProps) {
   // Track whether to show all compounds or just top N
-  const [showAll, setShowAll] = useState(false);
+  const [showAll, setShowAll] = useState(true); // Default to showing all
   // Track manually hidden compounds (for fine-grained control)
   const [hiddenCompounds, setHiddenCompounds] = useState<Set<string>>(new Set());
   // Track hovered compound for highlighting (null = no hover)
@@ -286,13 +298,35 @@ export function BiologicalTimeline({
 
   // Check if there are more compounds than the default visible count
   const hasMoreCompounds = allSupplementIds.length > defaultVisibleCount;
+  
+  // Check if all compounds are manually hidden
+  const allHidden = allSupplementIds.length > 0 && visibleSupplementIds.length === 0;
 
-  if (timelineData.length === 0 || visibleSupplementIds.length === 0) {
+  // No timeline data at all
+  if (timelineData.length === 0) {
     return (
-      <div className="flex h-[200px] items-center justify-center">
+      <div className="flex h-[280px] items-center justify-center">
         <p className="text-muted-foreground font-mono text-xs">
           No active compounds in the last 24h
         </p>
+      </div>
+    );
+  }
+  
+  // All compounds manually hidden - show restore option
+  if (allHidden) {
+    return (
+      <div className="flex h-[280px] flex-col items-center justify-center gap-3">
+        <p className="text-muted-foreground font-mono text-xs">
+          All compounds hidden
+        </p>
+        <button
+          type="button"
+          onClick={() => setHiddenCompounds(new Set())}
+          className="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-1.5 font-mono text-[10px] text-white/60 transition-colors hover:bg-white/[0.05] hover:text-white/80"
+        >
+          SHOW ALL COMPOUNDS
+        </button>
       </div>
     );
   }
@@ -300,7 +334,7 @@ export function BiologicalTimeline({
   return (
     <div className="w-full">
       {/* Chart */}
-      <div className="h-[200px]">
+      <div style={{ height: CHART_HEIGHT }}>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={timelineData}
@@ -332,6 +366,29 @@ export function BiologicalTimeline({
                 );
               })}
             </defs>
+
+            {/* Zone bands - Clinical Precision v2.0 */}
+            {/* Sub-therapeutic zone (0-30%) - dimmed */}
+            <ReferenceArea
+              y1={ZONE_BANDS.subTherapeutic.y1}
+              y2={ZONE_BANDS.subTherapeutic.y2}
+              fill={ZONE_BANDS.subTherapeutic.color}
+              fillOpacity={1}
+            />
+            {/* Optimal therapeutic window (80-100%) - emerald glow */}
+            <ReferenceArea
+              y1={ZONE_BANDS.optimal.y1}
+              y2={ZONE_BANDS.optimal.y2}
+              fill={ZONE_BANDS.optimal.color}
+              fillOpacity={1}
+            />
+            {/* Caution zone (100-120%) - amber warning */}
+            <ReferenceArea
+              y1={ZONE_BANDS.caution.y1}
+              y2={ZONE_BANDS.caution.y2}
+              fill={ZONE_BANDS.caution.color}
+              fillOpacity={1}
+            />
 
             <XAxis
               dataKey="minutesFromStart"
@@ -599,7 +656,7 @@ function CompoundRow({
 
 export function BiologicalTimelineSkeleton() {
   return (
-    <div className="h-[200px] w-full">
+    <div className="w-full" style={{ height: CHART_HEIGHT }}>
       {/* Chart area skeleton */}
       <div className="bg-muted/20 relative h-full w-full rounded-md">
         {/* Y-axis skeleton */}
