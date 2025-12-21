@@ -49,6 +49,32 @@ export const mealContextEnum = pgEnum("meal_context", [
   "post_meal",
 ]);
 
+// Pharmacokinetic model type - determines which absorption model to use
+export const kineticsTypeEnum = pgEnum("kinetics_type", [
+  "first_order", // Standard exponential decay (default)
+  "michaelis_menten", // Capacity-limited saturable transport
+]);
+
+// Biomarker type for blood-work calibration
+export const biomarkerTypeEnum = pgEnum("biomarker_type", [
+  "25_oh_d", // Vitamin D - 25-hydroxyvitamin D
+  "ferritin", // Iron storage
+  "serum_iron", // Iron (serum)
+  "rbc_magnesium", // Magnesium (RBC)
+  "serum_zinc", // Zinc (serum)
+  "serum_copper", // Copper (serum)
+  "b12", // Vitamin B12
+  "folate", // Folate/Folic acid
+]);
+
+// CYP450 evidence type for confidence scoring
+export const cyp450EvidenceTypeEnum = pgEnum("cyp450_evidence_type", [
+  "in_vivo_human", // Human clinical trials (highest confidence)
+  "in_vitro_microsomes", // Human liver microsomes (medium confidence)
+  "animal_model", // Animal studies (low confidence)
+  "theoretical", // Computational/theoretical prediction (lowest confidence)
+]);
+
 // ============================================================================
 // Ratio Rules (for stoichiometric imbalance detection)
 // ============================================================================
@@ -177,6 +203,13 @@ export const supplement = pgTable(
     halfLifeMinutes: integer("half_life_minutes"), // Elimination half-life (t½)
     absorptionWindowMinutes: integer("absorption_window_minutes"), // Active absorption period
     bioavailabilityPercent: real("bioavailability_percent"), // % systemic availability
+    // Michaelis-Menten kinetics parameters (for saturable transporters)
+    // Used for Vitamin C, Magnesium, Iron, and other capacity-limited supplements
+    kineticsType: kineticsTypeEnum("kinetics_type").default("first_order"),
+    vmax: real("vmax"), // Maximum velocity (mg/min) - Michaelis-Menten
+    km: real("km"), // Michaelis constant (mg) - substrate concentration at half Vmax
+    absorptionSaturationDose: real("absorption_saturation_dose"), // Dose (mg) above which absorption efficiency drops
+    rdaAmount: real("rda_amount"), // Recommended Daily Allowance (mg) - for heuristic dampening
     createdAt: timestamp("created_at")
       .$defaultFn(() => new Date())
       .notNull(),
@@ -344,6 +377,10 @@ export const cyp450Pathway = pgTable(
     clinicalNote: text("clinical_note"),
     // Research citation
     researchUrl: text("research_url"),
+    // Confidence scoring for alert fatigue prevention (Phase 4)
+    // Score 0-1: 1.0 = in vivo human, 0.5 = in vitro, 0.1 = animal/theoretical
+    confidenceScore: real("confidence_score").default(0.5),
+    evidenceType: cyp450EvidenceTypeEnum("evidence_type").default("in_vitro_microsomes"),
     createdAt: timestamp("created_at")
       .$defaultFn(() => new Date())
       .notNull(),
@@ -351,6 +388,49 @@ export const cyp450Pathway = pgTable(
   (t) => [
     index("cyp450_supplement_idx").on(t.supplementId),
     index("cyp450_enzyme_idx").on(t.enzyme),
+  ],
+);
+
+// ============================================================================
+// User Biomarker Calibration (Phase 3)
+// Allows users to input blood test results for personalized PK model calibration
+// ============================================================================
+
+export const userBiomarker = pgTable(
+  "user_biomarker",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    // Optional link to specific supplement (for supplement-specific calibration)
+    supplementId: uuid("supplement_id").references(() => supplement.id, {
+      onDelete: "set null",
+    }),
+    // Type of biomarker measured
+    biomarkerType: biomarkerTypeEnum("biomarker_type").notNull(),
+    // Measured value from blood test
+    value: real("value").notNull(),
+    // Unit of measurement (ng/mL, nmol/L, mg/dL, mcg/dL)
+    unit: text("unit").notNull(),
+    // When the blood test was taken
+    measuredAt: timestamp("measured_at", { withTimezone: true }).notNull(),
+    // Calibration results - Individual Absorption Factor (IAF)
+    // If user's measured level is 50ng/mL but predicted was 30ng/mL, IAF = 1.66
+    calibratedF: real("calibrated_f"), // Adjusted bioavailability coefficient
+    calibratedCL: real("calibrated_cl"), // Adjusted clearance rate
+    // Notes from user (e.g., "fasted blood draw", "morning sample")
+    notes: text("notes"),
+    createdAt: timestamp("created_at")
+      .$defaultFn(() => new Date())
+      .notNull(),
+    updatedAt: timestamp("updated_at")
+      .$defaultFn(() => new Date())
+      .notNull(),
+  },
+  (t) => [
+    index("user_biomarker_user_idx").on(t.userId),
+    index("user_biomarker_type_idx").on(t.biomarkerType),
   ],
 );
 
@@ -364,6 +444,7 @@ export const userRelations = relations(user, ({ many }) => ({
   stacks: many(stack),
   logs: many(log),
   goals: many(userGoal),
+  biomarkers: many(userBiomarker),
 }));
 
 export const accountRelations = relations(account, ({ one }) => ({
@@ -453,6 +534,14 @@ export const userGoalRelations = relations(userGoal, ({ one }) => ({
 export const cyp450PathwayRelations = relations(cyp450Pathway, ({ one }) => ({
   supplement: one(supplement, {
     fields: [cyp450Pathway.supplementId],
+    references: [supplement.id],
+  }),
+}));
+
+export const userBiomarkerRelations = relations(userBiomarker, ({ one }) => ({
+  user: one(user, { fields: [userBiomarker.userId], references: [user.id] }),
+  supplement: one(supplement, {
+    fields: [userBiomarker.supplementId],
     references: [supplement.id],
   }),
 }));

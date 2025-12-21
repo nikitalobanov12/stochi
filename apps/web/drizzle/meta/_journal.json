@@ -57,6 +57,13 @@
       "when": 1766264536646,
       "tag": "0007_purple_madripoor",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1766284410593,
+      "tag": "0008_real_sumo",
+      "breakpoints": true
     }
   ]
 }
