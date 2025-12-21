@@ -50,7 +50,7 @@ export async function createStack(formData: FormData) {
     name,
   });
 
-  revalidatePath("/stacks");
+  revalidatePath("/dashboard/stacks");
   revalidatePath("/dashboard");
 }
 
@@ -73,8 +73,8 @@ export async function updateStack(stackId: string, formData: FormData) {
     })
     .where(and(eq(stack.id, stackId), eq(stack.userId, session.user.id)));
 
-  revalidatePath("/stacks");
-  revalidatePath(`/stacks/${stackId}`);
+  revalidatePath("/dashboard/stacks");
+  revalidatePath(`/dashboard/stacks/${stackId}`);
   revalidatePath("/dashboard");
 }
 
@@ -88,9 +88,9 @@ export async function deleteStack(stackId: string) {
     .delete(stack)
     .where(and(eq(stack.id, stackId), eq(stack.userId, session.user.id)));
 
-  revalidatePath("/stacks");
+  revalidatePath("/dashboard/stacks");
   revalidatePath("/dashboard");
-  redirect("/stacks");
+  redirect("/dashboard/stacks");
 }
 
 export async function addStackItem(
@@ -124,7 +124,7 @@ export async function addStackItem(
     .set({ updatedAt: new Date() })
     .where(eq(stack.id, stackId));
 
-  revalidatePath(`/stacks/${stackId}`);
+  revalidatePath(`/dashboard/stacks/${stackId}`);
   revalidatePath("/dashboard");
 }
 
@@ -190,7 +190,7 @@ export async function addStackItems(
     .set({ updatedAt: new Date() })
     .where(eq(stack.id, stackId));
 
-  revalidatePath(`/stacks/${stackId}`);
+  revalidatePath(`/dashboard/stacks/${stackId}`);
   revalidatePath("/dashboard");
 }
 
@@ -218,7 +218,7 @@ export async function removeStackItem(itemId: string) {
     .set({ updatedAt: new Date() })
     .where(eq(stack.id, item.stackId));
 
-  revalidatePath(`/stacks/${item.stackId}`);
+  revalidatePath(`/dashboard/stacks/${item.stackId}`);
   revalidatePath("/dashboard");
 }
 
@@ -260,7 +260,7 @@ export async function updateStackItem(
     .set({ updatedAt: new Date() })
     .where(eq(stack.id, item.stackId));
 
-  revalidatePath(`/stacks/${item.stackId}`);
+  revalidatePath(`/dashboard/stacks/${item.stackId}`);
   revalidatePath("/dashboard");
 }
 
