@@ -194,7 +194,7 @@ function useCountdown(targetDate: Date): { minutes: number; seconds: number; isE
 }
 
 // ============================================================================
-// Helper Functions
+// Helper Functions - Semantic Color System (Spec Section 5)
 // ============================================================================
 
 function formatCountdown(minutes: number, seconds: number): string {
@@ -210,9 +210,9 @@ function formatCountdown(minutes: number, seconds: number): string {
 function getSeverityColorClass(severity: "critical" | "medium" | "low"): string {
   switch (severity) {
     case "critical":
-      return "status-critical";
+      return "status-critical"; // Red - lethal interactions
     case "medium":
-      return "status-conflict";
+      return "status-conflict"; // Amber - timing conflicts
     case "low":
       return "text-muted-foreground";
   }
@@ -226,24 +226,12 @@ function getSeverityBorderClass(severity: "critical" | "medium" | "low"): string
     case "medium":
       return "border-status-conflict";
     case "low":
-      return "border-border/40";
-  }
-}
-
-// Background classes using semantic system
-function getSeverityBgClass(severity: "critical" | "medium" | "low"): string {
-  switch (severity) {
-    case "critical":
-      return "bg-status-critical";
-    case "medium":
-      return "bg-status-conflict";
-    case "low":
-      return "bg-card/30";
+      return "border-white/[0.08]";
   }
 }
 
 // ============================================================================
-// Exclusion Zone Card - with severity borders
+// Exclusion Zone Card - Glass Card with Severity Borders (Spec Section 2)
 // ============================================================================
 
 function ExclusionZoneCard({
@@ -284,23 +272,23 @@ function ExclusionZoneCard({
 
   // Severity-based styling classes
   const borderClass = getSeverityBorderClass(zone.severity);
-  const bgClass = getSeverityBgClass(zone.severity);
   const colorClass = getSeverityColorClass(zone.severity);
 
   // Determine if window is imminent (<30min) for emerald highlight
   const isImminent = minutes < 30;
 
+  // Window is now open - show "LOG NOW" state
   if (isExpired) {
     return (
-      <div className="rounded-2xl border border-status-optimized bg-status-optimized p-4">
+      <div className="glass-card border-status-optimized bg-status-optimized p-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Check className="h-5 w-5 status-optimized" />
             <div>
-              <div className="text-foreground font-sans text-sm font-medium">
+              <div className="type-header text-sm">
                 {zone.targetSupplementName}
               </div>
-              <div className="font-mono text-[10px] uppercase tracking-wider status-optimized">
+              <div className="type-technical text-[10px] uppercase tracking-wider">
                 WINDOW OPEN
               </div>
             </div>
@@ -308,7 +296,7 @@ function ExclusionZoneCard({
           {onLogSupplement && (
             <Button
               size="sm"
-              className="h-8 bg-emerald-500 font-mono text-xs text-black hover:bg-emerald-400"
+              className="h-9 bg-emerald-500 font-mono text-xs text-black hover:bg-emerald-400"
               onClick={() => onLogSupplement(zone.targetSupplementId)}
             >
               LOG NOW
@@ -320,8 +308,8 @@ function ExclusionZoneCard({
   }
 
   return (
-    <div className={`rounded-2xl border ${borderClass} ${bgClass} ${isHero ? "p-5" : "p-3"}`}>
-      <div className="flex items-start justify-between gap-2">
+    <div className={`glass-card ${borderClass} ${isHero ? "p-6" : "p-4"}`}>
+      <div className="flex items-start justify-between gap-3">
         <div className="flex-1">
           {isHero ? (
             // Hero card layout - "Next Window" prompt with prominent countdown
@@ -332,23 +320,23 @@ function ExclusionZoneCard({
               )}
               
               <div className="relative">
-                {/* Label - Sans-serif for prose */}
-                <div className="font-sans text-sm text-white/50">
-                  Optimal Window Opens In
+                {/* Label - Body prose per spec section 3 */}
+                <div className="type-prose text-sm">
+                  Optimal window opens in
                 </div>
                 
-                {/* Countdown - Large, prominent, JetBrains Mono for precision */}
-                <div className={`mt-2 font-mono text-4xl font-bold tabular-nums ${isImminent ? "status-optimized" : colorClass}`}>
+                {/* Countdown - Critical Alerts: JetBrains Mono Bold per spec */}
+                <div className={`mt-2 font-mono text-4xl font-bold tabular-nums ${isImminent ? "status-optimized" : "type-alert"}`}>
                   {formatCountdown(minutes, seconds)}
                 </div>
                 
-                {/* Target supplement - Sans-serif */}
-                <div className="mt-3 font-sans text-lg font-medium text-white/90">
+                {/* Target supplement - Primary header */}
+                <div className="type-header mt-4 text-lg">
                   {zone.targetSupplementName}
                 </div>
                 
-                {/* Mechanistic reason - Sans-serif prose */}
-                <div className="mt-2 font-sans text-sm leading-relaxed text-white/50">
+                {/* Mechanistic reason - Body prose */}
+                <div className="type-prose mt-2 text-sm leading-relaxed">
                   {zone.reason}
                 </div>
                 
@@ -357,7 +345,7 @@ function ExclusionZoneCard({
                   <Button
                     size="sm"
                     variant="outline"
-                    className="mt-4 h-9 w-full border-emerald-400/30 bg-emerald-500/10 font-mono text-xs text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300"
+                    className="mt-5 h-10 w-full border-emerald-400/30 bg-emerald-500/10 font-mono text-xs text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300"
                     onClick={handleRemind}
                   >
                     <Bell className="mr-2 h-4 w-4" />
@@ -365,13 +353,13 @@ function ExclusionZoneCard({
                   </Button>
                 )}
                 {permission !== "denied" && reminded && (
-                  <div className="mt-4 flex items-center justify-center gap-2 rounded-lg bg-emerald-500/10 py-2.5 font-mono text-xs text-emerald-400">
+                  <div className="mt-5 flex items-center justify-center gap-2 rounded-2xl bg-emerald-500/10 py-3 font-mono text-xs text-emerald-400">
                     <Bell className="h-4 w-4" />
                     ALERT SET
                   </div>
                 )}
                 {permission === "denied" && (
-                  <div className="mt-4 text-center font-sans text-xs text-white/30">
+                  <div className="type-prose mt-5 text-center text-xs">
                     Notifications blocked in browser settings
                   </div>
                 )}
@@ -382,15 +370,16 @@ function ExclusionZoneCard({
             <>
               <div className="flex items-center gap-2">
                 <Clock className={`h-4 w-4 ${colorClass}`} />
-                <span className="text-foreground font-sans text-sm">
+                <span className="type-header text-sm">
                   {zone.targetSupplementName}
                 </span>
-                <span className={`font-mono text-xs tabular-nums ${colorClass}`}>
+                {/* Countdown timer - Technical data */}
+                <span className={`type-alert text-xs tabular-nums`}>
                   {formatCountdown(minutes, seconds)}
                 </span>
               </div>
-              {/* Mechanistic reason - Sans-serif prose */}
-              <div className="text-muted-foreground mt-1.5 font-sans text-xs leading-relaxed">
+              {/* Mechanistic reason - Body prose */}
+              <div className="type-prose mt-2 text-xs leading-relaxed">
                 {zone.reason}
               </div>
             </>
@@ -400,21 +389,21 @@ function ExclusionZoneCard({
         {!isHero && (
           permission === "denied" ? (
             <div className="text-muted-foreground/50" title="Notifications blocked">
-              <Bell className="h-3 w-3" />
+              <Bell className="h-3.5 w-3.5" />
             </div>
           ) : !reminded ? (
             <Button
               size="sm"
               variant="ghost"
-              className="text-muted-foreground hover:text-foreground h-7 px-2"
+              className="text-muted-foreground hover:text-foreground h-8 px-2"
               onClick={handleRemind}
               title="Remind me when available"
             >
-              <Bell className="h-3 w-3" />
+              <Bell className="h-3.5 w-3.5" />
             </Button>
           ) : (
             <div className="status-info" title="Reminder set">
-              <Bell className="h-3 w-3" />
+              <Bell className="h-3.5 w-3.5" />
             </div>
           )
         )}
@@ -424,7 +413,7 @@ function ExclusionZoneCard({
 }
 
 // ============================================================================
-// Synergy Card - with improved contrast and dismiss button
+// Synergy Card - Glass Card with Status Borders (Spec Section 2)
 // ============================================================================
 
 function SynergyCard({
@@ -439,12 +428,12 @@ function SynergyCard({
 
   return (
     <div
-      className={`group relative rounded-2xl border p-3 ${
+      className={`glass-card group relative p-4 ${
         hasSafetyWarning
-          ? "border-status-conflict bg-status-conflict"
+          ? "border-status-conflict"
           : isActive 
-            ? "border-status-optimized bg-status-optimized" 
-            : "border-status-info bg-status-info"
+            ? "border-status-optimized" 
+            : "border-status-info"
       }`}
     >
       {/* Dismiss button - visible on hover for suggestions */}
@@ -452,13 +441,13 @@ function SynergyCard({
         <button
           type="button"
           onClick={onDismiss}
-          className="absolute right-1 top-1 rounded p-1 text-muted-foreground/50 opacity-0 transition-opacity hover:bg-muted/30 hover:text-muted-foreground group-hover:opacity-100"
+          className="absolute right-2 top-2 rounded p-1.5 text-muted-foreground/50 opacity-0 transition-opacity hover:bg-white/5 hover:text-muted-foreground group-hover:opacity-100"
           title="Dismiss suggestion"
         >
-          <X className="h-3 w-3" />
+          <X className="h-3.5 w-3.5" />
         </button>
       )}
-      <div className="flex items-start gap-2">
+      <div className="flex items-start gap-3">
         {hasSafetyWarning ? (
           <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 status-conflict" />
         ) : (
@@ -468,19 +457,21 @@ function SynergyCard({
             }`}
           />
         )}
-        <div className="min-w-0 pr-4">
-          <div className="text-foreground font-sans text-sm">
+        <div className="min-w-0 pr-5">
+          {/* Title - Primary header */}
+          <div className="type-header text-sm">
             {isActive 
               ? optimization.title.replace("Active synergy: ", "")
               : optimization.title.replace(/^Enhance .+ with /, "Add ")}
           </div>
-          <div className="text-muted-foreground mt-0.5 font-sans text-xs leading-relaxed">
+          {/* Description - Body prose */}
+          <div className="type-prose mt-1 text-xs leading-relaxed">
             {optimization.description}
           </div>
           {hasSafetyWarning && (
-            <div className="mt-1.5 flex items-start gap-1.5 rounded-lg bg-status-conflict px-2 py-1">
-              <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0 status-conflict" />
-              <span className="font-sans text-[10px] leading-relaxed status-conflict">
+            <div className="mt-2 flex items-start gap-2 rounded-xl bg-status-conflict px-3 py-2">
+              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 status-conflict" />
+              <span className="type-prose text-[10px] leading-relaxed status-conflict">
                 {optimization.safetyWarning}
               </span>
             </div>
@@ -492,7 +483,7 @@ function SynergyCard({
 }
 
 // ============================================================================
-// Main Component
+// Main Component - Optimization HUD (4 Cols per Spec Section 4)
 // ============================================================================
 
 export function OptimizationHUD({
@@ -554,11 +545,11 @@ export function OptimizationHUD({
 
   if (!hasContent) {
     return (
-      <div className="border-border/40 bg-card/30 rounded-lg border p-4 text-center">
-        <div className="text-muted-foreground font-mono text-xs">
+      <div className="glass-card p-5 text-center">
+        <div className="type-prose text-xs">
           No active optimizations
         </div>
-        <div className="text-muted-foreground/60 mt-1 font-mono text-[10px]">
+        <div className="type-prose mt-1 text-[10px] opacity-60">
           Log supplements to see timing suggestions
         </div>
       </div>
@@ -578,7 +569,7 @@ export function OptimizationHUD({
         />
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-5">
         {/* Hero: Next Optimal Event */}
         {sortedZones.length > 0 && sortedZones[0] && (
           <ExclusionZoneCard
@@ -592,14 +583,14 @@ export function OptimizationHUD({
 
         {/* Additional Timing Windows (if more than 1) */}
         {sortedZones.length > 1 && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="h-3 w-3 status-conflict" />
-              <span className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
+              <AlertTriangle className="h-3.5 w-3.5 status-conflict" />
+              <span className="type-label">
                 Other Windows
               </span>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {sortedZones.slice(1, 4).map((zone) => (
                 <ExclusionZoneCard
                   key={zone.ruleId}
@@ -615,14 +606,14 @@ export function OptimizationHUD({
 
         {/* Active Synergies */}
         {activeSynergies.length > 0 && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <Zap className="h-3 w-3 status-optimized" />
-              <span className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
+              <Zap className="h-3.5 w-3.5 status-optimized" />
+              <span className="type-label">
                 Active Synergies
               </span>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {activeSynergies.map((opt, i) => (
                 <SynergyCard key={i} optimization={opt} />
               ))}
@@ -632,14 +623,14 @@ export function OptimizationHUD({
 
         {/* Suggestions */}
         {suggestions.length > 0 && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <ChevronRight className="h-3 w-3 status-info" />
-              <span className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
+              <ChevronRight className="h-3.5 w-3.5 status-info" />
+              <span className="type-label">
                 Suggestions
               </span>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {suggestions.slice(0, 3).map((opt, i) => {
                 if (dismissedSuggestions.has(i)) return null;
                 return (

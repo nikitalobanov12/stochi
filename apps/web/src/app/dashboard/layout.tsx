@@ -32,12 +32,6 @@ export default async function DashboardLayout({
 
   return (
     <div className="relative flex min-h-screen flex-col">
-      {/* Noise texture overlay */}
-      <div className="hud-noise" />
-
-      {/* Vignette overlay */}
-      <div className="hud-vignette" />
-
       <header className="border-border bg-background/95 sticky top-0 z-50 border-b backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
           <nav className="hidden items-center gap-4 md:flex">
@@ -118,7 +112,7 @@ export default async function DashboardLayout({
       </header>
 
       <main className="relative z-10 flex-1 pb-20 md:pb-0">
-        <div className="mx-auto max-w-5xl px-4 py-6">{children}</div>
+        <div className="mx-auto max-w-[1400px] px-4 py-6">{children}</div>
       </main>
 
       <nav className="border-border bg-background pb-safe fixed right-0 bottom-0 left-0 z-50 border-t md:hidden">

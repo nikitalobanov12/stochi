@@ -13,13 +13,12 @@ type ProtocolCardProps = {
 };
 
 /**
- * ProtocolCard - Split-Action Row Design
+ * ProtocolCard - Split-Action Row Design (Scientific Laboratory v1.1)
  *
  * Zone A (Left ~70%): The Briefing - Click to navigate to stack detail
  * Zone B (Right ~30%): The Trigger - Explicit execute button
  *
- * This solves the "invisible action" problem by making the LOG button
- * always visible and physically distinct from navigation.
+ * Uses Glass Card styling per spec section 2
  */
 export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
   const [isPending, startTransition] = useTransition();
@@ -41,41 +40,38 @@ export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
   return (
     <div
       className={cn(
-        "flex items-stretch rounded-2xl border transition-colors",
-        isComplete
-          ? "border-status-optimized bg-status-optimized"
-          : "border-border/40 bg-card/30",
+        "glass-card flex items-stretch transition-colors",
+        isComplete && "border-status-optimized bg-status-optimized",
       )}
     >
       {/* Zone A: The Briefing (Navigate to detail) */}
       <Link
         href={`/dashboard/stacks/${stackId}`}
-        className="hover:bg-card/50 flex flex-1 items-center gap-3 px-4 py-3 transition-colors"
+        className="flex flex-1 items-center gap-4 px-5 py-4 transition-colors hover:bg-white/[0.02]"
       >
         {/* Status Indicator */}
-        <div className="relative flex h-5 w-5 shrink-0 items-center justify-center">
+        <div className="relative flex h-6 w-6 shrink-0 items-center justify-center">
           {isComplete && (
-            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500">
-              <Check className="h-3 w-3 text-white" strokeWidth={3} />
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500">
+              <Check className="h-3.5 w-3.5 text-black" strokeWidth={3} />
             </div>
           )}
           {isPartial && (
-            <svg className="h-5 w-5 -rotate-90" viewBox="0 0 20 20">
+            <svg className="h-6 w-6 -rotate-90" viewBox="0 0 20 20">
               <circle
                 cx="10"
                 cy="10"
                 r="8"
                 fill="none"
-                stroke="currentColor"
+                stroke="rgba(255, 255, 255, 0.1)"
                 strokeWidth="2"
-                className="text-muted"
               />
               <circle
                 cx="10"
                 cy="10"
                 r="8"
                 fill="none"
-                stroke="var(--chart-3)"
+                stroke="#F59E0B"
                 strokeWidth="2"
                 strokeDasharray={`${(loggedItems / totalItems) * 50.27} 50.27`}
               />
@@ -83,7 +79,7 @@ export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
           )}
           {isIdle && (
             <Circle
-              className="text-muted-foreground/40 h-5 w-5"
+              className="h-6 w-6 text-white/20"
               strokeWidth={2}
             />
           )}
@@ -91,30 +87,32 @@ export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
 
         {/* Stack Name & Progress */}
         <div className="min-w-0 flex-1">
-          <p className="truncate font-sans text-sm font-medium">{stackName}</p>
-          <p className="text-muted-foreground font-mono text-[10px]">
+          {/* Protocol name - Primary header */}
+          <p className="type-header truncate text-sm">{stackName}</p>
+          {/* Progress - Technical data */}
+          <p className="mt-0.5 font-mono text-[10px]">
             {isComplete ? (
               <span className="status-optimized">COMPLETE</span>
             ) : (
               <>
-                <span className="tabular-nums">{loggedItems}</span>
+                <span className="type-technical tabular-nums">{loggedItems}</span>
                 <span className="text-muted-foreground/60">/</span>
-                <span className="tabular-nums">{totalItems}</span>
-                <span className="text-muted-foreground/60 ml-1">logged</span>
+                <span className="type-technical tabular-nums">{totalItems}</span>
+                <span className="type-prose ml-1 text-[10px]">logged</span>
               </>
             )}
           </p>
         </div>
       </Link>
 
-      {/* Vertical Divider (explicit on mobile) */}
-      <div className="bg-border/40 w-px" />
+      {/* Vertical Divider */}
+      <div className="w-px bg-white/[0.08]" />
 
       {/* Zone B: The Trigger (Execute) */}
-      <div className="flex items-center px-2">
+      <div className="flex items-center px-3">
         {isComplete ? (
-          <div className="flex h-11 min-w-[72px] items-center justify-center rounded-xl bg-status-optimized px-3">
-            <span className="font-mono text-[10px] font-medium status-optimized">
+          <div className="flex h-11 min-w-[80px] items-center justify-center rounded-xl bg-status-optimized px-4">
+            <span className="type-technical text-[10px] font-medium">
               DONE
             </span>
           </div>
@@ -125,16 +123,16 @@ export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
             onClick={handleExecute}
             disabled={isPending || totalItems === 0}
             className={cn(
-              "border-border/60 h-11 min-w-[72px] gap-1.5 rounded-xl font-mono text-xs",
-              "hover:border-primary hover:bg-primary hover:text-primary-foreground",
+              "h-11 min-w-[80px] gap-2 rounded-xl border-white/[0.08] bg-white/[0.02] font-mono text-xs",
+              "hover:border-emerald-500/50 hover:bg-emerald-500/10 hover:text-emerald-400",
               isPending && "pointer-events-none",
             )}
           >
             {isPending ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <>
-                <Play className="h-3 w-3" />
+                <Play className="h-3.5 w-3.5" />
                 LOG
               </>
             )}
@@ -146,7 +144,7 @@ export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
 }
 
 /**
- * MissionControl - Protocol deck section
+ * MissionControl - Protocol deck section (Secondary Row per spec section 4)
  */
 export function MissionControl({
   stacks,
@@ -160,11 +158,11 @@ export function MissionControl({
   }
 
   return (
-    <section className="space-y-3">
-      <h2 className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
+    <section className="space-y-4">
+      <h2 className="type-label">
         Protocols
       </h2>
-      <div className="space-y-2">
+      <div className="space-y-3">
         {stacks.map((stack) => (
           <ProtocolCard
             key={stack.stackId}

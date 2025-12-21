@@ -29,23 +29,31 @@ type ScoreBreakdownItem = {
 };
 
 // ============================================================================
-// Helper Functions
+// Helper Functions - Semantic Color System (Spec Section 5)
 // ============================================================================
 
 // Semantic color classes for bio-score levels
 function getScoreColorClass(score: number): string {
-  if (score >= 80) return "status-optimized"; // Green - optimal
+  if (score >= 80) return "status-optimized"; // Emerald - optimal
   if (score >= 60) return "status-info"; // Cyan - good
   if (score >= 40) return "status-conflict"; // Amber - warning
   return "status-critical"; // Red - critical
 }
 
-// CSS variable colors for SVG elements (Recharts-compatible)
-function getScoreColorVar(score: number): string {
-  if (score >= 80) return "var(--chart-1)"; // Emerald - optimal
-  if (score >= 60) return "var(--chart-2)"; // Cyan - good
-  if (score >= 40) return "var(--chart-3)"; // Amber - warning
-  return "var(--chart-4)"; // Red - critical
+// Hex colors for SVG gradients (per spec section 5 semantic colors)
+function getScoreColorHex(score: number): string {
+  if (score >= 80) return "#10B981"; // Emerald - optimal
+  if (score >= 60) return "#06B6D4"; // Cyan - good
+  if (score >= 40) return "#F59E0B"; // Amber - warning
+  return "#EF4444"; // Red - critical
+}
+
+// Secondary gradient color (lighter variant)
+function getScoreSecondaryColorHex(score: number): string {
+  if (score >= 80) return "#34D399"; // Emerald-400
+  if (score >= 60) return "#22D3EE"; // Cyan-400
+  if (score >= 40) return "#FBBF24"; // Amber-400
+  return "#F87171"; // Red-400
 }
 
 function getScoreLabel(score: number): string {
@@ -97,54 +105,83 @@ function calculateBreakdown(
 }
 
 // ============================================================================
-// Components
+// Radial SVG Gauge Component - Per Spec Section 6
 // ============================================================================
+// "Bio-Score Gauge: Replace progress bars with a Radial SVG Gauge featuring 
+// a gradient stroke."
 
 function ScoreGauge({ score }: { score: number }) {
-  const colorVar = getScoreColorVar(score);
+  const primaryColor = getScoreColorHex(score);
+  const secondaryColor = getScoreSecondaryColorHex(score);
   const colorClass = getScoreColorClass(score);
-  const circumference = 2 * Math.PI * 36; // r=36
+  
+  // SVG circle parameters
+  const size = 120;
+  const strokeWidth = 8;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (score / 100) * circumference;
+  const center = size / 2;
+  
+  // Unique gradient ID to avoid conflicts
+  const gradientId = `bio-score-gradient-${score}`;
 
   return (
-    <div className="relative h-24 w-24">
-      <svg className="h-24 w-24 -rotate-90" viewBox="0 0 80 80">
-        {/* Background circle */}
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg 
+        className="-rotate-90" 
+        viewBox={`0 0 ${size} ${size}`}
+        style={{ width: size, height: size }}
+      >
+        <defs>
+          {/* Gradient stroke per spec */}
+          <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor={secondaryColor} />
+            <stop offset="100%" stopColor={primaryColor} />
+          </linearGradient>
+        </defs>
+        
+        {/* Background circle - subtle track */}
         <circle
-          cx="40"
-          cy="40"
-          r="36"
-          stroke="currentColor"
-          strokeWidth="6"
+          cx={center}
+          cy={center}
+          r={radius}
+          stroke="rgba(255, 255, 255, 0.05)"
+          strokeWidth={strokeWidth}
           fill="none"
-          className="text-muted/30"
         />
-        {/* Progress circle */}
+        
+        {/* Progress circle with gradient stroke */}
         <circle
-          cx="40"
-          cy="40"
-          r="36"
-          stroke={colorVar}
-          strokeWidth="6"
+          cx={center}
+          cy={center}
+          r={radius}
+          stroke={`url(#${gradientId})`}
+          strokeWidth={strokeWidth}
           fill="none"
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
-          className="transition-all duration-500"
+          className="transition-all duration-700 ease-out"
         />
       </svg>
-      {/* Score value */}
+      
+      {/* Score value overlay */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className={`font-mono text-2xl font-bold tabular-nums ${colorClass}`}>
+        <span className={`font-mono text-3xl font-bold tabular-nums ${colorClass}`}>
           {score}
         </span>
-        <span className="text-muted-foreground font-mono text-[8px] tracking-wider">
+        <span className="type-label text-[8px]">
           BIO-SCORE
         </span>
       </div>
     </div>
   );
 }
+
+// ============================================================================
+// Breakdown Modal - Glass Card Styling
+// ============================================================================
 
 function BreakdownModal({
   score,
@@ -159,25 +196,25 @@ function BreakdownModal({
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="border-border/50 bg-card max-w-sm">
+      <DialogContent className="glass-card-elevated max-w-sm">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 font-sans text-sm font-medium">
+          <DialogTitle className="type-header flex items-center gap-2 text-sm">
             <Activity className="h-4 w-4" />
             Bio-Score Breakdown
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {/* Score summary */}
-          <div className="flex items-center justify-between rounded-2xl bg-black/20 p-4">
+        <div className="space-y-5">
+          {/* Score summary with radial gauge */}
+          <div className="flex items-center justify-between rounded-2xl bg-white/[0.02] p-5">
             <div>
-              <div className="text-muted-foreground font-sans text-xs">
+              <div className="type-prose text-xs">
                 Current Score
               </div>
-              <div className={`font-mono text-3xl font-bold tabular-nums ${scoreColorClass}`}>
+              <div className={`font-mono text-4xl font-bold tabular-nums ${scoreColorClass}`}>
                 {score}
               </div>
-              <div className={`font-mono text-[10px] ${scoreColorClass}`}>
+              <div className={`type-technical text-[10px] ${scoreColorClass}`}>
                 {getScoreLabel(score)}
               </div>
             </div>
@@ -187,18 +224,18 @@ function BreakdownModal({
           {/* Breakdown items */}
           {hasItems ? (
             <div className="space-y-2">
-              <div className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
+              <div className="type-label">
                 Factors
               </div>
               {breakdown.map((item, i) => (
                 <div
                   key={i}
-                  className="flex items-center justify-between rounded-lg bg-black/10 px-3 py-2"
+                  className="flex items-center justify-between rounded-xl bg-white/[0.02] px-4 py-3"
                 >
                   <div className="flex min-w-0 flex-1 items-center gap-2">
                     {item.type === "penalty" ? (
                       <AlertTriangle
-                        className={`h-3 w-3 shrink-0 ${
+                        className={`h-3.5 w-3.5 shrink-0 ${
                           item.severity === "critical"
                             ? "status-critical"
                             : item.severity === "medium"
@@ -207,9 +244,9 @@ function BreakdownModal({
                         }`}
                       />
                     ) : (
-                      <Zap className="h-3 w-3 shrink-0 status-optimized" />
+                      <Zap className="h-3.5 w-3.5 shrink-0 status-optimized" />
                     )}
-                    <span className="text-foreground truncate font-sans text-xs">
+                    <span className="type-header truncate text-xs">
                       {item.label}
                     </span>
                     {item.researchUrl && (
@@ -226,7 +263,7 @@ function BreakdownModal({
                     )}
                   </div>
                   <span
-                    className={`ml-2 shrink-0 font-mono text-xs tabular-nums ${
+                    className={`ml-2 shrink-0 font-mono text-xs font-medium tabular-nums ${
                       item.type === "penalty" ? "status-critical" : "status-optimized"
                     }`}
                   >
@@ -237,21 +274,21 @@ function BreakdownModal({
               ))}
             </div>
           ) : (
-            <div className="text-muted-foreground py-4 text-center font-sans text-xs">
+            <div className="type-prose py-4 text-center text-xs">
               No active modifiers
             </div>
           )}
 
-          {/* Formula explanation */}
-          <div className="border-border/30 rounded-lg border p-3">
-            <div className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
+          {/* Formula explanation - Technical data */}
+          <div className="glass-card p-4">
+            <div className="type-label mb-2">
               Scoring Formula
             </div>
-            <div className="text-muted-foreground mt-2 space-y-1 font-sans text-[10px]">
-              <div>Base: 100</div>
+            <div className="space-y-1 font-mono text-[10px]">
+              <div className="type-prose">Base: 100</div>
               <div className="status-critical">Critical conflict: -50</div>
               <div className="status-conflict">Medium conflict: -25</div>
-              <div className="text-muted-foreground">Low conflict: -15</div>
+              <div className="type-prose">Low conflict: -15</div>
               <div className="status-optimized">Active synergy: +5 (max +20)</div>
             </div>
           </div>
@@ -262,12 +299,12 @@ function BreakdownModal({
 }
 
 // ============================================================================
-// Main Export
+// Main Export - Compact BioScore Widget
 // ============================================================================
 
 export function BioScore({ score, exclusionZones, optimizations }: BioScoreProps) {
   const colorClass = getScoreColorClass(score);
-  const colorVar = getScoreColorVar(score);
+  const colorHex = getScoreColorHex(score);
   const label = getScoreLabel(score);
   const hasModifiers = exclusionZones.length > 0 || optimizations.some(
     (o) => o.type === "synergy" && o.title.startsWith("Active synergy"),
@@ -281,7 +318,7 @@ export function BioScore({ score, exclusionZones, optimizations }: BioScoreProps
     >
       <button
         type="button"
-        className="border-border/40 bg-card/30 hover:bg-card/50 group flex w-full items-center justify-between rounded-2xl border p-3 transition-colors"
+        className="glass-card group flex w-full items-center justify-between p-3 transition-colors hover:bg-white/[0.03]"
       >
         <div className="flex items-center gap-3">
           <div className="relative">
@@ -289,20 +326,22 @@ export function BioScore({ score, exclusionZones, optimizations }: BioScoreProps
             {hasModifiers && (
               <div
                 className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full"
-                style={{ backgroundColor: colorVar }}
+                style={{ backgroundColor: colorHex }}
               />
             )}
           </div>
           <div className="text-left">
-            <div className="text-foreground font-mono text-sm tabular-nums">
+            {/* Score - Technical data: JetBrains Mono */}
+            <div className="type-technical text-sm tabular-nums">
               {score}
             </div>
+            {/* Label - uses semantic color */}
             <div className={`font-mono text-[10px] ${colorClass}`}>
               {label}
             </div>
           </div>
         </div>
-        <ChevronRight className="text-muted-foreground h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+        <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
       </button>
     </BreakdownModal>
   );

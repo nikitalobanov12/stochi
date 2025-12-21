@@ -146,7 +146,20 @@ export default function RootLayout({
       lang="en"
       className={`${jetbrainsMono.variable} ${inter.variable} dark`}
     >
-      <body className="bg-background min-h-screen font-sans antialiased">
+      <body className="bg-background relative min-h-screen font-sans antialiased">
+        {/* Environmental Layers - Scientific Laboratory v1.1 */}
+        {/* Grid overlay - 32px mathematical structure */}
+        <div className="hud-grid" />
+
+        {/* Environmental lighting - emerald/cyan radial glows */}
+        <div className="hud-lighting" />
+
+        {/* Noise texture overlay - micro-grain for anti-banding */}
+        <div className="hud-noise" />
+
+        {/* Vignette overlay - subtle edge darkening */}
+        <div className="hud-vignette" />
+
         <Providers>{children}</Providers>
         <Toaster />
       </body>

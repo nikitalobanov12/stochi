@@ -16,13 +16,16 @@ type SystemStatusProps = {
 // ============================================================================
 
 /**
- * SystemStatus - Minimal status row replacing the big greeting
+ * SystemStatus - Header Row System Status Bar (v1.1 Scientific Laboratory)
  *
  * Shows:
  * - Current streak (consecutive days logged)
  * - Today's log count
  * - Last log timestamp
- * - Streak expiration warning (after 12:00 PM if no logs today)
+ * - Loss Aversion prompt: Amber Pulse warning after 12:00 PM if no logs today
+ * 
+ * Per spec section 6: "If no logs exist after 12:00 PM, the streak counter must 
+ * escalate to an Amber Pulse with an 'Expires in Xh' label."
  */
 export function SystemStatus({
   streak,
@@ -38,7 +41,7 @@ export function SystemStatus({
 
   const formattedLastLog = lastLogAt ? formatTimeAgo(lastLogAt) : null;
 
-  // Streak expiration warning logic
+  // Loss Aversion logic (per spec section 6)
   // Show warning if: streak > 0, past noon, and no logs today
   const isPastNoon = now.getHours() >= 12;
   const noLogsToday = todayLogCount === 0;
@@ -46,87 +49,99 @@ export function SystemStatus({
   
   // Calculate hours until midnight for escalation
   const hoursUntilMidnight = 24 - now.getHours();
-  const isUrgent = hoursUntilMidnight <= 2; // Red + pulse when <2 hours
+  const isUrgent = hoursUntilMidnight <= 2; // Critical when <2 hours
 
   return (
-    <div className="space-y-2">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        {/* Date */}
-        <div className="text-muted-foreground flex items-center gap-1.5">
-          <Calendar className="h-3 w-3" />
-          <span className="font-mono text-xs">{formattedDate}</span>
-        </div>
+    <div className="space-y-3">
+      {/* Status Badges Row - Glass Card styling */}
+      <div className="glass-card px-4 py-3">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+          {/* Date */}
+          <div className="flex items-center gap-2">
+            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="type-prose text-xs">{formattedDate}</span>
+          </div>
 
-        {/* Streak */}
-        {streak > 0 && (
-          <div className="flex items-center gap-1.5">
-            <Flame
-              className={cn(
-                "h-3 w-3",
-                streak >= 7 ? "text-orange-500" : "text-muted-foreground",
-              )}
-            />
-            <span
-              className={cn(
-                "font-mono text-xs tabular-nums",
-                streak >= 7 ? "text-orange-500" : "text-muted-foreground",
-              )}
-            >
-              {streak}d streak
+          {/* Streak - Emerald when 7+ days */}
+          {streak > 0 && (
+            <div className="flex items-center gap-2">
+              <Flame
+                className={cn(
+                  "h-3.5 w-3.5",
+                  streak >= 7 ? "status-optimized" : "text-muted-foreground",
+                )}
+              />
+              <span
+                className={cn(
+                  "font-mono text-xs tabular-nums",
+                  streak >= 7 ? "status-optimized" : "text-muted-foreground",
+                )}
+              >
+                {streak}d streak
+              </span>
+            </div>
+          )}
+
+          {/* Today's log count */}
+          <div className="flex items-center gap-2">
+            <Pill className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="type-prose text-xs tabular-nums">
+              {todayLogCount} log{todayLogCount !== 1 ? "s" : ""} today
             </span>
           </div>
-        )}
 
-        {/* Today's log count */}
-        <div className="text-muted-foreground flex items-center gap-1.5">
-          <Pill className="h-3 w-3" />
-          <span className="font-mono text-xs tabular-nums">
-            {todayLogCount} log{todayLogCount !== 1 ? "s" : ""} today
-          </span>
+          {/* Last log - Cyan info color */}
+          {formattedLastLog && (
+            <span className="status-info font-mono text-[10px]">
+              Last: {formattedLastLog}
+            </span>
+          )}
         </div>
-
-        {/* Last log */}
-        {formattedLastLog && (
-          <span className="text-muted-foreground/60 font-mono text-[10px]">
-            Last: {formattedLastLog}
-          </span>
-        )}
       </div>
 
-      {/* Streak Expiration Warning */}
+      {/* Loss Aversion Prompt - Amber Pulse Animation (per spec section 6) */}
       {showStreakWarning && (
         <div
           className={cn(
-            "flex items-center gap-2 rounded-lg px-3 py-2",
+            "glass-card flex items-center gap-3 px-4 py-3",
             isUrgent
-              ? "bg-status-critical animate-pulse"
-              : "bg-status-conflict",
+              ? "border-status-critical animate-pulse glass-card-glow-amber"
+              : "border-status-conflict animate-amber-pulse",
           )}
         >
           <AlertTriangle
             className={cn(
-              "h-3.5 w-3.5 shrink-0",
+              "h-4 w-4 shrink-0",
               isUrgent ? "status-critical" : "status-conflict",
             )}
           />
-          <span
-            className={cn(
-              "font-sans text-xs",
-              isUrgent ? "status-critical" : "status-conflict",
-            )}
-          >
-            {isUrgent ? (
-              <>
-                <span className="font-medium">Streak expires soon!</span>
-                {" "}Log now to keep your {streak}-day streak.
-              </>
-            ) : (
-              <>
-                Don&apos;t forget to log today to maintain your{" "}
-                <span className="font-mono tabular-nums">{streak}</span>-day streak.
-              </>
-            )}
-          </span>
+          <div className="flex-1">
+            <span
+              className={cn(
+                "font-sans text-sm",
+                isUrgent ? "status-critical" : "status-conflict",
+              )}
+            >
+              {isUrgent ? (
+                <>
+                  <span className="font-semibold">Streak expires soon!</span>
+                  {" "}Log now to keep your {streak}-day streak.
+                </>
+              ) : (
+                <>
+                  Don&apos;t forget to log today to maintain your{" "}
+                  <span className="type-technical tabular-nums">{streak}</span>-day streak.
+                </>
+              )}
+            </span>
+          </div>
+          {/* Countdown timer - JetBrains Mono for technical data */}
+          <div className={cn(
+            "font-mono text-sm font-bold tabular-nums shrink-0",
+            isUrgent ? "status-critical" : "type-alert",
+          )}>
+            Expires in {hoursUntilMidnight}h
+          </div>
         </div>
       )}
     </div>
