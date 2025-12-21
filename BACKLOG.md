@@ -6,18 +6,19 @@
 
 ## Up Next
 
-- [ ] **Smart Suggestions Phase 4**: Richer supplement details before adding
-  - Expand suggestion cards to show `mechanism` and `description` fields
-  - Add expandable/collapsible detail section on suggestion cards
-  - Create in-app research summary sheet/drawer component
-  - Link to full research (Examine.com `researchUrl`)
-  - Enhance seed data with more detailed `mechanism` descriptions
+(see Ideas / Future)
 
 ## Planned
 
-(moved to Ideas)
+(empty)
 
 ## Completed
+
+- [x] **Smart Suggestions Phase 4**: Richer supplement details before adding
+  - Extended `OptimizationOpportunity` type with `suggestedSupplement` field
+  - Include `mechanism`, `description`, `researchUrl` in synergy suggestions
+  - Added collapsible "More about" details section to SynergyCard
+  - Show mechanism, description, and research link in expanded view
 
 - [x] **Smart Suggestions Phase 3**: Edit log timestamps
   - Added `updateLogTime(logId, newLoggedAt)` server action
