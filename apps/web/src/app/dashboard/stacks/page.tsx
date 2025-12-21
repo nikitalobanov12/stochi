@@ -1,6 +1,6 @@
 import { eq, desc, asc } from "drizzle-orm";
 import Link from "next/link";
-import { Plus, Layers, ChevronRight } from "lucide-react";
+import { Plus, Layers, ChevronRight, Upload } from "lucide-react";
 
 import { db } from "~/server/db";
 import { stack, userGoal } from "~/server/db/schema";
@@ -10,6 +10,7 @@ import { createStackFromTemplate } from "~/server/actions/onboarding";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { CreateStackDialog } from "~/components/stacks/create-stack-dialog";
+import { ImportStackDialog } from "~/components/stacks/import-stack-dialog";
 import { LogStackButton } from "~/components/stacks/log-stack-button";
 import { StackTimingBadge } from "~/components/stacks/stack-timing-badge";
 import { RecommendedProtocols } from "~/components/stacks/recommended-protocols";
@@ -62,10 +63,13 @@ export default async function StacksPage() {
               : `${userStacks.length} PROTOCOL${userStacks.length !== 1 ? "S" : ""}`}
           </p>
         </div>
-        <CreateStackDialog
-          createStack={createStack}
-          createStackFromTemplate={createStackFromTemplate}
-        />
+        <div className="flex items-center gap-2">
+          <ImportStackDialog />
+          <CreateStackDialog
+            createStack={createStack}
+            createStackFromTemplate={createStackFromTemplate}
+          />
+        </div>
       </div>
 
       {/* Active Stacks Section */}
@@ -83,21 +87,33 @@ export default async function StacksPage() {
               No protocols yet
             </p>
             <p className="text-muted-foreground mt-1 font-mono text-xs">
-              Create your first protocol to batch-log supplements
+              Create your first protocol or import from another app
             </p>
-            <CreateStackDialog
-              createStack={createStack}
-              createStackFromTemplate={createStackFromTemplate}
-            >
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-border/40 mt-6 font-mono text-xs"
+            <div className="mt-6 flex justify-center gap-2">
+              <ImportStackDialog>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-border/40 font-mono text-xs"
+                >
+                  <Upload className="mr-2 h-3 w-3" />
+                  Import
+                </Button>
+              </ImportStackDialog>
+              <CreateStackDialog
+                createStack={createStack}
+                createStackFromTemplate={createStackFromTemplate}
               >
-                <Plus className="mr-2 h-3 w-3" />
-                Create Protocol
-              </Button>
-            </CreateStackDialog>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-border/40 font-mono text-xs"
+                >
+                  <Plus className="mr-2 h-3 w-3" />
+                  Create Protocol
+                </Button>
+              </CreateStackDialog>
+            </div>
           </div>
         ) : (
           <div className="space-y-2">

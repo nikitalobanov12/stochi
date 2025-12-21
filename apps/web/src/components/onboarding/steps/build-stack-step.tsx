@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { ArrowRight, ArrowLeft, Search, Plus, X, Sparkles } from "lucide-react";
+import { useState, useMemo, useTransition } from "react";
+import { ArrowRight, ArrowLeft, Search, Plus, X, Sparkles, Upload, Loader2 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Badge } from "~/components/ui/badge";
@@ -15,6 +15,7 @@ import {
 import { getGoalByKey, type GoalKey } from "~/server/data/goal-recommendations";
 import { fuzzySearchSupplements } from "~/server/data/supplement-aliases";
 import { getServingPresets } from "~/server/data/serving-presets";
+import { parseStackImport } from "~/server/actions/import-stack";
 
 type Supplement = {
   id: string;
@@ -61,6 +62,11 @@ export function BuildStackStep({
   const [pendingSupplement, setPendingSupplement] = useState<Supplement | null>(
     null,
   );
+
+  // Import mode state
+  const [showImport, setShowImport] = useState(false);
+  const [importText, setImportText] = useState("");
+  const [isParsing, startParsing] = useTransition();
 
   // Get goal-based suggestions from all selected goals
   const goalRecommendations = selectedGoals
@@ -198,6 +204,31 @@ export function BuildStackStep({
     setPendingUnit("mg");
   }
 
+  function handleImport() {
+    if (!importText.trim()) return;
+
+    startParsing(async () => {
+      const result = await parseStackImport(importText);
+
+      // Convert matched items to SelectedSupplement format
+      const imported: SelectedSupplement[] = result.matched.map((item) => ({
+        id: item.supplementId,
+        name: item.supplementName,
+        form: supplements.find((s) => s.id === item.supplementId)?.form ?? null,
+        dosage: item.resolvedDosage,
+        unit: item.resolvedUnit,
+      }));
+
+      // Add to existing selection (avoiding duplicates)
+      const existingIds = new Set(selected.map((s) => s.id));
+      const newItems = imported.filter((item) => !existingIds.has(item.id));
+
+      onChangeSupplements([...selected, ...newItems]);
+      setImportText("");
+      setShowImport(false);
+    });
+  }
+
   return (
     <div className="flex h-full flex-col">
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pb-4">
@@ -225,6 +256,52 @@ export function BuildStackStep({
             className="font-mono text-sm"
           />
         </div>
+
+        {/* Import from text toggle */}
+        {!showImport ? (
+          <button
+            type="button"
+            onClick={() => setShowImport(true)}
+            className="text-muted-foreground hover:text-foreground flex w-full items-center justify-center gap-2 rounded-lg border border-dashed py-2 text-xs transition-colors"
+          >
+            <Upload className="h-3.5 w-3.5" />
+            Import from another app
+          </button>
+        ) : (
+          <div className="space-y-2 rounded-lg border border-dashed p-3">
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground text-xs font-medium">
+                Paste your supplement list
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowImport(false)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <textarea
+              value={importText}
+              onChange={(e) => setImportText(e.target.value)}
+              placeholder="Vitamin D 5000IU&#10;Magnesium 400mg&#10;Omega-3 2000mg"
+              className="border-input bg-background placeholder:text-muted-foreground focus-visible:ring-ring min-h-[100px] w-full rounded-md border px-3 py-2 font-mono text-xs focus-visible:ring-1 focus-visible:outline-none"
+            />
+            <Button
+              size="sm"
+              onClick={handleImport}
+              disabled={!importText.trim() || isParsing}
+              className="w-full"
+            >
+              {isParsing ? (
+                <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Upload className="mr-2 h-3.5 w-3.5" />
+              )}
+              Import Supplements
+            </Button>
+          </div>
+        )}
 
         {/* Search and add form */}
         <div className="space-y-2 rounded-lg border p-3">
