@@ -63,6 +63,7 @@ export function DashboardCommandBar({ supplements }: DashboardCommandBarProps) {
       unit: options.unit,
       route: options.route,
       mealContext: options.mealContext,
+      loggedAt: options.loggedAt,
     });
 
     if (result.success) {
@@ -93,6 +94,7 @@ export function DashboardCommandBar({ supplements }: DashboardCommandBarProps) {
         unit: pendingLog.unit,
         route: pendingLog.route,
         mealContext: pendingLog.mealContext,
+        loggedAt: pendingLog.loggedAt,
         forceOverride: true,
       });
 

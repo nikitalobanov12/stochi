@@ -188,6 +188,45 @@ export async function deleteLog(logId: string) {
   revalidatePath("/log");
 }
 
+/**
+ * Update the logged time for an existing log entry.
+ * Useful for correcting timestamps or logging past intake.
+ *
+ * @param logId - The log entry ID to update
+ * @param newLoggedAt - The new timestamp for the log
+ */
+export async function updateLogTime(logId: string, newLoggedAt: Date) {
+  const session = await getSession();
+  if (!session) {
+    redirect("/auth/sign-in");
+  }
+
+  // Validate the date
+  if (!(newLoggedAt instanceof Date) || isNaN(newLoggedAt.getTime())) {
+    throw new Error("Invalid date");
+  }
+
+  // Don't allow future dates more than 1 minute ahead (account for clock skew)
+  const maxFutureTime = new Date(Date.now() + 60 * 1000);
+  if (newLoggedAt > maxFutureTime) {
+    throw new Error("Cannot set log time in the future");
+  }
+
+  // Don't allow dates more than 7 days in the past
+  const minPastTime = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  if (newLoggedAt < minPastTime) {
+    throw new Error("Cannot set log time more than 7 days in the past");
+  }
+
+  await db
+    .update(log)
+    .set({ loggedAt: newLoggedAt })
+    .where(and(eq(log.id, logId), eq(log.userId, session.user.id)));
+
+  revalidatePath("/dashboard");
+  revalidatePath("/log");
+}
+
 export async function getLogs(options?: { startDate?: Date; endDate?: Date }) {
   const session = await getSession();
   if (!session) {

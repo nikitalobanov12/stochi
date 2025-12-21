@@ -15,7 +15,7 @@ import {
   getServingPresets,
   type ServingPreset,
 } from "~/server/data/serving-presets";
-import { parseCommand, type ParsedDosage } from "~/lib/ai/command-parser";
+import { parseCommand, type ParsedDosage, type ParsedTime } from "~/lib/ai/command-parser";
 import {
   useSemanticSearch,
   type SearchResult,
@@ -52,6 +52,8 @@ export type LogOptions = {
   unit: "mg" | "mcg" | "g" | "IU" | "ml";
   route?: RouteOfAdministration;
   mealContext?: MealContext;
+  /** Optional timestamp for when the supplement was taken */
+  loggedAt?: Date;
 };
 
 type CommandBarProps = {
@@ -277,14 +279,19 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
     inputRef.current?.focus();
   }
 
-  function handleSubmit(supplement?: Supplement, dosage?: ParsedDosage | null) {
+  function handleSubmit(supplement?: Supplement, dosage?: ParsedDosage | null, parsedTimeOverride?: ParsedTime | null) {
     const targetSupplement = supplement ?? selectedSupplement;
     const targetDosage = dosage ?? parsedDosage;
+    const targetTime = parsedTimeOverride ?? parsedCommand.parsedTime;
 
     if (!targetSupplement || !targetDosage) return;
 
-    // Optimistic: show pending immediately
-    const pendingMessage = `${targetDosage.value}${targetDosage.unit} ${targetSupplement.name}`;
+    // Build the feedback message
+    let pendingMessage = `${targetDosage.value}${targetDosage.unit} ${targetSupplement.name}`;
+    if (targetTime) {
+      pendingMessage += ` (${targetTime.description})`;
+    }
+    
     setFeedback({
       type: "pending",
       message: `Logging ${pendingMessage}...`,
@@ -300,6 +307,7 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
           dosage: targetDosage.value,
           unit: targetDosage.unit,
           route: targetSupplement.route ?? undefined,
+          loggedAt: targetTime?.date,
         });
         setFeedback({
           type: "success",
@@ -378,7 +386,7 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
 
     // If we have a dosage ready, do a one-shot log
     if (canOneShotLog && parsedCommand.dosage) {
-      handleSubmit(supp, parsedCommand.dosage);
+      handleSubmit(supp, parsedCommand.dosage, parsedCommand.parsedTime);
     } else {
       selectSupplement(supp, parsedCommand.dosage);
     }
@@ -495,6 +503,11 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
             <span className="text-foreground font-medium">
               {suggestions[0]?.name}
             </span>
+            {parsedCommand.parsedTime && (
+              <span className="text-muted-foreground">
+                {" "}at {parsedCommand.parsedTime.description}
+              </span>
+            )}
           </span>
         </div>
       )}
