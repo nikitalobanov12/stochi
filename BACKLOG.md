@@ -6,25 +6,6 @@
 
 ## Up Next
 
-- [ ] **Smart Suggestions Phase 2**: Timing optimization suggestions
-  - Add `optimalTimeOfDay` enum (`morning`, `evening`, `bedtime`, `with_meals`) to schema
-  - Add `optimalTimeOfDay` column to `supplement` table
-  - Update `biological-state.ts` with timing suggestion logic
-  - Show timing suggestions when user logs supplement at suboptimal time
-  - Inline confirmation UI for dismissing timing suggestions ("Don't show again")
-  - Seed data with timing values for common supplements:
-    - Magnesium Glycinate → `evening`
-    - Magnesium L-Threonate → `evening`
-    - Magnesium Malate → `morning`
-    - Ashwagandha → `evening`
-    - Vitamin D3 → `morning`
-    - Caffeine → `morning`
-    - Melatonin → `bedtime`
-    - Glycine → `bedtime`
-    - Iron Bisglycinate → `morning`
-
-## Planned
-
 - [ ] **Smart Suggestions Phase 3**: Edit log timestamps
   - Add `updateLogTime(logId, newLoggedAt)` server action to `logs.ts`
   - Add edit time dialog/popover on log entry rows (click timestamp to edit)
@@ -34,6 +15,8 @@
     - "zinc 30mg this morning"
   - Pass parsed time to `createLog({ loggedAt: parsedTime })`
 
+## Planned
+
 - [ ] **Smart Suggestions Phase 4**: Richer supplement details before adding
   - Expand suggestion cards to show `mechanism` and `description` fields
   - Add expandable/collapsible detail section on suggestion cards
@@ -42,6 +25,13 @@
   - Enhance seed data with more detailed `mechanism` descriptions
 
 ## Completed
+
+- [x] **Smart Suggestions Phase 2**: Timing optimization suggestions
+  - Added `optimalTimeOfDay` enum (`morning`, `afternoon`, `evening`, `bedtime`, `with_meals`, `any`)
+  - Added `optimalTimeOfDay` column to `supplement` table
+  - Updated `biological-state.ts` with timing suggestion logic
+  - Added `TimingCard` component for suboptimal timing alerts
+  - Seeded timing data for Magnesium variants, Vitamin D, Iron, Caffeine, Ashwagandha, Melatonin, Glycine
 
 - [x] **Smart Suggestions Phase 1**: Persistent dismissals + preferences toggle
   - Added `userPreference` table with `showAddSuggestions` boolean
