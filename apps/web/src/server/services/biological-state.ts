@@ -96,6 +96,21 @@ export type TimelineDataPoint = {
 // Pharmacokinetic Calculations
 // ============================================================================
 
+/** Kinetics type for dispatch */
+export type KineticsType = "first_order" | "michaelis_menten";
+
+/** Parameters for concentration calculation with extended PK data */
+export type ConcentrationParams = {
+  minutesSinceIngestion: number;
+  peakMinutes: number;
+  halfLifeMinutes: number;
+  dose?: number;
+  kineticsType?: KineticsType;
+  vmax?: number | null;
+  km?: number | null;
+  rdaAmount?: number | null;
+};
+
 /**
  * Calculate elimination rate constant (k) from half-life.
  * k = ln(2) / t½
@@ -105,23 +120,172 @@ function calculateEliminationConstant(halfLifeMinutes: number): number {
 }
 
 /**
- * Calculate concentration at time t using first-order kinetics.
- * 
+ * Lambert W function (principal branch W₀) using Halley's method.
+ *
+ * The Lambert W function is defined as the inverse of f(W) = W * e^W,
+ * i.e., it satisfies: W(x) * e^W(x) = x
+ *
+ * Halley's method provides cubic convergence, typically 3-5 iterations.
+ */
+export function lambertW0(x: number): number {
+  // Handle special cases
+  if (Number.isNaN(x)) return NaN;
+  if (x === 0) return 0;
+  if (x === Math.E) return 1;
+  if (x < -1 / Math.E) return NaN; // No real solution for x < -1/e
+  if (x === -1 / Math.E) return -1;
+
+  // Initial guess
+  let w: number;
+  if (x < 1) {
+    w = x; // Linear approximation for small x
+  } else if (x < 10) {
+    w = Math.log(x); // For moderate x
+  } else {
+    // Asymptotic expansion for large x
+    const lnx = Math.log(x);
+    const lnlnx = Math.log(lnx);
+    w = lnx - lnlnx + lnlnx / lnx;
+  }
+
+  // Halley's method iteration
+  const maxIterations = 50;
+  const tolerance = 1e-12;
+
+  for (let i = 0; i < maxIterations; i++) {
+    const ew = Math.exp(w);
+    const wew = w * ew;
+
+    // f = W*e^W - x
+    const f = wew - x;
+
+    // Check convergence
+    if (Math.abs(f) < tolerance * Math.abs(x)) {
+      break;
+    }
+
+    // f' = e^W * (W + 1)
+    const fp = ew * (w + 1);
+
+    // f'' = e^W * (W + 2)
+    const fpp = ew * (w + 2);
+
+    // Halley's update
+    const denom = 2 * fp * fp - f * fpp;
+    if (denom === 0) {
+      // Fall back to Newton's method
+      w -= f / fp;
+    } else {
+      w -= (2 * f * fp) / denom;
+    }
+  }
+
+  return w;
+}
+
+/**
+ * Calculate absorbed amount using Michaelis-Menten kinetics.
+ *
+ * Uses the Lambert W function for analytical solution:
+ *   A(t) = Km * W((A0/Km) * e^((A0 - Vmax*t)/Km))
+ *
+ * This avoids expensive numerical integration while maintaining accuracy.
+ */
+function calculateMMAbsorbedAmount(
+  initialDose: number,
+  vmax: number,
+  km: number,
+  minutes: number,
+): number {
+  if (initialDose <= 0 || minutes <= 0) return 0;
+
+  // Calculate the argument for Lambert W
+  // x = (A0/Km) * e^((A0 - Vmax*t)/Km)
+  const a0OverKm = initialDose / km;
+  const exponent = (initialDose - vmax * minutes) / km;
+  const x = a0OverKm * Math.exp(exponent);
+
+  // Handle edge cases
+  if (x < 0) return 0; // All absorbed/cleared
+  if (!Number.isFinite(x)) return initialDose; // Very early in absorption
+
+  // Calculate W(x) and return Km * W(x)
+  const w = lambertW0(x);
+  const result = km * w;
+
+  // Can't absorb more than we started with
+  if (result > initialDose) return initialDose;
+  if (result < 0) return 0;
+
+  return result;
+}
+
+/**
+ * Calculate concentration using Michaelis-Menten kinetics.
+ *
+ * For supplements with saturable transporters (Vitamin C, Magnesium, Iron),
+ * absorption follows MM kinetics where efficiency drops at higher doses.
+ */
+function calculateMichaelisMentenConcentration(
+  params: ConcentrationParams,
+): number {
+  const { minutesSinceIngestion, dose = 0, vmax, km } = params;
+  let { peakMinutes, halfLifeMinutes } = params;
+
+  // Validate MM parameters - fall back to first-order if not set
+  if (!vmax || !km || vmax <= 0 || km <= 0) {
+    return calculateFirstOrderConcentration(params);
+  }
+
+  // Use defaults for peak/halflife if not specified
+  if (peakMinutes <= 0) peakMinutes = 60;
+  if (halfLifeMinutes <= 0) halfLifeMinutes = 240;
+
+  // Calculate effective absorbed amount using MM absorption
+  const effectiveDose = calculateMMAbsorbedAmount(
+    dose,
+    vmax,
+    km,
+    minutesSinceIngestion,
+  );
+
+  // Normalize to percentage of theoretical max concentration
+  const maxConcentration = calculateMMAbsorbedAmount(dose, vmax, km, peakMinutes);
+  if (maxConcentration <= 0) return 0;
+
+  // During absorption phase
+  if (minutesSinceIngestion < peakMinutes) {
+    // Non-linear absorption ramp
+    return (effectiveDose / maxConcentration) * 100;
+  }
+
+  // At and after peak - use first-order elimination from achieved Cmax
+  // (Most supplements follow first-order elimination even with MM absorption)
+  const k = calculateEliminationConstant(halfLifeMinutes);
+  const timeSincePeak = minutesSinceIngestion - peakMinutes;
+  const concentration = 100 * Math.exp(-k * timeSincePeak);
+
+  return concentration < 1 ? 0 : concentration;
+}
+
+/**
+ * Calculate concentration using first-order kinetics.
+ *
  * For t < Tmax (absorption phase):
  *   Uses linear approximation: C(t) = Cmax * (t / Tmax)
- * 
+ *
  * For t >= Tmax (elimination phase):
  *   C(t) = Cmax * e^(-k * (t - Tmax))
- * 
+ *
  * Returns concentration as percentage of Cmax (0-100).
  */
-export function calculateConcentration(
-  minutesSinceIngestion: number,
-  peakMinutes: number,
-  halfLifeMinutes: number,
-): number {
-  // Before ingestion
-  if (minutesSinceIngestion < 0) return 0;
+function calculateFirstOrderConcentration(params: ConcentrationParams): number {
+  const { minutesSinceIngestion } = params;
+  let { peakMinutes, halfLifeMinutes } = params;
+
+  // Use defaults if not specified
+  if (peakMinutes <= 0) peakMinutes = DEFAULT_PEAK_MINUTES;
+  if (halfLifeMinutes <= 0) halfLifeMinutes = DEFAULT_HALF_LIFE_MINUTES;
 
   // Absorption phase (linear ramp to peak)
   if (minutesSinceIngestion < peakMinutes) {
@@ -140,6 +304,94 @@ export function calculateConcentration(
 
   // Consider cleared when below 1%
   return concentration < 1 ? 0 : concentration;
+}
+
+/**
+ * Apply logarithmic dampening for high-dose supplements without full MM parameters.
+ *
+ * For doses > 3x RDA, applies: effectiveDose = 3*RDA + RDA*ln(1 + excess/RDA)
+ * This provides a smooth transition from linear to logarithmic absorption.
+ */
+export function applyAbsorptionDampening(dose: number, rda: number): number {
+  if (rda <= 0) return dose; // No RDA defined, return unchanged
+
+  const threshold = 3 * rda;
+  if (dose <= threshold) return dose; // Linear absorption below threshold
+
+  // Logarithmic dampening above threshold
+  const excess = dose - threshold;
+  const dampenedExcess = rda * Math.log(1 + excess / rda);
+  return threshold + dampenedExcess;
+}
+
+/**
+ * Calculate absorption efficiency (0-1) for a given dose using MM kinetics.
+ *
+ * Efficiency = Km / (Km + Dose)
+ *
+ * Shows how absorption rate decreases as dose increases beyond Km.
+ */
+export function calculateAbsorptionEfficiency(
+  dose: number,
+  km: number,
+): number {
+  if (km <= 0 || dose < 0) return 0;
+  if (dose === 0) return 1; // 100% efficiency at zero dose
+  return km / (km + dose);
+}
+
+/**
+ * Calculate concentration at time t, dispatching to appropriate kinetic model.
+ *
+ * Supports both the legacy 3-argument signature (first-order only) and
+ * the new params object with full MM support.
+ *
+ * Returns concentration as percentage of Cmax (0-100).
+ */
+export function calculateConcentration(
+  minutesSinceIngestion: number,
+  peakMinutes: number,
+  halfLifeMinutes: number,
+): number;
+export function calculateConcentration(params: ConcentrationParams): number;
+export function calculateConcentration(
+  minutesSinceIngestionOrParams: number | ConcentrationParams,
+  peakMinutes?: number,
+  halfLifeMinutes?: number,
+): number {
+  // Handle legacy 3-argument signature
+  if (typeof minutesSinceIngestionOrParams === "number") {
+    const params: ConcentrationParams = {
+      minutesSinceIngestion: minutesSinceIngestionOrParams,
+      peakMinutes: peakMinutes ?? DEFAULT_PEAK_MINUTES,
+      halfLifeMinutes: halfLifeMinutes ?? DEFAULT_HALF_LIFE_MINUTES,
+      kineticsType: "first_order",
+    };
+    return calculateFirstOrderConcentration(params);
+  }
+
+  // New params object signature
+  const params = minutesSinceIngestionOrParams;
+
+  // Before ingestion
+  if (params.minutesSinceIngestion < 0) return 0;
+
+  // Dispatch to appropriate kinetic model
+  if (params.kineticsType === "michaelis_menten") {
+    return calculateMichaelisMentenConcentration(params);
+  }
+
+  // Default to first-order, but check if we should apply heuristic dampening
+  // for supplements with RDA but no MM params
+  if (params.rdaAmount && params.dose) {
+    const effectiveDose = applyAbsorptionDampening(params.dose, params.rdaAmount);
+    // Scale concentration proportionally to dampening effect
+    const dampeningFactor = effectiveDose / params.dose;
+    const baseConcentration = calculateFirstOrderConcentration(params);
+    return baseConcentration * dampeningFactor;
+  }
+
+  return calculateFirstOrderConcentration(params);
 }
 
 /**
@@ -197,14 +449,26 @@ export async function getBiologicalState(userId: string): Promise<BiologicalStat
     const peakMinutes = supp.peakMinutes ?? DEFAULT_PEAK_MINUTES;
     const halfLifeMinutes = supp.halfLifeMinutes ?? DEFAULT_HALF_LIFE_MINUTES;
 
-    const minutesSinceIngestion = (now.getTime() - logEntry.loggedAt.getTime()) / (1000 * 60);
-    const concentrationPercent = calculateConcentration(
+    const minutesSinceIngestion =
+      (now.getTime() - logEntry.loggedAt.getTime()) / (1000 * 60);
+
+    // Use extended concentration calculation with MM kinetics support
+    const concentrationPercent = calculateConcentration({
       minutesSinceIngestion,
       peakMinutes,
       halfLifeMinutes,
-    );
+      dose: logEntry.dosage,
+      kineticsType: supp.kineticsType ?? "first_order",
+      vmax: supp.vmax,
+      km: supp.km,
+      rdaAmount: supp.rdaAmount,
+    });
 
-    const phase = determinePhase(minutesSinceIngestion, peakMinutes, concentrationPercent);
+    const phase = determinePhase(
+      minutesSinceIngestion,
+      peakMinutes,
+      concentrationPercent,
+    );
 
     activeCompounds.push({
       logId: logEntry.id,
@@ -469,16 +733,23 @@ export async function getTimelineData(
       const peakMinutes = supp.peakMinutes ?? DEFAULT_PEAK_MINUTES;
       const halfLifeMinutes = supp.halfLifeMinutes ?? DEFAULT_HALF_LIFE_MINUTES;
 
-      const minutesSinceIngestion = (timestamp.getTime() - logEntry.loggedAt.getTime()) / (1000 * 60);
-      
+      const minutesSinceIngestion =
+        (timestamp.getTime() - logEntry.loggedAt.getTime()) / (1000 * 60);
+
       // Skip if before ingestion
       if (minutesSinceIngestion < 0) continue;
 
-      const concentration = calculateConcentration(
+      // Use extended concentration calculation with MM kinetics support
+      const concentration = calculateConcentration({
         minutesSinceIngestion,
         peakMinutes,
         halfLifeMinutes,
-      );
+        dose: logEntry.dosage,
+        kineticsType: supp.kineticsType ?? "first_order",
+        vmax: supp.vmax,
+        km: supp.km,
+        rdaAmount: supp.rdaAmount,
+      });
 
       // Aggregate multiple doses of the same supplement
       const currentConc = concentrations[supp.id] ?? 0;
