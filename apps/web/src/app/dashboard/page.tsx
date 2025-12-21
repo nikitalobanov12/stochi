@@ -222,29 +222,33 @@ export default async function DashboardPage() {
                 optimizations={biologicalState.optimizations}
               />
 
-              {/* Micro-KPI Row - Vertical on desktop */}
-              <div className="glass-card p-4">
+              {/* Micro-KPI Row */}
+              <div>
                 <h2 className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
                   Key Metrics
                 </h2>
-                <MicroKPIRow
-                  ratioWarnings={ratioWarnings}
-                  safetyHeadroom={safetyHeadroom}
-                  exclusionZones={biologicalState.exclusionZones}
-                />
+                <div className="glass-card p-4">
+                  <MicroKPIRow
+                    ratioWarnings={ratioWarnings}
+                    safetyHeadroom={safetyHeadroom}
+                    exclusionZones={biologicalState.exclusionZones}
+                  />
+                </div>
               </div>
 
               {/* Active Compounds List */}
               {biologicalState.activeCompounds.filter(c => c.phase !== "cleared").length > 0 && (
-                <div className="glass-card p-4">
+                <div>
                   <h2 className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
                     Active Compounds
                   </h2>
-                  <ActiveCompoundsList
-                    compounds={biologicalState.activeCompounds.filter(
-                      (c) => c.phase !== "cleared",
-                    )}
-                  />
+                  <div className="glass-card p-4">
+                    <ActiveCompoundsList
+                      compounds={biologicalState.activeCompounds.filter(
+                        (c) => c.phase !== "cleared",
+                      )}
+                    />
+                  </div>
                 </div>
               )}
             </div>

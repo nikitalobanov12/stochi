@@ -272,80 +272,72 @@ export function BioScoreCard({ score, exclusionZones, optimizations }: BioScoreC
   ).length;
 
   return (
-    <div className="glass-card flex h-full flex-col p-4">
-      {/* Header */}
-      <div className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
+    <div>
+      {/* Header - Outside card to match other sections */}
+      <h2 className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
         Bio-Score
-      </div>
+      </h2>
 
-      {/* Gauge + Score */}
-      <div className="flex flex-1 flex-col items-center justify-center gap-2">
-        <ScoreGauge score={score} size={100} />
-        <div className={`font-mono text-xs font-medium tracking-wider ${colorClass}`}>
-          {label}
+      <div className="glass-card p-4">
+        {/* Gauge + Label Row */}
+        <div className="flex items-center gap-4">
+          <ScoreGauge score={score} size={64} />
+          <div className="flex-1">
+            <div className={`font-mono text-2xl font-bold tabular-nums ${colorClass}`}>
+              {score}
+            </div>
+            <div className={`font-mono text-[10px] tracking-wider ${colorClass}`}>
+              {label}
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Stats Row */}
-      <div className="mt-4 grid grid-cols-3 gap-2 border-t border-white/5 pt-4">
-        {/* Conflicts */}
-        <div className="text-center">
-          <div className="flex items-center justify-center gap-1">
+        {/* Stats Row */}
+        <div className="mt-3 flex items-center justify-between border-t border-white/5 pt-3">
+          {/* Conflicts */}
+          <div className="flex items-center gap-1.5">
             {conflicts > 0 ? (
               <AlertTriangle className="h-3 w-3 status-conflict" />
             ) : (
               <Shield className="h-3 w-3 status-optimized" />
             )}
-            <span className="font-mono text-sm tabular-nums text-white">
-              {conflicts}
+            <span className="font-mono text-xs tabular-nums text-white/70">
+              {conflicts} conflict{conflicts !== 1 ? "s" : ""}
             </span>
           </div>
-          <div className="text-muted-foreground font-mono text-[9px]">
-            conflicts
-          </div>
-        </div>
 
-        {/* Synergies */}
-        <div className="text-center">
-          <div className="flex items-center justify-center gap-1">
+          {/* Synergies */}
+          <div className="flex items-center gap-1.5">
             <Zap className={`h-3 w-3 ${synergies > 0 ? "status-optimized" : "text-muted-foreground"}`} />
-            <span className="font-mono text-sm tabular-nums text-white">
-              {synergies}
+            <span className="font-mono text-xs tabular-nums text-white/70">
+              {synergies} synerg{synergies !== 1 ? "ies" : "y"}
             </span>
           </div>
-          <div className="text-muted-foreground font-mono text-[9px]">
-            synergies
-          </div>
-        </div>
 
-        {/* Pending */}
-        <div className="text-center">
-          <div className="flex items-center justify-center gap-1">
+          {/* Pending */}
+          <div className="flex items-center gap-1.5">
             <div className={`h-2 w-2 rounded-full ${pendingWindows > 0 ? "animate-pulse bg-cyan-400" : "bg-white/20"}`} />
-            <span className="font-mono text-sm tabular-nums text-white">
-              {pendingWindows}
+            <span className="font-mono text-xs tabular-nums text-white/70">
+              {pendingWindows} pending
             </span>
           </div>
-          <div className="text-muted-foreground font-mono text-[9px]">
-            pending
-          </div>
         </div>
-      </div>
 
-      {/* View Details Button */}
-      <BreakdownModal
-        score={score}
-        exclusionZones={exclusionZones}
-        optimizations={optimizations}
-      >
-        <button
-          type="button"
-          className="mt-4 flex w-full items-center justify-center gap-1 rounded-lg border border-white/10 bg-white/[0.02] py-2 font-mono text-[10px] text-white/60 transition-colors hover:bg-white/[0.05] hover:text-white/80"
+        {/* View Details Button */}
+        <BreakdownModal
+          score={score}
+          exclusionZones={exclusionZones}
+          optimizations={optimizations}
         >
-          VIEW BREAKDOWN
-          <ChevronRight className="h-3 w-3" />
-        </button>
-      </BreakdownModal>
+          <button
+            type="button"
+            className="mt-3 flex w-full items-center justify-center gap-1 rounded-lg border border-white/10 bg-white/[0.02] py-1.5 font-mono text-[10px] text-white/60 transition-colors hover:bg-white/[0.05] hover:text-white/80"
+          >
+            VIEW BREAKDOWN
+            <ChevronRight className="h-3 w-3" />
+          </button>
+        </BreakdownModal>
+      </div>
     </div>
   );
 }
@@ -356,21 +348,23 @@ export function BioScoreCard({ score, exclusionZones, optimizations }: BioScoreC
 
 export function BioScoreCardSkeleton() {
   return (
-    <div className="glass-card flex h-full flex-col p-4">
+    <div>
       <div className="mb-3 h-3 w-16 animate-pulse rounded bg-white/5" />
-      <div className="flex flex-1 flex-col items-center justify-center gap-2">
-        <div className="h-[100px] w-[100px] animate-pulse rounded-full bg-white/5" />
-        <div className="h-3 w-16 animate-pulse rounded bg-white/5" />
-      </div>
-      <div className="mt-4 grid grid-cols-3 gap-2 border-t border-white/5 pt-4">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="flex flex-col items-center gap-1">
-            <div className="h-4 w-6 animate-pulse rounded bg-white/5" />
-            <div className="h-2 w-12 animate-pulse rounded bg-white/5" />
+      <div className="glass-card p-4">
+        <div className="flex items-center gap-4">
+          <div className="h-16 w-16 animate-pulse rounded-full bg-white/5" />
+          <div className="flex-1 space-y-2">
+            <div className="h-6 w-12 animate-pulse rounded bg-white/5" />
+            <div className="h-3 w-16 animate-pulse rounded bg-white/5" />
           </div>
-        ))}
+        </div>
+        <div className="mt-3 flex justify-between border-t border-white/5 pt-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-4 w-16 animate-pulse rounded bg-white/5" />
+          ))}
+        </div>
+        <div className="mt-3 h-7 animate-pulse rounded-lg bg-white/5" />
       </div>
-      <div className="mt-4 h-8 animate-pulse rounded-lg bg-white/5" />
     </div>
   );
 }
