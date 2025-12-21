@@ -18,7 +18,8 @@ export type FeedModule =
   | "CLEARANCE"
   | "ABSORPTION"
   | "SAFETY"
-  | "TIMING";
+  | "TIMING"
+  | "RESEARCH"; // Low-confidence interactions shown as research notes
 
 export type FeedStatus = "OK" | "WARN" | "INFO" | "CRITICAL";
 
@@ -172,13 +173,19 @@ export function generateKineticsEntries(
 }
 
 /**
- * Generate CYP450 pathway entries for enzyme interactions
+ * Generate CYP450 pathway entries for enzyme interactions.
+ * 
+ * High-confidence interactions (>=0.5) are shown as PATHWAY warnings.
+ * Low-confidence interactions (<0.5) are shown as RESEARCH notes.
  */
 export function generatePathwayEntries(
   supplementNames: string[],
 ): MechanisticFeedEntry[] {
   const entries: MechanisticFeedEntry[] = [];
   const timestamp = formatTime(new Date());
+  
+  // Confidence threshold for showing as warning vs research note
+  const CONFIDENCE_THRESHOLD = 0.5;
   
   // Check for CYP450 interactions between supplements
   for (let i = 0; i < supplementNames.length; i++) {
@@ -190,11 +197,17 @@ export function generatePathwayEntries(
       const interactions = checkCYP450Interaction(supp1, supp2);
       
       for (const interaction of interactions) {
+        const isLowConfidence = interaction.confidenceScore < CONFIDENCE_THRESHOLD;
+        
         entries.push({
           timestamp,
-          module: "PATHWAY",
-          message: `${interaction.enzyme} ${interaction.effect} detected → ${interaction.description}`,
-          status: interaction.strength === "strong" ? "WARN" : "INFO",
+          module: isLowConfidence ? "RESEARCH" : "PATHWAY",
+          message: isLowConfidence
+            ? `[Research] ${interaction.enzyme} ${interaction.effect} (${Math.round(interaction.confidenceScore * 100)}% confidence) → ${interaction.description}`
+            : `${interaction.enzyme} ${interaction.effect} detected → ${interaction.description}`,
+          status: isLowConfidence 
+            ? "INFO" 
+            : (interaction.strength === "strong" ? "WARN" : "INFO"),
           supplements: [supp1, supp2],
           researchUrl: interaction.researchUrl,
         });
@@ -208,10 +221,14 @@ export function generatePathwayEntries(
     
     for (const pathway of pathways) {
       if (pathway.effect === "substrate") {
+        const isLowConfidence = pathway.confidenceScore < CONFIDENCE_THRESHOLD;
+        
         entries.push({
           timestamp,
-          module: "PATHWAY",
-          message: `${pathway.enzyme} substrate detected (${supplementName}) → monitor enzyme inhibitors`,
+          module: isLowConfidence ? "RESEARCH" : "PATHWAY",
+          message: isLowConfidence
+            ? `[Research] ${pathway.enzyme} substrate (${supplementName}, ${Math.round(pathway.confidenceScore * 100)}% confidence) → monitor enzyme inhibitors`
+            : `${pathway.enzyme} substrate detected (${supplementName}) → monitor enzyme inhibitors`,
           status: "INFO",
           supplements: [supplementName],
           researchUrl: pathway.researchUrl,
@@ -418,6 +435,7 @@ export function getModuleColorClass(module: FeedModule): string {
     ABSORPTION: "text-blue-400",
     SAFETY: "text-red-400",
     TIMING: "text-orange-400",
+    RESEARCH: "text-slate-400", // Muted color for low-confidence research notes
   };
   return colors[module];
 }
