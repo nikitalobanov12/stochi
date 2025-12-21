@@ -24,6 +24,8 @@ type SupplementCategory =
   | "peptide"
   | "other";
 
+type KineticsType = "first_order" | "michaelis_menten";
+
 type RouteOfAdministration =
   | "oral"
   | "subq_injection"
@@ -53,6 +55,7 @@ const supplements = [
   // ============================================
   // MAGNESIUM FORMS (5)
   // Pharmacokinetic data from Examine.com & PubMed
+  // Magnesium uses Michaelis-Menten kinetics due to saturable TRPM6/7 transporters
   // ============================================
   {
     name: "Magnesium Glycinate",
@@ -78,6 +81,12 @@ const supplements = [
     halfLifeMinutes: 720, // 12h - tissue distribution
     absorptionWindowMinutes: 240,
     bioavailabilityPercent: 25,
+    // Michaelis-Menten kinetics (saturable TRPM6/7 transporters)
+    kineticsType: "michaelis_menten" as KineticsType,
+    vmax: 1.8, // mg/min - Maximum absorption velocity
+    km: 150, // mg - Dose at which absorption is half-maximal
+    absorptionSaturationDose: 200, // mg - Doses above this see diminishing returns
+    rdaAmount: 420, // mg - RDA for adult males (320mg females)
   },
   {
     name: "Magnesium Citrate",
@@ -97,6 +106,12 @@ const supplements = [
     halfLifeMinutes: 720,
     absorptionWindowMinutes: 180,
     bioavailabilityPercent: 20,
+    // Michaelis-Menten kinetics
+    kineticsType: "michaelis_menten" as KineticsType,
+    vmax: 1.8,
+    km: 150,
+    absorptionSaturationDose: 200,
+    rdaAmount: 420,
   },
   {
     name: "Magnesium L-Threonate",
@@ -117,6 +132,12 @@ const supplements = [
     halfLifeMinutes: 480, // 8h - faster CNS clearance
     absorptionWindowMinutes: 180,
     bioavailabilityPercent: 15,
+    // Michaelis-Menten kinetics
+    kineticsType: "michaelis_menten" as KineticsType,
+    vmax: 1.8,
+    km: 150,
+    absorptionSaturationDose: 200,
+    rdaAmount: 420,
   },
   {
     name: "Magnesium Oxide",
@@ -137,6 +158,12 @@ const supplements = [
     halfLifeMinutes: 720,
     absorptionWindowMinutes: 240,
     bioavailabilityPercent: 4,
+    // Michaelis-Menten kinetics (even worse absorption at high doses)
+    kineticsType: "michaelis_menten" as KineticsType,
+    vmax: 0.8, // Lower Vmax due to poor solubility
+    km: 150,
+    absorptionSaturationDose: 150,
+    rdaAmount: 420,
   },
   {
     name: "Magnesium Malate",
@@ -157,6 +184,12 @@ const supplements = [
     halfLifeMinutes: 720,
     absorptionWindowMinutes: 240,
     bioavailabilityPercent: 18,
+    // Michaelis-Menten kinetics
+    kineticsType: "michaelis_menten" as KineticsType,
+    vmax: 1.8,
+    km: 150,
+    absorptionSaturationDose: 200,
+    rdaAmount: 420,
   },
 
   // ============================================
@@ -390,11 +423,19 @@ const supplements = [
     category: "vitamin" as SupplementCategory,
     commonGoals: ["health", "longevity"],
     safetyCategory: "vitamin-c" as SafetyCategoryKey,
-    // PK: Water-soluble, dose-dependent absorption
+    // PK: Water-soluble, dose-dependent absorption via SVCT1/2 transporters
     peakMinutes: 120,
     halfLifeMinutes: 180, // 3h plasma
     absorptionWindowMinutes: 120,
     bioavailabilityPercent: 70, // Decreases at higher doses
+    // Michaelis-Menten kinetics (saturable SVCT1 intestinal transporter)
+    // CRITICAL: Absorption efficiency drops dramatically above 200mg single dose
+    // 200mg: ~90% absorbed, 500mg: ~60%, 1000mg: ~50%, 2000mg: ~33%
+    kineticsType: "michaelis_menten" as KineticsType,
+    vmax: 2.5, // mg/min - Maximum absorption velocity
+    km: 200, // mg - Dose at which absorption is half-maximal
+    absorptionSaturationDose: 180, // mg - Single doses above this see diminishing returns
+    rdaAmount: 90, // mg - RDA (75mg females, 90mg males)
   },
   {
     name: "Vitamin E",
@@ -435,11 +476,19 @@ const supplements = [
     category: "mineral" as SupplementCategory,
     commonGoals: ["energy", "health"],
     safetyCategory: "iron" as SafetyCategoryKey,
-    // PK: Well-absorbed chelate
+    // PK: Well-absorbed chelate, but still subject to DMT1 saturation
     peakMinutes: 120,
     halfLifeMinutes: 360, // 6h plasma
     absorptionWindowMinutes: 180,
     bioavailabilityPercent: 20,
+    // Michaelis-Menten kinetics (saturable DMT1 transporter)
+    // Iron absorption is highly regulated by hepcidin and DMT1 expression
+    // Absorption efficiency: 10-25mg optimal, >45mg sees significant decrease
+    kineticsType: "michaelis_menten" as KineticsType,
+    vmax: 0.8, // mg/min - Iron has relatively low Vmax due to tight regulation
+    km: 30, // mg - Relatively low Km reflects tight control of iron absorption
+    absorptionSaturationDose: 45, // mg - Doses above 45mg have poor marginal absorption
+    rdaAmount: 18, // mg - RDA (8mg males, 18mg females)
   },
   {
     name: "Copper Bisglycinate",
@@ -1659,6 +1708,12 @@ async function seed() {
           halfLifeMinutes: supp.halfLifeMinutes ?? null,
           absorptionWindowMinutes: supp.absorptionWindowMinutes ?? null,
           bioavailabilityPercent: supp.bioavailabilityPercent ?? null,
+          // Michaelis-Menten kinetics (for saturable transporters)
+          kineticsType: supp.kineticsType ?? "first_order",
+          vmax: supp.vmax ?? null,
+          km: supp.km ?? null,
+          absorptionSaturationDose: supp.absorptionSaturationDose ?? null,
+          rdaAmount: supp.rdaAmount ?? null,
           updatedAt: new Date(),
         },
       })
