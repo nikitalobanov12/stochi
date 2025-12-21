@@ -262,8 +262,17 @@
 .dashboard-bio-score { min-height: var(--dashboard-bio-score-height); }
 .dashboard-status { min-height: var(--dashboard-status-height); }
 
-/* HUD-style utilities for dark theme */
+/* HUD-style utilities - only visible in dark theme */
+.hud-noise {
+  display: none;
+}
+
+.hud-vignette {
+  display: none;
+}
+
 .dark .hud-noise {
+  display: block;
   position: fixed;
   inset: 0;
   z-index: 1;
@@ -273,6 +282,7 @@
 }
 
 .dark .hud-vignette {
+  display: block;
   position: fixed;
   inset: 0;
   z-index: 1;

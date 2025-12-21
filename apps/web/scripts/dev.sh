@@ -3,11 +3,13 @@ set -e
 
 # Development script that:
 # 1. Starts the PostgreSQL database container
-# 2. Runs the Next.js dev server
-# 3. Stops the database when the dev server exits
+# 2. Optionally starts the Go engine (if ENGINE_LOCAL=true)
+# 3. Runs the Next.js dev server
+# 4. Stops everything when the dev server exits
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+ENGINE_DIR="$(dirname "$PROJECT_DIR")/engine"
 
 cd "$PROJECT_DIR"
 
@@ -26,6 +28,8 @@ DB_PASSWORD=$(echo "$DATABASE_URL" | awk -F':' '{print $3}' | awk -F'@' '{print 
 DB_PORT=$(echo "$DATABASE_URL" | awk -F':' '{print $4}' | awk -F'/' '{print $1}')
 DB_NAME=$(echo "$DATABASE_URL" | awk -F'/' '{print $4}')
 DB_CONTAINER_NAME="$DB_NAME-postgres"
+
+ENGINE_PID=""
 
 if ! docker info > /dev/null 2>&1; then
   echo "Error: Docker is not running"
@@ -68,15 +72,61 @@ wait_for_db() {
   echo "Warning: Database may not be ready yet"
 }
 
+start_engine() {
+  if [ "$ENGINE_LOCAL" != "true" ]; then
+    return 0
+  fi
+
+  if [ ! -d "$ENGINE_DIR" ]; then
+    echo "Warning: Engine directory not found at $ENGINE_DIR"
+    return 0
+  fi
+
+  # Check if Go is installed
+  if ! command -v go &> /dev/null; then
+    echo "Warning: Go is not installed, skipping local engine"
+    return 0
+  fi
+
+  echo "Starting Go engine on port 8080..."
+  
+  # Run engine with local database and shared internal key
+  cd "$ENGINE_DIR"
+  PORT=8080 \
+  DATABASE_URL="$DATABASE_URL" \
+  INTERNAL_KEY="$ENGINE_INTERNAL_KEY" \
+  go run ./cmd/server &
+  ENGINE_PID=$!
+  cd "$PROJECT_DIR"
+  
+  # Wait a moment for the engine to start
+  sleep 2
+  echo "Go engine started (PID: $ENGINE_PID)"
+}
+
+stop_engine() {
+  if [ -n "$ENGINE_PID" ] && kill -0 "$ENGINE_PID" 2>/dev/null; then
+    echo "Stopping Go engine (PID: $ENGINE_PID)..."
+    kill "$ENGINE_PID" 2>/dev/null || true
+    wait "$ENGINE_PID" 2>/dev/null || true
+  fi
+}
+
 stop_db() {
   echo ""
   echo "Stopping database container '$DB_CONTAINER_NAME'..."
   docker stop "$DB_CONTAINER_NAME" > /dev/null 2>&1 || true
 }
 
-trap stop_db EXIT
+cleanup() {
+  stop_engine
+  stop_db
+}
+
+trap cleanup EXIT
 
 start_db
+start_engine
 
 echo "Starting Next.js dev server..."
 echo ""

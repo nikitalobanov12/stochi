@@ -27,17 +27,17 @@ type CreateStackDialogProps = {
 
 const quickTemplates = [
   {
-    key: "focus",
+    key: "huberman-focus",
     name: "Focus Protocol",
-    description: "Caffeine + L-Theanine + L-Tyrosine",
+    description: "L-Tyrosine + Alpha-GPC for sustained focus",
   },
   {
-    key: "mineral",
+    key: "mineral-balance",
     name: "Mineral Balance",
-    description: "Magnesium + Zinc + Iron",
+    description: "Magnesium + Zinc + Potassium",
   },
   {
-    key: "essentials",
+    key: "daily-essentials",
     name: "Daily Essentials",
     description: "Vitamin D3 + K2 + Magnesium",
   },
