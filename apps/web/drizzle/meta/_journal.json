@@ -64,6 +64,20 @@
       "when": 1766284410593,
       "tag": "0008_real_sumo",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1766296707061,
+      "tag": "0009_lush_moira_mactaggert",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1766297347868,
+      "tag": "0010_peaceful_mindworm",
+      "breakpoints": true
     }
   ]
 }

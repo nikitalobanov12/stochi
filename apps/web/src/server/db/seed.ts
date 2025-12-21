@@ -51,6 +51,16 @@ type SafetyCategoryKey =
   | "semaglutide"
   | null;
 
+// Optimal time of day for supplement intake
+type OptimalTimeOfDay =
+  | "morning"
+  | "afternoon"
+  | "evening"
+  | "bedtime"
+  | "with_meals"
+  | "any"
+  | null;
+
 const supplements = [
   // ============================================
   // MAGNESIUM FORMS (5)
@@ -76,6 +86,7 @@ const supplements = [
     category: "mineral" as SupplementCategory,
     commonGoals: ["sleep", "stress", "health"],
     safetyCategory: "magnesium" as SafetyCategoryKey,
+    optimalTimeOfDay: "evening" as OptimalTimeOfDay,
     // PK: High bioavailability chelated form
     peakMinutes: 120,
     halfLifeMinutes: 720, // 12h - tissue distribution
@@ -127,6 +138,7 @@ const supplements = [
     category: "mineral" as SupplementCategory,
     commonGoals: ["focus", "sleep", "longevity"],
     safetyCategory: "magnesium" as SafetyCategoryKey,
+    optimalTimeOfDay: "evening" as OptimalTimeOfDay,
     // PK: Designed for CNS penetration
     peakMinutes: 90,
     halfLifeMinutes: 480, // 8h - faster CNS clearance
@@ -179,6 +191,7 @@ const supplements = [
     category: "mineral" as SupplementCategory,
     commonGoals: ["energy", "health"],
     safetyCategory: "magnesium" as SafetyCategoryKey,
+    optimalTimeOfDay: "morning" as OptimalTimeOfDay,
     // PK: Good absorption, energy-focused
     peakMinutes: 120,
     halfLifeMinutes: 720,
@@ -383,6 +396,7 @@ const supplements = [
     category: "vitamin" as SupplementCategory,
     commonGoals: ["health", "longevity", "energy"],
     safetyCategory: "vitamin-d3" as SafetyCategoryKey,
+    optimalTimeOfDay: "morning" as OptimalTimeOfDay,
     // PK: Fat-soluble, very long half-life
     peakMinutes: 720, // 12h to peak
     halfLifeMinutes: 20160, // 14 days tissue t½
@@ -476,6 +490,7 @@ const supplements = [
     category: "mineral" as SupplementCategory,
     commonGoals: ["energy", "health"],
     safetyCategory: "iron" as SafetyCategoryKey,
+    optimalTimeOfDay: "morning" as OptimalTimeOfDay,
     // PK: Well-absorbed chelate, but still subject to DMT1 saturation
     peakMinutes: 120,
     halfLifeMinutes: 360, // 6h plasma
@@ -772,6 +787,7 @@ const supplements = [
     category: "amino-acid" as SupplementCategory,
     commonGoals: ["sleep", "health", "longevity"],
     safetyCategory: null as SafetyCategoryKey,
+    optimalTimeOfDay: "bedtime" as OptimalTimeOfDay,
     // PK: Rapid absorption
     peakMinutes: 30,
     halfLifeMinutes: 45, // ~45min
@@ -921,6 +937,7 @@ const supplements = [
     category: "nootropic" as SupplementCategory,
     commonGoals: ["focus", "energy"],
     safetyCategory: null as SafetyCategoryKey,
+    optimalTimeOfDay: "morning" as OptimalTimeOfDay,
     // PK: Well-characterized, rapid oral absorption
     peakMinutes: 45, // 30-60min Tmax
     halfLifeMinutes: 300, // 5h average (3-7h range)
@@ -941,6 +958,7 @@ const supplements = [
     category: "adaptogen" as SupplementCategory,
     commonGoals: ["stress", "sleep", "energy"],
     safetyCategory: null as SafetyCategoryKey,
+    optimalTimeOfDay: "evening" as OptimalTimeOfDay,
     // PK: Withanolides have moderate absorption
     peakMinutes: 180, // 2-3h for withanolides
     halfLifeMinutes: 720, // ~12h for active withanolides
@@ -1149,6 +1167,7 @@ const supplements = [
     halfLifeMinutes: 45, // 35-50min
     absorptionWindowMinutes: 30,
     bioavailabilityPercent: 15, // Low due to first-pass metabolism
+    optimalTimeOfDay: "bedtime" as OptimalTimeOfDay,
   },
 
   // ============================================
@@ -1714,6 +1733,7 @@ async function seed() {
           km: supp.km ?? null,
           absorptionSaturationDose: supp.absorptionSaturationDose ?? null,
           rdaAmount: supp.rdaAmount ?? null,
+          optimalTimeOfDay: supp.optimalTimeOfDay ?? null,
           updatedAt: new Date(),
         },
       })

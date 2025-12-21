@@ -1,0 +1,2 @@
+CREATE TYPE "public"."optimal_time_of_day" AS ENUM('morning', 'afternoon', 'evening', 'bedtime', 'with_meals', 'any');--> statement-breakpoint
+ALTER TABLE "supplement" ADD COLUMN "optimal_time_of_day" "optimal_time_of_day";

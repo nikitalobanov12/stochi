@@ -68,6 +68,18 @@ export type OptimizationOpportunity = {
   priority: number;
   /** Safety warning for high-risk supplements (e.g., Iron, Vitamin A) */
   safetyWarning?: string;
+  /** Unique key for dismissal tracking (e.g., "synergy:id1:id2") */
+  suggestionKey: string;
+};
+
+/**
+ * Options for filtering optimization suggestions.
+ */
+export type OptimizationFilterOptions = {
+  /** Set of suggestion keys that have been dismissed by the user */
+  dismissedKeys?: Set<string>;
+  /** Whether to show "add supplement" suggestions (synergies, balance) */
+  showAddSuggestions?: boolean;
 };
 
 export type BiologicalState = {
@@ -423,8 +435,14 @@ const DEFAULT_HALF_LIFE_MINUTES = 240; // 4 hours
 /**
  * Get the biological state for a user over a rolling 24-hour window.
  * This returns all active compounds, exclusion zones, and optimization opportunities.
+ * 
+ * @param userId - The user ID to get state for
+ * @param filterOptions - Options for filtering suggestions (dismissed keys, preferences)
  */
-export async function getBiologicalState(userId: string): Promise<BiologicalState> {
+export async function getBiologicalState(
+  userId: string,
+  filterOptions?: OptimizationFilterOptions,
+): Promise<BiologicalState> {
   const now = new Date();
   const windowStart = new Date(now.getTime() - 24 * 60 * 60 * 1000); // 24h ago
 
@@ -489,8 +507,12 @@ export async function getBiologicalState(userId: string): Promise<BiologicalStat
   // Calculate exclusion zones from timing rules
   const exclusionZones = await calculateExclusionZones(userId, recentLogs, now);
 
-  // Calculate optimization opportunities
-  const optimizations = await calculateOptimizations(userId, activeCompounds);
+  // Calculate optimization opportunities (with filtering)
+  const optimizations = await calculateOptimizations(
+    userId,
+    activeCompounds,
+    filterOptions,
+  );
 
   // Calculate bio-score
   const bioScore = calculateBioScore(activeCompounds, exclusionZones, optimizations);
@@ -565,17 +587,146 @@ async function calculateExclusionZones(
 }
 
 /**
+ * Generate a consistent suggestion key for synergy/balance suggestions.
+ * IDs are sorted to ensure the same pair always produces the same key.
+ */
+function generateSuggestionKey(
+  type: "synergy" | "timing" | "stacking",
+  supplementIds: string[],
+): string {
+  if (type === "timing" || type === "stacking") {
+    return `${type}:${supplementIds[0]}`;
+  }
+  // Sort IDs for consistent key generation regardless of which is source/target
+  const sortedIds = [...supplementIds].sort();
+  return `${type}:${sortedIds.join(":")}`;
+}
+
+/**
+ * Determine the time of day category based on hour (0-23).
+ * - morning: 5am - 11:59am
+ * - afternoon: 12pm - 4:59pm
+ * - evening: 5pm - 8:59pm
+ * - bedtime: 9pm - 4:59am
+ */
+function getTimeOfDayCategory(hour: number): "morning" | "afternoon" | "evening" | "bedtime" {
+  if (hour >= 5 && hour < 12) return "morning";
+  if (hour >= 12 && hour < 17) return "afternoon";
+  if (hour >= 17 && hour < 21) return "evening";
+  return "bedtime"; // 9pm-4:59am
+}
+
+/**
+ * Check if the logged time matches the optimal time of day.
+ * Returns true if the timing is appropriate, false if suboptimal.
+ */
+function isOptimalTiming(
+  loggedHour: number,
+  optimalTime: string,
+): boolean {
+  const loggedTimeOfDay = getTimeOfDayCategory(loggedHour);
+  
+  // "any" and "with_meals" are always considered optimal
+  if (optimalTime === "any" || optimalTime === "with_meals") return true;
+  
+  // Direct match
+  if (loggedTimeOfDay === optimalTime) return true;
+  
+  // Allow adjacent time periods with some flexibility:
+  // - morning supplements are ok in early afternoon
+  // - evening supplements are ok in late afternoon
+  // - bedtime supplements are ok in evening
+  if (optimalTime === "morning" && loggedTimeOfDay === "afternoon" && loggedHour < 14) return true;
+  if (optimalTime === "evening" && loggedTimeOfDay === "afternoon" && loggedHour >= 16) return true;
+  if (optimalTime === "bedtime" && loggedTimeOfDay === "evening" && loggedHour >= 20) return true;
+  
+  return false;
+}
+
+/**
+ * Get human-readable timing recommendation text.
+ */
+function getTimingRecommendation(optimalTime: string): string {
+  const recommendations: Record<string, string> = {
+    morning: "Best taken in the morning (before noon) for optimal absorption and to avoid sleep interference.",
+    afternoon: "Best taken in the afternoon for optimal effects.",
+    evening: "Best taken in the evening (after 5pm) for relaxation and better sleep quality.",
+    bedtime: "Best taken 30-60 minutes before sleep for maximum effectiveness.",
+    with_meals: "Best taken with food for improved absorption.",
+    any: "Can be taken at any time of day.",
+  };
+  return recommendations[optimalTime] ?? "Consider adjusting the timing of this supplement.";
+}
+
+/**
  * Calculate optimization opportunities based on active compounds and interactions.
+ * 
+ * @param userId - User ID (unused but kept for potential future personalization)
+ * @param activeCompounds - Currently active supplements in the user's system
+ * @param filterOptions - Options for filtering suggestions
  */
 async function calculateOptimizations(
   _userId: string,
   activeCompounds: ActiveCompound[],
+  filterOptions?: OptimizationFilterOptions,
 ): Promise<OptimizationOpportunity[]> {
   if (activeCompounds.length === 0) return [];
 
   const optimizations: OptimizationOpportunity[] = [];
   const activeSupplementIds = new Set(activeCompounds.map((c) => c.supplementId));
+  
+  // Extract filter options with defaults
+  const dismissedKeys = filterOptions?.dismissedKeys ?? new Set<string>();
+  const showAddSuggestions = filterOptions?.showAddSuggestions ?? true;
 
+  // ==========================================================================
+  // Timing Suggestions - Check if supplements were logged at suboptimal times
+  // ==========================================================================
+  
+  // Get supplement details including optimalTimeOfDay
+  const supplementIds = activeCompounds.map((c) => c.supplementId);
+  const supplements = await db.query.supplement.findMany({
+    where: (s, { inArray }) => inArray(s.id, supplementIds),
+  });
+  const supplementMap = new Map(supplements.map((s) => [s.id, s]));
+  
+  // Track which supplements we've already added timing suggestions for
+  // (to avoid duplicates from multiple logs of the same supplement)
+  const processedTimingSuggestions = new Set<string>();
+  
+  for (const compound of activeCompounds) {
+    const supp = supplementMap.get(compound.supplementId);
+    if (!supp?.optimalTimeOfDay) continue;
+    
+    // Skip if we've already processed this supplement
+    if (processedTimingSuggestions.has(compound.supplementId)) continue;
+    
+    const loggedHour = compound.loggedAt.getHours();
+    
+    // Check if timing is suboptimal
+    if (!isOptimalTiming(loggedHour, supp.optimalTimeOfDay)) {
+      const suggestionKey = generateSuggestionKey("timing", [compound.supplementId]);
+      
+      // Skip if dismissed
+      if (dismissedKeys.has(suggestionKey)) continue;
+      
+      processedTimingSuggestions.add(compound.supplementId);
+      
+      optimizations.push({
+        type: "timing",
+        supplementIds: [compound.supplementId],
+        title: `Optimize ${supp.name} timing`,
+        description: getTimingRecommendation(supp.optimalTimeOfDay),
+        priority: 3, // Higher priority than synergy suggestions
+        suggestionKey,
+      });
+    }
+  }
+
+  // ==========================================================================
+  // Synergy Suggestions - Find synergistic combinations
+  // ==========================================================================
+  
   // Get synergy interactions for active supplements
   const synergyInteractions = await db.query.interaction.findMany({
     where: eq(interaction.type, "synergy"),
@@ -607,9 +758,20 @@ async function calculateOptimizations(
   for (const synergy of synergyInteractions) {
     const hasSource = activeSupplementIds.has(synergy.sourceId);
     const hasTarget = activeSupplementIds.has(synergy.targetId);
+    
+    // Generate the suggestion key for this pair
+    const suggestionKey = generateSuggestionKey("synergy", [
+      synergy.sourceId,
+      synergy.targetId,
+    ]);
 
     // If user has one of the synergy pair, suggest adding the other
     if (hasSource && !hasTarget) {
+      // Skip if user has disabled "add supplement" suggestions
+      if (!showAddSuggestions) continue;
+      // Skip if this suggestion has been dismissed
+      if (dismissedKeys.has(suggestionKey)) continue;
+      
       optimizations.push({
         type: "synergy",
         supplementIds: [synergy.sourceId, synergy.targetId],
@@ -617,8 +779,14 @@ async function calculateOptimizations(
         description: synergy.suggestion ?? `${synergy.source.name} and ${synergy.target.name} have synergistic effects.`,
         priority: 2,
         safetyWarning: getSafetyWarning(synergy.target),
+        suggestionKey,
       });
     } else if (hasTarget && !hasSource) {
+      // Skip if user has disabled "add supplement" suggestions
+      if (!showAddSuggestions) continue;
+      // Skip if this suggestion has been dismissed
+      if (dismissedKeys.has(suggestionKey)) continue;
+      
       optimizations.push({
         type: "synergy",
         supplementIds: [synergy.sourceId, synergy.targetId],
@@ -626,15 +794,18 @@ async function calculateOptimizations(
         description: synergy.suggestion ?? `${synergy.target.name} and ${synergy.source.name} have synergistic effects.`,
         priority: 2,
         safetyWarning: getSafetyWarning(synergy.source),
+        suggestionKey,
       });
     } else if (hasSource && hasTarget) {
       // User already has both - note the active synergy
+      // Active synergies are not dismissible (they're positive feedback, not suggestions)
       optimizations.push({
         type: "synergy",
         supplementIds: [synergy.sourceId, synergy.targetId],
         title: `Active synergy: ${synergy.source.name} + ${synergy.target.name}`,
         description: synergy.suggestion ?? "You're getting the benefit of this synergy!",
         priority: 1,
+        suggestionKey, // Included but won't be used for dismissal
       });
     }
   }

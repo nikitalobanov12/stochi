@@ -11,6 +11,8 @@ import {
   checkTimingWarnings,
   type TimingWarning,
 } from "~/server/actions/interactions";
+import { getUserPreferences } from "~/server/actions/preferences";
+import { getDismissedSuggestionKeys } from "~/server/actions/dismissed-suggestions";
 import { Button } from "~/components/ui/button";
 import { WelcomeFlow } from "~/components/onboarding/welcome-flow";
 import { TodayLogList } from "~/components/log/today-log-list";
@@ -42,6 +44,12 @@ export default async function DashboardPage() {
 
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
+
+  // Fetch preferences and dismissed suggestions first (needed for biological state filtering)
+  const [preferences, dismissedKeys] = await Promise.all([
+    getUserPreferences(),
+    getDismissedSuggestionKeys(),
+  ]);
 
   const [userStacks, todayLogs, allSupplements, stackCompletion, streak, biologicalState, timelineData, safetyHeadroom] =
     await Promise.all([
@@ -78,7 +86,10 @@ export default async function DashboardPage() {
       }),
       getStackCompletionStatus(session.user.id),
       calculateStreak(session.user.id),
-      getBiologicalState(session.user.id),
+      getBiologicalState(session.user.id, {
+        dismissedKeys,
+        showAddSuggestions: preferences.showAddSuggestions,
+      }),
       getTimelineData(session.user.id),
       getSafetyHeadroom(session.user.id),
     ]);

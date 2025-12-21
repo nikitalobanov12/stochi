@@ -75,6 +75,16 @@ export const cyp450EvidenceTypeEnum = pgEnum("cyp450_evidence_type", [
   "theoretical", // Computational/theoretical prediction (lowest confidence)
 ]);
 
+// Optimal time of day for supplement intake
+export const optimalTimeOfDayEnum = pgEnum("optimal_time_of_day", [
+  "morning", // Best taken in the morning (e.g., Vitamin D, Iron, Caffeine)
+  "afternoon", // Best taken midday
+  "evening", // Best taken in the evening (e.g., Magnesium Glycinate, Ashwagandha)
+  "bedtime", // Best taken right before sleep (e.g., Melatonin, Glycine)
+  "with_meals", // Best taken with food, timing flexible
+  "any", // No specific timing preference
+]);
+
 // ============================================================================
 // Ratio Rules (for stoichiometric imbalance detection)
 // ============================================================================
@@ -191,6 +201,8 @@ export const supplement = pgTable(
     commonGoals: text("common_goals").array(), // ["sleep", "focus", "longevity"]
     // Safety tracking - maps to SAFETY_LIMITS keys (e.g., "zinc", "magnesium", "iron")
     safetyCategory: text("safety_category"),
+    // Optimal timing for suggestions
+    optimalTimeOfDay: optimalTimeOfDayEnum("optimal_time_of_day"),
     // Research chemical / peptide support
     isResearchChemical: boolean("is_research_chemical")
       .default(false)
@@ -435,16 +447,62 @@ export const userBiomarker = pgTable(
 );
 
 // ============================================================================
+// User Preferences (Smart Suggestions settings)
+// ============================================================================
+
+export const userPreference = pgTable("user_preference", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" })
+    .unique(),
+  // Toggle for "add supplement" suggestions (synergies, balance recommendations)
+  showAddSuggestions: boolean("show_add_suggestions").default(true).notNull(),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+});
+
+// ============================================================================
+// Dismissed Suggestions (Persistent per-pair dismissals)
+// ============================================================================
+
+export const dismissedSuggestion = pgTable(
+  "dismissed_suggestion",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    // Format: "synergy:{sourceId}:{targetId}" or "timing:{supplementId}"
+    // This allows context-aware dismissals per supplement pair
+    suggestionKey: text("suggestion_key").notNull(),
+    dismissedAt: timestamp("dismissed_at")
+      .$defaultFn(() => new Date())
+      .notNull(),
+  },
+  (t) => [
+    index("dismissed_suggestion_user_idx").on(t.userId),
+    index("dismissed_suggestion_key_idx").on(t.userId, t.suggestionKey),
+  ],
+);
+
+// ============================================================================
 // Relations
 // ============================================================================
 
-export const userRelations = relations(user, ({ many }) => ({
+export const userRelations = relations(user, ({ many, one }) => ({
   accounts: many(account),
   sessions: many(session),
   stacks: many(stack),
   logs: many(log),
   goals: many(userGoal),
   biomarkers: many(userBiomarker),
+  preference: one(userPreference),
+  dismissedSuggestions: many(dismissedSuggestion),
 }));
 
 export const accountRelations = relations(account, ({ one }) => ({
@@ -545,3 +603,17 @@ export const userBiomarkerRelations = relations(userBiomarker, ({ one }) => ({
     references: [supplement.id],
   }),
 }));
+
+export const userPreferenceRelations = relations(userPreference, ({ one }) => ({
+  user: one(user, { fields: [userPreference.userId], references: [user.id] }),
+}));
+
+export const dismissedSuggestionRelations = relations(
+  dismissedSuggestion,
+  ({ one }) => ({
+    user: one(user, {
+      fields: [dismissedSuggestion.userId],
+      references: [user.id],
+    }),
+  }),
+);

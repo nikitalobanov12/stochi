@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useTransition } from "react";
 import { Clock, Zap, AlertTriangle, ChevronRight, Bell, Check, BellRing, X, ShieldAlert } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
@@ -12,6 +12,7 @@ import {
   DialogDescription,
 } from "~/components/ui/dialog";
 import type { ExclusionZone, OptimizationOpportunity } from "~/server/services/biological-state";
+import { dismissSuggestion } from "~/server/actions/dismissed-suggestions";
 
 // ============================================================================
 // Types
@@ -424,6 +425,47 @@ function ExclusionZoneCard({
 }
 
 // ============================================================================
+// Timing Suggestion Card - for suboptimal timing alerts
+// ============================================================================
+
+function TimingCard({
+  optimization,
+  onDismiss,
+}: {
+  optimization: OptimizationOpportunity;
+  onDismiss?: () => void;
+}) {
+  return (
+    <div
+      className="group relative rounded-2xl border border-status-conflict bg-status-conflict p-3"
+    >
+      {/* Dismiss button - visible on hover */}
+      {onDismiss && (
+        <button
+          type="button"
+          onClick={onDismiss}
+          className="absolute right-1 top-1 rounded p-1 text-muted-foreground/50 opacity-0 transition-opacity hover:bg-muted/30 hover:text-muted-foreground group-hover:opacity-100"
+          title="Dismiss suggestion"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      )}
+      <div className="flex items-start gap-2">
+        <Clock className="mt-0.5 h-4 w-4 shrink-0 status-conflict" />
+        <div className="min-w-0 pr-4">
+          <div className="font-sans text-sm text-white">
+            {optimization.title}
+          </div>
+          <div className="mt-0.5 font-sans text-xs leading-relaxed text-white/70">
+            {optimization.description}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
 // Synergy Card - with improved contrast and dismiss button
 // ============================================================================
 
@@ -503,8 +545,9 @@ export function OptimizationHUD({
   const { permission, requestPermission } = useNotificationPermission();
   const [bioSyncModalOpen, setBioSyncModalOpen] = useState(false);
   const [pendingZone, setPendingZone] = useState<ExclusionZone | null>(null);
-  // Track dismissed suggestion indices (persists only for this session)
-  const [dismissedSuggestions, setDismissedSuggestions] = useState<Set<number>>(new Set());
+  // Track optimistically dismissed suggestions (by suggestionKey)
+  const [optimisticallyDismissed, setOptimisticallyDismissed] = useState<Set<string>>(new Set());
+  const [, startTransition] = useTransition();
 
   // Handle permission request from a zone card
   const handleRequestPermission = useCallback((zone: ExclusionZone) => {
@@ -640,18 +683,40 @@ export function OptimizationHUD({
               </span>
             </div>
             <div className="space-y-2">
-              {suggestions.slice(0, 3).map((opt, i) => {
-                if (dismissedSuggestions.has(i)) return null;
-                return (
-                  <SynergyCard
-                    key={i}
-                    optimization={opt}
-                    onDismiss={() => {
-                      setDismissedSuggestions((prev) => new Set(prev).add(i));
-                    }}
-                  />
-                );
-              })}
+              {suggestions
+                .filter((opt) => opt.suggestionKey && !optimisticallyDismissed.has(opt.suggestionKey))
+                .slice(0, 3)
+                .map((opt) => {
+                  const handleDismiss = () => {
+                    const key = opt.suggestionKey;
+                    if (!key) return;
+                    // Optimistic update: hide immediately
+                    setOptimisticallyDismissed((prev) => new Set(prev).add(key));
+                    // Persist to server in background
+                    startTransition(() => {
+                      void dismissSuggestion(key);
+                    });
+                  };
+                  
+                  // Use TimingCard for timing suggestions, SynergyCard for others
+                  if (opt.type === "timing") {
+                    return (
+                      <TimingCard
+                        key={opt.suggestionKey}
+                        optimization={opt}
+                        onDismiss={handleDismiss}
+                      />
+                    );
+                  }
+                  
+                  return (
+                    <SynergyCard
+                      key={opt.suggestionKey}
+                      optimization={opt}
+                      onDismiss={handleDismiss}
+                    />
+                  );
+                })}
             </div>
           </div>
         )}
