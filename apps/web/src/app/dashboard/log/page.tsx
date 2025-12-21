@@ -118,7 +118,7 @@ export default async function LogPage() {
       )}
 
       {/* Command Bar */}
-      <div className="border-border/40 bg-card/30 rounded-lg border p-3">
+      <div className="border-white/5 bg-white/[0.02] rounded-lg border p-3">
         <SafeCommandBar supplements={allSupplements} />
       </div>
 
@@ -135,7 +135,7 @@ export default async function LogPage() {
                   type="submit"
                   variant="outline"
                   size="sm"
-                  className="border-border/40 bg-card/30 hover:border-border/60 hover:bg-card/50 font-mono text-xs"
+                  className="border-white/5 bg-white/[0.02] hover:border-white/10 hover:bg-white/[0.04] font-mono text-xs"
                   disabled={s.items.length === 0}
                 >
                   {s.name}
@@ -158,7 +158,7 @@ export default async function LogPage() {
           Today&apos;s Activity
         </h2>
         {todaysLogs.length === 0 ? (
-          <div className="border-border/40 bg-card/30 rounded-lg border border-dashed py-12 text-center">
+          <div className="border-white/5 bg-white/[0.02] rounded-lg border border-dashed py-12 text-center">
             <p className="text-muted-foreground font-mono text-xs">
               No logs yet today
             </p>
@@ -171,7 +171,7 @@ export default async function LogPage() {
             {todaysLogs.map((entry) => (
               <div
                 key={entry.id}
-                className="group border-border/40 bg-card/30 hover:border-border/60 flex items-center justify-between rounded-lg border px-3 py-2 transition-colors"
+                className="group border-white/5 bg-white/[0.02] hover:border-white/10 flex items-center justify-between rounded-lg border px-3 py-2 transition-colors"
               >
                 <div className="flex min-w-0 flex-1 items-center gap-3">
                   <span className="text-muted-foreground/60 shrink-0 font-mono text-[10px] tabular-nums">
@@ -236,7 +236,7 @@ type LogEntry = {
 function RecentLogsGrouped({ logs }: { logs: LogEntry[] }) {
   if (logs.length === 0) {
     return (
-      <div className="border-border/40 bg-card/30 rounded-lg border border-dashed py-8 text-center">
+      <div className="border-white/5 bg-white/[0.02] rounded-lg border border-dashed py-8 text-center">
         <p className="text-muted-foreground font-mono text-xs">
           No recent logs
         </p>

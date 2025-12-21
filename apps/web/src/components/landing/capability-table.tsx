@@ -103,10 +103,10 @@ function SupportIcon({ support }: { support: FeatureSupport }) {
 
 export function CapabilityTable() {
   return (
-    <div className="overflow-x-auto rounded-2xl border border-white/[0.08] bg-white/[0.02] backdrop-blur-sm">
+    <div className="overflow-x-auto rounded-xl border border-white/10 bg-[#0A0A0A]">
       <div className="min-w-[480px]">
         {/* Header */}
-        <div className="grid grid-cols-4 gap-4 border-b border-white/[0.06] bg-white/[0.02] px-4 py-3">
+        <div className="grid grid-cols-4 gap-4 border-b border-white/10 bg-white/[0.02] px-4 py-3">
           <div className="text-[10px] font-medium uppercase tracking-widest text-white/40">
             Feature
           </div>
@@ -152,7 +152,7 @@ export function CapabilityTable() {
         </div>
 
         {/* Footer stats */}
-        <div className="flex items-center justify-between border-t border-white/[0.06] bg-white/[0.02] px-4 py-2">
+        <div className="flex items-center justify-between border-t border-white/10 bg-white/[0.02] px-4 py-2">
           <span className="font-mono text-[10px] text-white/50">
             <span className="text-emerald-400">8</span>/8 features
           </span>
@@ -176,7 +176,7 @@ export function CapabilityTableCompact() {
       {keyFeatures.map((feature) => (
         <div
           key={feature.name}
-          className="flex items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.02] px-3 py-2"
+          className="flex items-center justify-between rounded-xl border border-white/10 bg-[#0A0A0A] px-3 py-2"
         >
           <div className="flex items-center gap-2">
             <SupportIcon support={feature.stochi} />

@@ -127,8 +127,8 @@ function TemplateCard({
       onClick={onSelect}
       disabled={isLoading || isImported}
       className={cn(
-        "border-border/40 bg-card/30 group w-full rounded-lg border p-4 text-left transition-all",
-        "hover:border-border hover:bg-card/50",
+        "border-white/5 bg-white/[0.02] group w-full rounded-lg border p-4 text-left transition-all",
+        "hover:border-white/10 hover:bg-white/[0.04]",
         "disabled:cursor-not-allowed disabled:opacity-50",
         isImported && "border-[#39FF14]/30 bg-[#39FF14]/5",
       )}

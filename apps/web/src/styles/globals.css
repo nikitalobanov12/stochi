@@ -130,58 +130,58 @@
 }
 
 .dark {
-  --background: #0A0C10;
-  --foreground: #E6EDF3;
-  --card: #0D1117;
-  --card-foreground: #E6EDF3;
-  --popover: #161B22;
-  --popover-foreground: #E6EDF3;
+  --background: #000000; /* True Black - Surgical Precision */
+  --foreground: #FFFFFF; /* Pure White for maximum contrast */
+  --card: #0A0A0A; /* Elevated Black for cards */
+  --card-foreground: #FFFFFF;
+  --popover: #0A0A0A;
+  --popover-foreground: #FFFFFF;
   --primary: #10B981; /* Emerald-500 - per design spec */
-  --primary-foreground: #0A0C10;
-  --secondary: #161B22;
-  --secondary-foreground: #E6EDF3;
-  --muted: #161B22;
-  --muted-foreground: #7D8590; /* Slightly muted for White/50 equivalent */
-  --accent: #161B22;
-  --accent-foreground: #E6EDF3;
+  --primary-foreground: #000000;
+  --secondary: #0A0A0A;
+  --secondary-foreground: #F2F2F2;
+  --muted: #0A0A0A;
+  --muted-foreground: #737373; /* 45% gray for labels */
+  --accent: #0A0A0A;
+  --accent-foreground: #F2F2F2;
   --destructive: #EF4444; /* Red per design spec */
-  --border: #30363D;
-  --input: #30363D;
+  --border: rgba(255, 255, 255, 0.1); /* High-luminance stroke */
+  --input: rgba(255, 255, 255, 0.1);
   --ring: #10B981;
   --chart-1: #10B981; /* Emerald - Optimal state */
   --chart-2: #06B6D4; /* Cyan - Informational */
   --chart-3: #F59E0B; /* Amber - Conflicts/Warnings */
   --chart-4: #EF4444; /* Red - Critical */
   --chart-5: #A855F7;
-  --sidebar: #0A0C10;
-  --sidebar-foreground: #E6EDF3;
+  --sidebar: #000000;
+  --sidebar-foreground: #FFFFFF;
   --sidebar-primary: #10B981;
-  --sidebar-primary-foreground: #0A0C10;
-  --sidebar-accent: #161B22;
-  --sidebar-accent-foreground: #E6EDF3;
-  --sidebar-border: #30363D;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #0A0A0A;
+  --sidebar-accent-foreground: #F2F2F2;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
   --sidebar-ring: #10B981;
-  --destructive-foreground: #0A0C10;
+  --destructive-foreground: #000000;
   --radius: 0.5rem;
   --font-sans: Inter, ui-sans-serif, sans-serif, system-ui;
   --font-serif: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
   --font-mono: JetBrains Mono, ui-monospace, monospace;
   --shadow-color: 0 0 0;
-  --shadow-opacity: 0.3;
+  --shadow-opacity: 0.5;
   --shadow-blur: 10px;
   --shadow-spread: 0px;
   --shadow-offset-x: 0px;
   --shadow-offset-y: 4px;
   --letter-spacing: 0;
   --spacing: 0.25rem;
-  --shadow-2xs: 0px 4px 10px 0px hsl(0 0 0 / 0.15);
-  --shadow-xs: 0px 4px 10px 0px hsl(0 0 0 / 0.15);
-  --shadow-sm: 0px 4px 10px 0px hsl(0 0 0 / 0.30), 0px 1px 2px -1px hsl(0 0 0 / 0.30);
-  --shadow: 0px 4px 10px 0px hsl(0 0 0 / 0.30), 0px 1px 2px -1px hsl(0 0 0 / 0.30);
-  --shadow-md: 0px 4px 10px 0px hsl(0 0 0 / 0.30), 0px 2px 4px -1px hsl(0 0 0 / 0.30);
-  --shadow-lg: 0px 4px 10px 0px hsl(0 0 0 / 0.30), 0px 4px 6px -1px hsl(0 0 0 / 0.30);
-  --shadow-xl: 0px 4px 10px 0px hsl(0 0 0 / 0.30), 0px 8px 10px -1px hsl(0 0 0 / 0.30);
-  --shadow-2xl: 0px 4px 10px 0px hsl(0 0 0 / 0.75);
+  --shadow-2xs: 0px 4px 10px 0px hsl(0 0 0 / 0.2);
+  --shadow-xs: 0px 4px 10px 0px hsl(0 0 0 / 0.2);
+  --shadow-sm: 0px 4px 10px 0px hsl(0 0 0 / 0.4), 0px 1px 2px -1px hsl(0 0 0 / 0.4);
+  --shadow: 0px 4px 10px 0px hsl(0 0 0 / 0.4), 0px 1px 2px -1px hsl(0 0 0 / 0.4);
+  --shadow-md: 0px 4px 10px 0px hsl(0 0 0 / 0.4), 0px 2px 4px -1px hsl(0 0 0 / 0.4);
+  --shadow-lg: 0px 4px 10px 0px hsl(0 0 0 / 0.4), 0px 4px 6px -1px hsl(0 0 0 / 0.4);
+  --shadow-xl: 0px 8px 20px 0px hsl(0 0 0 / 0.5), 0px 8px 10px -1px hsl(0 0 0 / 0.4);
+  --shadow-2xl: 0px 12px 40px 0px hsl(0 0 0 / 0.8);
 }
 
 @layer base {
@@ -264,30 +264,20 @@
 
 /* HUD-style utilities - only visible in dark theme */
 .hud-noise {
-  display: none;
+  display: none; /* Surgical Precision: No noise texture */
 }
 
 .hud-vignette {
   display: none;
 }
 
+/* Noise texture disabled for Surgical Precision aesthetic */
 .dark .hud-noise {
-  display: block;
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  opacity: 0.0075; /* Attio-level cleanliness - reduced for professional aesthetics */
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  display: none; /* Suppressed - clinical surfaces are noiseless */
 }
 
 .dark .hud-vignette {
-  display: block;
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background: radial-gradient(ellipse at center, transparent 0%, transparent 50%, rgba(0,0,0,0.4) 100%);
+  display: none; /* Suppressed - no vignette in surgical mode */
 }
 
 /* Terminal-style card */
@@ -316,31 +306,31 @@
 
 /* Optimized/Synergy - Emerald for "actionable now" states */
 .status-optimized { color: #10B981; }
-.bg-status-optimized { background-color: rgba(16, 185, 129, 0.08); }
+.bg-status-optimized { background-color: rgba(16, 185, 129, 0.15); }
 .border-status-optimized { border-color: rgba(16, 185, 129, 0.3); }
 
 /* Conflict/Warning - Amber for timing conflicts, ratio imbalances */
 .status-conflict { color: #F59E0B; }
-.bg-status-conflict { background-color: rgba(245, 158, 11, 0.08); }
+.bg-status-conflict { background-color: rgba(245, 158, 11, 0.15); }
 .border-status-conflict { border-color: rgba(245, 158, 11, 0.3); }
 
 /* Critical/Blocking - Red for hard limits, dangerous interactions */
 .status-critical { color: #EF4444; }
-.bg-status-critical { background-color: rgba(239, 68, 68, 0.08); }
+.bg-status-critical { background-color: rgba(239, 68, 68, 0.15); }
 .border-status-critical { border-color: rgba(239, 68, 68, 0.3); }
 
 /* Info/Neutral - Cyan for standard data, logs, timestamps */
 .status-info { color: #06B6D4; }
-.bg-status-info { background-color: rgba(6, 182, 212, 0.08); }
+.bg-status-info { background-color: rgba(6, 182, 212, 0.15); }
 .border-status-info { border-color: rgba(6, 182, 212, 0.3); }
 
 /* Legacy aliases for backwards compatibility */
 .status-safe { color: #10B981; }
 .status-warning { color: #F59E0B; }
 .status-danger { color: #EF4444; }
-.bg-status-safe { background-color: rgba(16, 185, 129, 0.08); }
-.bg-status-warning { background-color: rgba(245, 158, 11, 0.08); }
-.bg-status-danger { background-color: rgba(239, 68, 68, 0.08); }
+.bg-status-safe { background-color: rgba(16, 185, 129, 0.15); }
+.bg-status-warning { background-color: rgba(245, 158, 11, 0.15); }
+.bg-status-danger { background-color: rgba(239, 68, 68, 0.15); }
 .border-status-safe { border-color: rgba(16, 185, 129, 0.3); }
 .border-status-warning { border-color: rgba(245, 158, 11, 0.3); }
 .border-status-danger { border-color: rgba(239, 68, 68, 0.3); }
@@ -474,140 +464,256 @@
 }
 
 /* ============================================================================
- * Scientific Laboratory Design System v1.1
+ * Surgical Precision Design System v2.0
  * ============================================================================
  * 
  * Visual Foundation:
- * - Surface: #0A0C10 (Deep Space Black)
- * - Micro-grain at 0.0075 opacity for anti-banding
- * - Environmental lighting with emerald/cyan glows
- * - 32px grid overlay for mathematical structure
+ * - Canvas: #000000 (True Black) for maximum contrast
+ * - Cards: #0A0A0A (Elevated Black) with 1px white borders
+ * - No blur, no noise - perfect clinical surfaces
+ * - Single soft white overhead glow for depth
  * 
- * Glass Card System ("Thin-Film" borders):
- * - Background: rgba(255, 255, 255, 0.02) + backdrop-blur-md
- * - Border: 1px solid rgba(255, 255, 255, 0.08)
- * - Top-edge highlight for etched glass effect
- * - Corner radius: 16px (rounded-2xl)
+ * Typography Luminance Scale:
+ * - Primary Data: #FFFFFF (100% White) - dosages, percentages, timers
+ * - Headings: #F2F2F2 (95% White) - bold, sharp headers
+ * - Labels: #737373 (45% Gray) - muted background text
  * ============================================================================ */
 
-/* Environmental Lighting - Emerald primary, Cyan accent */
+/* Environmental Lighting - Disabled for Surgical Precision */
 .dark .lab-environment {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background: 
-    /* Primary emerald glow - top center */
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(16, 185, 129, 0.02) 0%, transparent 50%),
-    /* Secondary cyan accent - bottom left */
-    radial-gradient(ellipse 60% 40% at 10% 100%, rgba(0, 212, 255, 0.01) 0%, transparent 40%);
+  display: none; /* Removed overhead glow for cleaner aesthetic */
 }
 
-/* 32px Grid Overlay - Mathematical structure */
+/* Grid Overlay - Ultra-subtle dot pattern with blur */
 .dark .lab-grid {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background-image: 
-    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-  background-size: 32px 32px;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+  filter: blur(0.5px);
+  opacity: 0.5;
 }
 
-/* Glass Card System - "Thin-Film" Borders */
+/* Card System - "The Float"
+ * Elevated black cards floating over true black canvas
+ * Sharp 1px high-luminance borders, no blur
+ */
 .dark .glass-card {
   position: relative;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: #0A0A0A; /* Elevated Black - no gradients, no blur */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* High-luminance stroke */
+  border-radius: 12px;
+  /* Drop shadow to push card off the true black background */
+  box-shadow: 
+    0 4px 20px -4px rgba(0, 0, 0, 0.8),
+    0 8px 40px -8px rgba(0, 0, 0, 0.6);
 }
 
-/* Top-edge highlight - Light catching effect */
+/* Hover state - subtle border brightening */
+.dark .glass-card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Active/Focus state - Emerald accent border */
+.dark .glass-card:focus-within,
+.dark .glass-card.active {
+  border-color: #10B981;
+  box-shadow: 
+    0 4px 20px -4px rgba(0, 0, 0, 0.8),
+    0 0 0 1px rgba(16, 185, 129, 0.2);
+}
+
+/* Top-edge highlight - Subtle white catch, not emerald */
 .dark .glass-card::before {
   content: '';
   position: absolute;
-  inset-inline: 0;
+  inset-inline: 1px;
   top: 0;
   height: 1px;
   background: linear-gradient(
     to right,
     transparent 0%,
-    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.06) 50%,
     transparent 100%
   );
-  border-radius: 16px 16px 0 0;
+  border-radius: 12px 12px 0 0;
   pointer-events: none;
 }
 
-/* Bento Card base styles (alias for glass-card) */
+/* Bento Card - "The Float" (matches glass-card) */
 .dark .bento-card {
   position: relative;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: #0A0A0A;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: 
+    0 4px 20px -4px rgba(0, 0, 0, 0.8),
+    0 8px 40px -8px rgba(0, 0, 0, 0.6);
+}
+
+.dark .bento-card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .dark .bento-card::before {
   content: '';
   position: absolute;
-  inset-inline: 0;
+  inset-inline: 1px;
   top: 0;
   height: 1px;
   background: linear-gradient(
     to right,
     transparent 0%,
-    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.06) 50%,
     transparent 100%
   );
-  border-radius: 16px 16px 0 0;
+  border-radius: 12px 12px 0 0;
   pointer-events: none;
 }
 
+/* Bento card glow - Minimal emerald accent for active states */
 .dark .bento-card-glow {
   position: absolute;
   inset: 0;
   background: radial-gradient(
     ellipse at top center,
-    rgba(16, 185, 129, 0.02) 0%,
-    transparent 60%
+    rgba(16, 185, 129, 0.03) 0%,
+    transparent 40%
   );
   pointer-events: none;
   border-radius: inherit;
 }
 
-/* Top edge highlight for depth (standalone utility) */
+/* Top edge highlight - subtle white (standalone utility) */
 .dark .bento-card-highlight {
   position: absolute;
-  inset-inline: 0;
+  inset-inline: 1px;
   top: 0;
   height: 1px;
   background: linear-gradient(
     to right,
     transparent 0%,
-    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.06) 50%,
     transparent 100%
   );
   pointer-events: none;
 }
 
-/* Landing page specific card variants */
+/* Landing page card variants - Surgical Precision */
 .dark .landing-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 1rem;
+  background: #0A0A0A;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.6);
 }
 
 .dark .landing-card-elevated {
-  background: rgba(255, 255, 255, 0.03);
+  background: #0A0A0A;
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 
-    0 4px 24px -4px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+    0 8px 30px -4px rgba(0, 0, 0, 0.8),
+    0 16px 60px -8px rgba(0, 0, 0, 0.6);
+}
+
+/* ============================================================================
+ * Unified Card System - Surgical Precision
+ * ============================================================================
+ * All card variants use the same "Float" aesthetic:
+ * - Elevated black (#0A0A0A) background
+ * - 1px high-luminance white border
+ * - Drop shadows for depth
+ * - No blur, no gradients
+ */
+
+/* Standard card - for lists, dialogs, tooltips */
+.dark .card-base {
+  background: #0A0A0A;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: 
+    0 4px 20px -4px rgba(0, 0, 0, 0.8),
+    0 8px 40px -8px rgba(0, 0, 0, 0.6);
+}
+
+/* Subtle card - for nested items, rows within cards */
+.dark .card-subtle {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.dark .card-subtle:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Interactive card - clickable items with hover states */
+.dark .card-interactive {
+  background: #0A0A0A;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  transition: all 150ms ease;
+}
+
+.dark .card-interactive:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.6);
+}
+
+/* Active/Selected card state - Emerald accent */
+.dark .card-active {
+  border-color: #10B981 !important;
+  box-shadow: 
+    0 4px 20px -4px rgba(0, 0, 0, 0.8),
+    0 0 0 1px rgba(16, 185, 129, 0.2);
+}
+
+/* Dashed card - for empty states, CTAs */
+.dark .card-dashed {
+  background: transparent;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+}
+
+.dark .card-dashed:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* ============================================================================
+ * Typography Luminance Scale - Surgical Precision
+ * ============================================================================
+ * Extreme contrast scaling for visual hierarchy:
+ * - Primary Data: 100% White - dosages, percentages, timers
+ * - Headings: 95% White - bold, sharp headers  
+ * - Labels: 45% Gray - muted background text
+ */
+
+/* Primary Data - Maximum salience for critical values */
+.dark .text-data {
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+/* Headings - Sharp, bold headers */
+.dark .text-heading {
+  color: #F2F2F2;
+  font-weight: 600;
+}
+
+/* Labels - Muted background instructions */
+.dark .text-label {
+  color: #737373;
+  font-weight: 400;
+}
+
+/* Mono data values - for dosages like 5000IU */
+.dark .text-mono-data {
+  font-family: var(--font-mono);
+  color: #FFFFFF;
+  font-weight: 700;
 }
 
 /* Softer breathing glow for laboratory aesthetic */
@@ -660,17 +766,17 @@
   min-height: 200px;
 }
 
-/* 12-Column Bento Grid Layout */
+/* 12-Column Bento Grid Layout - Surgical Precision */
 .bento-grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  gap: 2rem; /* gap-8 */
+  gap: 3rem; /* gap-12 - Extreme breathability */
 }
 
 @media (max-width: 1023px) {
   .bento-grid {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 2rem; /* gap-8 on mobile */
   }
 }
 

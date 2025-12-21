@@ -218,7 +218,7 @@ export function MechanisticFeed({
       {/* Terminal feed */}
       <div
         ref={containerRef}
-        className="h-[140px] overflow-hidden rounded-lg bg-black/30 p-3 font-mono text-[10px] leading-relaxed hover:overflow-y-auto"
+        className="h-[140px] overflow-hidden rounded-xl border border-white/10 bg-[#0A0A0A] p-3 font-mono text-[10px] leading-relaxed hover:overflow-y-auto"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
         role="log"

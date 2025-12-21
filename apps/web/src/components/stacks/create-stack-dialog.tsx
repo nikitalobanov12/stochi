@@ -169,8 +169,8 @@ export function CreateStackDialog({
                     onClick={() => handleTemplateSelect(template.key)}
                     disabled={isPending}
                     className={cn(
-                      "border-border/40 bg-card/30 group rounded-lg border p-3 text-left transition-all",
-                      "hover:border-border hover:bg-card/50",
+                      "border-white/5 bg-white/[0.02] group rounded-lg border p-3 text-left transition-all",
+                      "hover:border-white/10 hover:bg-white/[0.04]",
                       "disabled:cursor-not-allowed disabled:opacity-50",
                       isSelected && isPending && "border-primary bg-primary/5",
                     )}

@@ -77,7 +77,7 @@ export function CitationTicker() {
   if (!current) return null;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.02] backdrop-blur-sm">
+    <div className="overflow-hidden rounded-xl border border-white/10 bg-[#0A0A0A]">
       <div className="flex items-center gap-3 px-4 py-3">
         {/* Pulsing indicator */}
         <div className="relative flex h-2 w-2 shrink-0">
@@ -130,7 +130,7 @@ export function CitationTicker() {
  */
 export function CitationMarquee() {
   return (
-    <div className="relative overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.02] py-3 backdrop-blur-sm">
+    <div className="relative overflow-hidden rounded-xl border border-white/10 bg-[#0A0A0A] py-3">
       {/* Gradient masks */}
       <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-[#0A0C10] to-transparent" />
       <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-[#0A0C10] to-transparent" />

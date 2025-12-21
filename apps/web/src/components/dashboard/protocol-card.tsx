@@ -41,16 +41,16 @@ export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
   return (
     <div
       className={cn(
-        "flex items-stretch rounded-2xl border transition-colors",
+        "flex items-stretch rounded-xl border transition-colors",
         isComplete
-          ? "border-status-optimized bg-status-optimized"
-          : "border-border/40 bg-card/30",
+          ? "border-emerald-500/50 bg-emerald-500/5"
+          : "border-white/10 bg-[#0A0A0A]",
       )}
     >
       {/* Zone A: The Briefing (Navigate to detail) */}
       <Link
         href={`/dashboard/stacks/${stackId}`}
-        className="hover:bg-card/50 flex flex-1 items-center gap-3 px-4 py-3 transition-colors"
+        className="flex flex-1 items-center gap-3 px-4 py-3 transition-colors hover:bg-white/[0.02]"
       >
         {/* Status Indicator */}
         <div className="relative flex h-5 w-5 shrink-0 items-center justify-center">
@@ -108,7 +108,7 @@ export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
       </Link>
 
       {/* Vertical Divider (explicit on mobile) */}
-      <div className="bg-border/40 w-px" />
+      <div className="w-px bg-white/10" />
 
       {/* Zone B: The Trigger (Execute) */}
       <div className="flex items-center px-2">

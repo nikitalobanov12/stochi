@@ -145,7 +145,7 @@ function BreakdownPanel({
   const visibleItems = items.filter((item) => !dismissedIds.has(item.id));
 
   return (
-    <div className="mt-2 space-y-1.5 rounded-xl border border-white/10 bg-black/20 p-3">
+    <div className="mt-2 space-y-1.5 rounded-xl border border-white/10 bg-[#0A0A0A] p-3">
       <div className="mb-2 flex items-center justify-between">
         <span className="text-[10px] font-medium uppercase tracking-wider text-white/50">
           Score Factors
@@ -295,7 +295,7 @@ export function LandingBioScore() {
       {/* Breakdown Toggle */}
       <button
         onClick={() => setShowBreakdown(!showBreakdown)}
-        className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3 text-left transition-colors hover:bg-white/[0.04]"
+        className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-[#0A0A0A] px-4 py-3 text-left transition-colors hover:bg-white/[0.04]"
         aria-expanded={showBreakdown}
         aria-controls="bioscore-breakdown"
       >

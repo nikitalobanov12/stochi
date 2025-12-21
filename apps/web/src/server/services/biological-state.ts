@@ -792,3 +792,83 @@ export async function checkTimingSafety(
     (zone) => zone.targetSupplementId === supplementId,
   ) ?? null;
 }
+
+// ============================================================================
+// Safety Headroom Types & Functions
+// ============================================================================
+
+export type SafetyHeadroom = {
+  /** Safety category (e.g., "zinc", "magnesium") */
+  category: string;
+  /** Human-readable label */
+  label: string;
+  /** Current daily elemental total */
+  current: number;
+  /** Upper limit for this category */
+  limit: number;
+  /** Unit for display */
+  unit: string;
+  /** Percentage of limit used (0-100+) */
+  percentUsed: number;
+  /** Whether this is a hard limit (BLOCK) or soft limit (WARNING) */
+  isHardLimit: boolean;
+};
+
+// Import safety limits dynamically to avoid circular dependency
+import { SAFETY_LIMITS, type SafetyCategory as SafetyCategoryType } from "~/server/data/safety-limits";
+import { getElementalTotal } from "~/server/services/safety";
+
+/**
+ * Get safety headroom for all relevant categories.
+ * Shows how close the user is to daily limits for tracked minerals/vitamins.
+ */
+export async function getSafetyHeadroom(userId: string): Promise<SafetyHeadroom[]> {
+  // Categories to track (most relevant for daily monitoring)
+  const categoriesToCheck: SafetyCategoryType[] = [
+    "magnesium",
+    "zinc",
+    "iron",
+    "copper",
+    "calcium",
+    "vitamin-d3",
+    "vitamin-c",
+    "selenium",
+  ];
+
+  const headroom: SafetyHeadroom[] = [];
+
+  for (const category of categoriesToCheck) {
+    const limit = SAFETY_LIMITS[category];
+    if (!limit) continue;
+
+    // Get current daily total for this category
+    const current = await getElementalTotal(
+      userId,
+      category,
+      limit.unit as "mg" | "mcg" | "IU",
+      limit.period ?? "daily",
+    );
+
+    // Only include categories where user has logged something
+    if (current === 0) continue;
+
+    // Format label nicely
+    const label = category
+      .split("-")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+
+    headroom.push({
+      category,
+      label,
+      current: Math.round(current * 10) / 10,
+      limit: limit.limit,
+      unit: limit.unit,
+      percentUsed: Math.round((current / limit.limit) * 100),
+      isHardLimit: limit.isHardLimit,
+    });
+  }
+
+  // Sort by percentage used (highest first)
+  return headroom.sort((a, b) => b.percentUsed - a.percentUsed);
+}

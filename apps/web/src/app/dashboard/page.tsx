@@ -18,6 +18,7 @@ import { getStackCompletionStatus } from "~/server/services/analytics";
 import {
   getBiologicalState,
   getTimelineData,
+  getSafetyHeadroom,
 } from "~/server/services/biological-state";
 
 // New V2 Components
@@ -28,8 +29,12 @@ import { DashboardCommandBar } from "./dashboard-command-bar";
 
 // Biological State Engine Components
 import { BiologicalTimeline, ActiveCompoundsList } from "~/components/dashboard/biological-timeline";
-import { BioScore } from "~/components/dashboard/bio-score";
 import { OptimizationHUD } from "~/components/dashboard/optimization-hud";
+
+// Additional Components
+import { BioScore } from "~/components/dashboard/bio-score";
+import { MicroKPIRow } from "~/components/dashboard/micro-kpi-row";
+import { LiveConsoleFeed } from "~/components/dashboard/live-console-feed";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -38,7 +43,7 @@ export default async function DashboardPage() {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
-  const [userStacks, todayLogs, allSupplements, stackCompletion, streak, biologicalState, timelineData] =
+  const [userStacks, todayLogs, allSupplements, stackCompletion, streak, biologicalState, timelineData, safetyHeadroom] =
     await Promise.all([
       db.query.stack.findMany({
         where: eq(stack.userId, session.user.id),
@@ -75,6 +80,7 @@ export default async function DashboardPage() {
       calculateStreak(session.user.id),
       getBiologicalState(session.user.id),
       getTimelineData(session.user.id),
+      getSafetyHeadroom(session.user.id),
     ]);
 
   // Get interactions and ratio warnings for today's supplements
@@ -133,7 +139,7 @@ export default async function DashboardPage() {
     <>
       <WelcomeFlow open={needsOnboarding} supplements={allSupplements} />
 
-      <div className="space-y-8">
+      <div className="space-y-6">
         {/* ================================================================
          * Header Row (Full Width): System Status Bar
          * Shows: Streak, Last Log, Bio-Score
@@ -150,27 +156,39 @@ export default async function DashboardPage() {
         <DashboardCommandBar supplements={allSupplements} />
 
         {/* ================================================================
+         * Bio-Score + Micro-KPIs Row
+         * ================================================================ */}
+        {todayLogs.length > 0 && (
+          <div className="space-y-4">
+            {/* Bio-Score - Original compact style */}
+            <BioScore
+              score={biologicalState.bioScore}
+              exclusionZones={biologicalState.exclusionZones}
+              optimizations={biologicalState.optimizations}
+            />
+            
+            {/* Micro-KPI Row - Horizontal scrollable on mobile */}
+            <MicroKPIRow
+              ratioWarnings={ratioWarnings}
+              safetyHeadroom={safetyHeadroom}
+              exclusionZones={biologicalState.exclusionZones}
+            />
+          </div>
+        )}
+
+        {/* ================================================================
          * Primary Row: 12-Column Bento Grid Layout
          * - Biological Timeline (8 cols): 24-hour pharmacokinetic visualization
-         * - Optimization HUD (4 cols): Actionable triggers and next optimal steps
+         * - Right Column (4 cols): Optimization HUD + Active Compounds + Console
          * ================================================================ */}
         {todayLogs.length > 0 && timelineData.length > 0 && (
           <div className="bento-grid">
-            {/* Left: Timeline + Bio-Score (8 columns on desktop) */}
-            <div className="space-y-6 lg:col-span-8">
-              {/* Bio-Score Header Row */}
-              <div className="flex items-center justify-between">
-                <h2 className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
-                  Biological Timeline
-                </h2>
-                <div className="w-32">
-                  <BioScore
-                    score={biologicalState.bioScore}
-                    exclusionZones={biologicalState.exclusionZones}
-                    optimizations={biologicalState.optimizations}
-                  />
-                </div>
-              </div>
+            {/* Left: Timeline (8 columns on desktop) */}
+            <div className="space-y-4 lg:col-span-8">
+              {/* Section Label */}
+              <h2 className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
+                Biological Timeline
+              </h2>
 
               {/* Timeline Chart - Glass Card */}
               <div className="glass-card p-4">
@@ -180,9 +198,23 @@ export default async function DashboardPage() {
                   currentTime={new Date().toISOString()}
                 />
               </div>
+            </div>
 
-              {/* Active Compounds List - Glass Card */}
-              {biologicalState.activeCompounds.length > 0 && (
+            {/* Right Column: HUD + Compounds + Console (4 columns on desktop) */}
+            <div className="space-y-4 lg:col-span-4 lg:sticky lg:top-20 lg:self-start">
+              {/* Optimization HUD */}
+              <div>
+                <div className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
+                  Optimization HUD
+                </div>
+                <OptimizationHUD
+                  exclusionZones={biologicalState.exclusionZones}
+                  optimizations={biologicalState.optimizations}
+                />
+              </div>
+
+              {/* Active Compounds List */}
+              {biologicalState.activeCompounds.filter(c => c.phase !== "cleared").length > 0 && (
                 <div className="glass-card p-4">
                   <div className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
                     Active Compounds
@@ -194,16 +226,12 @@ export default async function DashboardPage() {
                   />
                 </div>
               )}
-            </div>
 
-            {/* Right: Optimization HUD (4 columns on desktop) */}
-            <div className="lg:col-span-4 lg:sticky lg:top-20 lg:self-start">
-              <div className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
-                Optimization HUD
-              </div>
-              <OptimizationHUD
-                exclusionZones={biologicalState.exclusionZones}
-                optimizations={biologicalState.optimizations}
+              {/* Mechanistic Console Feed */}
+              <LiveConsoleFeed
+                interactions={interactions}
+                ratioWarnings={ratioWarnings}
+                timingWarnings={timingWarnings}
               />
             </div>
           </div>
@@ -219,17 +247,18 @@ export default async function DashboardPage() {
         )}
 
         {/* ================================================================
-         * Secondary Row: Active Protocols (8 cols on desktop)
-         * Multi-select batch logging cards
+         * Secondary Row: Protocols Section (Full Width)
          * ================================================================ */}
         {stackCompletion.length > 0 && (
-          <MissionControl
-            stacks={stackCompletion}
-            onLogStack={async (stackId) => {
-              "use server";
-              await logStack(stackId);
-            }}
-          />
+          <div>
+            <MissionControl
+              stacks={stackCompletion}
+              onLogStack={async (stackId) => {
+                "use server";
+                await logStack(stackId);
+              }}
+            />
+          </div>
         )}
 
         {/* Today's Activity Log - Compact */}
@@ -255,7 +284,7 @@ export default async function DashboardPage() {
           </div>
         )}
 
-        {/* Empty State */}
+        {/* Empty State - No logs today but has stacks */}
         {todayLogs.length === 0 && userStacks.length > 0 && (
           <div className="glass-card border-dashed py-12 text-center">
             <Clock className="text-muted-foreground/30 mx-auto mb-3 h-6 w-6" />
@@ -268,8 +297,8 @@ export default async function DashboardPage() {
           </div>
         )}
 
-        {/* No Stacks State */}
-        {userStacks.length === 0 && !needsOnboarding && (
+        {/* Empty State - No stacks configured (not during onboarding) */}
+        {userStacks.length === 0 && stackCompletion.length === 0 && !needsOnboarding && (
           <div className="glass-card border-dashed py-12 text-center">
             <Layers className="text-muted-foreground/30 mx-auto mb-3 h-6 w-6" />
             <p className="text-muted-foreground font-mono text-xs">

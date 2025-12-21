@@ -30,6 +30,17 @@ type BiologicalTimelineProps = {
 };
 
 // ============================================================================
+// Constants - Surgical Precision v2.0
+// ============================================================================
+
+/** Chart stroke width: 1px for "ghost stroke" aesthetic */
+const CHART_STROKE_WIDTH = 1;
+/** Highlighted stroke width when hovering */
+const CHART_STROKE_WIDTH_HIGHLIGHTED = 1.5;
+/** Fill opacity: 0 - strokes only, no area fills */
+const CHART_FILL_OPACITY_MAX = 0;
+
+// ============================================================================
 // Color Palette for Compounds
 // ============================================================================
 
@@ -92,8 +103,8 @@ function CustomTooltip({
   const sortedPayload = [...payload].sort((a, b) => b.value - a.value);
 
   return (
-    <div className="border-border bg-card rounded-md border px-3 py-2 shadow-lg">
-      <div className="text-muted-foreground mb-1 font-mono text-xs">
+    <div className="rounded-lg border border-white/10 bg-[#0A0A0A] px-3 py-2 shadow-lg">
+      <div className="mb-1 font-mono text-xs text-white/40">
         {timestamp ? formatTime(timestamp) : "--:--"}
       </div>
       <div className="space-y-1">
@@ -113,11 +124,11 @@ function CustomTooltip({
                   className="h-2 w-2 rounded-full"
                   style={{ backgroundColor: entry.color }}
                 />
-                <span className="text-foreground font-mono text-xs">
+                <span className="font-mono text-xs text-white/90">
                   {name}
                 </span>
               </div>
-              <span className="text-foreground font-mono text-xs tabular-nums">
+              <span className="font-mono text-xs tabular-nums text-white">
                 {Math.round(entry.value)}%
               </span>
             </div>
@@ -138,22 +149,37 @@ type MemoizedAreaProps = {
   allSupplementIds: string[];
   name: string;
   isHighlighted: boolean | null; // null = no hover, true = this is hovered, false = another is hovered
+  phase: "absorbing" | "peak" | "eliminating" | "cleared";
 };
 
-const MemoizedArea = memo(function MemoizedArea({ id, index, allSupplementIds, name, isHighlighted }: MemoizedAreaProps) {
+const MemoizedArea = memo(function MemoizedArea({ 
+  id, 
+  index, 
+  allSupplementIds, 
+  name, 
+  isHighlighted,
+  phase,
+}: MemoizedAreaProps) {
   // Use consistent color based on original index in allSupplementIds
   const colorIndex = allSupplementIds.indexOf(id);
   // Dim other curves when one is highlighted
   const opacity = isHighlighted === null ? 1 : isHighlighted ? 1 : 0.15;
   const strokeOpacity = isHighlighted === null ? 1 : isHighlighted ? 1 : 0.3;
+  
+  // Surgical Precision v2.0: Absorption phase = solid, Elimination phase = 2px dashed
+  // Post-peak phases (eliminating, cleared) use dashed strokes
+  const isEliminating = phase === "eliminating" || phase === "cleared";
+  const strokeDasharray = isEliminating ? "2 2" : "0";
+  
   return (
     <Area
       type="monotone"
       dataKey={`concentrations.${id}`}
       name={name}
       stroke={getCompoundColor(colorIndex >= 0 ? colorIndex : index)}
-      strokeWidth={isHighlighted ? 3 : 2}
+      strokeWidth={isHighlighted ? CHART_STROKE_WIDTH_HIGHLIGHTED : CHART_STROKE_WIDTH}
       strokeOpacity={strokeOpacity}
+      strokeDasharray={strokeDasharray}
       fill={`url(#gradient-${id})`}
       fillOpacity={opacity}
       isAnimationActive={false}
@@ -295,7 +321,7 @@ export function BiologicalTimeline({
                     <stop
                       offset="5%"
                       stopColor={getCompoundColor(colorIndex)}
-                      stopOpacity={0.3}
+                      stopOpacity={CHART_FILL_OPACITY_MAX}
                     />
                     <stop
                       offset="95%"
@@ -342,7 +368,7 @@ export function BiologicalTimeline({
                 x={currentMinutesFromStart}
                 stroke="var(--chart-1)"
                 strokeDasharray="3 3"
-                strokeWidth={1}
+                strokeWidth={CHART_STROKE_WIDTH}
                 label={{
                   value: "NOW",
                   position: "top",
@@ -358,7 +384,7 @@ export function BiologicalTimeline({
               y={100}
               stroke="var(--border)"
               strokeDasharray="2 2"
-              strokeWidth={1}
+              strokeWidth={CHART_STROKE_WIDTH}
             />
 
             {/* Concentration areas - memoized for performance */}
@@ -366,6 +392,9 @@ export function BiologicalTimeline({
               const colorIndex = allSupplementIds.indexOf(id);
               // Determine highlight state: null if nothing hovered, true if this is hovered, false if another is hovered
               const isHighlighted = hoveredCompoundId === null ? null : hoveredCompoundId === id;
+              // Get compound phase for stroke style (absorption=solid, elimination=dashed)
+              const compound = activeCompounds.find((c) => c.supplementId === id);
+              const phase = compound?.phase ?? "cleared";
               return (
                 <MemoizedArea
                   key={id}
@@ -374,6 +403,7 @@ export function BiologicalTimeline({
                   allSupplementIds={allSupplementIds}
                   name={supplementNames.get(id) ?? "Unknown"}
                   isHighlighted={isHighlighted}
+                  phase={phase}
                 />
               );
             })}
@@ -468,22 +498,23 @@ type ActiveCompoundsListProps = {
 
 // Human-readable phase labels with explanations
 // Typography: Phase labels use font-mono for pharmacokinetic precision
+// Clinical Precision v2.0: Use [ABS] and [ELIM] tags per manifesto
 const PHASE_CONFIG = {
   absorbing: {
     label: "Absorbing",
-    shortLabel: "ABS",
+    shortLabel: "[ABS]",
     description: "Entering bloodstream",
     className: "status-info", // Cyan - neutral phase indicator
   },
   peak: {
     label: "Peak",
-    shortLabel: "PEAK",
+    shortLabel: "[PEAK]",
     description: "Maximum concentration",
     className: "status-optimized", // Emerald - optimal state
   },
   eliminating: {
-    label: "Clearing",
-    shortLabel: "CLR",
+    label: "Eliminating",
+    shortLabel: "[ELIM]",
     description: "Being metabolized",
     className: "text-muted-foreground",
   },
@@ -529,33 +560,32 @@ function CompoundRow({
   const phaseConfig = PHASE_CONFIG[compound.phase];
 
   return (
-    <div className="flex items-center justify-between gap-2">
-      <div className="flex min-w-0 flex-1 items-center gap-2">
+    <div className="flex items-center gap-3 rounded-lg border border-white/[0.05] bg-white/[0.02] px-3 py-2">
+      {/* Vertical saturation bar - Surgical Precision v2.0 */}
+      <div className="relative h-10 w-1.5 overflow-hidden rounded-full bg-white/[0.05]">
         <div
-          className="h-2 w-2 shrink-0 rounded-full"
-          style={{ backgroundColor: color }}
+          className="absolute bottom-0 w-full transition-all duration-300"
+          style={{
+            height: `${Math.min(compound.concentrationPercent, 100)}%`,
+            backgroundColor: color,
+          }}
         />
-        <span className="text-foreground truncate font-mono text-xs">
-          {compound.name}
-        </span>
-        <span 
-          className={`shrink-0 font-mono text-[10px] ${phaseConfig.className}`}
-          title={phaseConfig.description}
-        >
-          {phaseConfig.label}
-        </span>
       </div>
-      <div className="flex shrink-0 items-center gap-2">
-        <div className="bg-muted h-1.5 w-16 overflow-hidden rounded-full">
-          <div
-            className="h-full transition-all duration-300"
-            style={{
-              width: `${Math.min(compound.concentrationPercent, 100)}%`,
-              backgroundColor: color,
-            }}
-          />
+      
+      {/* Compound info */}
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <div className="flex items-center gap-2">
+          <span className="truncate font-mono text-xs text-white/90">
+            {compound.name}
+          </span>
+          <span 
+            className={`shrink-0 font-mono text-[10px] ${phaseConfig.className}`}
+            title={phaseConfig.description}
+          >
+            {phaseConfig.shortLabel}
+          </span>
         </div>
-        <span className="text-muted-foreground w-10 text-right font-mono text-[10px] tabular-nums">
+        <span className="font-mono text-[10px] tabular-nums text-white/40">
           {Math.round(compound.concentrationPercent)}%
         </span>
       </div>

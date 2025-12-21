@@ -20,8 +20,8 @@ export function HeroInteractionAlert() {
       role="img"
       aria-label="Live interaction analysis showing a critical Zinc/Copper ratio warning with actionable recommendations"
     >
-      {/* Main card - Attio translucent style */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] shadow-2xl backdrop-blur-xl">
+      {/* Main card - Surgical Precision style */}
+      <div className="relative overflow-hidden rounded-xl border border-white/10 bg-[#0A0A0A] shadow-2xl">
         {/* Top edge highlight */}
         <div
           className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
@@ -39,7 +39,7 @@ export function HeroInteractionAlert() {
         />
 
         {/* Top bar with "LIVE ANALYSIS" indicator */}
-        <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-2.5 sm:px-5">
+        <div className="flex items-center justify-between border-b border-white/10 px-4 py-2.5 sm:px-5">
           <div className="flex items-center gap-2.5">
             <div className="relative flex h-2 w-2 shrink-0">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-60" />
@@ -108,7 +108,7 @@ export function HeroInteractionAlert() {
               </div>
 
               {/* The consequence */}
-              <div className="rounded-lg border border-white/[0.06] bg-black/20 p-3">
+              <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
                 <p className="text-xs leading-relaxed text-white/50">
                   <span className="font-medium text-white/80">Risk:</span>{" "}
                   Copper depletion appears after 2-4 months — fatigue, anemia,
@@ -146,7 +146,7 @@ export function HeroInteractionAlert() {
           </div>
 
           {/* Footer stats bar */}
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 border-t border-white/[0.06] pt-4 text-xs text-white/30">
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 border-t border-white/10 pt-4 text-xs text-white/30">
             <span>
               <span className="font-mono text-emerald-400">89,412</span> pairs
             </span>

@@ -178,11 +178,11 @@ function RiskItemCard({ risk, isExpanded, onToggle }: RiskItemCardProps) {
 
       {/* Expanded details */}
       {isExpanded && (
-        <div className="animate-in fade-in slide-in-from-top-1 duration-200 border-t border-white/[0.06] px-2.5 pb-2.5 pt-2">
+        <div className="animate-in fade-in slide-in-from-top-1 duration-200 border-t border-white/10 px-2.5 pb-2.5 pt-2">
           <p className="mb-2 text-[11px] text-white/50">{risk.description}</p>
 
           {/* Detection & Recommendation */}
-          <div className="space-y-1 rounded bg-black/30 p-2 font-mono text-[10px]">
+          <div className="space-y-1 rounded-lg border border-white/10 bg-white/[0.02] p-2 font-mono text-[10px]">
             <div className="flex items-start gap-1.5">
               <span className={cn("shrink-0", styles.text)}>⚠</span>
               <span className="text-white/80">{risk.detection}</span>

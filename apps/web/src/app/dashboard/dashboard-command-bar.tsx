@@ -133,21 +133,21 @@ export function DashboardCommandBar({ supplements }: DashboardCommandBarProps) {
         <button
           type="button"
           onClick={() => setIsExpanded(true)}
-          className="group border-primary/20 bg-card/50 hover:border-primary/40 relative w-full rounded-lg border px-4 py-3 text-left transition-all hover:shadow-[0_0_15px_rgba(16,185,129,0.1)]"
+          className="group relative w-full rounded-xl border border-emerald-500/20 bg-[#0A0A0A] px-4 py-3 text-left transition-all hover:border-emerald-500/40 hover:shadow-[0_0_20px_rgba(16,185,129,0.1)]"
         >
           {/* Breathing border animation */}
-          <div className="border-primary/10 absolute inset-0 animate-pulse rounded-lg border" />
+          <div className="absolute inset-0 animate-pulse rounded-xl border border-emerald-500/10" />
 
           <div className="flex items-center gap-3">
-            <Search className="text-primary/60 h-4 w-4" />
-            <span className="text-muted-foreground font-mono text-sm transition-opacity">
+            <Search className="h-4 w-4 text-emerald-500/60" />
+            <span className="font-mono text-sm text-white/40 transition-opacity">
               {PROMPTS[placeholderIndex]}
             </span>
           </div>
 
           {/* Keyboard hint */}
-          <div className="absolute top-1/2 right-4 -translate-y-1/2">
-            <kbd className="border-border/40 bg-muted/50 text-muted-foreground hidden rounded border px-1.5 py-0.5 font-mono text-[10px] sm:inline-block">
+          <div className="absolute right-4 top-1/2 -translate-y-1/2">
+            <kbd className="hidden rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-white/40 sm:inline-block">
               /
             </kbd>
           </div>
@@ -168,14 +168,14 @@ export function DashboardCommandBar({ supplements }: DashboardCommandBarProps) {
   // Expanded command bar view
   return (
     <>
-      <div className="border-primary/30 bg-card/50 relative rounded-lg border p-3 shadow-[0_0_20px_rgba(16,185,129,0.15)]">
+      <div className="relative rounded-xl border border-emerald-500/30 bg-[#0A0A0A] p-3 shadow-[0_0_30px_rgba(16,185,129,0.1)]">
         {/* Close button */}
         <button
           type="button"
           onClick={() => setIsExpanded(false)}
-          className="text-muted-foreground hover:bg-muted hover:text-foreground absolute top-2 right-2 rounded p-1"
+          className="absolute right-2 top-2 rounded p-1 text-white/40 hover:bg-white/5 hover:text-white/60"
         >
-          <kbd className="border-border/40 bg-muted/50 rounded border px-1 py-0.5 font-mono text-[10px]">
+          <kbd className="rounded border border-white/10 bg-white/5 px-1 py-0.5 font-mono text-[10px]">
             ESC
           </kbd>
         </button>

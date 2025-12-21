@@ -28,19 +28,19 @@ import { RiskCardCompact } from "~/components/landing/risk-card-compact";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
-    transition: { duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] as const }
-  }
+    transition: { duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] as const },
+  },
 };
 
 const fadeIn = {
   hidden: { opacity: 0 },
-  visible: { 
+  visible: {
     opacity: 1,
-    transition: { duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] as const }
-  }
+    transition: { duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] as const },
+  },
 };
 
 const staggerContainer = {
@@ -49,18 +49,18 @@ const staggerContainer = {
     opacity: 1,
     transition: {
       staggerChildren: 0.15,
-      delayChildren: 0.1
-    }
-  }
+      delayChildren: 0.1,
+    },
+  },
 };
 
 const staggerItem = {
   hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] as const }
-  }
+    transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] as const },
+  },
 };
 
 // ============================================================================
@@ -162,7 +162,7 @@ export function LandingPage() {
         // Show sticky CTA when hero CTA is NOT visible
         setShowStickyCTA(!entry?.isIntersecting);
       },
-      { threshold: 0, rootMargin: "-50px 0px 0px 0px" }
+      { threshold: 0, rootMargin: "-50px 0px 0px 0px" },
     );
 
     if (heroCTARef.current) {
@@ -173,67 +173,16 @@ export function LandingPage() {
   }, []);
 
   return (
-    <main className="relative min-h-screen bg-[#0A0C10] font-sans text-white/90">
-      {/* Decorative overlays - hidden from screen readers */}
-      <div aria-hidden="true">
-        {/* Noise texture overlay */}
-        <div
-          className="pointer-events-none fixed inset-0 z-[1] opacity-[0.02]"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-          }}
-        />
-
-        {/* Vignette overlay */}
-        <div
-          className="pointer-events-none fixed inset-0 z-[2]"
-          style={{
-            background:
-              "radial-gradient(ellipse at center, transparent 0%, transparent 40%, rgba(0,0,0,0.5) 100%)",
-          }}
-        />
-
-        {/* HUD Grid with crosshairs */}
-        <div className="pointer-events-none fixed inset-0 z-[1]">
-          {/* Main grid */}
-          <div
-            className="absolute inset-0 opacity-[0.015]"
-            style={{
-              backgroundImage: `
-                linear-gradient(to right, rgba(16,185,129,0.4) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(16,185,129,0.4) 1px, transparent 1px)
-              `,
-              backgroundSize: "80px 80px",
-            }}
-          />
-          {/* Crosshairs at intersections */}
-          <svg className="absolute inset-0 h-full w-full opacity-[0.03]">
-            <defs>
-              <pattern
-                id="crosshairs"
-                width="80"
-                height="80"
-                patternUnits="userSpaceOnUse"
-              >
-                <path
-                  d="M40 38v4M38 40h4"
-                  stroke="rgb(16,185,129)"
-                  strokeWidth="1"
-                  fill="none"
-                />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#crosshairs)" />
-          </svg>
-        </div>
-      </div>
+      <main className="relative min-h-screen bg-black font-sans text-white/90">
+      {/* Grid overlay for background texture */}
+      <div className="lab-grid" aria-hidden="true" />
 
       {/* Content */}
       <div className="relative z-10">
         {/* Skip to main content link for keyboard users */}
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded focus:bg-emerald-500 focus:px-4 focus:py-2 focus:text-white focus:outline-none"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:rounded focus:bg-emerald-500 focus:px-4 focus:py-2 focus:text-white focus:outline-none"
         >
           Skip to main content
         </a>
@@ -246,7 +195,7 @@ export function LandingPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.2 }}
-              className="fixed right-4 top-4 z-50"
+              className="fixed top-4 right-4 z-50"
             >
               <Button
                 asChild
@@ -262,7 +211,7 @@ export function LandingPage() {
         {/* Navigation - scrollable */}
         <nav
           aria-label="Main navigation"
-          className="border-b border-white/[0.06] bg-[#0A0C10]"
+          className="sticky top-0 z-40 border-b border-white/10 bg-black/80 backdrop-blur-xl"
         >
           <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
             <Link href="/" className="flex items-center gap-2">
@@ -297,84 +246,100 @@ export function LandingPage() {
           </div>
         </nav>
 
-        {/* Hero Section */}
+        {/* Hero Section - Clinical Precision v2.0: Strict 7/5 (60/40) Grid */}
         <section
           id="main-content"
           aria-labelledby="hero-heading"
           className="flex min-h-screen flex-col items-center justify-center px-4"
         >
           <div className="mx-auto w-full max-w-5xl">
-            {/* The Hook - Loss Aversion Headline */}
-            <motion.h1
-              id="hero-heading"
-              className="text-center text-3xl leading-[1.1] font-semibold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
-            >
-              <span className="text-white/95">Stop Blinding Your Biology.</span>
-              <br />
-              <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-                Master 89,000+ Supplement Interactions.
-              </span>
-            </motion.h1>
-
-            {/* Subhead - Authority with specific scientific risks */}
-            <motion.p 
-              className="mx-auto mt-6 max-w-2xl text-center text-base leading-relaxed text-white/50 sm:text-lg"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
-            >
-              Generic apps miss nutrient blocking and toxicity. Stochi analyzes
-              your stack against PubMed-backed data to optimize ratios like{" "}
-              <span className="font-mono text-white/80">Zn:Cu</span> and prevent
-              serotonergic risks in real-time.
-            </motion.p>
-
-            {/* Primary CTA - Attio-style clean button */}
-            <div ref={heroCTARef}>
-              <motion.div 
-                className="mt-10 flex flex-col items-center justify-center gap-4"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.4 }}
-              >
-                <Button
-                  asChild
-                  size="lg"
-                  className="rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 px-8 text-sm font-medium text-white shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/30 hover:brightness-110"
+            {/* 12-Column Grid: 7 cols copy, 5 cols visual */}
+            <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12 lg:gap-12">
+              {/* Left: Copy (7 columns = ~58%) */}
+              <div className="lg:col-span-7">
+                {/* The Hook - Loss Aversion Headline */}
+                <motion.h1
+                  id="hero-heading"
+                  className="mt-8 text-3xl leading-[1.1] font-semibold tracking-tight sm:text-4xl md:mt-0 md:text-5xl lg:text-5xl"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
                 >
-                  <Link href="/auth/sign-up">Run Your Stack Audit</Link>
-                </Button>
-              </motion.div>
+                  <span className="text-white/95">
+                    Stop Blinding Your Biology.
+                  </span>
+                  <br />
+                  <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+                    Master 89,000+ Supplement Interactions.
+                  </span>
+                </motion.h1>
+
+                {/* Subhead - Authority with specific scientific risks */}
+                <motion.p
+                  className="mt-6 max-w-xl text-base leading-relaxed text-white/50 sm:text-lg"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.8,
+                    ease: [0.25, 0.46, 0.45, 0.94],
+                    delay: 0.2,
+                  }}
+                >
+                  Generic apps miss nutrient blocking and toxicity. Stochi
+                  analyzes your stack against PubMed-backed data to optimize
+                  ratios like{" "}
+                  <span className="font-mono text-white/80">Zn:Cu</span> and
+                  prevent serotonergic risks in real-time.
+                </motion.p>
+
+                {/* Primary CTA - Attio-style clean button */}
+                <div ref={heroCTARef}>
+                  <motion.div
+                    className="mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      duration: 0.8,
+                      ease: [0.25, 0.46, 0.45, 0.94],
+                      delay: 0.4,
+                    }}
+                  >
+                    <Button
+                      asChild
+                      size="lg"
+                      className="rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 px-8 text-sm font-medium text-white shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/30 hover:brightness-110"
+                    >
+                      <Link href="/auth/sign-up">Run Your Stack Audit</Link>
+                    </Button>
+                    <span className="text-xs tracking-wide text-white/30">
+                      Free forever • No credit card required
+                    </span>
+                  </motion.div>
+                </div>
+              </div>
+
+              {/* Right: Hero Visual (5 columns = ~42%) */}
+              <div className="lg:col-span-5">
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.9,
+                    ease: [0.25, 0.46, 0.45, 0.94],
+                    delay: 0.8,
+                  }}
+                >
+                  <HeroInteractionAlert />
+                </motion.div>
+              </div>
             </div>
 
-            <motion.div 
-              className="mt-4 text-center text-xs tracking-wide text-white/30"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.7, delay: 0.6 }}
-            >
-              Free forever • No credit card required
-            </motion.div>
-
-            {/* Hero Visual - High-contrast Interaction Warning */}
-            <motion.div 
+            {/* Citation Ticker - Authority signal (full width below grid) */}
+            <motion.div
               className="mt-16"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9, ease: [0.25, 0.46, 0.45, 0.94], delay: 1.5 }}
-            >
-              <HeroInteractionAlert />
-            </motion.div>
-
-            {/* Citation Ticker - Authority signal */}
-            <motion.div 
-              className="mt-8"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.7, delay: 1.7 }}
+              transition={{ duration: 0.7, delay: 1.2 }}
             >
               <CitationTicker />
             </motion.div>
@@ -384,74 +349,117 @@ export function LandingPage() {
         {/* Trust Badges - Authority Anchors */}
         <motion.section
           aria-label="Data sources and research partnerships"
-          className="mt-16 border-y border-white/[0.05] bg-white/[0.01] py-8 md:mt-24"
+          className="mt-16 border-y border-white/10 bg-[#0A0A0A] py-12 md:mt-24 md:py-16"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 2.0 }}
         >
-          <div className="mx-auto max-w-4xl px-4">
-            <p className="mb-6 text-center text-xs text-white/40">
-              Data sources synchronized with global research databases
+          <div className="mx-auto max-w-5xl px-4">
+            <p className="mb-8 text-center text-sm font-medium tracking-wide text-white/50 md:mb-12">
+              Powered by peer-reviewed research from
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
+            <div className="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-8">
               {/* NIH */}
               <a
                 href="https://www.nih.gov"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex flex-col items-center gap-2 opacity-40 transition-opacity duration-300 hover:opacity-80"
+                className="group flex flex-col items-center gap-4 rounded-xl border border-white/10 bg-white/[0.02] p-6 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.04]"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/[0.04] text-lg font-bold text-white/60 transition-colors group-hover:bg-white/[0.08]">
-                  NIH
+                <div className="flex h-16 w-16 items-center justify-center">
+                  <svg viewBox="0 0 100 100" className="h-14 w-14">
+                    <rect x="10" y="20" width="80" height="60" rx="4" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/60 group-hover:text-white/80 transition-colors" />
+                    <text x="50" y="58" textAnchor="middle" className="text-white/80 group-hover:text-white transition-colors" style={{ fontSize: '24px', fontWeight: 'bold', fontFamily: 'system-ui' }}>NIH</text>
+                  </svg>
                 </div>
-                <span className="text-[10px] text-white/40 group-hover:text-white/60">
-                  National Institutes of Health
-                </span>
+                <div className="text-center">
+                  <p className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">
+                    National Institutes of Health
+                  </p>
+                  <p className="mt-1 text-xs text-white/40">
+                    U.S. Department of Health
+                  </p>
+                </div>
               </a>
-              
+
               {/* PubMed */}
               <a
                 href="https://pubmed.ncbi.nlm.nih.gov"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex flex-col items-center gap-2 opacity-40 transition-opacity duration-300 hover:opacity-80"
+                className="group flex flex-col items-center gap-4 rounded-xl border border-white/10 bg-white/[0.02] p-6 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.04]"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/[0.04] text-xs font-bold text-white/60 transition-colors group-hover:bg-white/[0.08]">
-                  PM
+                <div className="flex h-16 w-16 items-center justify-center">
+                  <svg viewBox="0 0 100 100" className="h-14 w-14">
+                    <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" strokeWidth="2" className="text-blue-400/60 group-hover:text-blue-400/80 transition-colors" />
+                    <text x="50" y="45" textAnchor="middle" className="text-blue-400/80 group-hover:text-blue-400 transition-colors" style={{ fontSize: '14px', fontWeight: 'bold', fontFamily: 'system-ui' }}>PubMed</text>
+                    <text x="50" y="62" textAnchor="middle" className="text-white/50" style={{ fontSize: '10px', fontFamily: 'system-ui' }}>NCBI</text>
+                  </svg>
                 </div>
-                <span className="text-[10px] text-white/40 group-hover:text-white/60">
-                  PubMed Database
-                </span>
+                <div className="text-center">
+                  <p className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">
+                    PubMed Database
+                  </p>
+                  <p className="mt-1 text-xs text-white/40">
+                    36M+ biomedical citations
+                  </p>
+                </div>
               </a>
-              
+
               {/* EFSA */}
               <a
                 href="https://www.efsa.europa.eu"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex flex-col items-center gap-2 opacity-40 transition-opacity duration-300 hover:opacity-80"
+                className="group flex flex-col items-center gap-4 rounded-xl border border-white/10 bg-white/[0.02] p-6 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.04]"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/[0.04] text-xs font-bold text-white/60 transition-colors group-hover:bg-white/[0.08]">
-                  EFSA
+                <div className="flex h-16 w-16 items-center justify-center">
+                  <svg viewBox="0 0 100 100" className="h-14 w-14">
+                    <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" strokeWidth="2" className="text-blue-500/60 group-hover:text-blue-500/80 transition-colors" />
+                    <circle cx="50" cy="50" r="6" fill="currentColor" className="text-yellow-400/70 group-hover:text-yellow-400 transition-colors" />
+                    {[...Array(12)].map((_, i) => (
+                      <circle
+                        key={i}
+                        cx={50 + 25 * Math.cos((i * 30 * Math.PI) / 180)}
+                        cy={50 + 25 * Math.sin((i * 30 * Math.PI) / 180)}
+                        r="3"
+                        fill="currentColor"
+                        className="text-yellow-400/70 group-hover:text-yellow-400 transition-colors"
+                      />
+                    ))}
+                  </svg>
                 </div>
-                <span className="text-[10px] text-white/40 group-hover:text-white/60">
-                  European Food Safety Authority
-                </span>
+                <div className="text-center">
+                  <p className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">
+                    EFSA
+                  </p>
+                  <p className="mt-1 text-xs text-white/40">
+                    European Food Safety Authority
+                  </p>
+                </div>
               </a>
-              
+
               {/* Examine.com */}
               <a
                 href="https://examine.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex flex-col items-center gap-2 opacity-40 transition-opacity duration-300 hover:opacity-80"
+                className="group flex flex-col items-center gap-4 rounded-xl border border-white/10 bg-white/[0.02] p-6 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.04]"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/[0.04] text-xs font-bold text-white/60 transition-colors group-hover:bg-white/[0.08]">
-                  Ex
+                <div className="flex h-16 w-16 items-center justify-center">
+                  <svg viewBox="0 0 100 100" className="h-14 w-14">
+                    <rect x="15" y="25" width="70" height="50" rx="6" fill="none" stroke="currentColor" strokeWidth="2" className="text-emerald-400/60 group-hover:text-emerald-400/80 transition-colors" />
+                    <path d="M30 40 L45 55 L70 30" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" fill="none" className="text-emerald-400/80 group-hover:text-emerald-400 transition-colors" />
+                  </svg>
                 </div>
-                <span className="text-[10px] text-white/40 group-hover:text-white/60">
-                  Examine.com
-                </span>
+                <div className="text-center">
+                  <p className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">
+                    Examine.com
+                  </p>
+                  <p className="mt-1 text-xs text-white/40">
+                    Evidence-based nutrition
+                  </p>
+                </div>
               </a>
             </div>
           </div>
@@ -526,8 +534,8 @@ export function LandingPage() {
         </motion.section>
 
         {/* Beyond Vitamins Section */}
-        <motion.section 
-          aria-labelledby="beyond-vitamins-heading" 
+        <motion.section
+          aria-labelledby="beyond-vitamins-heading"
           className="px-4 py-24"
           initial="hidden"
           whileInView="visible"
@@ -542,7 +550,7 @@ export function LandingPage() {
             >
               Beyond vitamins.
             </motion.h2>
-            <motion.p 
+            <motion.p
               className="mb-8 max-w-2xl text-base leading-relaxed text-white/50"
               variants={fadeInUp}
             >
@@ -572,8 +580,8 @@ export function LandingPage() {
         </motion.section>
 
         {/* Protocol Engine Section */}
-        <motion.section 
-          aria-labelledby="protocol-heading" 
+        <motion.section
+          aria-labelledby="protocol-heading"
           className="px-4 py-24"
           initial="hidden"
           whileInView="visible"
@@ -596,15 +604,21 @@ export function LandingPage() {
                 </p>
                 <ul className="space-y-3 text-base text-white/60" role="list">
                   <li className="flex items-center gap-2">
-                    <span className="text-emerald-400" aria-hidden="true">+</span>
+                    <span className="text-emerald-400" aria-hidden="true">
+                      +
+                    </span>
                     One-tap logging for entire stacks
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="text-emerald-400" aria-hidden="true">+</span>
+                    <span className="text-emerald-400" aria-hidden="true">
+                      +
+                    </span>
                     Progress tracking with visual indicators
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="text-emerald-400" aria-hidden="true">+</span>
+                    <span className="text-emerald-400" aria-hidden="true">
+                      +
+                    </span>
                     Morning, evening, and custom protocols
                   </li>
                 </ul>
@@ -619,8 +633,8 @@ export function LandingPage() {
         </motion.section>
 
         {/* Manual Tracking Failed Section */}
-        <motion.section 
-          aria-labelledby="tracking-failed-heading" 
+        <motion.section
+          aria-labelledby="tracking-failed-heading"
           className="px-4 py-24"
           initial="hidden"
           whileInView="visible"
@@ -635,7 +649,7 @@ export function LandingPage() {
             >
               Manual tracking failed you.
             </motion.h2>
-            <motion.p 
+            <motion.p
               className="mb-12 max-w-2xl text-base leading-relaxed text-white/50"
               variants={fadeInUp}
             >
@@ -644,17 +658,17 @@ export function LandingPage() {
               for the same transporter. We do.
             </motion.p>
 
-            <motion.div 
+            <motion.div
               className="grid gap-6 md:grid-cols-2"
               variants={staggerContainer}
             >
               {/* What You Tracked */}
-              <motion.div 
-                className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 backdrop-blur-sm"
+              <motion.div
+                className="rounded-xl border border-white/10 bg-[#0A0A0A] p-6"
                 variants={staggerItem}
               >
                 <div className="mb-4 flex items-center justify-between">
-                  <span className="text-[10px] font-medium uppercase tracking-widest text-white/40">
+                  <span className="text-[10px] font-medium tracking-widest text-white/40 uppercase">
                     What You Tracked
                   </span>
                   <span className="text-[10px] font-medium text-white/30">
@@ -662,37 +676,45 @@ export function LandingPage() {
                   </span>
                 </div>
                 <div className="space-y-2 text-sm">
-                  <div className="flex justify-between border-b border-white/[0.06] pb-2">
+                  <div className="flex justify-between border-b border-white/10 pb-2">
                     <span className="text-white/80">Zinc Picolinate</span>
-                    <span className="font-mono text-white/50 tabular-nums">50mg</span>
+                    <span className="font-mono text-white/50 tabular-nums">
+                      50mg
+                    </span>
                   </div>
-                  <div className="flex justify-between border-b border-white/[0.06] pb-2">
+                  <div className="flex justify-between border-b border-white/10 pb-2">
                     <span className="text-white/80">Magnesium Glycinate</span>
-                    <span className="font-mono text-white/50 tabular-nums">400mg</span>
+                    <span className="font-mono text-white/50 tabular-nums">
+                      400mg
+                    </span>
                   </div>
-                  <div className="flex justify-between border-b border-white/[0.06] pb-2">
+                  <div className="flex justify-between border-b border-white/10 pb-2">
                     <span className="text-white/80">Vitamin D3</span>
-                    <span className="font-mono text-white/50 tabular-nums">5000IU</span>
+                    <span className="font-mono text-white/50 tabular-nums">
+                      5000IU
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/80">Iron</span>
-                    <span className="font-mono text-white/50 tabular-nums">18mg</span>
+                    <span className="font-mono text-white/50 tabular-nums">
+                      18mg
+                    </span>
                   </div>
                 </div>
-                <div className="mt-4 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 text-center text-xs text-white/40">
+                <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.02] p-3 text-center text-xs text-white/40">
                   No interaction data. No ratio analysis.
                 </div>
               </motion.div>
 
               {/* What You Missed */}
               <motion.div
-                className="rounded-2xl border border-red-500/20 bg-red-500/[0.04] p-6 backdrop-blur-sm"
+                className="rounded-xl border border-red-500/20 bg-red-500/[0.04] p-6"
                 role="list"
                 aria-label="What you missed: 3 errors"
                 variants={staggerItem}
               >
                 <div className="mb-4 flex items-center justify-between">
-                  <span className="text-[10px] font-medium uppercase tracking-widest text-red-400">
+                  <span className="text-[10px] font-medium tracking-widest text-red-400 uppercase">
                     What You Missed
                   </span>
                   <span className="text-[10px] font-medium text-red-400">
@@ -701,27 +723,33 @@ export function LandingPage() {
                 </div>
                 <div className="space-y-3 text-sm">
                   <div className="flex items-start gap-2" role="listitem">
-                    <span className="mt-0.5 text-red-400" aria-hidden="true">×</span>
+                    <span className="mt-0.5 text-red-400" aria-hidden="true">
+                      ×
+                    </span>
                     <div>
-                      <span className="text-white/80">Zn:Cu ratio <span className="font-mono">50:1</span></span>
+                      <span className="text-white/80">
+                        Zn:Cu ratio <span className="font-mono">50:1</span>
+                      </span>
                       <p className="mt-0.5 text-white/50">
                         No copper to balance zinc intake
                       </p>
                     </div>
                   </div>
                   <div className="flex items-start gap-2" role="listitem">
-                    <span className="mt-0.5 text-amber-400" aria-hidden="true">!</span>
+                    <span className="mt-0.5 text-amber-400" aria-hidden="true">
+                      !
+                    </span>
                     <div>
-                      <span className="text-white/80">
-                        Mg + Zn competition
-                      </span>
+                      <span className="text-white/80">Mg + Zn competition</span>
                       <p className="mt-0.5 text-white/50">
                         Same transporter, reduced absorption
                       </p>
                     </div>
                   </div>
                   <div className="flex items-start gap-2" role="listitem">
-                    <span className="mt-0.5 text-amber-400" aria-hidden="true">!</span>
+                    <span className="mt-0.5 text-amber-400" aria-hidden="true">
+                      !
+                    </span>
                     <div>
                       <span className="text-white/80">D3 timing unknown</span>
                       <p className="mt-0.5 text-white/50">
@@ -736,8 +764,8 @@ export function LandingPage() {
         </motion.section>
 
         {/* Pharmacological Vectors Section - Renamed for Loss Aversion */}
-        <motion.section 
-          aria-labelledby="failure-modes-heading" 
+        <motion.section
+          aria-labelledby="failure-modes-heading"
           className="px-4 py-24"
           initial="hidden"
           whileInView="visible"
@@ -752,7 +780,7 @@ export function LandingPage() {
             >
               Your Spreadsheet is Missing These Lethal Errors.
             </motion.h2>
-            <motion.p 
+            <motion.p
               className="mb-12 max-w-2xl text-base text-white/50"
               variants={fadeInUp}
             >
@@ -761,7 +789,7 @@ export function LandingPage() {
               real-time.
             </motion.p>
 
-            <motion.div 
+            <motion.div
               className="grid gap-4 md:grid-cols-2"
               variants={staggerContainer}
             >
@@ -817,8 +845,8 @@ export function LandingPage() {
         </motion.section>
 
         {/* Case Study Section */}
-        <motion.section 
-          aria-labelledby="case-study-heading" 
+        <motion.section
+          aria-labelledby="case-study-heading"
           className="px-4 py-24"
           initial="hidden"
           whileInView="visible"
@@ -833,9 +861,9 @@ export function LandingPage() {
               Field report.
             </h2>
 
-            <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.02] backdrop-blur-sm">
+            <div className="overflow-hidden rounded-xl border border-white/10 bg-[#0A0A0A]">
               {/* Case header */}
-              <div className="border-b border-white/[0.08] bg-white/[0.03] px-6 py-4">
+              <div className="border-b border-white/10 bg-white/[0.02] px-6 py-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/[0.06] font-mono text-sm text-white/90">
@@ -861,15 +889,13 @@ export function LandingPage() {
                 <div className="grid gap-6 md:grid-cols-2">
                   {/* Profile */}
                   <div>
-                    <div className="mb-3 text-xs font-medium uppercase tracking-wide text-white/40">
+                    <div className="mb-3 text-xs font-medium tracking-wide text-white/40 uppercase">
                       Profile
                     </div>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-white/50">Tracking method</span>
-                        <span className="text-white/90">
-                          Excel spreadsheet
-                        </span>
+                        <span className="text-white/90">Excel spreadsheet</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-white/50">Duration</span>
@@ -879,7 +905,9 @@ export function LandingPage() {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-white/50">Daily compounds</span>
-                        <span className="font-mono text-white/90 tabular-nums">12+</span>
+                        <span className="font-mono text-white/90 tabular-nums">
+                          12+
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-white/50">Self-assessment</span>
@@ -892,24 +920,32 @@ export function LandingPage() {
 
                   {/* Findings */}
                   <div>
-                    <div className="mb-3 text-xs font-medium uppercase tracking-wide text-red-400">
+                    <div className="mb-3 text-xs font-medium tracking-wide text-red-400 uppercase">
                       Stochi Findings
                     </div>
                     <div className="space-y-2 text-sm">
                       <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-2">
-                        <span className="font-medium text-red-400">CRITICAL:</span>{" "}
+                        <span className="font-medium text-red-400">
+                          CRITICAL:
+                        </span>{" "}
                         <span className="text-white/80">
-                          <span className="font-mono">50mg</span> Zinc daily, <span className="font-mono">0mg</span> Copper
+                          <span className="font-mono">50mg</span> Zinc daily,{" "}
+                          <span className="font-mono">0mg</span> Copper
                         </span>
                       </div>
                       <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-2">
-                        <span className="font-medium text-amber-400">WARNING:</span>{" "}
+                        <span className="font-medium text-amber-400">
+                          WARNING:
+                        </span>{" "}
                         <span className="text-white/80">
-                          D3 taken at <span className="font-mono">10pm</span> (no meal)
+                          D3 taken at <span className="font-mono">10pm</span>{" "}
+                          (no meal)
                         </span>
                       </div>
                       <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-2">
-                        <span className="font-medium text-amber-400">WARNING:</span>{" "}
+                        <span className="font-medium text-amber-400">
+                          WARNING:
+                        </span>{" "}
                         <span className="text-white/80">
                           Ca + Mg + Zn simultaneous
                         </span>
@@ -919,13 +955,14 @@ export function LandingPage() {
                 </div>
 
                 {/* Outcome */}
-                <div className="mt-6 border-t border-white/[0.08] pt-6">
-                  <div className="mb-3 text-xs font-medium uppercase tracking-wide text-white/40">
+                <div className="mt-6 border-t border-white/10 pt-6">
+                  <div className="mb-3 text-xs font-medium tracking-wide text-white/40 uppercase">
                     Outcome
                   </div>
                   <p className="text-base leading-relaxed text-white/60">
                     &quot;I thought the fatigue was just aging. Stochi found the
-                    Zinc/Copper imbalance on day one. Added <span className="font-mono">5mg</span> Copper, split my
+                    Zinc/Copper imbalance on day one. Added{" "}
+                    <span className="font-mono">5mg</span> Copper, split my
                     mineral timing.{" "}
                     <span className="font-medium text-emerald-400">
                       Energy returned within 3 weeks.
@@ -940,8 +977,8 @@ export function LandingPage() {
         </motion.section>
 
         {/* Final CTA */}
-        <motion.section 
-          aria-labelledby="cta-heading" 
+        <motion.section
+          aria-labelledby="cta-heading"
           className="px-4 py-24"
           initial="hidden"
           whileInView="visible"
@@ -972,7 +1009,7 @@ export function LandingPage() {
         </motion.section>
 
         {/* Footer */}
-        <footer className="border-t border-white/[0.06] bg-white/[0.01] py-12">
+        <footer className="border-t border-white/10 bg-[#0A0A0A] py-12">
           <div className="container mx-auto px-4">
             <div className="flex flex-col items-center gap-6 md:flex-row md:justify-between">
               {/* Logo and tagline */}
@@ -985,39 +1022,59 @@ export function LandingPage() {
                     height={24}
                     className="opacity-80"
                   />
-                  <span className="text-sm font-medium text-white/80">Stochi</span>
+                  <span className="text-sm font-medium text-white/80">
+                    Stochi
+                  </span>
                 </div>
-                <p className="text-xs text-white/40">Pharmacokinetic intelligence for your supplement stack</p>
+                <p className="text-xs text-white/40">
+                  Pharmacokinetic intelligence for your supplement stack
+                </p>
               </div>
-              
+
               {/* Stats */}
               <div className="flex items-center gap-6 text-xs text-white/40">
                 <div className="flex flex-col items-center gap-1">
-                  <span className="font-mono text-lg font-semibold text-white/70">1,423</span>
+                  <span className="font-mono text-lg font-semibold text-white/70">
+                    1,423
+                  </span>
                   <span>Compounds</span>
                 </div>
-                <div className="h-8 w-px bg-white/[0.08]" />
+                <div className="h-8 w-px bg-white/10" />
                 <div className="flex flex-col items-center gap-1">
-                  <span className="font-mono text-lg font-semibold text-white/70">89,412</span>
+                  <span className="font-mono text-lg font-semibold text-white/70">
+                    89,412
+                  </span>
                   <span>Interactions</span>
                 </div>
-                <div className="h-8 w-px bg-white/[0.08]" />
+                <div className="h-8 w-px bg-white/10" />
                 <div className="flex flex-col items-center gap-1">
-                  <span className="font-mono text-lg font-semibold text-white/70">2025</span>
+                  <span className="font-mono text-lg font-semibold text-white/70">
+                    2025
+                  </span>
                   <span>Database</span>
                 </div>
               </div>
-              
+
               {/* Links */}
               <div className="flex items-center gap-4 text-xs text-white/40">
-                <Link href="/auth/sign-in" className="transition-colors hover:text-white/70">Sign In</Link>
+                <Link
+                  href="/auth/sign-in"
+                  className="transition-colors hover:text-white/70"
+                >
+                  Sign In
+                </Link>
                 <span className="text-white/20">•</span>
-                <Link href="/auth/sign-up" className="transition-colors hover:text-white/70">Get Started</Link>
+                <Link
+                  href="/auth/sign-up"
+                  className="transition-colors hover:text-white/70"
+                >
+                  Get Started
+                </Link>
               </div>
             </div>
-            
+
             {/* Bottom bar */}
-            <div className="mt-8 border-t border-white/[0.04] pt-6 text-center text-xs text-white/30">
+            <div className="mt-8 border-t border-white/10 pt-6 text-center text-xs text-white/30">
               Not medical advice. Always consult a healthcare professional.
             </div>
           </div>
@@ -1118,7 +1175,13 @@ function ProtocolDemo() {
                 className={`transition-all duration-300 ${phase === "executing" ? "drop-shadow-[0_0_6px_rgba(16,185,129,0.5)]" : ""}`}
               />
               <defs>
-                <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <linearGradient
+                  id="progressGradient"
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="0%"
+                >
                   <stop offset="0%" stopColor="#10b981" />
                   <stop offset="100%" stopColor="#06b6d4" />
                 </linearGradient>
@@ -1127,9 +1190,9 @@ function ProtocolDemo() {
             {/* Center percentage or checkmark */}
             <div className="absolute inset-0 flex items-center justify-center">
               {phase === "complete" ? (
-                <span className="text-emerald-400 text-sm">✓</span>
+                <span className="text-sm text-emerald-400">✓</span>
               ) : (
-                <span className="font-mono text-[10px] tabular-nums text-white/80">
+                <span className="font-mono text-[10px] text-white/80 tabular-nums">
                   {progress}%
                 </span>
               )}
@@ -1150,20 +1213,28 @@ function ProtocolDemo() {
         </div>
         <span
           className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-            phase === "complete" 
-              ? "bg-emerald-500/10 text-emerald-400" 
+            phase === "complete"
+              ? "bg-emerald-500/10 text-emerald-400"
               : phase === "executing"
                 ? "bg-amber-500/10 text-amber-400"
                 : "bg-white/[0.06] text-white/50"
           }`}
           aria-live="polite"
         >
-          {phase === "complete" ? "COMPLETE" : phase === "executing" ? "EXECUTING" : "READY"}
+          {phase === "complete"
+            ? "COMPLETE"
+            : phase === "executing"
+              ? "EXECUTING"
+              : "READY"}
         </span>
       </div>
 
       {/* Items */}
-      <ul className="mb-4 space-y-2" role="list" aria-label="Supplements in stack">
+      <ul
+        className="mb-4 space-y-2"
+        role="list"
+        aria-label="Supplements in stack"
+      >
         {items.map((item, i) => (
           <li
             key={item.name}
@@ -1175,9 +1246,11 @@ function ProtocolDemo() {
           >
             <div className="flex items-center gap-2">
               {/* Mini progress indicator per item */}
-              <div className={`h-1.5 w-1.5 rounded-full transition-all ${
-                i < loggedCount ? "bg-emerald-400" : "bg-white/20"
-              }`} />
+              <div
+                className={`h-1.5 w-1.5 rounded-full transition-all ${
+                  i < loggedCount ? "bg-emerald-400" : "bg-white/20"
+                }`}
+              />
               <span
                 className={`text-sm ${i < loggedCount ? "text-emerald-400" : "text-white/80"}`}
               >
@@ -1377,7 +1450,9 @@ function TerminalAnalyzer({
       <div className="p-4 sm:p-5">
         {/* Input fields */}
         <div className="mb-4 flex flex-wrap items-center gap-2 sm:gap-3">
-          <div className={`flex min-w-0 flex-1 basis-[calc(50%-0.5rem)] items-center gap-2 rounded-xl border bg-white/[0.02] px-3 py-2.5 transition-colors sm:basis-auto ${isTyping ? "border-emerald-500/30" : "border-white/[0.08]"}`}>
+          <div
+            className={`flex min-w-0 flex-1 basis-[calc(50%-0.5rem)] items-center gap-2 rounded-xl border bg-white/[0.02] px-3 py-2.5 transition-colors sm:basis-auto ${isTyping ? "border-emerald-500/30" : "border-white/[0.08]"}`}
+          >
             <label htmlFor="supplement-1" className="sr-only">
               First supplement name
             </label>
@@ -1391,10 +1466,15 @@ function TerminalAnalyzer({
               className="w-full min-w-0 bg-transparent text-sm text-white/90 placeholder-white/30 outline-none"
             />
           </div>
-          <span className="hidden text-sm font-medium text-white/30 sm:block" aria-hidden="true">
+          <span
+            className="hidden text-sm font-medium text-white/30 sm:block"
+            aria-hidden="true"
+          >
             +
           </span>
-          <div className={`flex min-w-0 flex-1 basis-[calc(50%-0.5rem)] items-center gap-2 rounded-xl border bg-white/[0.02] px-3 py-2.5 transition-colors sm:basis-auto ${isTyping ? "border-emerald-500/30" : "border-white/[0.08]"}`}>
+          <div
+            className={`flex min-w-0 flex-1 basis-[calc(50%-0.5rem)] items-center gap-2 rounded-xl border bg-white/[0.02] px-3 py-2.5 transition-colors sm:basis-auto ${isTyping ? "border-emerald-500/30" : "border-white/[0.08]"}`}
+          >
             <label htmlFor="supplement-2" className="sr-only">
               Second supplement name
             </label>
@@ -1460,7 +1540,8 @@ function TerminalAnalyzer({
                   href="/auth/sign-up"
                   className="mt-3 inline-flex items-center gap-1 text-emerald-400 transition-colors hover:text-emerald-300"
                 >
-                  Create free account <ChevronRight className="h-3 w-3" aria-hidden="true" />
+                  Create free account{" "}
+                  <ChevronRight className="h-3 w-3" aria-hidden="true" />
                 </Link>
               )}
             </div>
@@ -1470,8 +1551,13 @@ function TerminalAnalyzer({
                 <span className="text-emerald-400">Analyzing stack...</span>
               ) : (
                 <>
-                  <span className="animate-pulse text-emerald-400/60" aria-hidden="true">●</span>
-                  {" "}Ready — enter two supplements to check for interactions
+                  <span
+                    className="animate-pulse text-emerald-400/60"
+                    aria-hidden="true"
+                  >
+                    ●
+                  </span>{" "}
+                  Ready — enter two supplements to check for interactions
                 </>
               )}
             </p>
@@ -1546,7 +1632,7 @@ function RiskCard({
           onFocus={() => setShowCitation(true)}
           onBlur={() => setShowCitation(false)}
           aria-describedby={`citation-${citationId}`}
-          className="relative font-mono text-[10px] text-white/40 transition-colors hover:text-emerald-400 focus:text-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 focus:rounded"
+          className="relative font-mono text-[10px] text-white/40 transition-colors hover:text-emerald-400 focus:rounded focus:text-emerald-400 focus:ring-1 focus:ring-emerald-500/50 focus:outline-none"
         >
           [PMID:{citationId}]
           {showCitation && (

@@ -72,10 +72,10 @@ export function BentoCard({
       role="region"
       aria-labelledby={ariaLabelledBy}
       className={cn(
-        // Base styles
-        "relative overflow-hidden rounded-2xl",
-        // Attio-style translucent card with hover
-        "bento-card transition-colors duration-200 hover:bg-white/[0.04]",
+        // Base styles - Surgical Precision
+        "relative overflow-hidden rounded-xl",
+        // Elevated black with high-luminance border
+        "border border-white/10 bg-[#0A0A0A] transition-colors duration-200 hover:border-white/15",
         // Grid span
         SPAN_CLASSES[span],
         // Aspect ratio for CLS prevention
@@ -115,7 +115,7 @@ function BentoCardSkeleton({ aspect }: { aspect: BentoCardAspect }) {
           <Skeleton className="h-5 w-40" />
           <Skeleton className="h-4 w-16" />
         </div>
-        <div className="h-[200px] rounded-lg bg-white/[0.02]">
+        <div className="h-[200px] rounded-lg border border-white/10 bg-white/[0.02]">
           <div className="flex h-full items-end gap-2 p-4">
             {SKELETON_BAR_HEIGHTS.map((height, i) => (
               <Skeleton

@@ -16,24 +16,7 @@ export default async function AuthPage({
   const { path } = await params;
 
   return (
-    <main className="bg-background relative flex min-h-screen flex-col items-center justify-center p-4">
-      {/* Noise texture overlay */}
-      <div
-        className="pointer-events-none fixed inset-0 z-[1] opacity-[0.02]"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-        }}
-      />
-
-      {/* Vignette overlay */}
-      <div
-        className="pointer-events-none fixed inset-0 z-[2]"
-        style={{
-          background:
-            "radial-gradient(ellipse at center, transparent 0%, transparent 40%, rgba(0,0,0,0.5) 100%)",
-        }}
-      />
-
+    <main className="relative flex min-h-screen flex-col items-center justify-center bg-black p-4">
       <div className="relative z-10 w-full max-w-md">
         <div className="mb-8 text-center">
           <Image
@@ -48,7 +31,7 @@ export default async function AuthPage({
             Balance your chemistry.
           </p>
         </div>
-        <div className="border-border bg-card rounded-xl border p-6">
+        <div className="rounded-xl border border-white/10 bg-[#0A0A0A] p-6">
           <AuthView path={path[0] ?? "sign-in"} />
         </div>
       </div>

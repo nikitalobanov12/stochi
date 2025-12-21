@@ -147,6 +147,8 @@ export default function RootLayout({
       className={`${jetbrainsMono.variable} ${inter.variable} dark`}
     >
       <body className="bg-background min-h-screen font-sans antialiased">
+        {/* Global dot grid background */}
+        <div className="lab-grid" aria-hidden="true" />
         <Providers>{children}</Providers>
         <Toaster />
       </body>

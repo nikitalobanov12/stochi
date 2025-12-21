@@ -89,17 +89,17 @@ export function TodayLogList({ logs, maxVisible = 8 }: TodayLogListProps) {
   const remainingCount = logs.length - maxVisible;
 
   return (
-    <div className="bg-card rounded-lg border">
+    <div className="rounded-xl border border-white/10 bg-[#0A0A0A]">
       {visibleLogs.map((entry, i) => (
-        <div key={entry.id} className={i !== 0 ? "border-t" : ""}>
+        <div key={entry.id} className={i !== 0 ? "border-t border-white/5" : ""}>
           <LogRow entry={entry} />
         </div>
       ))}
       {remainingCount > 0 && (
-        <div className="border-t px-4 py-2 text-center">
+        <div className="border-t border-white/5 px-4 py-2 text-center">
           <Link
             href="/dashboard/log"
-            className="text-muted-foreground hover:text-foreground text-xs"
+            className="text-xs text-white/40 hover:text-white/60"
           >
             +{remainingCount} more
           </Link>

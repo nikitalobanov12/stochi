@@ -87,7 +87,7 @@ function BioSyncModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border-border/50 bg-card max-w-md">
+      <DialogContent className="max-w-md border-white/10 bg-[#0A0A0A]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 font-sans text-base font-medium">
             <BellRing className="h-5 w-5 status-info" />
@@ -100,7 +100,7 @@ function BioSyncModal({
 
         <div className="space-y-5 pt-2">
           {/* Value proposition */}
-          <div className="rounded-lg bg-black/20 p-4">
+          <div className="rounded-lg border border-white/5 bg-white/[0.02] p-4">
             <div className="text-foreground font-sans text-sm">
               Your next window for{" "}
               <span className="status-info">{targetSupplementName}</span>{" "}
@@ -238,7 +238,7 @@ function getSeverityBgClass(severity: "critical" | "medium" | "low"): string {
     case "medium":
       return "bg-status-conflict";
     case "low":
-      return "bg-card/30";
+      return "bg-white/[0.02]";
   }
 }
 
@@ -469,12 +469,12 @@ function SynergyCard({
           />
         )}
         <div className="min-w-0 pr-4">
-          <div className="text-foreground font-sans text-sm">
+          <div className="font-sans text-sm text-white">
             {isActive 
               ? optimization.title.replace("Active synergy: ", "")
               : optimization.title.replace(/^Enhance .+ with /, "Add ")}
           </div>
-          <div className="text-muted-foreground mt-0.5 font-sans text-xs leading-relaxed">
+          <div className="mt-0.5 font-sans text-xs leading-relaxed text-white/70">
             {optimization.description}
           </div>
           {hasSafetyWarning && (
@@ -675,7 +675,7 @@ export function OptimizationHUDSkeleton() {
         </div>
         <div className="space-y-2">
           {[1, 2].map((i) => (
-            <div key={i} className="border-border/40 bg-card/30 rounded-lg border p-3">
+            <div key={i} className="rounded-lg border border-white/5 bg-white/[0.02] p-3">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 space-y-2">
                   <div className="flex items-center gap-2">
@@ -699,7 +699,7 @@ export function OptimizationHUDSkeleton() {
           <Skeleton className="h-3 w-3 rounded" />
           <Skeleton className="h-3 w-28" />
         </div>
-        <div className="border-border/40 bg-card/30 rounded-lg border p-3">
+        <div className="rounded-lg border border-white/5 bg-white/[0.02] p-3">
           <div className="flex items-start gap-2">
             <Skeleton className="mt-0.5 h-4 w-4 rounded" />
             <div className="flex-1 space-y-2">

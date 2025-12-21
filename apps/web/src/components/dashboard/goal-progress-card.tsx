@@ -43,21 +43,21 @@ export function GoalProgressCard({ progress }: GoalProgressCardProps) {
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div className="bg-card rounded-lg border">
+      <div className="rounded-xl border border-white/10 bg-[#0A0A0A]">
         <CollapsibleTrigger asChild>
           <button
             type="button"
-            className="hover:bg-muted/50 flex w-full items-center gap-3 p-4 text-left transition-colors"
+            className="flex w-full items-center gap-3 p-4 text-left transition-colors hover:bg-white/[0.02]"
           >
-            <Target className="text-primary h-5 w-5" />
+            <Target className="h-5 w-5 text-emerald-500" />
             <div className="flex-1">
               <p className="font-mono text-sm font-medium">Goal Progress</p>
-              <p className="text-muted-foreground text-xs">
+              <p className="text-xs text-white/40">
                 {progress.length} active goal{progress.length !== 1 ? "s" : ""}
               </p>
             </div>
             <ChevronDown
-              className={`text-muted-foreground h-4 w-4 transition-transform ${
+              className={`h-4 w-4 text-white/40 transition-transform ${
                 isOpen ? "rotate-180" : ""
               }`}
             />
@@ -65,12 +65,12 @@ export function GoalProgressCard({ progress }: GoalProgressCardProps) {
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <div className="space-y-4 border-t px-4 pt-2 pb-4">
+          <div className="space-y-4 border-t border-white/5 px-4 pb-4 pt-2">
             {progress.map((p) => (
               <GoalProgressItem key={p.goal.key} progress={p} />
             ))}
 
-            <div className="border-t pt-2">
+            <div className="border-t border-white/5 pt-2">
               <Button variant="ghost" size="sm" asChild className="w-full">
                 <Link href="/dashboard/settings">
                   <Settings className="mr-2 h-4 w-4" />

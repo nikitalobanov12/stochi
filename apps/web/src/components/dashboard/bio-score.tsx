@@ -159,7 +159,7 @@ function BreakdownModal({
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="border-border/50 bg-card max-w-sm">
+      <DialogContent className="max-w-sm border-white/10 bg-[#0A0A0A]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 font-sans text-sm font-medium">
             <Activity className="h-4 w-4" />
@@ -169,7 +169,7 @@ function BreakdownModal({
 
         <div className="space-y-4">
           {/* Score summary */}
-          <div className="flex items-center justify-between rounded-2xl bg-black/20 p-4">
+          <div className="flex items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] p-4">
             <div>
               <div className="text-muted-foreground font-sans text-xs">
                 Current Score
@@ -281,7 +281,7 @@ export function BioScore({ score, exclusionZones, optimizations }: BioScoreProps
     >
       <button
         type="button"
-        className="border-border/40 bg-card/30 hover:bg-card/50 group flex w-full items-center justify-between rounded-2xl border p-3 transition-colors"
+        className="group flex w-full items-center justify-between rounded-xl border border-white/10 bg-[#0A0A0A] p-3 transition-colors hover:border-white/15 hover:bg-white/[0.02]"
       >
         <div className="flex items-center gap-3">
           <div className="relative">

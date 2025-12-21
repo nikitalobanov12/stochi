@@ -172,9 +172,9 @@ function ExpertStackCard({
       type="button"
       onClick={onToggle}
       className={cn(
-        "w-full rounded-lg border border-white/[0.06] bg-white/[0.02] p-3 text-left transition-all duration-200",
-        "hover:border-white/[0.1] hover:bg-white/[0.04]",
-        isExpanded && "border-white/[0.1] bg-white/[0.04]"
+        "w-full rounded-xl border border-white/10 bg-[#0A0A0A] p-3 text-left transition-all duration-200",
+        "hover:border-white/15 hover:bg-white/[0.04]",
+        isExpanded && "border-white/15 bg-white/[0.04]"
       )}
       aria-expanded={isExpanded}
     >
@@ -219,7 +219,7 @@ function ExpertStackCard({
           <p className="mb-2 text-[11px] text-white/50">{stack.description}</p>
 
           {/* Supplements */}
-          <div className="space-y-1 rounded bg-black/20 p-2">
+          <div className="space-y-1 rounded-lg border border-white/10 bg-white/[0.02] p-2">
             {stack.supplements.map((supp) => (
               <div
                 key={supp.name}

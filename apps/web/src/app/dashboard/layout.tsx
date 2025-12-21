@@ -32,21 +32,17 @@ export default async function DashboardLayout({
 
   return (
     <div className="relative flex min-h-screen flex-col">
-      {/* Scientific Laboratory Environment */}
-      <div className="lab-environment" />
-      <div className="lab-grid" />
-      
       {/* Micro-grain texture for anti-banding */}
       <div className="hud-noise" />
 
-      <header className="border-border bg-background/95 sticky top-0 z-50 border-b backdrop-blur-md">
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-black/80 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between px-4">
           <nav className="hidden items-center gap-4 md:flex">
             <NavLink href="/dashboard" iconName="dashboard">
               Dashboard
             </NavLink>
             <NavLink href="/dashboard/stacks" iconName="stacks">
-              Stacks
+              Protocols
             </NavLink>
             <NavLink href="/dashboard/log" iconName="log">
               Log
@@ -122,13 +118,13 @@ export default async function DashboardLayout({
         <div className="mx-auto max-w-[1400px] px-4 py-6">{children}</div>
       </main>
 
-      <nav className="border-border bg-background pb-safe fixed right-0 bottom-0 left-0 z-50 border-t md:hidden">
+      <nav className="pb-safe fixed right-0 bottom-0 left-0 z-50 border-t border-white/10 bg-black/80 backdrop-blur-xl md:hidden">
         <div className="flex items-center justify-around py-2">
           <MobileNavLink href="/dashboard" iconName="dashboard" label="Home" />
           <MobileNavLink
             href="/dashboard/stacks"
             iconName="stacks"
-            label="Stacks"
+            label="Protocols"
           />
           <MobileNavLink href="/dashboard/log" iconName="log" label="Log" />
           <MobileNavLink
