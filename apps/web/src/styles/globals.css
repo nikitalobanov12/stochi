@@ -130,74 +130,42 @@
 }
 
 .dark {
-  /* ============================================================================
-   * Stochi v1.1 - Scientific Laboratory Theme
-   * ============================================================================
-   * Design Philosophy: High-authority scientific instrumentation aesthetic
-   * Surface: Deep Space Black (#0A0C10) - "passive" environment
-   * Data prioritized over decoration - semantic colors only for status
-   */
-  
-  /* Core Surface Palette */
   --background: #0A0C10;
-  --foreground: rgba(255, 255, 255, 0.90); /* White/90 for primary text */
+  --foreground: #E6EDF3;
   --card: #0D1117;
-  --card-foreground: rgba(255, 255, 255, 0.90);
+  --card-foreground: #E6EDF3;
   --popover: #161B22;
-  --popover-foreground: rgba(255, 255, 255, 0.90);
-  
-  /* Primary Accent - Emerald for optimal states */
-  --primary: #10B981;
+  --popover-foreground: #E6EDF3;
+  --primary: #10B981; /* Emerald-500 - per design spec */
   --primary-foreground: #0A0C10;
-  
-  /* Secondary Surfaces */
   --secondary: #161B22;
-  --secondary-foreground: rgba(255, 255, 255, 0.90);
-  
-  /* Muted - White/50 for body prose */
+  --secondary-foreground: #E6EDF3;
   --muted: #161B22;
-  --muted-foreground: rgba(255, 255, 255, 0.50);
-  
-  /* Accent */
+  --muted-foreground: #7D8590; /* Slightly muted for White/50 equivalent */
   --accent: #161B22;
-  --accent-foreground: rgba(255, 255, 255, 0.90);
-  
-  /* Semantic Status Colors (from spec section 5) */
-  --destructive: #EF4444; /* Red - lethal/critical */
-  --border: rgba(255, 255, 255, 0.08); /* Thin-film border */
-  --input: rgba(255, 255, 255, 0.08);
+  --accent-foreground: #E6EDF3;
+  --destructive: #EF4444; /* Red per design spec */
+  --border: #30363D;
+  --input: #30363D;
   --ring: #10B981;
-  
-  /* Semantic Color System (Section 5 of spec)
-   * Emerald: Optimal state, active synergies, absorption windows
-   * Amber: Timing conflicts, ratio imbalances, streak warnings
-   * Red: Lethal interactions, critical depletion, blocking errors
-   * Cyan: Informational data, log history, neutrality
-   */
-  --chart-1: #10B981; /* Emerald - optimal */
-  --chart-2: #06B6D4; /* Cyan - informational */
-  --chart-3: #F59E0B; /* Amber - conflict/warning */
-  --chart-4: #EF4444; /* Red - critical */
-  --chart-5: #A855F7; /* Purple - accent */
-  
-  /* Sidebar (inherits from main theme) */
+  --chart-1: #10B981; /* Emerald - Optimal state */
+  --chart-2: #06B6D4; /* Cyan - Informational */
+  --chart-3: #F59E0B; /* Amber - Conflicts/Warnings */
+  --chart-4: #EF4444; /* Red - Critical */
+  --chart-5: #A855F7;
   --sidebar: #0A0C10;
-  --sidebar-foreground: rgba(255, 255, 255, 0.90);
+  --sidebar-foreground: #E6EDF3;
   --sidebar-primary: #10B981;
   --sidebar-primary-foreground: #0A0C10;
   --sidebar-accent: #161B22;
-  --sidebar-accent-foreground: rgba(255, 255, 255, 0.90);
-  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-accent-foreground: #E6EDF3;
+  --sidebar-border: #30363D;
   --sidebar-ring: #10B981;
   --destructive-foreground: #0A0C10;
-  
-  /* Spacing & Typography */
-  --radius: 1rem; /* 16px - strict rounded-2xl per spec */
+  --radius: 0.5rem;
   --font-sans: Inter, ui-sans-serif, sans-serif, system-ui;
   --font-serif: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
   --font-mono: JetBrains Mono, ui-monospace, monospace;
-  
-  /* Shadows - Subtle for glass aesthetic */
   --shadow-color: 0 0 0;
   --shadow-opacity: 0.3;
   --shadow-blur: 10px;
@@ -294,14 +262,7 @@
 .dashboard-bio-score { min-height: var(--dashboard-bio-score-height); }
 .dashboard-status { min-height: var(--dashboard-status-height); }
 
-/* ============================================================================
- * HUD Environment System - Scientific Laboratory v1.1
- * ============================================================================
- * Creates a "passive" environment that disappears to prioritize data salience.
- * - Micro-grain at 0.0075 opacity for anti-banding
- * - Environmental lighting with emerald/cyan radial glows
- * - 32px grid overlay for mathematical structure
- */
+/* HUD-style utilities - only visible in dark theme */
 .hud-noise {
   display: none;
 }
@@ -310,61 +271,23 @@
   display: none;
 }
 
-.hud-grid {
-  display: none;
-}
-
-.hud-lighting {
-  display: none;
-}
-
-/* Micro-grain texture - 0.0075 opacity per spec (anti-banding only) */
 .dark .hud-noise {
   display: block;
   position: fixed;
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  opacity: 0.0075;
+  opacity: 0.0075; /* Attio-level cleanliness - reduced for professional aesthetics */
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
 }
 
-/* Vignette - subtle edge darkening for focus */
 .dark .hud-vignette {
   display: block;
   position: fixed;
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background: radial-gradient(ellipse at center, transparent 0%, transparent 60%, rgba(0,0,0,0.3) 100%);
-}
-
-/* 32px Grid Overlay - mathematical structure (per spec section 1) */
-.dark .hud-grid {
-  display: block;
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-image: 
-    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-  background-size: 32px 32px;
-}
-
-/* Environmental Lighting - Dual radial glows (per spec section 1)
- * Primary: Emerald rgba(16, 185, 129, 0.02) top-center
- * Secondary: Cyan rgba(6, 182, 212, 0.01) bottom-left
- */
-.dark .hud-lighting {
-  display: block;
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: 
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(16, 185, 129, 0.02) 0%, transparent 70%),
-    radial-gradient(ellipse 60% 40% at 10% 100%, rgba(6, 182, 212, 0.01) 0%, transparent 60%);
+  background: radial-gradient(ellipse at center, transparent 0%, transparent 50%, rgba(0,0,0,0.4) 100%);
 }
 
 /* Terminal-style card */
@@ -379,17 +302,19 @@
 }
 
 /* ============================================================================
- * Semantic Status Colors - Scientific Laboratory v1.1 (Section 5)
+ * Semantic Status Colors - Dashboard "Scientific Laboratory" Aesthetic
  * ============================================================================
- * Colors are used STRICTLY for status signaling, never for decoration.
  * 
- * Emerald (#10B981): Optimal state, active synergies, absorption windows
- * Amber (#F59E0B): Timing conflicts, ratio imbalances (D3:K2), streak warnings
- * Red (#EF4444): Lethal interactions, critical depletion, blocking errors
- * Cyan (#06B6D4): Informational data, log history, neutrality
+ * Color Semantic System (per Design Spec v1.1):
+ * - Emerald (#10B981): Optimal state, active synergies, absorption windows
+ * - Amber (#F59E0B): Timing conflicts, ratio imbalances, streak warnings
+ * - Red (#EF4444): Lethal interactions, critical depletion, blocking errors
+ * - Cyan (#06B6D4): Informational data, log history, neutrality
+ * 
+ * Usage: Prefer semantic classes over hardcoded hex values for maintainability.
  */
 
-/* Optimized/Synergy - Emerald for optimal states */
+/* Optimized/Synergy - Emerald for "actionable now" states */
 .status-optimized { color: #10B981; }
 .bg-status-optimized { background-color: rgba(16, 185, 129, 0.08); }
 .border-status-optimized { border-color: rgba(16, 185, 129, 0.3); }
@@ -399,7 +324,7 @@
 .bg-status-conflict { background-color: rgba(245, 158, 11, 0.08); }
 .border-status-conflict { border-color: rgba(245, 158, 11, 0.3); }
 
-/* Critical/Blocking - Red for lethal interactions, critical errors */
+/* Critical/Blocking - Red for hard limits, dangerous interactions */
 .status-critical { color: #EF4444; }
 .bg-status-critical { background-color: rgba(239, 68, 68, 0.08); }
 .border-status-critical { border-color: rgba(239, 68, 68, 0.3); }
@@ -419,68 +344,6 @@
 .border-status-safe { border-color: rgba(16, 185, 129, 0.3); }
 .border-status-warning { border-color: rgba(245, 158, 11, 0.3); }
 .border-status-danger { border-color: rgba(239, 68, 68, 0.3); }
-
-/* ============================================================================
- * Glass Card System - "Thin-Film" Border Aesthetic (Section 2)
- * ============================================================================
- * All widgets follow the "Thin-Film" border system to appear as etched glass.
- * - Background: rgba(255, 255, 255, 0.02) with backdrop-blur-md (12px)
- * - Border: 1px solid rgba(255, 255, 255, 0.08)
- * - Top-Edge Highlight: Linear gradient for light-catching effect
- * - Corner Radius: Strict 16px (rounded-2xl)
- */
-
-.dark .glass-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  position: relative;
-  overflow: hidden;
-}
-
-/* Top-edge highlight - light catching the top edge per spec */
-.dark .glass-card::before {
-  content: '';
-  position: absolute;
-  inset-inline: 0;
-  top: 0;
-  height: 1px;
-  background: linear-gradient(
-    to right,
-    transparent 0%,
-    rgba(255, 255, 255, 0.12) 50%,
-    transparent 100%
-  );
-  pointer-events: none;
-}
-
-/* Glass card variants */
-.dark .glass-card-elevated {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 16px;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: 
-    0 4px 24px -4px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
-}
-
-/* Glass card with emerald glow (for optimal/active states) */
-.dark .glass-card-glow-emerald {
-  box-shadow: 
-    0 0 30px rgba(16, 185, 129, 0.03),
-    inset 0 0 20px rgba(16, 185, 129, 0.01);
-}
-
-/* Glass card with amber glow (for warning states) */
-.dark .glass-card-glow-amber {
-  box-shadow: 
-    0 0 30px rgba(245, 158, 11, 0.03),
-    inset 0 0 20px rgba(245, 158, 11, 0.01);
-}
 
 /* Landing page - Dashboard preview animations */
 @keyframes breathing-glow {
@@ -611,103 +474,50 @@
 }
 
 /* ============================================================================
- * Typographic Hierarchy - Scientific Laboratory v1.1 (Section 3)
+ * Scientific Laboratory Design System v1.1
  * ============================================================================
- * Typographic decoupling is the primary driver of perceived professional polish.
  * 
- * | Tier            | Font           | Style            | Usage                          |
- * |-----------------|----------------|------------------|--------------------------------|
- * | Primary Headers | Inter (Sans)   | Semibold, W/90   | Dashboard titles, Protocol names |
- * | Body Prose      | Inter (Sans)   | Medium, W/50     | "Optimal window opens in..."   |
- * | Technical Data  | JetBrains Mono | Regular, Em-400  | Dosages, PMIDs, Percentages    |
- * | Critical Alerts | JetBrains Mono | Bold, Amber-400  | Countdown timers, Ratio warnings |
- */
-
-/* Primary Headers - Inter Semibold, White/90 */
-.type-header {
-  font-family: var(--font-sans);
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.90);
-}
-
-/* Body Prose - Inter Medium, White/50 */
-.type-prose {
-  font-family: var(--font-sans);
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.50);
-}
-
-/* Technical Data - JetBrains Mono Regular, Emerald-400 */
-.type-technical {
-  font-family: var(--font-mono);
-  font-weight: 400;
-  color: #10B981;
-}
-
-/* Critical Alerts - JetBrains Mono Bold, Amber-400 */
-.type-alert {
-  font-family: var(--font-mono);
-  font-weight: 700;
-  color: #F59E0B;
-}
-
-/* Section Labels - Mono uppercase tracking (existing pattern, formalized) */
-.type-label {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 400;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.50);
-}
-
-/* ============================================================================
- * 12-Column Bento Grid System - Scientific Laboratory v1.1 (Section 4)
- * ============================================================================
- * The dashboard uses a 1400px max-width container with gap-8 on desktop.
- * This ensures "breathability" between components.
- */
-
-.bento-grid {
-  display: grid;
-  gap: 2rem; /* gap-8 = 32px */
-  max-width: 1400px;
-  margin-inline: auto;
-}
-
-/* 12-column grid for desktop */
-@media (min-width: 1024px) {
-  .bento-grid {
-    grid-template-columns: repeat(12, 1fr);
-  }
-  
-  /* Span utilities for bento layout */
-  .bento-col-4 { grid-column: span 4; }
-  .bento-col-8 { grid-column: span 8; }
-  .bento-col-12 { grid-column: span 12; }
-}
-
-/* Tablet: 2-column grid */
-@media (min-width: 768px) and (max-width: 1023px) {
-  .bento-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* Mobile: Single column stack */
-@media (max-width: 767px) {
-  .bento-grid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem; /* gap-6 = 24px on mobile */
-  }
-}
-
-/* ============================================================================
- * Legacy Bento Card Styles (Updated for v1.1 Glass System)
+ * Visual Foundation:
+ * - Surface: #0A0C10 (Deep Space Black)
+ * - Micro-grain at 0.0075 opacity for anti-banding
+ * - Environmental lighting with emerald/cyan glows
+ * - 32px grid overlay for mathematical structure
+ * 
+ * Glass Card System ("Thin-Film" borders):
+ * - Background: rgba(255, 255, 255, 0.02) + backdrop-blur-md
+ * - Border: 1px solid rgba(255, 255, 255, 0.08)
+ * - Top-edge highlight for etched glass effect
+ * - Corner radius: 16px (rounded-2xl)
  * ============================================================================ */
 
-/* Bento Card base styles - now alias to glass-card */
-.dark .bento-card {
+/* Environmental Lighting - Emerald primary, Cyan accent */
+.dark .lab-environment {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: 
+    /* Primary emerald glow - top center */
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(16, 185, 129, 0.02) 0%, transparent 50%),
+    /* Secondary cyan accent - bottom left */
+    radial-gradient(ellipse 60% 40% at 10% 100%, rgba(0, 212, 255, 0.01) 0%, transparent 40%);
+}
+
+/* 32px Grid Overlay - Mathematical structure */
+.dark .lab-grid {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Glass Card System - "Thin-Film" Borders */
+.dark .glass-card {
+  position: relative;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
@@ -715,19 +525,62 @@
   -webkit-backdrop-filter: blur(12px);
 }
 
+/* Top-edge highlight - Light catching effect */
+.dark .glass-card::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(255, 255, 255, 0.12) 50%,
+    transparent 100%
+  );
+  border-radius: 16px 16px 0 0;
+  pointer-events: none;
+}
+
+/* Bento Card base styles (alias for glass-card) */
+.dark .bento-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.dark .bento-card::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(255, 255, 255, 0.12) 50%,
+    transparent 100%
+  );
+  border-radius: 16px 16px 0 0;
+  pointer-events: none;
+}
+
 .dark .bento-card-glow {
   position: absolute;
   inset: 0;
   background: radial-gradient(
     ellipse at top center,
-    rgba(16, 185, 129, 0.03) 0%,
+    rgba(16, 185, 129, 0.02) 0%,
     transparent 60%
   );
   pointer-events: none;
   border-radius: inherit;
 }
 
-/* Top edge highlight for depth - per spec thin-film border */
+/* Top edge highlight for depth (standalone utility) */
 .dark .bento-card-highlight {
   position: absolute;
   inset-inline: 0;
@@ -745,20 +598,19 @@
 /* Landing page specific card variants */
 .dark .landing-card {
   background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
 }
 
 .dark .landing-card-elevated {
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 
     0 4px 24px -4px rgba(0, 0, 0, 0.3),
     0 0 0 1px rgba(255, 255, 255, 0.05) inset;
 }
 
-/* Softer breathing glow for Scientific Laboratory aesthetic */
+/* Softer breathing glow for laboratory aesthetic */
 @keyframes breathing-glow-soft {
   0%, 100% {
     box-shadow: 
@@ -770,24 +622,6 @@
       0 0 50px rgba(16, 185, 129, 0.06),
       inset 0 0 30px rgba(16, 185, 129, 0.02);
   }
-}
-
-/* Amber pulse animation for streak warnings (Loss Aversion per spec section 6) */
-@keyframes amber-pulse {
-  0%, 100% {
-    box-shadow: 
-      0 0 20px rgba(245, 158, 11, 0.05),
-      inset 0 0 15px rgba(245, 158, 11, 0.02);
-  }
-  50% {
-    box-shadow: 
-      0 0 40px rgba(245, 158, 11, 0.12),
-      inset 0 0 25px rgba(245, 158, 11, 0.04);
-  }
-}
-
-.animate-amber-pulse {
-  animation: amber-pulse 2s ease-in-out infinite;
 }
 
 .animate-breathing-glow-soft {
@@ -824,6 +658,20 @@
 
 .bento-aspect-stack {
   min-height: 200px;
+}
+
+/* 12-Column Bento Grid Layout */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 2rem; /* gap-8 */
+}
+
+@media (max-width: 1023px) {
+  .bento-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
 }
 
 /* Mobile sticky HUD */

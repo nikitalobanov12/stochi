@@ -160,10 +160,10 @@ export default async function DashboardPage() {
             <div className="space-y-6 lg:col-span-8">
               {/* Bio-Score Header Row */}
               <div className="flex items-center justify-between">
-                <h2 className="type-label">
+                <h2 className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
                   Biological Timeline
                 </h2>
-                <div className="w-40">
+                <div className="w-32">
                   <BioScore
                     score={biologicalState.bioScore}
                     exclusionZones={biologicalState.exclusionZones}
@@ -173,7 +173,7 @@ export default async function DashboardPage() {
               </div>
 
               {/* Timeline Chart - Glass Card */}
-              <div className="glass-card p-5">
+              <div className="glass-card p-4">
                 <BiologicalTimeline
                   timelineData={timelineData}
                   activeCompounds={biologicalState.activeCompounds}
@@ -183,8 +183,8 @@ export default async function DashboardPage() {
 
               {/* Active Compounds List - Glass Card */}
               {biologicalState.activeCompounds.length > 0 && (
-                <div className="glass-card p-5">
-                  <div className="type-label mb-4">
+                <div className="glass-card p-4">
+                  <div className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
                     Active Compounds
                   </div>
                   <ActiveCompoundsList
@@ -198,7 +198,7 @@ export default async function DashboardPage() {
 
             {/* Right: Optimization HUD (4 columns on desktop) */}
             <div className="lg:col-span-4 lg:sticky lg:top-20 lg:self-start">
-              <div className="type-label mb-4">
+              <div className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
                 Optimization HUD
               </div>
               <OptimizationHUD
@@ -209,7 +209,7 @@ export default async function DashboardPage() {
           </div>
         )}
 
-        {/* Legacy Interaction HUD - Show if no timeline data */}
+        {/* Zone 4: Interaction HUD - Legacy (show if no timeline data) */}
         {todayLogs.length > 0 && timelineData.length === 0 && (
           <InteractionHeadsUp
             interactions={interactions}
@@ -219,7 +219,7 @@ export default async function DashboardPage() {
         )}
 
         {/* ================================================================
-         * Secondary Row: Active Protocols (Full Width)
+         * Secondary Row: Active Protocols (8 cols on desktop)
          * Multi-select batch logging cards
          * ================================================================ */}
         {stackCompletion.length > 0 && (
@@ -232,13 +232,11 @@ export default async function DashboardPage() {
           />
         )}
 
-        {/* ================================================================
-         * Activity Log - Compact (Full Width)
-         * ================================================================ */}
+        {/* Today's Activity Log - Compact */}
         {todayLogs.length > 0 && (
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="type-label">
+              <h2 className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
                 Activity Log
               </h2>
               <Button
@@ -257,13 +255,11 @@ export default async function DashboardPage() {
           </div>
         )}
 
-        {/* ================================================================
-         * Empty States
-         * ================================================================ */}
+        {/* Empty State */}
         {todayLogs.length === 0 && userStacks.length > 0 && (
           <div className="glass-card border-dashed py-12 text-center">
             <Clock className="text-muted-foreground/30 mx-auto mb-3 h-6 w-6" />
-            <p className="type-prose text-xs">
+            <p className="text-muted-foreground font-mono text-xs">
               No activity logged today
             </p>
             <p className="text-muted-foreground/60 mt-1 font-mono text-[10px]">
@@ -276,7 +272,7 @@ export default async function DashboardPage() {
         {userStacks.length === 0 && !needsOnboarding && (
           <div className="glass-card border-dashed py-12 text-center">
             <Layers className="text-muted-foreground/30 mx-auto mb-3 h-6 w-6" />
-            <p className="type-prose text-xs">
+            <p className="text-muted-foreground font-mono text-xs">
               No protocols configured
             </p>
             <Button

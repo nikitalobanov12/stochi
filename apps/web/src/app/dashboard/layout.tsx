@@ -32,8 +32,15 @@ export default async function DashboardLayout({
 
   return (
     <div className="relative flex min-h-screen flex-col">
+      {/* Scientific Laboratory Environment */}
+      <div className="lab-environment" />
+      <div className="lab-grid" />
+      
+      {/* Micro-grain texture for anti-banding */}
+      <div className="hud-noise" />
+
       <header className="border-border bg-background/95 sticky top-0 z-50 border-b backdrop-blur-md">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
+        <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between px-4">
           <nav className="hidden items-center gap-4 md:flex">
             <NavLink href="/dashboard" iconName="dashboard">
               Dashboard
