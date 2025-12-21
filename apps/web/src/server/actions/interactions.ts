@@ -199,8 +199,11 @@ async function checkInteractionsViaEngine(
     );
 
     // Combine warnings and synergies into single array (matching TS behavior)
+    // Note: Go returns null instead of [] for empty arrays
+    const warnings = data.warnings ?? [];
+    const synergies = data.synergies ?? [];
     return {
-      interactions: [...data.warnings, ...data.synergies],
+      interactions: [...warnings, ...synergies],
       ratioWarnings,
     };
   } catch (err) {
@@ -405,7 +408,9 @@ export async function checkTimingWarnings(
       logger.debug("Using Go engine for timing check");
 
       // Convert engine format to our TimingWarning format
-      return response.warnings.map((w: EngineTimingWarning) => ({
+      // Note: Go returns null instead of [] for empty arrays
+      const warnings = response.warnings ?? [];
+      return warnings.map((w: EngineTimingWarning) => ({
         id: w.id,
         severity: w.severity,
         reason: w.reason,
