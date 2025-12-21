@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { ChevronDown, ChevronUp, Terminal } from "lucide-react";
 import {
   type InteractionWarning,
   type RatioWarning,
@@ -25,6 +26,8 @@ type LiveConsoleFeedProps = {
   ratioWarnings: RatioWarning[];
   timingWarnings: TimingWarning[];
   safetyChecks?: SafetyCheckResult[];
+  /** Initial collapsed state (default: true) */
+  defaultCollapsed?: boolean;
 };
 
 /**
@@ -176,8 +179,10 @@ export function LiveConsoleFeed({
   ratioWarnings,
   timingWarnings,
   safetyChecks = [],
+  defaultCollapsed = true,
 }: LiveConsoleFeedProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
 
   const entries = generateConsoleEntries(
     interactions,
@@ -186,21 +191,65 @@ export function LiveConsoleFeed({
     safetyChecks,
   );
 
-  // Auto-scroll to bottom when entries change
+  // Count warnings/errors for badge
+  const errorCount = entries.filter((e) => e.status === "FAIL").length;
+  const warnCount = entries.filter((e) => e.status === "WARN").length;
+
+  // Auto-scroll to bottom when entries change (only when expanded)
   useEffect(() => {
-    if (containerRef.current) {
+    if (containerRef.current && !isCollapsed) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
-  }, [entries.length]);
+  }, [entries.length, isCollapsed]);
 
   return (
-    <div className="space-y-2">
-      <h2 className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
-        System Console
-      </h2>
+    <div className="space-y-0">
+      {/* Header with toggle */}
+      <button
+        type="button"
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="flex w-full items-center justify-between rounded-t-lg border border-b-0 border-white/10 bg-black/30 px-3 py-2 transition-colors hover:bg-black/40"
+      >
+        <div className="flex items-center gap-2">
+          <Terminal className="h-3.5 w-3.5 text-emerald-500/70" />
+          <span className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
+            System Console
+          </span>
+          {/* Status badges */}
+          {errorCount > 0 && (
+            <span className="rounded bg-red-500/20 px-1.5 py-0.5 font-mono text-[9px] text-red-400">
+              {errorCount} FAIL
+            </span>
+          )}
+          {warnCount > 0 && (
+            <span className="rounded bg-amber-500/20 px-1.5 py-0.5 font-mono text-[9px] text-amber-400">
+              {warnCount} WARN
+            </span>
+          )}
+          {errorCount === 0 && warnCount === 0 && entries.length > 0 && (
+            <span className="rounded bg-emerald-500/20 px-1.5 py-0.5 font-mono text-[9px] text-emerald-400">
+              ALL PASS
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-muted-foreground font-mono text-[9px]">
+            {entries.length} entries
+          </span>
+          {isCollapsed ? (
+            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+          ) : (
+            <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
+          )}
+        </div>
+      </button>
+
+      {/* Console body - collapsible */}
       <div
         ref={containerRef}
-        className="border-border/40 h-24 overflow-hidden rounded-lg border bg-black/20 p-2 font-mono text-[10px] leading-relaxed"
+        className={`border-border/40 overflow-hidden rounded-b-lg border bg-black/20 p-2 font-mono text-[10px] leading-relaxed transition-all duration-200 ${
+          isCollapsed ? "h-0 border-t-0 p-0" : "h-32 overflow-y-auto"
+        }`}
       >
         {entries.map((entry, index) => (
           <div key={index} className="flex gap-2">
