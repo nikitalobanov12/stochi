@@ -33,6 +33,16 @@
   - Integrate with existing Capacitor push notification setup (`lib/capacitor/push.ts`)
   - Add notification preferences to Settings (enable/disable, quiet hours)
 
+## Completed
+
+- [x] **Active Protocol Manager (Stacks page enhancement)**
+  - Added `lastLoggedAt` column to track when stacks were last used
+  - One-tap logging with optimistic UI (LogStackButton component)
+  - Timing badges showing consensus timing (morning/bedtime/etc)
+  - Goal-based protocol recommendations ("Recommended for Your Goals")
+  - Relative time display ("2h ago", "Yesterday")
+  - Database transactions for ACID-compliant logging
+
 ## Ideas / Future
 
 - [ ] **AI-generated research summaries**
