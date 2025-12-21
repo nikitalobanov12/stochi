@@ -42,3 +42,42 @@ export function formatRelativeDate(date: Date): string {
     day: "numeric",
   });
 }
+
+/**
+ * Format a timestamp relative to now for short display
+ * e.g., "2h ago", "Yesterday", "Dec 15"
+ */
+export function formatRelativeTime(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  // Less than 1 hour ago
+  if (diffMins < 60) {
+    if (diffMins < 1) return "Just now";
+    return `${diffMins}m ago`;
+  }
+
+  // Less than 24 hours ago
+  if (diffHours < 24) {
+    return `${diffHours}h ago`;
+  }
+
+  // Yesterday
+  if (diffDays === 1) {
+    return "Yesterday";
+  }
+
+  // Less than 7 days ago
+  if (diffDays < 7) {
+    return `${diffDays}d ago`;
+  }
+
+  // Older - show date
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}

@@ -267,6 +267,9 @@ export const stack = pgTable(
       .references(() => user.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     isPublic: boolean("is_public").default(false), // true for system protocols
+    // Denormalized field for O(1) read performance on list view
+    // Updated transactionally when stack is logged
+    lastLoggedAt: timestamp("last_logged_at", { withTimezone: true }),
     createdAt: timestamp("created_at")
       .$defaultFn(() => new Date())
       .notNull(),
