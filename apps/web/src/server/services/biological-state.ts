@@ -70,6 +70,17 @@ export type OptimizationOpportunity = {
   safetyWarning?: string;
   /** Unique key for dismissal tracking (e.g., "synergy:id1:id2") */
   suggestionKey: string;
+  /** Details about the suggested supplement (for "add supplement" suggestions) */
+  suggestedSupplement?: {
+    id: string;
+    name: string;
+    form: string | null;
+    description: string | null;
+    mechanism: string | null;
+    researchUrl: string | null;
+    category: string | null;
+    commonGoals: string[] | null;
+  };
 };
 
 /**
@@ -754,6 +765,31 @@ async function calculateOptimizations(
     return warnings[category] ?? `Caution: ${supplement.name} has a hard safety limit.`;
   }
 
+  /**
+   * Extract supplement details for suggestion cards.
+   */
+  function getSupplementDetails(supp: {
+    id: string;
+    name: string;
+    form: string | null;
+    description: string | null;
+    mechanism: string | null;
+    researchUrl: string | null;
+    category: string | null;
+    commonGoals: string[] | null;
+  }) {
+    return {
+      id: supp.id,
+      name: supp.name,
+      form: supp.form,
+      description: supp.description,
+      mechanism: supp.mechanism,
+      researchUrl: supp.researchUrl,
+      category: supp.category,
+      commonGoals: supp.commonGoals,
+    };
+  }
+
   // Check for synergies that could be leveraged
   for (const synergy of synergyInteractions) {
     const hasSource = activeSupplementIds.has(synergy.sourceId);
@@ -780,6 +816,7 @@ async function calculateOptimizations(
         priority: 2,
         safetyWarning: getSafetyWarning(synergy.target),
         suggestionKey,
+        suggestedSupplement: getSupplementDetails(synergy.target),
       });
     } else if (hasTarget && !hasSource) {
       // Skip if user has disabled "add supplement" suggestions
@@ -795,6 +832,7 @@ async function calculateOptimizations(
         priority: 2,
         safetyWarning: getSafetyWarning(synergy.source),
         suggestionKey,
+        suggestedSupplement: getSupplementDetails(synergy.source),
       });
     } else if (hasSource && hasTarget) {
       // User already has both - note the active synergy

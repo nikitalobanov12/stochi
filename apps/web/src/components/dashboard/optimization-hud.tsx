@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useTransition } from "react";
-import { Clock, Zap, AlertTriangle, ChevronRight, Bell, Check, BellRing, X, ShieldAlert } from "lucide-react";
+import { Clock, Zap, AlertTriangle, ChevronRight, ChevronDown, Bell, Check, BellRing, X, ShieldAlert, ExternalLink } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import {
@@ -466,7 +466,7 @@ function TimingCard({
 }
 
 // ============================================================================
-// Synergy Card - with improved contrast and dismiss button
+// Synergy Card - with improved contrast, dismiss button, and expandable details
 // ============================================================================
 
 function SynergyCard({
@@ -476,8 +476,11 @@ function SynergyCard({
   optimization: OptimizationOpportunity;
   onDismiss?: () => void;
 }) {
+  const [isExpanded, setIsExpanded] = useState(false);
   const isActive = optimization.title.startsWith("Active synergy");
   const hasSafetyWarning = !!optimization.safetyWarning;
+  const suggestedSupp = optimization.suggestedSupplement;
+  const hasDetails = !isActive && suggestedSupp && (suggestedSupp.mechanism || suggestedSupp.description);
 
   return (
     <div
@@ -510,7 +513,7 @@ function SynergyCard({
             }`}
           />
         )}
-        <div className="min-w-0 pr-4">
+        <div className="min-w-0 flex-1 pr-4">
           <div className="font-sans text-sm text-white">
             {isActive 
               ? optimization.title.replace("Active synergy: ", "")
@@ -525,6 +528,61 @@ function SynergyCard({
               <span className="font-sans text-[10px] leading-relaxed status-conflict">
                 {optimization.safetyWarning}
               </span>
+            </div>
+          )}
+          
+          {/* Expandable details section */}
+          {hasDetails && (
+            <div className="mt-2">
+              <button
+                type="button"
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="flex items-center gap-1 text-[10px] font-medium text-white/50 hover:text-white/70"
+              >
+                <ChevronDown className={`h-3 w-3 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                {isExpanded ? "Less" : "More about"} {suggestedSupp.name}
+              </button>
+              
+              {isExpanded && (
+                <div className="mt-2 space-y-2 rounded-lg bg-black/20 p-2.5">
+                  {/* Mechanism */}
+                  {suggestedSupp.mechanism && (
+                    <div>
+                      <div className="font-mono text-[9px] uppercase tracking-wider text-white/40">
+                        Mechanism
+                      </div>
+                      <p className="mt-0.5 font-sans text-[11px] leading-relaxed text-white/80">
+                        {suggestedSupp.mechanism}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {/* Description */}
+                  {suggestedSupp.description && (
+                    <div>
+                      <div className="font-mono text-[9px] uppercase tracking-wider text-white/40">
+                        Why Take It
+                      </div>
+                      <p className="mt-0.5 font-sans text-[11px] leading-relaxed text-white/80">
+                        {suggestedSupp.description}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {/* Research link */}
+                  {suggestedSupp.researchUrl && (
+                    <a
+                      href={suggestedSupp.researchUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1 flex items-center gap-1 font-mono text-[10px] text-emerald-400 hover:text-emerald-300"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      View Research
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
