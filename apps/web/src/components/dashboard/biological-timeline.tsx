@@ -51,6 +51,8 @@ const ZONE_BANDS = {
   /** Sub-therapeutic zone: below 30% */
   subTherapeutic: { y1: 0, y2: 30, color: "rgba(255, 255, 255, 0.01)" }, // Subtle dim
 } as const;
+/** Projection zone styling - shows future predictions */
+const PROJECTION_ZONE_COLOR = "rgba(255, 255, 255, 0.02)"; // Subtle overlay to dim future
 
 // ============================================================================
 // Color Palette for Compounds
@@ -89,17 +91,22 @@ function CustomTooltip({
   active,
   payload,
   supplementNames,
+  currentTime,
 }: {
   active?: boolean;
   payload?: TooltipPayload[];
   label?: number;
   supplementNames: Map<string, string>;
+  currentTime?: string;
 }) {
   if (!active || !payload?.length) return null;
 
   // Get timestamp from the first payload item's data point
   const dataPoint = payload[0]?.payload;
   const timestamp = dataPoint?.timestamp;
+  
+  // Check if this point is in the future (projection)
+  const isFuture = timestamp && currentTime && new Date(timestamp) > new Date(currentTime);
 
   // Format the timestamp
   const formatTime = (isoString: string) => {
@@ -116,8 +123,11 @@ function CustomTooltip({
 
   return (
     <div className="rounded-lg border border-white/10 bg-[#0A0A0A] px-3 py-2 shadow-lg">
-      <div className="mb-1 font-mono text-xs text-white/40">
-        {timestamp ? formatTime(timestamp) : "--:--"}
+      <div className="mb-1 flex items-center gap-2 font-mono text-xs text-white/40">
+        <span>{timestamp ? formatTime(timestamp) : "--:--"}</span>
+        {isFuture && (
+          <span className="rounded bg-white/10 px-1 text-[9px] text-white/30">PROJECTED</span>
+        )}
       </div>
       <div className="space-y-1">
         {sortedPayload.map((entry, i) => {
@@ -415,25 +425,43 @@ export function BiologicalTimeline({
               content={
                 <CustomTooltip
                   supplementNames={supplementNames}
+                  currentTime={currentTime}
                 />
               }
             />
 
             {/* Current time marker */}
             {currentMinutesFromStart !== null && (
-              <ReferenceLine
-                x={currentMinutesFromStart}
-                stroke="var(--chart-1)"
-                strokeDasharray="3 3"
-                strokeWidth={CHART_STROKE_WIDTH}
-                label={{
-                  value: "NOW",
-                  position: "top",
-                  fill: "var(--chart-1)",
-                  fontSize: 9,
-                  fontFamily: "var(--font-mono)",
-                }}
-              />
+              <>
+                {/* Projection zone overlay - dims future predictions */}
+                <ReferenceArea
+                  x1={currentMinutesFromStart}
+                  y1={0}
+                  y2={120}
+                  fill={PROJECTION_ZONE_COLOR}
+                  fillOpacity={1}
+                  label={{
+                    value: "PROJECTION",
+                    position: "insideTopRight",
+                    fill: "rgba(255, 255, 255, 0.2)",
+                    fontSize: 9,
+                    fontFamily: "var(--font-mono)",
+                  }}
+                />
+                <ReferenceLine
+                  x={currentMinutesFromStart}
+                  stroke="var(--chart-1)"
+                  strokeDasharray="3 3"
+                  strokeWidth={CHART_STROKE_WIDTH}
+                  label={{
+                    value: "NOW",
+                    position: "top",
+                    fill: "var(--chart-1)",
+                    fontSize: 9,
+                    fontFamily: "var(--font-mono)",
+                  }}
+                />
+              </>
             )}
 
             {/* Peak zone reference (100% line) */}
