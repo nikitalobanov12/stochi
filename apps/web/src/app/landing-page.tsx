@@ -173,7 +173,7 @@ export function LandingPage() {
   }, []);
 
   return (
-    <main className="relative min-h-screen bg-black font-sans text-white/90">
+    <main className="relative min-h-screen bg-black pt-safe pb-safe font-sans text-white/90">
       {/* Grid overlay for background texture */}
       <div className="lab-grid" aria-hidden="true" />
 

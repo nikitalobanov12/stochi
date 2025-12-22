@@ -16,7 +16,7 @@ export default async function AuthPage({
   const { path } = await params;
 
   return (
-    <main className="relative flex min-h-screen flex-col items-center justify-center bg-black p-4">
+    <main className="relative flex min-h-screen flex-col items-center justify-center bg-black p-4 pt-safe pb-safe">
       <div className="relative z-10 w-full max-w-md">
         <div className="mb-8 text-center">
           <Image
