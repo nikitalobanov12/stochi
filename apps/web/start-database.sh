@@ -65,24 +65,25 @@ fi
 if [ "$DB_PASSWORD" = "password" ]; then
   echo "You are using the default database password"
   read -p "Should we generate a random password for you? [y/N]: " -r REPLY
-  if ! [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo "Please change the default password in the .env file and try again"
-    exit 1
-  fi
-  # Generate a random URL-safe password
-  DB_PASSWORD=$(openssl rand -base64 12 | tr '+/' '-_')
-  if [[ "$(uname)" == "Darwin" ]]; then
-    # macOS requires an empty string to be passed with the `i` flag
-    sed -i '' "s#:password@#:$DB_PASSWORD@#" .env
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    # Generate a random URL-safe password
+    DB_PASSWORD=$(openssl rand -base64 12 | tr '+/' '-_')
+    if [[ "$(uname)" == "Darwin" ]]; then
+      # macOS requires an empty string to be passed with the `i` flag
+      sed -i '' "s#:password@#:$DB_PASSWORD@#" .env
+    else
+      sed -i "s#:password@#:$DB_PASSWORD@#" .env
+    fi
   else
-    sed -i "s#:password@#:$DB_PASSWORD@#" .env
+    echo "Continuing with default password (fine for local development)"
   fi
 fi
 
+# Use pgvector image for vector similarity search support
 $DOCKER_CMD run -d \
   --name $DB_CONTAINER_NAME \
   -e POSTGRES_USER="postgres" \
   -e POSTGRES_PASSWORD="$DB_PASSWORD" \
   -e POSTGRES_DB="$DB_NAME" \
   -p "$DB_PORT":5432 \
-  docker.io/postgres && echo "Database container '$DB_CONTAINER_NAME' was successfully created"
+  docker.io/pgvector/pgvector:pg16 && echo "Database container '$DB_CONTAINER_NAME' was successfully created"
