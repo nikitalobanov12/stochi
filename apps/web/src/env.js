@@ -16,6 +16,8 @@ export const env = createEnv({
     ENGINE_INTERNAL_KEY: z.string().optional(),
     // HuggingFace Inference API key (optional - enables AI dosage suggestions)
     HUGGINGFACE_API_KEY: z.string().optional(),
+    // OpenAI API key (optional - enables RAG embeddings for Learn section)
+    OPENAI_API_KEY: z.string().optional(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -37,6 +39,7 @@ export const env = createEnv({
     ENGINE_URL: process.env.ENGINE_URL,
     ENGINE_INTERNAL_KEY: process.env.ENGINE_INTERNAL_KEY,
     HUGGINGFACE_API_KEY: process.env.HUGGINGFACE_API_KEY,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     NODE_ENV: process.env.NODE_ENV,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,

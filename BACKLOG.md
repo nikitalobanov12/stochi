@@ -15,7 +15,36 @@
 
 ## Planned
 
-(empty)
+- [ ] Optimistic UI updates
+  - when the user logs their stack, it takes upwards of 5 seconds to process in the database, we need to figure out a cleaner solution to this
+  - either use redis to store the information first and than have eventual consistency with postgres, or just use optimistic ui updates
+  - this applies to deleting logs too, it takes upwards of 3 seconds to delete a supplement from the log and than the ui never updates, it just grays out the supplement
+
+- [ ] fix the ai suggestions
+  - right now you can get a suggestion like
+    `Add Magnesium Glycinate
+    Take together! Magnesium activates vitamin D. Many D3 'non-responders' are actually magnesium deficient
+    Less Magnesium Glycinate
+    Mechanism
+    Glycine chelation enhances absorption; glycine itself acts as inhibitory neurotransmitter
+
+Why Take It
+Highly bioavailable magnesium form that promotes relaxation and quality sleep
+
+View Research`
+
+- it's true that megnasium enhances absorbtion of vitamin d3, but the nuance here is that you don't want to take them together since magnesium glycinate is more beneficial for lowering your body temp and lowering cortisol causing you to get better sleep, the nuance is that you should be taking them together but at different times, but the suggestions here say that you should take them together which implies that you should be taking them at the same time
+
+- [ ] **AI-generated research summaries**
+  - Summarize Examine.com or PubMed content on-demand using HuggingFace API
+  - Cache summaries in database after first generation
+  - Fallback for supplements without pre-written summaries
+  - Show in supplement sheet / detail view
+
+- [ ] **Interaction severity customization**
+  - Let users set personal tolerance levels for interactions
+  - E.g., "I know about caffeine + L-theanine, don't warn me"
+  - Different from dismissing - this is a permanent "I accept this interaction"
 
 ## Completed
 
@@ -54,6 +83,13 @@
   - Database transactions for ACID-compliant logging
 
 ## Ideas / Future
+
+- [ ] Optimistic UI updates
+  - when the user logs their stack, it takes upwards of 5 seconds to process in the database, we need to figure out a cleaner solution to this
+  - either use redis to store the information first and than have eventual consistency with postgres, or just use optimistic ui updates
+  - this applies to deleting logs too, it takes upwards of 3 seconds to delete a supplement from the log and than the ui never updates, it just grays out the supplement
+
+- [ ] fix the ai suggestions
 
 - [ ] **AI-generated research summaries**
   - Summarize Examine.com or PubMed content on-demand using HuggingFace API

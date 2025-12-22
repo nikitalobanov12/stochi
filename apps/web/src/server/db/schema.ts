@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import {
   boolean,
+  customType,
   index,
   integer,
   pgEnum,
@@ -10,6 +11,32 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
+
+// ============================================================================
+// Custom Types (pgvector)
+// ============================================================================
+
+/**
+ * Custom vector type for pgvector extension.
+ * Stores embeddings as float arrays with specified dimensions.
+ */
+const vector = customType<{ data: number[]; driverData: string }>({
+  dataType(config) {
+    const dimensions = (config as { dimensions?: number })?.dimensions ?? 1536;
+    return `vector(${dimensions})`;
+  },
+  fromDriver(value: string): number[] {
+    // Parse "[0.1,0.2,0.3]" format from Postgres
+    return value
+      .slice(1, -1)
+      .split(",")
+      .map((v) => parseFloat(v));
+  },
+  toDriver(value: number[]): string {
+    // Convert to "[0.1,0.2,0.3]" format for Postgres
+    return `[${value.join(",")}]`;
+  },
+});
 
 // ============================================================================
 // Enums
@@ -494,6 +521,59 @@ export const dismissedSuggestion = pgTable(
 );
 
 // ============================================================================
+// Supplement Knowledge RAG (Learn Section)
+// ============================================================================
+
+export const chunkTypeEnum = pgEnum("chunk_type", [
+  "overview",
+  "benefits",
+  "risks",
+  "dosing",
+  "timing",
+  "interactions",
+  "mechanism",
+  "faq",
+]);
+
+/**
+ * Metadata stored as JSON for each knowledge chunk.
+ * Includes evidence ratings and other enrichment data.
+ */
+export type SupplementKnowledgeMetadata = {
+  evidenceRating?: string; // e.g., "Strong", "Moderate", "Limited"
+  studyCount?: number;
+  lastUpdated?: string;
+};
+
+export const supplementKnowledge = pgTable(
+  "supplement_knowledge",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    supplementId: uuid("supplement_id")
+      .notNull()
+      .references(() => supplement.id, { onDelete: "cascade" }),
+    // Content chunk
+    chunkType: chunkTypeEnum("chunk_type").notNull(),
+    title: text("title"), // Optional section title within chunk
+    content: text("content").notNull(),
+    // Vector embedding (OpenAI text-embedding-3-small = 1536 dims)
+    embedding: vector("embedding", { dimensions: 1536 }),
+    // Metadata for UI display (evidence ratings, etc.)
+    metadata: text("metadata").$type<SupplementKnowledgeMetadata>(),
+    // Source tracking
+    sourceUrl: text("source_url"),
+    scrapedAt: timestamp("scraped_at").$defaultFn(() => new Date()),
+    createdAt: timestamp("created_at")
+      .$defaultFn(() => new Date())
+      .notNull(),
+  },
+  (t) => [
+    index("supplement_knowledge_supplement_idx").on(t.supplementId),
+    index("supplement_knowledge_chunk_type_idx").on(t.chunkType),
+  ],
+);
+
+// ============================================================================
 // Relations
 // ============================================================================
 
@@ -526,6 +606,7 @@ export const supplementRelations = relations(supplement, ({ many }) => ({
   cyp450Pathways: many(cyp450Pathway),
   stackItems: many(stackItem),
   logs: many(log),
+  knowledge: many(supplementKnowledge),
 }));
 
 export const interactionRelations = relations(interaction, ({ one }) => ({
@@ -617,6 +698,16 @@ export const dismissedSuggestionRelations = relations(
     user: one(user, {
       fields: [dismissedSuggestion.userId],
       references: [user.id],
+    }),
+  }),
+);
+
+export const supplementKnowledgeRelations = relations(
+  supplementKnowledge,
+  ({ one }) => ({
+    supplement: one(supplement, {
+      fields: [supplementKnowledge.supplementId],
+      references: [supplement.id],
     }),
   }),
 );

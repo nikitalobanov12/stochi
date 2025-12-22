@@ -5,9 +5,17 @@ import {
   useContext,
   useState,
   useCallback,
+  useEffect,
   type ReactNode,
 } from "react";
-import { ExternalLink, Syringe, Thermometer, FlaskConical } from "lucide-react";
+import {
+  ExternalLink,
+  Syringe,
+  Thermometer,
+  FlaskConical,
+  BookOpen,
+  Loader2,
+} from "lucide-react";
 
 import {
   Sheet,
@@ -18,6 +26,14 @@ import {
 } from "~/components/ui/sheet";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "~/components/ui/tabs";
+import { LearnSection } from "~/components/learn";
+import {
+  getSupplementKnowledge,
+  askSupplementQuestion,
+  type SupplementKnowledgeResult,
+  type AskQuestionResult,
+} from "~/server/actions/supplement-learn";
 
 type SupplementData = {
   id: string;
@@ -83,12 +99,181 @@ const goalLabels: Record<string, string> = {
   longevity: "Longevity",
 };
 
+// ============================================================================
+// Overview Tab Content
+// ============================================================================
+
+function OverviewContent({ supplement }: { supplement: SupplementData }) {
+  return (
+    <div className="space-y-6">
+      {/* Route & Storage Section (for peptides/research chemicals) */}
+      {(supplement.route && supplement.route !== "oral") ||
+      supplement.storageInstructions ? (
+        <div className="bg-muted/50 space-y-3 rounded-lg p-4">
+          {supplement.route && supplement.route !== "oral" && (
+            <div className="flex items-center gap-2 text-sm">
+              <Syringe className="h-4 w-4 text-violet-400" />
+              <span className="font-medium">Route:</span>
+              <span className="text-muted-foreground">
+                {routeLabels[supplement.route] ?? supplement.route}
+              </span>
+            </div>
+          )}
+          {supplement.storageInstructions && (
+            <div className="flex items-start gap-2 text-sm">
+              <Thermometer className="mt-0.5 h-4 w-4 text-blue-400" />
+              <span className="font-medium">Storage:</span>
+              <span className="text-muted-foreground">
+                {supplement.storageInstructions}
+              </span>
+            </div>
+          )}
+        </div>
+      ) : null}
+
+      {/* Mechanism Section */}
+      {supplement.mechanism && (
+        <div className="space-y-2">
+          <h3 className="text-muted-foreground text-[10px] font-medium uppercase tracking-[0.2em]">
+            Mechanism
+          </h3>
+          <p className="text-sm leading-relaxed">{supplement.mechanism}</p>
+        </div>
+      )}
+
+      {/* Why Take It Section */}
+      {supplement.description && (
+        <div className="space-y-2">
+          <h3 className="text-muted-foreground text-[10px] font-medium uppercase tracking-[0.2em]">
+            Why Take It
+          </h3>
+          <p className="text-sm leading-relaxed">{supplement.description}</p>
+        </div>
+      )}
+
+      {/* Goals Section */}
+      {supplement.commonGoals && supplement.commonGoals.length > 0 && (
+        <div className="space-y-2">
+          <h3 className="text-muted-foreground text-[10px] font-medium uppercase tracking-[0.2em]">
+            Common Goals
+          </h3>
+          <div className="flex flex-wrap gap-1.5">
+            {supplement.commonGoals.map((goal) => (
+              <Badge key={goal} variant="secondary" className="text-xs">
+                {goalLabels[goal] ?? goal}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Research Link */}
+      {supplement.researchUrl && (
+        <div className="border-t pt-4">
+          <Button variant="outline" size="sm" className="w-full" asChild>
+            <a
+              href={supplement.researchUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <ExternalLink className="mr-2 h-4 w-4" />
+              View on Examine.com
+            </a>
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================================================
+// Learn Tab Content (Lazy Loaded)
+// ============================================================================
+
+function LearnTabContent({ supplementId }: { supplementId: string }) {
+  const [knowledge, setKnowledge] = useState<SupplementKnowledgeResult | null>(
+    null,
+  );
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadKnowledge() {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const result = await getSupplementKnowledge(supplementId);
+        if (mounted) {
+          setKnowledge(result);
+        }
+      } catch (err) {
+        if (mounted) {
+          setError(
+            err instanceof Error ? err.message : "Failed to load content",
+          );
+        }
+      } finally {
+        if (mounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadKnowledge();
+
+    return () => {
+      mounted = false;
+    };
+  }, [supplementId]);
+
+  const handleAskQuestion = useCallback(
+    async (question: string): Promise<AskQuestionResult> => {
+      return askSupplementQuestion(supplementId, question);
+    },
+    [supplementId],
+  );
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-muted-foreground py-12 text-center text-sm">
+        {error}
+      </div>
+    );
+  }
+
+  if (!knowledge) {
+    return (
+      <div className="text-muted-foreground py-12 text-center text-sm">
+        No content available
+      </div>
+    );
+  }
+
+  return <LearnSection knowledge={knowledge} onAskQuestion={handleAskQuestion} />;
+}
+
+// ============================================================================
+// Main Provider
+// ============================================================================
+
 export function SupplementSheetProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [supplement, setSupplement] = useState<SupplementData | null>(null);
+  const [activeTab, setActiveTab] = useState("overview");
 
   const openSheet = useCallback((data: SupplementData) => {
     setSupplement(data);
+    setActiveTab("overview"); // Reset to overview when opening
     setIsOpen(true);
   }, []);
 
@@ -100,7 +285,7 @@ export function SupplementSheetProvider({ children }: { children: ReactNode }) {
     <SupplementSheetContext.Provider value={{ openSheet, closeSheet }}>
       {children}
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetContent className="overflow-y-auto">
+        <SheetContent className="flex flex-col overflow-hidden">
           {supplement && (
             <>
               <SheetHeader>
@@ -137,97 +322,31 @@ export function SupplementSheetProvider({ children }: { children: ReactNode }) {
                 </div>
               </SheetHeader>
 
-              <div className="mt-6 space-y-6">
-                {/* Route & Storage Section (for peptides/research chemicals) */}
-                {(supplement.route && supplement.route !== "oral") ||
-                supplement.storageInstructions ? (
-                  <div className="bg-muted/50 space-y-3 rounded-lg p-4">
-                    {supplement.route && supplement.route !== "oral" && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Syringe className="h-4 w-4 text-violet-400" />
-                        <span className="font-medium">Route:</span>
-                        <span className="text-muted-foreground">
-                          {routeLabels[supplement.route] ?? supplement.route}
-                        </span>
-                      </div>
-                    )}
-                    {supplement.storageInstructions && (
-                      <div className="flex items-start gap-2 text-sm">
-                        <Thermometer className="mt-0.5 h-4 w-4 text-blue-400" />
-                        <span className="font-medium">Storage:</span>
-                        <span className="text-muted-foreground">
-                          {supplement.storageInstructions}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                ) : null}
-                {/* Mechanism Section */}
-                {supplement.mechanism && (
-                  <div className="space-y-2">
-                    <h3 className="text-muted-foreground text-[10px] font-medium tracking-[0.2em] uppercase">
-                      Mechanism
-                    </h3>
-                    <p className="text-sm leading-relaxed">
-                      {supplement.mechanism}
-                    </p>
-                  </div>
-                )}
+              <Tabs
+                value={activeTab}
+                onValueChange={setActiveTab}
+                className="mt-4 flex flex-1 flex-col overflow-hidden"
+              >
+                <TabsList className="w-full">
+                  <TabsTrigger value="overview" className="flex-1">
+                    Overview
+                  </TabsTrigger>
+                  <TabsTrigger value="learn" className="flex-1">
+                    <BookOpen className="mr-1.5 h-3.5 w-3.5" />
+                    Learn
+                  </TabsTrigger>
+                </TabsList>
 
-                {/* Why Take It Section */}
-                {supplement.description && (
-                  <div className="space-y-2">
-                    <h3 className="text-muted-foreground text-[10px] font-medium tracking-[0.2em] uppercase">
-                      Why Take It
-                    </h3>
-                    <p className="text-sm leading-relaxed">
-                      {supplement.description}
-                    </p>
-                  </div>
-                )}
+                <div className="flex-1 overflow-y-auto">
+                  <TabsContent value="overview" className="mt-6">
+                    <OverviewContent supplement={supplement} />
+                  </TabsContent>
 
-                {/* Goals Section */}
-                {supplement.commonGoals &&
-                  supplement.commonGoals.length > 0 && (
-                    <div className="space-y-2">
-                      <h3 className="text-muted-foreground text-[10px] font-medium tracking-[0.2em] uppercase">
-                        Common Goals
-                      </h3>
-                      <div className="flex flex-wrap gap-1.5">
-                        {supplement.commonGoals.map((goal) => (
-                          <Badge
-                            key={goal}
-                            variant="secondary"
-                            className="text-xs"
-                          >
-                            {goalLabels[goal] ?? goal}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                {/* Research Link */}
-                {supplement.researchUrl && (
-                  <div className="border-t pt-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                      asChild
-                    >
-                      <a
-                        href={supplement.researchUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        View on Examine.com
-                      </a>
-                    </Button>
-                  </div>
-                )}
-              </div>
+                  <TabsContent value="learn" className="mt-6">
+                    <LearnTabContent supplementId={supplement.id} />
+                  </TabsContent>
+                </div>
+              </Tabs>
             </>
           )}
         </SheetContent>
