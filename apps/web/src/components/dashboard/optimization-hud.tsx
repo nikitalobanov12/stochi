@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useTransition } from "react";
-import { Clock, Zap, AlertTriangle, ChevronRight, ChevronDown, Bell, Check, BellRing, X, ShieldAlert, ExternalLink } from "lucide-react";
+import { Clock, Zap, AlertTriangle, ChevronDown, Bell, Check, BellRing, X, ShieldAlert, ExternalLink, Scale, Settings } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import {
@@ -11,8 +11,10 @@ import {
   DialogTitle,
   DialogDescription,
 } from "~/components/ui/dialog";
-import type { ExclusionZone, OptimizationOpportunity } from "~/server/services/biological-state";
+import type { ExclusionZone, OptimizationOpportunity, SuggestionCategory } from "~/server/services/biological-state";
 import { dismissSuggestion } from "~/server/actions/dismissed-suggestions";
+import { useCategoryPreferences } from "~/lib/use-category-preferences";
+import Link from "next/link";
 
 // ============================================================================
 // Types
@@ -25,6 +27,45 @@ type OptimizationHUDProps = {
 };
 
 type NotificationPermissionState = "default" | "granted" | "denied" | "unsupported";
+
+// ============================================================================
+// Category Configuration
+// ============================================================================
+
+const CATEGORY_CONFIG: Record<
+  SuggestionCategory,
+  {
+    label: string;
+    icon: typeof AlertTriangle;
+    colorClass: string;
+    priority: number;
+  }
+> = {
+  safety: {
+    label: "Safety Warnings",
+    icon: ShieldAlert,
+    colorClass: "status-critical",
+    priority: 1,
+  },
+  timing: {
+    label: "Timing Tips",
+    icon: Clock,
+    colorClass: "status-conflict",
+    priority: 2,
+  },
+  synergy: {
+    label: "Synergy Opportunities",
+    icon: Zap,
+    colorClass: "status-info",
+    priority: 3,
+  },
+  balance: {
+    label: "Balance Suggestions",
+    icon: Scale,
+    colorClass: "status-conflict",
+    priority: 4,
+  },
+};
 
 // ============================================================================
 // Notification Permission Hook
@@ -606,6 +647,9 @@ export function OptimizationHUD({
   // Track optimistically dismissed suggestions (by suggestionKey)
   const [optimisticallyDismissed, setOptimisticallyDismissed] = useState<Set<string>>(new Set());
   const [, startTransition] = useTransition();
+  
+  // Category preferences from localStorage
+  const { preferences: categoryPrefs, isHydrated } = useCategoryPreferences();
 
   // Handle permission request from a zone card
   const handleRequestPermission = useCallback((zone: ExclusionZone) => {
@@ -644,6 +688,36 @@ export function OptimizationHUD({
   const suggestions = optimizations.filter(
     (o) => !(o.type === "synergy" && o.title.startsWith("Active synergy")),
   );
+  
+  // Group suggestions by category
+  const groupedSuggestions = suggestions.reduce<Record<SuggestionCategory, OptimizationOpportunity[]>>(
+    (acc, opt) => {
+      const category = opt.category;
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(opt);
+      return acc;
+    },
+    { safety: [], synergy: [], timing: [], balance: [] },
+  );
+  
+  // Filter out dismissed suggestions and apply category visibility
+  const visibleGroupedSuggestions = Object.entries(groupedSuggestions)
+    .filter(([category]) => isHydrated ? categoryPrefs[category as SuggestionCategory] : true)
+    .map(([category, opts]) => ({
+      category: category as SuggestionCategory,
+      suggestions: opts.filter(
+        (opt) => opt.suggestionKey && !optimisticallyDismissed.has(opt.suggestionKey),
+      ),
+    }))
+    .filter(({ suggestions: s }) => s.length > 0)
+    .sort((a, b) => CATEGORY_CONFIG[a.category].priority - CATEGORY_CONFIG[b.category].priority);
+  
+  // Check if all categories are hidden
+  const allCategoriesHidden = isHydrated && 
+    Object.values(categoryPrefs).every((v) => !v) && 
+    suggestions.length > 0;
 
   // Sort exclusion zones by time remaining
   const sortedZones = [...exclusionZones].sort(
@@ -651,9 +725,9 @@ export function OptimizationHUD({
   );
 
   const hasContent =
-    sortedZones.length > 0 || activeSynergies.length > 0 || suggestions.length > 0;
+    sortedZones.length > 0 || activeSynergies.length > 0 || visibleGroupedSuggestions.length > 0;
 
-  if (!hasContent) {
+  if (!hasContent && !allCategoriesHidden) {
     return (
       <div className="glass-card p-4 text-center">
         <div className="text-muted-foreground font-mono text-xs">
@@ -731,20 +805,40 @@ export function OptimizationHUD({
           </div>
         )}
 
-        {/* Suggestions */}
-        {suggestions.length > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <ChevronRight className="h-3 w-3 status-info" />
-              <span className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
-                Suggestions
-              </span>
+        {/* Empty state when all categories are hidden */}
+        {allCategoriesHidden && (
+          <div className="glass-card p-4 text-center">
+            <div className="text-muted-foreground font-mono text-xs">
+              All suggestion categories are hidden
             </div>
-            <div className="space-y-2">
-              {suggestions
-                .filter((opt) => opt.suggestionKey && !optimisticallyDismissed.has(opt.suggestionKey))
-                .slice(0, 3)
-                .map((opt) => {
+            <Link 
+              href="/dashboard/settings"
+              className="text-muted-foreground/60 mt-1 flex items-center justify-center gap-1 font-mono text-[10px] hover:text-muted-foreground"
+            >
+              <Settings className="h-3 w-3" />
+              Manage in Settings
+            </Link>
+          </div>
+        )}
+
+        {/* Grouped Suggestions by Category */}
+        {visibleGroupedSuggestions.map(({ category, suggestions: categorysuggestions }) => {
+          const config = CATEGORY_CONFIG[category];
+          const Icon = config.icon;
+          
+          return (
+            <div key={category} className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Icon className={`h-3 w-3 ${config.colorClass}`} />
+                <span className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
+                  {config.label}
+                </span>
+                <span className="text-muted-foreground/50 font-mono text-[10px]">
+                  ({categorysuggestions.length})
+                </span>
+              </div>
+              <div className="space-y-2">
+                {categorysuggestions.slice(0, 3).map((opt) => {
                   const handleDismiss = () => {
                     const key = opt.suggestionKey;
                     if (!key) return;
@@ -775,9 +869,10 @@ export function OptimizationHUD({
                     />
                   );
                 })}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })}
       </div>
     </>
   );

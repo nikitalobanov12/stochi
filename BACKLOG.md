@@ -6,14 +6,6 @@
 
 ## Up Next
 
-- [ ] **Suggestion categories/grouping**
-  - Group suggestions in OptimizationHUD by type: Safety, Synergy, Timing, Balance
-  - Add category badges/headers to visually separate suggestion types
-  - Add per-category toggle in Settings (e.g., "Show safety warnings", "Show synergy tips")
-  - Store category preferences in `userPreference` table
-
-## Planned
-
 - [ ] **Smart notification timing**
   - Push notification when optimal window opens for a supplement
   - "Time to take your evening magnesium" based on supplement's `optimalTimeOfDay`
@@ -21,7 +13,19 @@
   - Integrate with existing Capacitor push notification setup (`lib/capacitor/push.ts`)
   - Add notification preferences to Settings (enable/disable, quiet hours)
 
+## Planned
+
+(empty)
+
 ## Completed
+
+- [x] **Suggestion categories/grouping**
+  - Group suggestions in OptimizationHUD by type: Safety, Synergy, Timing, Balance
+  - Add category badges/headers to visually separate suggestion types
+  - Add per-category toggle in Settings (e.g., "Show safety warnings", "Show synergy tips")
+  - Store category preferences in localStorage (instant, no server roundtrip)
+  - Uses `useSyncExternalStore` for proper React 18 hydration
+  - Balance detection via hardcoded pairs + "balance" keyword matching
 
 - [x] **Undo dismiss feature**
   - Added "Dismissed Suggestions" section to Settings page

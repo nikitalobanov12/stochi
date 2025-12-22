@@ -11,6 +11,7 @@ import {
   ChevronDown,
   ChevronUp,
   Undo2,
+  ShieldAlert,
 } from "lucide-react";
 
 import {
@@ -30,6 +31,10 @@ import {
   type DismissedSuggestionWithContext,
 } from "~/server/actions/dismissed-suggestions";
 import { cn } from "~/lib/utils";
+import {
+  useCategoryPreferences,
+  type SuggestionCategory,
+} from "~/lib/use-category-preferences";
 
 type SuggestionsCardProps = {
   initialShowAddSuggestions: boolean;
@@ -59,6 +64,42 @@ const TYPE_CONFIG = {
   },
 };
 
+// Category configuration for toggles
+const CATEGORY_CONFIG: Record<
+  SuggestionCategory,
+  {
+    label: string;
+    description: string;
+    icon: typeof Zap;
+    colorClass: string;
+  }
+> = {
+  safety: {
+    label: "Safety Warnings",
+    description: "Alerts about supplement interactions and limits",
+    icon: ShieldAlert,
+    colorClass: "text-red-400",
+  },
+  timing: {
+    label: "Timing Tips",
+    description: "Suggestions for optimal timing of supplements",
+    icon: Clock,
+    colorClass: "text-blue-400",
+  },
+  synergy: {
+    label: "Synergy Opportunities",
+    description: "Suggestions for supplements that work well together",
+    icon: Zap,
+    colorClass: "text-emerald-400",
+  },
+  balance: {
+    label: "Balance Suggestions",
+    description: "Recommendations for mineral balance pairs",
+    icon: Scale,
+    colorClass: "text-amber-400",
+  },
+};
+
 export function SuggestionsCard({
   initialShowAddSuggestions,
   dismissedSuggestions: initialDismissed,
@@ -71,6 +112,9 @@ export function SuggestionsCard({
   const [isPendingToggle, startToggleTransition] = useTransition();
   const [isPendingReset, startResetTransition] = useTransition();
   const [restoringKey, setRestoringKey] = useState<string | null>(null);
+  
+  // Category preferences from localStorage (instant, no server roundtrip)
+  const { preferences: categoryPrefs, toggleCategory, isHydrated } = useCategoryPreferences();
 
   const handleToggle = (checked: boolean) => {
     // Optimistic update
@@ -109,6 +153,9 @@ export function SuggestionsCard({
     // synergy or balance: show both supplements
     return item.supplementNames.join(" + ");
   };
+  
+  // Category order for display
+  const categoryOrder: SuggestionCategory[] = ["safety", "timing", "synergy", "balance"];
 
   return (
     <Card>
@@ -135,6 +182,41 @@ export function SuggestionsCard({
             onCheckedChange={handleToggle}
             disabled={isPendingToggle}
           />
+        </div>
+
+        {/* Category Toggles */}
+        <div className="border-t pt-4">
+          <div className="mb-3 space-y-0.5">
+            <div className="text-sm font-medium">Suggestion Categories</div>
+            <div className="text-muted-foreground text-xs">
+              Choose which types of suggestions to show on your dashboard
+            </div>
+          </div>
+          <div className="space-y-3">
+            {categoryOrder.map((category) => {
+              const config = CATEGORY_CONFIG[category];
+              const Icon = config.icon;
+              
+              return (
+                <div key={category} className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Icon className={cn("h-4 w-4", config.colorClass)} />
+                    <div className="space-y-0.5">
+                      <div className="text-sm font-medium">{config.label}</div>
+                      <div className="text-muted-foreground text-xs">
+                        {config.description}
+                      </div>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={isHydrated ? categoryPrefs[category] : true}
+                    onCheckedChange={() => toggleCategory(category)}
+                    disabled={!isHydrated}
+                  />
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* Dismissed Suggestions */}

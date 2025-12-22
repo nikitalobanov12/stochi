@@ -55,9 +55,14 @@ export type ExclusionZone = {
   researchUrl: string | null;
 };
 
+/** Category for grouping suggestions in the UI */
+export type SuggestionCategory = "safety" | "synergy" | "timing" | "balance";
+
 export type OptimizationOpportunity = {
   /** Type of optimization */
   type: "synergy" | "timing" | "stacking";
+  /** Category for UI grouping */
+  category: SuggestionCategory;
   /** Supplement IDs involved */
   supplementIds: string[];
   /** Human-readable title */
@@ -599,6 +604,70 @@ async function calculateExclusionZones(
   return exclusionZones.sort((a, b) => a.minutesRemaining - b.minutesRemaining);
 }
 
+// ============================================================================
+// Balance Detection
+// ============================================================================
+
+/**
+ * Known mineral balance pairs where both minerals should be taken together
+ * for optimal absorption and health outcomes.
+ */
+const BALANCE_PAIRS = [
+  ["zinc", "copper"],
+  ["calcium", "magnesium"],
+  ["sodium", "potassium"],
+  ["iron", "zinc"], // iron competes with zinc absorption
+  ["calcium", "vitamin d"], // vitamin D aids calcium absorption
+  ["magnesium", "vitamin d"], // magnesium needed for vitamin D activation
+] as const;
+
+/**
+ * Check if a suggestion is a balance-related suggestion.
+ * Returns true if:
+ * - The title or description contains "balance"
+ * - The supplements involved are a known balance pair
+ */
+function isBalanceSuggestion(
+  title: string,
+  description: string,
+  supplementNames: string[],
+): boolean {
+  // Check keyword in title/description
+  const text = `${title} ${description}`.toLowerCase();
+  if (text.includes("balance")) return true;
+
+  // Check hardcoded pairs
+  const lowerNames = supplementNames.map((n) => n.toLowerCase());
+  return BALANCE_PAIRS.some(
+    ([a, b]) =>
+      lowerNames.some((n) => n.includes(a)) &&
+      lowerNames.some((n) => n.includes(b)),
+  );
+}
+
+/**
+ * Determine the category for a suggestion based on its properties.
+ */
+function determineSuggestionCategory(
+  type: "synergy" | "timing" | "stacking",
+  title: string,
+  description: string,
+  supplementNames: string[],
+  hasSafetyWarning: boolean,
+): SuggestionCategory {
+  // Timing suggestions are always "timing"
+  if (type === "timing") return "timing";
+
+  // If there's a safety warning, it's a "safety" suggestion
+  if (hasSafetyWarning) return "safety";
+
+  // Check if it's a balance suggestion
+  if (isBalanceSuggestion(title, description, supplementNames)) return "balance";
+
+  // Default to "synergy" for synergy type suggestions
+  return "synergy";
+}
+
 /**
  * Generate a consistent suggestion key for synergy/balance suggestions.
  * IDs are sorted to ensure the same pair always produces the same key.
@@ -744,6 +813,7 @@ async function calculateOptimizations(
       
       optimizations.push({
         type: "timing",
+        category: "timing",
         supplementIds: [compound.supplementId],
         title: `Optimize ${supp.name} timing`,
         description: getTimingRecommendation(supp.optimalTimeOfDay),
@@ -829,12 +899,24 @@ async function calculateOptimizations(
       // Skip if the suggested supplement isn't relevant to user's goals
       if (!isRelevantToUserGoals(synergy.target.commonGoals)) continue;
       
+      const title = `Enhance ${synergy.source.name} with ${synergy.target.name}`;
+      const description = synergy.suggestion ?? `${synergy.source.name} and ${synergy.target.name} have synergistic effects.`;
+      const hasSafetyWarning = !!getSafetyWarning(synergy.target);
+      const category = determineSuggestionCategory(
+        "synergy",
+        title,
+        description,
+        [synergy.source.name, synergy.target.name],
+        hasSafetyWarning,
+      );
+      
       optimizations.push({
         type: "synergy",
+        category,
         supplementIds: [synergy.sourceId, synergy.targetId],
-        title: `Enhance ${synergy.source.name} with ${synergy.target.name}`,
-        description: synergy.suggestion ?? `${synergy.source.name} and ${synergy.target.name} have synergistic effects.`,
-        priority: 2,
+        title,
+        description,
+        priority: hasSafetyWarning ? 4 : 2, // Safety warnings get higher priority
         safetyWarning: getSafetyWarning(synergy.target),
         suggestionKey,
         suggestedSupplement: getSupplementDetails(synergy.target),
@@ -847,12 +929,24 @@ async function calculateOptimizations(
       // Skip if the suggested supplement isn't relevant to user's goals
       if (!isRelevantToUserGoals(synergy.source.commonGoals)) continue;
       
+      const title = `Enhance ${synergy.target.name} with ${synergy.source.name}`;
+      const description = synergy.suggestion ?? `${synergy.target.name} and ${synergy.source.name} have synergistic effects.`;
+      const hasSafetyWarning = !!getSafetyWarning(synergy.source);
+      const category = determineSuggestionCategory(
+        "synergy",
+        title,
+        description,
+        [synergy.target.name, synergy.source.name],
+        hasSafetyWarning,
+      );
+      
       optimizations.push({
         type: "synergy",
+        category,
         supplementIds: [synergy.sourceId, synergy.targetId],
-        title: `Enhance ${synergy.target.name} with ${synergy.source.name}`,
-        description: synergy.suggestion ?? `${synergy.target.name} and ${synergy.source.name} have synergistic effects.`,
-        priority: 2,
+        title,
+        description,
+        priority: hasSafetyWarning ? 4 : 2, // Safety warnings get higher priority
         safetyWarning: getSafetyWarning(synergy.source),
         suggestionKey,
         suggestedSupplement: getSupplementDetails(synergy.source),
@@ -860,11 +954,15 @@ async function calculateOptimizations(
     } else if (hasSource && hasTarget) {
       // User already has both - note the active synergy
       // Active synergies are not dismissible (they're positive feedback, not suggestions)
+      const title = `Active synergy: ${synergy.source.name} + ${synergy.target.name}`;
+      const description = synergy.suggestion ?? "You're getting the benefit of this synergy!";
+      
       optimizations.push({
         type: "synergy",
+        category: "synergy", // Active synergies are always in synergy category
         supplementIds: [synergy.sourceId, synergy.targetId],
-        title: `Active synergy: ${synergy.source.name} + ${synergy.target.name}`,
-        description: synergy.suggestion ?? "You're getting the benefit of this synergy!",
+        title,
+        description,
         priority: 1,
         suggestionKey, // Included but won't be used for dismissal
       });
