@@ -267,7 +267,6 @@ export async function updateStackItem(
 /**
  * Log all items in a stack (simple version for form actions).
  * This does NOT perform safety checks - use logStackWithSafetyCheck for that.
- * Updates lastLoggedAt on the stack transactionally.
  *
  * @param stackId - The stack to log
  */
@@ -294,25 +293,22 @@ export async function logStack(stackId: string): Promise<void> {
 
   const now = new Date();
 
-  // Use transaction to ensure ACID compliance for log insertion + lastLoggedAt update
-  await db.transaction(async (tx) => {
-    // Insert all log entries
-    await tx.insert(log).values(
-      userStack.items.map((item) => ({
-        userId: session.user.id,
-        supplementId: item.supplementId,
-        dosage: item.dosage,
-        unit: item.unit,
-        loggedAt: now,
-      })),
-    );
+  // Insert all log entries
+  await db.insert(log).values(
+    userStack.items.map((item) => ({
+      userId: session.user.id,
+      supplementId: item.supplementId,
+      dosage: item.dosage,
+      unit: item.unit,
+      loggedAt: now,
+    })),
+  );
 
-    // Update lastLoggedAt on the stack
-    await tx
-      .update(stack)
-      .set({ lastLoggedAt: now, updatedAt: now })
-      .where(eq(stack.id, stackId));
-  });
+  // Update lastLoggedAt on the stack
+  await db
+    .update(stack)
+    .set({ lastLoggedAt: now, updatedAt: now })
+    .where(eq(stack.id, stackId));
 
   revalidatePath("/dashboard");
   revalidatePath("/log");
@@ -322,7 +318,6 @@ export async function logStack(stackId: string): Promise<void> {
 /**
  * Log all items in a stack with safety checks.
  * Use this when you need to handle safety warnings on the client.
- * Updates lastLoggedAt on the stack transactionally.
  *
  * @param stackId - The stack to log
  * @param forceOverride - If true, bypass soft limit warnings (hard limits still block)
@@ -391,25 +386,22 @@ export async function logStackWithSafetyCheck(
 
   const now = new Date();
 
-  // Use transaction to ensure ACID compliance for log insertion + lastLoggedAt update
-  await db.transaction(async (tx) => {
-    // Insert all log entries
-    await tx.insert(log).values(
-      userStack.items.map((item) => ({
-        userId: session.user.id,
-        supplementId: item.supplementId,
-        dosage: item.dosage,
-        unit: item.unit,
-        loggedAt: now,
-      })),
-    );
+  // Insert all log entries
+  await db.insert(log).values(
+    userStack.items.map((item) => ({
+      userId: session.user.id,
+      supplementId: item.supplementId,
+      dosage: item.dosage,
+      unit: item.unit,
+      loggedAt: now,
+    })),
+  );
 
-    // Update lastLoggedAt on the stack
-    await tx
-      .update(stack)
-      .set({ lastLoggedAt: now, updatedAt: now })
-      .where(eq(stack.id, stackId));
-  });
+  // Update lastLoggedAt on the stack
+  await db
+    .update(stack)
+    .set({ lastLoggedAt: now, updatedAt: now })
+    .where(eq(stack.id, stackId));
 
   revalidatePath("/dashboard");
   revalidatePath("/log");
