@@ -91,6 +91,8 @@ export type OptimizationFilterOptions = {
   dismissedKeys?: Set<string>;
   /** Whether to show "add supplement" suggestions (synergies, balance) */
   showAddSuggestions?: boolean;
+  /** User's health goals for filtering suggestions by relevance */
+  userGoals?: string[];
 };
 
 export type BiologicalState = {
@@ -689,6 +691,23 @@ async function calculateOptimizations(
   // Extract filter options with defaults
   const dismissedKeys = filterOptions?.dismissedKeys ?? new Set<string>();
   const showAddSuggestions = filterOptions?.showAddSuggestions ?? true;
+  const userGoals = filterOptions?.userGoals ?? [];
+
+  /**
+   * Check if a supplement is relevant to the user's goals.
+   * Returns true if:
+   * - User has no goals set (show all suggestions)
+   * - Supplement has no commonGoals defined (can't filter)
+   * - Supplement's commonGoals overlap with user's goals
+   */
+  function isRelevantToUserGoals(commonGoals: string[] | null): boolean {
+    // If user has no goals, show all suggestions
+    if (userGoals.length === 0) return true;
+    // If supplement has no goals defined, can't filter - show it
+    if (!commonGoals || commonGoals.length === 0) return true;
+    // Check for overlap between supplement goals and user goals
+    return commonGoals.some((goal) => userGoals.includes(goal));
+  }
 
   // ==========================================================================
   // Timing Suggestions - Check if supplements were logged at suboptimal times
@@ -807,6 +826,8 @@ async function calculateOptimizations(
       if (!showAddSuggestions) continue;
       // Skip if this suggestion has been dismissed
       if (dismissedKeys.has(suggestionKey)) continue;
+      // Skip if the suggested supplement isn't relevant to user's goals
+      if (!isRelevantToUserGoals(synergy.target.commonGoals)) continue;
       
       optimizations.push({
         type: "synergy",
@@ -823,6 +844,8 @@ async function calculateOptimizations(
       if (!showAddSuggestions) continue;
       // Skip if this suggestion has been dismissed
       if (dismissedKeys.has(suggestionKey)) continue;
+      // Skip if the suggested supplement isn't relevant to user's goals
+      if (!isRelevantToUserGoals(synergy.source.commonGoals)) continue;
       
       optimizations.push({
         type: "synergy",

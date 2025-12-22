@@ -1,9 +1,9 @@
-import { eq, desc, and, gte, lt } from "drizzle-orm";
+import { eq, desc, and, gte, lt, asc } from "drizzle-orm";
 import Link from "next/link";
 import { ChevronRight, Clock, Layers } from "lucide-react";
 
 import { db } from "~/server/db";
-import { stack, log, supplement } from "~/server/db/schema";
+import { stack, log, supplement, userGoal } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
 import { logStack } from "~/server/actions/stacks";
 import {
@@ -51,6 +51,14 @@ export default async function DashboardPage() {
     getDismissedSuggestionKeys(),
   ]);
 
+  // Fetch user goals for goal-based suggestion filtering
+  const userGoals = await db.query.userGoal.findMany({
+    where: eq(userGoal.userId, session.user.id),
+    orderBy: [asc(userGoal.priority)],
+    columns: { goal: true },
+  });
+  const userGoalKeys = userGoals.map((g) => g.goal);
+
   const [userStacks, todayLogs, allSupplements, stackCompletion, streak, biologicalState, timelineData, safetyHeadroom] =
     await Promise.all([
       db.query.stack.findMany({
@@ -89,6 +97,7 @@ export default async function DashboardPage() {
       getBiologicalState(session.user.id, {
         dismissedKeys,
         showAddSuggestions: preferences.showAddSuggestions,
+        userGoals: userGoalKeys,
       }),
       getTimelineData(session.user.id),
       getSafetyHeadroom(session.user.id),
