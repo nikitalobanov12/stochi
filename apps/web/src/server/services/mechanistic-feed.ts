@@ -1,7 +1,13 @@
 import { type mealContextEnum, type routeEnum } from "~/server/db/schema";
 import { checkMealContext } from "~/server/services/safety";
-import { checkCYP450Interaction, getCYP450Pathways } from "~/server/data/cyp450-pathways";
-import type { ExclusionZone, OptimizationOpportunity } from "~/server/services/biological-state";
+import {
+  checkCYP450Interaction,
+  getCYP450Pathways,
+} from "~/server/data/cyp450-pathways";
+import type {
+  ExclusionZone,
+  OptimizationOpportunity,
+} from "~/server/services/biological-state";
 
 type MealContext = (typeof mealContextEnum.enumValues)[number];
 type RouteOfAdministration = (typeof routeEnum.enumValues)[number];
@@ -63,14 +69,14 @@ export function generateAbsorptionEntries(
 ): MechanisticFeedEntry[] {
   const entries: MechanisticFeedEntry[] = [];
   const timestamp = formatTime(log.loggedAt);
-  
+
   // Check meal context optimization
   const mealResult = checkMealContext(
     log.supplementName,
     log.mealContext,
     log.safetyCategory,
   );
-  
+
   if (mealResult.rule) {
     if (mealResult.isOptimal) {
       const percentBoost = Math.round((mealResult.multiplier - 1) * 100);
@@ -93,7 +99,7 @@ export function generateAbsorptionEntries(
       });
     }
   }
-  
+
   // Route-specific entries for non-oral supplements
   if (log.route && log.route !== "oral") {
     const routeMessages: Record<RouteOfAdministration, string> = {
@@ -106,7 +112,7 @@ export function generateAbsorptionEntries(
       topical: "local tissue concentration → minimal systemic exposure",
       rectal: "portal bypass → hepatic first-pass avoidance",
     };
-    
+
     const routeMsg = routeMessages[log.route];
     if (routeMsg) {
       entries.push({
@@ -118,7 +124,7 @@ export function generateAbsorptionEntries(
       });
     }
   }
-  
+
   // Bioavailability percentage entry
   if (log.bioavailabilityPercent && log.bioavailabilityPercent < 50) {
     entries.push({
@@ -129,7 +135,7 @@ export function generateAbsorptionEntries(
       supplements: [log.supplementName],
     });
   }
-  
+
   return entries;
 }
 
@@ -141,7 +147,7 @@ export function generateKineticsEntries(
 ): MechanisticFeedEntry[] {
   const entries: MechanisticFeedEntry[] = [];
   const timestamp = formatTime(log.loggedAt);
-  
+
   // Peak time entry
   if (log.peakMinutes) {
     const peakHours = (log.peakMinutes / 60).toFixed(1);
@@ -153,13 +159,15 @@ export function generateKineticsEntries(
       supplements: [log.supplementName],
     });
   }
-  
+
   // Half-life and clearance entry
   if (log.halfLifeMinutes) {
     const halfLifeHours = (log.halfLifeMinutes / 60).toFixed(1);
-    const clearanceTime = new Date(log.loggedAt.getTime() + log.halfLifeMinutes * 5 * 60 * 1000);
+    const clearanceTime = new Date(
+      log.loggedAt.getTime() + log.halfLifeMinutes * 5 * 60 * 1000,
+    );
     const clearanceStr = formatTime(clearanceTime);
-    
+
     entries.push({
       timestamp,
       module: "CLEARANCE",
@@ -168,13 +176,13 @@ export function generateKineticsEntries(
       supplements: [log.supplementName],
     });
   }
-  
+
   return entries;
 }
 
 /**
  * Generate CYP450 pathway entries for enzyme interactions.
- * 
+ *
  * High-confidence interactions (>=0.5) are shown as PATHWAY warnings.
  * Low-confidence interactions (<0.5) are shown as RESEARCH notes.
  */
@@ -183,46 +191,49 @@ export function generatePathwayEntries(
 ): MechanisticFeedEntry[] {
   const entries: MechanisticFeedEntry[] = [];
   const timestamp = formatTime(new Date());
-  
+
   // Confidence threshold for showing as warning vs research note
   const CONFIDENCE_THRESHOLD = 0.5;
-  
+
   // Check for CYP450 interactions between supplements
   for (let i = 0; i < supplementNames.length; i++) {
     for (let j = i + 1; j < supplementNames.length; j++) {
       const supp1 = supplementNames[i];
       const supp2 = supplementNames[j];
       if (!supp1 || !supp2) continue;
-      
+
       const interactions = checkCYP450Interaction(supp1, supp2);
-      
+
       for (const interaction of interactions) {
-        const isLowConfidence = interaction.confidenceScore < CONFIDENCE_THRESHOLD;
-        
+        const isLowConfidence =
+          interaction.confidenceScore < CONFIDENCE_THRESHOLD;
+
         entries.push({
           timestamp,
           module: isLowConfidence ? "RESEARCH" : "PATHWAY",
           message: isLowConfidence
             ? `[Research] ${interaction.enzyme} ${interaction.effect} (${Math.round(interaction.confidenceScore * 100)}% confidence) → ${interaction.description}`
             : `${interaction.enzyme} ${interaction.effect} detected → ${interaction.description}`,
-          status: isLowConfidence 
-            ? "INFO" 
-            : (interaction.strength === "strong" ? "WARN" : "INFO"),
+          status: isLowConfidence
+            ? "INFO"
+            : interaction.strength === "strong"
+              ? "WARN"
+              : "INFO",
           supplements: [supp1, supp2],
           researchUrl: interaction.researchUrl,
         });
       }
     }
   }
-  
+
   // Check for individual CYP450 substrate/inhibitor info
   for (const supplementName of supplementNames) {
     const pathways = getCYP450Pathways(supplementName);
-    
+
     for (const pathway of pathways) {
       if (pathway.effect === "substrate") {
         const isLowConfidence = pathway.confidenceScore < CONFIDENCE_THRESHOLD;
-        
+
         entries.push({
           timestamp,
           module: isLowConfidence ? "RESEARCH" : "PATHWAY",
@@ -236,7 +247,7 @@ export function generatePathwayEntries(
       }
     }
   }
-  
+
   return entries;
 }
 
@@ -248,16 +259,16 @@ export function generateSynergyEntries(
 ): MechanisticFeedEntry[] {
   const entries: MechanisticFeedEntry[] = [];
   const timestamp = formatTime(new Date());
-  
+
   const activeSynergies = optimizations.filter(
     (o) => o.type === "synergy" && o.title.startsWith("Active synergy"),
   );
-  
+
   for (const synergy of activeSynergies) {
     // Parse supplement names from title like "Active synergy: Caffeine + L-Theanine"
     const match = synergy.title.match(/Active synergy: (.+) \+ (.+)/);
     const supplements = match ? [match[1]!, match[2]!] : [];
-    
+
     entries.push({
       timestamp,
       module: "SYNERGY",
@@ -266,7 +277,7 @@ export function generateSynergyEntries(
       supplements,
     });
   }
-  
+
   return entries;
 }
 
@@ -278,12 +289,15 @@ export function generateTimingEntries(
 ): MechanisticFeedEntry[] {
   const entries: MechanisticFeedEntry[] = [];
   const timestamp = formatTime(new Date());
-  
+
   for (const zone of exclusionZones) {
-    const status: FeedStatus = 
-      zone.severity === "critical" ? "CRITICAL" :
-      zone.severity === "medium" ? "WARN" : "INFO";
-    
+    const status: FeedStatus =
+      zone.severity === "critical"
+        ? "CRITICAL"
+        : zone.severity === "medium"
+          ? "WARN"
+          : "INFO";
+
     entries.push({
       timestamp,
       module: "TIMING",
@@ -293,7 +307,7 @@ export function generateTimingEntries(
       researchUrl: zone.researchUrl ?? undefined,
     });
   }
-  
+
   return entries;
 }
 
@@ -305,21 +319,54 @@ export function generateReceptorEntries(
 ): MechanisticFeedEntry[] {
   const entries: MechanisticFeedEntry[] = [];
   const timestamp = formatTime(new Date());
-  
+
   // Known receptor mechanisms
-  const receptorMechanisms: Record<string, { mechanism: string; receptor: string }> = {
-    "Magnesium": { mechanism: "NMDA receptor: Mg²⁺ block active → glutamate modulation", receptor: "NMDA" },
-    "Caffeine": { mechanism: "Adenosine A1/A2A antagonism → cortisol/alertness modulation", receptor: "Adenosine" },
-    "L-Theanine": { mechanism: "AMPA receptor modulation → α-wave enhancement", receptor: "AMPA" },
-    "Ashwagandha": { mechanism: "GABAergic modulation → anxiolytic effect", receptor: "GABA-A" },
-    "Melatonin": { mechanism: "MT1/MT2 receptor agonism → circadian entrainment", receptor: "Melatonin" },
-    "GABA": { mechanism: "GABA-A receptor agonism → inhibitory tone increased", receptor: "GABA-A" },
-    "Phenibut": { mechanism: "GABA-B receptor agonism → anxiolytic/sedative effect", receptor: "GABA-B" },
-    "Bacopa": { mechanism: "Cholinergic modulation → acetylcholine increase", receptor: "Muscarinic" },
-    "Alpha-GPC": { mechanism: "Cholinergic precursor → ACh synthesis upregulated", receptor: "Nicotinic" },
-    "Lion's Mane": { mechanism: "NGF synthesis induction → neuroplasticity enhancement", receptor: "TrkA" },
+  const receptorMechanisms: Record<
+    string,
+    { mechanism: string; receptor: string }
+  > = {
+    Magnesium: {
+      mechanism: "NMDA receptor: Mg²⁺ block active → glutamate modulation",
+      receptor: "NMDA",
+    },
+    Caffeine: {
+      mechanism: "Adenosine A1/A2A antagonism → cortisol/alertness modulation",
+      receptor: "Adenosine",
+    },
+    "L-Theanine": {
+      mechanism: "AMPA receptor modulation → α-wave enhancement",
+      receptor: "AMPA",
+    },
+    Ashwagandha: {
+      mechanism: "GABAergic modulation → anxiolytic effect",
+      receptor: "GABA-A",
+    },
+    Melatonin: {
+      mechanism: "MT1/MT2 receptor agonism → circadian entrainment",
+      receptor: "Melatonin",
+    },
+    GABA: {
+      mechanism: "GABA-A receptor agonism → inhibitory tone increased",
+      receptor: "GABA-A",
+    },
+    Phenibut: {
+      mechanism: "GABA-B receptor agonism → anxiolytic/sedative effect",
+      receptor: "GABA-B",
+    },
+    Bacopa: {
+      mechanism: "Cholinergic modulation → acetylcholine increase",
+      receptor: "Muscarinic",
+    },
+    "Alpha-GPC": {
+      mechanism: "Cholinergic precursor → ACh synthesis upregulated",
+      receptor: "Nicotinic",
+    },
+    "Lion's Mane": {
+      mechanism: "NGF synthesis induction → neuroplasticity enhancement",
+      receptor: "TrkA",
+    },
   };
-  
+
   for (const supplementName of supplementNames) {
     // Find matching receptor mechanism (case-insensitive partial match)
     for (const [key, value] of Object.entries(receptorMechanisms)) {
@@ -335,7 +382,7 @@ export function generateReceptorEntries(
       }
     }
   }
-  
+
   return entries;
 }
 
@@ -363,28 +410,28 @@ export function generateMechanisticFeed(
     optimizations = [],
     maxEntries = 10,
   } = options;
-  
+
   const allEntries: MechanisticFeedEntry[] = [];
-  
+
   // Generate entries from recent logs
   for (const log of recentLogs) {
     allEntries.push(...generateAbsorptionEntries(log));
     allEntries.push(...generateKineticsEntries(log));
   }
-  
+
   // Generate CYP450 pathway entries
   const supplementNames = recentLogs.map((l) => l.supplementName);
   allEntries.push(...generatePathwayEntries(supplementNames));
-  
+
   // Generate receptor mechanism entries
   allEntries.push(...generateReceptorEntries(supplementNames));
-  
+
   // Generate synergy entries
   allEntries.push(...generateSynergyEntries(optimizations));
-  
+
   // Generate timing entries
   allEntries.push(...generateTimingEntries(exclusionZones));
-  
+
   // Sort by timestamp and limit
   const sorted = allEntries.sort((a, b) => {
     // Parse timestamps for sorting
@@ -392,7 +439,7 @@ export function generateMechanisticFeed(
     const timeB = parseTimeToMinutes(b.timestamp);
     return timeA - timeB;
   });
-  
+
   // Deduplicate similar messages
   const seen = new Set<string>();
   const deduplicated = sorted.filter((entry) => {
@@ -401,7 +448,7 @@ export function generateMechanisticFeed(
     seen.add(key);
     return true;
   });
-  
+
   return deduplicated.slice(0, maxEntries);
 }
 

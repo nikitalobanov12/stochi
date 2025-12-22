@@ -47,7 +47,11 @@ type ProtocolLibraryDialogProps = {
 // Authority Badge
 // ============================================================================
 
-function AuthorityBadge({ authority }: { authority?: "high" | "medium" | "community" }) {
+function AuthorityBadge({
+  authority,
+}: {
+  authority?: "high" | "medium" | "community";
+}) {
   if (authority === "high") {
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-[#39FF14]/10 px-2 py-0.5 font-mono text-[9px] text-[#39FF14]">
@@ -127,7 +131,7 @@ function TemplateCard({
       onClick={onSelect}
       disabled={isLoading || isImported}
       className={cn(
-        "border-white/5 bg-white/[0.02] group w-full rounded-lg border p-4 text-left transition-all",
+        "group w-full rounded-lg border border-white/5 bg-white/[0.02] p-4 text-left transition-all",
         "hover:border-white/10 hover:bg-white/[0.04]",
         "disabled:cursor-not-allowed disabled:opacity-50",
         isImported && "border-[#39FF14]/30 bg-[#39FF14]/5",
@@ -233,8 +237,12 @@ export function ProtocolLibraryDialog({
   const templates = getTemplatesByAuthority();
 
   // Group by authority, separating research stacks
-  const highAuthority = templates.filter((t) => t.authority === "high" && !t.isResearchStack);
-  const mediumAuthority = templates.filter((t) => t.authority === "medium" && !t.isResearchStack);
+  const highAuthority = templates.filter(
+    (t) => t.authority === "high" && !t.isResearchStack,
+  );
+  const mediumAuthority = templates.filter(
+    (t) => t.authority === "medium" && !t.isResearchStack,
+  );
   const communityAuthority = templates.filter(
     (t) => (t.authority === "community" || !t.authority) && !t.isResearchStack,
   );
@@ -362,7 +370,7 @@ export function ProtocolLibraryDialog({
           {/* Research/Peptide Stacks */}
           {researchStacks.length > 0 && (
             <div className="space-y-2">
-              <h3 className="flex items-center gap-2 font-mono text-[10px] tracking-wider uppercase text-purple-400">
+              <h3 className="flex items-center gap-2 font-mono text-[10px] tracking-wider text-purple-400 uppercase">
                 <FlaskConical className="h-3 w-3" />
                 Research Compounds
               </h3>

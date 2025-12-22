@@ -32,25 +32,29 @@ const DEMO_ENTRIES: FeedEntry[] = [
   {
     timestamp: "08:15",
     module: "ABSORPTION",
-    message: "Vitamin D3 lipophilic matrix detected → fat co-ingestion +47% bioavail",
+    message:
+      "Vitamin D3 lipophilic matrix detected → fat co-ingestion +47% bioavail",
     status: "OK",
   },
   {
     timestamp: "08:15",
     module: "KINETICS",
-    message: "Magnesium glycinate Cmax reached (t=1.2h) → steady-state in 4 doses",
+    message:
+      "Magnesium glycinate Cmax reached (t=1.2h) → steady-state in 4 doses",
     status: "INFO",
   },
   {
     timestamp: "08:16",
     module: "RECEPTOR",
-    message: "NMDA receptor: Mg²⁺ block active (Vm=-65mV) → glutamate modulation",
+    message:
+      "NMDA receptor: Mg²⁺ block active (Vm=-65mV) → glutamate modulation",
     status: "OK",
   },
   {
     timestamp: "08:45",
     module: "SYNERGY",
-    message: "Zinc + Copper competitive inhibition → Cu:Zn ratio 1:15 (optimal)",
+    message:
+      "Zinc + Copper competitive inhibition → Cu:Zn ratio 1:15 (optimal)",
     status: "OK",
   },
   {
@@ -62,13 +66,15 @@ const DEMO_ENTRIES: FeedEntry[] = [
   {
     timestamp: "09:30",
     module: "CLEARANCE",
-    message: "Caffeine t½ = 5.2h (CYP1A2 fast metabolizer) → clearance by 14:30",
+    message:
+      "Caffeine t½ = 5.2h (CYP1A2 fast metabolizer) → clearance by 14:30",
     status: "INFO",
   },
   {
     timestamp: "10:00",
     module: "ABSORPTION",
-    message: "Iron + Vitamin C chelation → Fe³⁺ reduction to Fe²⁺ (+67% uptake)",
+    message:
+      "Iron + Vitamin C chelation → Fe³⁺ reduction to Fe²⁺ (+67% uptake)",
     status: "OK",
   },
   {
@@ -135,7 +141,7 @@ export function MechanisticFeed({
   maxVisible = 6,
 }: MechanisticFeedProps) {
   const [entries, setEntries] = useState<FeedEntry[]>(() =>
-    DEMO_ENTRIES.slice(0, 3)
+    DEMO_ENTRIES.slice(0, 3),
   );
   const [isPaused, setIsPaused] = useState(false);
   // Initialize with SSR-safe false, then update on client
@@ -150,7 +156,7 @@ export function MechanisticFeed({
   // Subscribe to reduced motion preference changes
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    
+
     const handler = (e: MediaQueryListEvent) => {
       setPrefersReducedMotion(e.matches);
     };
@@ -174,7 +180,8 @@ export function MechanisticFeed({
     if (!autoPlay || isPaused || prefersReducedMotion) return;
 
     const timer = setInterval(() => {
-      currentIndexRef.current = (currentIndexRef.current + 1) % DEMO_ENTRIES.length;
+      currentIndexRef.current =
+        (currentIndexRef.current + 1) % DEMO_ENTRIES.length;
       const nextEntry = DEMO_ENTRIES[currentIndexRef.current];
 
       if (nextEntry) {
@@ -200,15 +207,13 @@ export function MechanisticFeed({
     <div className={cn("h-full", className)}>
       {/* Header */}
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-medium text-white/90">
-          Mechanistic Feed
-        </h3>
+        <h3 className="text-sm font-medium text-white/90">Mechanistic Feed</h3>
         <div className="flex items-center gap-2">
           <span className="font-mono text-[10px] text-white/50">LIVE</span>
           <span
             className={cn(
               "h-1.5 w-1.5 rounded-full",
-              isPaused ? "bg-amber-500" : "bg-emerald-500 animate-pulse"
+              isPaused ? "bg-amber-500" : "animate-pulse bg-emerald-500",
             )}
             aria-label={isPaused ? "Paused" : "Running"}
           />
@@ -230,7 +235,7 @@ export function MechanisticFeed({
             key={`${entry.timestamp}-${entry.module}-${index}`}
             className={cn(
               "flex flex-wrap gap-x-2 gap-y-0.5 py-0.5",
-              "animate-in fade-in slide-in-from-bottom-1 duration-300"
+              "animate-in fade-in slide-in-from-bottom-1 duration-300",
             )}
           >
             <span className="shrink-0 text-white/25">[{entry.timestamp}]</span>
@@ -250,7 +255,7 @@ export function MechanisticFeed({
           <span
             className={cn(
               "h-3 w-1.5 bg-emerald-500/70",
-              !prefersReducedMotion && "animate-pulse"
+              !prefersReducedMotion && "animate-pulse",
             )}
             aria-hidden="true"
           />

@@ -134,7 +134,7 @@ function OverviewContent({ supplement }: { supplement: SupplementData }) {
       {/* Mechanism Section */}
       {supplement.mechanism && (
         <div className="space-y-2">
-          <h3 className="text-muted-foreground text-[10px] font-medium uppercase tracking-[0.2em]">
+          <h3 className="text-muted-foreground text-[10px] font-medium tracking-[0.2em] uppercase">
             Mechanism
           </h3>
           <p className="text-sm leading-relaxed">{supplement.mechanism}</p>
@@ -144,7 +144,7 @@ function OverviewContent({ supplement }: { supplement: SupplementData }) {
       {/* Why Take It Section */}
       {supplement.description && (
         <div className="space-y-2">
-          <h3 className="text-muted-foreground text-[10px] font-medium uppercase tracking-[0.2em]">
+          <h3 className="text-muted-foreground text-[10px] font-medium tracking-[0.2em] uppercase">
             Why Take It
           </h3>
           <p className="text-sm leading-relaxed">{supplement.description}</p>
@@ -154,7 +154,7 @@ function OverviewContent({ supplement }: { supplement: SupplementData }) {
       {/* Goals Section */}
       {supplement.commonGoals && supplement.commonGoals.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-muted-foreground text-[10px] font-medium uppercase tracking-[0.2em]">
+          <h3 className="text-muted-foreground text-[10px] font-medium tracking-[0.2em] uppercase">
             Common Goals
           </h3>
           <div className="flex flex-wrap gap-1.5">
@@ -259,7 +259,9 @@ function LearnTabContent({ supplementId }: { supplementId: string }) {
     );
   }
 
-  return <LearnSection knowledge={knowledge} onAskQuestion={handleAskQuestion} />;
+  return (
+    <LearnSection knowledge={knowledge} onAskQuestion={handleAskQuestion} />
+  );
 }
 
 // ============================================================================

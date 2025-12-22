@@ -583,13 +583,17 @@ export function checkMealContext(
   safetyCategory?: string | null,
 ): MealContextCheckResult {
   const rule = getBioavailabilityRule(supplementName, safetyCategory);
-  
+
   if (!rule) {
     return { isOptimal: true, multiplier: 1.0 };
   }
-  
-  const result = isMealContextOptimal(supplementName, mealContext, safetyCategory);
-  
+
+  const result = isMealContextOptimal(
+    supplementName,
+    mealContext,
+    safetyCategory,
+  );
+
   return {
     ...result,
     rule,
@@ -610,19 +614,19 @@ export function checkStackMealContext(
   mealContext: MealContext | null | undefined,
 ): MealContextCheckResult[] {
   const warnings: MealContextCheckResult[] = [];
-  
+
   for (const item of items) {
     const result = checkMealContext(
       item.supplementName,
       mealContext,
       item.safetyCategory,
     );
-    
+
     if (!result.isOptimal && result.warning) {
       warnings.push(result);
     }
   }
-  
+
   return warnings;
 }
 
@@ -640,7 +644,7 @@ export function getBioavailabilitySummary(
   percentChange: number;
 } {
   const result = checkMealContext(supplementName, mealContext, safetyCategory);
-  
+
   if (!result.rule) {
     return {
       hasImpact: false,
@@ -648,9 +652,9 @@ export function getBioavailabilitySummary(
       percentChange: 0,
     };
   }
-  
+
   const percentChange = Math.round((result.multiplier - 1) * 100);
-  
+
   if (result.isOptimal) {
     return {
       hasImpact: true,
@@ -658,7 +662,7 @@ export function getBioavailabilitySummary(
       percentChange,
     };
   }
-  
+
   return {
     hasImpact: true,
     description: result.warning ?? "Suboptimal meal context for absorption.",

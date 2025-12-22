@@ -45,7 +45,8 @@ const AUTHORITY_CONFIG = {
 };
 
 export default function ProtocolLibraryPage() {
-  const [selectedTemplate, setSelectedTemplate] = useState<StackTemplate | null>(null);
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<StackTemplate | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedGoal, setSelectedGoal] = useState<GoalKey | "all">("all");
@@ -60,9 +61,11 @@ export default function ProtocolLibraryPage() {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       const matchesName = template.name.toLowerCase().includes(query);
-      const matchesDescription = template.description.toLowerCase().includes(query);
+      const matchesDescription = template.description
+        .toLowerCase()
+        .includes(query);
       const matchesSupplements = template.supplements.some((s) =>
-        s.supplementName.toLowerCase().includes(query)
+        s.supplementName.toLowerCase().includes(query),
       );
       if (!matchesName && !matchesDescription && !matchesSupplements) {
         return false;
@@ -85,9 +88,15 @@ export default function ProtocolLibraryPage() {
   });
 
   // Group templates by authority
-  const expertTemplates = filteredTemplates.filter((t) => t.authority === "high");
-  const researchTemplates = filteredTemplates.filter((t) => t.authority === "medium");
-  const communityTemplates = filteredTemplates.filter((t) => t.authority === "community");
+  const expertTemplates = filteredTemplates.filter(
+    (t) => t.authority === "high",
+  );
+  const researchTemplates = filteredTemplates.filter(
+    (t) => t.authority === "medium",
+  );
+  const communityTemplates = filteredTemplates.filter(
+    (t) => t.authority === "community",
+  );
 
   function handleCardClick(template: StackTemplate) {
     setSelectedTemplate(template);
@@ -111,7 +120,8 @@ export default function ProtocolLibraryPage() {
             </h1>
           </div>
           <p className="text-muted-foreground font-mono text-xs">
-            {stackTemplates.length} protocols from experts, research, and community
+            {stackTemplates.length} protocols from experts, research, and
+            community
           </p>
         </div>
       </div>
@@ -120,7 +130,7 @@ export default function ProtocolLibraryPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         {/* Search */}
         <div className="relative flex-1">
-          <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+          <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
           <Input
             placeholder="Search protocols..."
             value={searchQuery}
@@ -160,7 +170,8 @@ export default function ProtocolLibraryPage() {
           onClick={() => setShowResearch(!showResearch)}
           className={cn(
             "font-mono text-xs",
-            showResearch && "border-violet-500/30 bg-violet-500/10 text-violet-400"
+            showResearch &&
+              "border-violet-500/30 bg-violet-500/10 text-violet-400",
           )}
         >
           <Beaker className="mr-1.5 h-3 w-3" />
@@ -170,7 +181,8 @@ export default function ProtocolLibraryPage() {
 
       {/* Results count */}
       <p className="text-muted-foreground font-mono text-xs">
-        {filteredTemplates.length} protocol{filteredTemplates.length !== 1 ? "s" : ""} found
+        {filteredTemplates.length} protocol
+        {filteredTemplates.length !== 1 ? "s" : ""} found
       </p>
 
       {/* No results */}
@@ -297,7 +309,7 @@ function ProtocolCard({
       className={cn(
         "group w-full rounded-lg border p-4 text-left transition-all",
         "hover:border-border hover:bg-white/[0.02]",
-        template.isResearchStack && "border-violet-500/20 bg-violet-500/[0.02]"
+        template.isResearchStack && "border-violet-500/20 bg-violet-500/[0.02]",
       )}
     >
       {/* Header with badges */}

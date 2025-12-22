@@ -8,7 +8,13 @@
  */
 
 import { useState, useCallback } from "react";
-import { ChevronDown, ExternalLink, Loader2, BookOpen, AlertCircle } from "lucide-react";
+import {
+  ChevronDown,
+  ExternalLink,
+  Loader2,
+  BookOpen,
+  AlertCircle,
+} from "lucide-react";
 import { cn } from "~/lib/utils";
 import {
   Collapsible,
@@ -37,10 +43,7 @@ type LearnSectionProps = {
 // Section Icons & Colors
 // ============================================================================
 
-const sectionConfig: Record<
-  string,
-  { icon: string; color: string }
-> = {
+const sectionConfig: Record<string, { icon: string; color: string }> = {
   overview: { icon: "📋", color: "text-blue-400" },
   benefits: { icon: "✨", color: "text-green-400" },
   mechanism: { icon: "🔬", color: "text-purple-400" },
@@ -181,11 +184,16 @@ export function LearnSection({ knowledge, onAskQuestion }: LearnSectionProps) {
                 </button>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="border-muted space-y-4 border-x border-b rounded-b-lg p-4">
+                <div className="border-muted space-y-4 rounded-b-lg border-x border-b p-4">
                   {section.chunks.map((chunk, index) => (
                     <div key={chunk.id ?? index}>
                       {chunk.title && !chunk.title.includes("(continued)") && (
-                        <h4 className={cn("mb-2 text-sm font-semibold", config.color)}>
+                        <h4
+                          className={cn(
+                            "mb-2 text-sm font-semibold",
+                            config.color,
+                          )}
+                        >
                           {chunk.title}
                         </h4>
                       )}
@@ -220,7 +228,7 @@ export function LearnSection({ knowledge, onAskQuestion }: LearnSectionProps) {
         />
 
         {isLoading && (
-          <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="text-muted-foreground mt-4 flex items-center gap-2 text-sm">
             <Loader2 className="h-4 w-4 animate-spin" />
             Searching research and generating answer...
           </div>

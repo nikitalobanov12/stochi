@@ -1,7 +1,16 @@
 "use client";
 
 import { useState, useMemo, useTransition } from "react";
-import { ArrowRight, ArrowLeft, Search, Plus, X, Sparkles, Upload, Loader2 } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowLeft,
+  Search,
+  Plus,
+  X,
+  Sparkles,
+  Upload,
+  Loader2,
+} from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Badge } from "~/components/ui/badge";

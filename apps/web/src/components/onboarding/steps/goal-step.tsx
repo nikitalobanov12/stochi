@@ -32,9 +32,7 @@ export function GoalStep({ onNext, onSkip, onBack }: GoalStepProps) {
     <div className="flex h-full flex-col">
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto">
         <div className="space-y-2">
-          <h2 className="font-mono text-xl font-bold">
-            What are your goals?
-          </h2>
+          <h2 className="font-mono text-xl font-bold">What are your goals?</h2>
           <p className="text-muted-foreground text-sm">
             Select all that apply. We&apos;ll suggest supplements based on your
             focus areas.

@@ -32,50 +32,61 @@ export const FAT_SOLUBLE_COMPOUNDS: BioavailabilityModifier[] = [
     required: true,
     optimalContexts: ["with_fat", "with_meal"],
     optimalMultiplier: 1.47, // 47% increase with fat
-    warningMessage: "Vitamin D3 is fat-soluble. Take with a meal containing fat for optimal absorption (+47% bioavailability).",
-    mechanism: "Vitamin D3 requires bile salts and dietary fat for micelle formation and intestinal absorption.",
+    warningMessage:
+      "Vitamin D3 is fat-soluble. Take with a meal containing fat for optimal absorption (+47% bioavailability).",
+    mechanism:
+      "Vitamin D3 requires bile salts and dietary fat for micelle formation and intestinal absorption.",
     researchUrl: "https://pubmed.ncbi.nlm.nih.gov/25441954/",
   },
   {
     match: "vitamin-k",
     required: true,
     optimalContexts: ["with_fat", "with_meal"],
-    optimalMultiplier: 1.80, // Up to 80% increase
-    warningMessage: "Vitamin K2 is fat-soluble. Take with dietary fat for optimal absorption.",
-    mechanism: "K2 (MK-7) absorption is significantly enhanced when consumed with dietary lipids.",
+    optimalMultiplier: 1.8, // Up to 80% increase
+    warningMessage:
+      "Vitamin K2 is fat-soluble. Take with dietary fat for optimal absorption.",
+    mechanism:
+      "K2 (MK-7) absorption is significantly enhanced when consumed with dietary lipids.",
     researchUrl: "https://pubmed.ncbi.nlm.nih.gov/22516722/",
   },
   {
     match: "vitamin-a",
     required: true,
     optimalContexts: ["with_fat", "with_meal"],
-    optimalMultiplier: 1.50,
-    warningMessage: "Vitamin A is fat-soluble. Take with dietary fat for proper absorption.",
-    mechanism: "Retinol requires dietary fat for intestinal absorption via chylomicron incorporation.",
+    optimalMultiplier: 1.5,
+    warningMessage:
+      "Vitamin A is fat-soluble. Take with dietary fat for proper absorption.",
+    mechanism:
+      "Retinol requires dietary fat for intestinal absorption via chylomicron incorporation.",
   },
   {
     match: "vitamin-e",
     required: true,
     optimalContexts: ["with_fat", "with_meal"],
-    optimalMultiplier: 1.40,
-    warningMessage: "Vitamin E is fat-soluble. Take with a meal containing fat.",
-    mechanism: "Alpha-tocopherol absorption depends on dietary fat and bile salt secretion.",
+    optimalMultiplier: 1.4,
+    warningMessage:
+      "Vitamin E is fat-soluble. Take with a meal containing fat.",
+    mechanism:
+      "Alpha-tocopherol absorption depends on dietary fat and bile salt secretion.",
   },
   {
     match: "CoQ10",
     required: true,
     optimalContexts: ["with_fat", "with_meal"],
     optimalMultiplier: 2.0, // Can double absorption
-    warningMessage: "CoQ10 is highly lipophilic. Absorption can double when taken with dietary fat.",
-    mechanism: "CoQ10 solubilization in dietary fat significantly enhances intestinal uptake.",
+    warningMessage:
+      "CoQ10 is highly lipophilic. Absorption can double when taken with dietary fat.",
+    mechanism:
+      "CoQ10 solubilization in dietary fat significantly enhances intestinal uptake.",
     researchUrl: "https://pubmed.ncbi.nlm.nih.gov/22429073/",
   },
   {
     match: "Omega",
     required: false, // Already a fat
     optimalContexts: ["with_meal"],
-    optimalMultiplier: 1.30,
-    warningMessage: "Fish oil absorbs better with a meal to stimulate bile release.",
+    optimalMultiplier: 1.3,
+    warningMessage:
+      "Fish oil absorbs better with a meal to stimulate bile release.",
     mechanism: "Dietary fat triggers gallbladder contraction and bile release.",
   },
   {
@@ -83,15 +94,17 @@ export const FAT_SOLUBLE_COMPOUNDS: BioavailabilityModifier[] = [
     required: true,
     optimalContexts: ["with_fat", "with_meal"],
     optimalMultiplier: 2.0,
-    warningMessage: "Curcumin is poorly absorbed. Take with fat and black pepper for optimal bioavailability.",
-    mechanism: "Curcumin's lipophilic nature requires fat for absorption; piperine inhibits glucuronidation.",
+    warningMessage:
+      "Curcumin is poorly absorbed. Take with fat and black pepper for optimal bioavailability.",
+    mechanism:
+      "Curcumin's lipophilic nature requires fat for absorption; piperine inhibits glucuronidation.",
     researchUrl: "https://pubmed.ncbi.nlm.nih.gov/9619120/",
   },
   {
     match: "Resveratrol",
     required: true,
     optimalContexts: ["with_fat", "with_meal"],
-    optimalMultiplier: 1.50,
+    optimalMultiplier: 1.5,
     warningMessage: "Resveratrol bioavailability improves with dietary fat.",
     mechanism: "Lipophilic polyphenol benefits from fat-mediated absorption.",
   },
@@ -99,17 +112,21 @@ export const FAT_SOLUBLE_COMPOUNDS: BioavailabilityModifier[] = [
     match: "Astaxanthin",
     required: true,
     optimalContexts: ["with_fat", "with_meal"],
-    optimalMultiplier: 2.50,
-    warningMessage: "Astaxanthin is highly fat-soluble. Take with fatty meal for 2.5x better absorption.",
-    mechanism: "Carotenoid absorption is highly dependent on dietary lipid content.",
+    optimalMultiplier: 2.5,
+    warningMessage:
+      "Astaxanthin is highly fat-soluble. Take with fatty meal for 2.5x better absorption.",
+    mechanism:
+      "Carotenoid absorption is highly dependent on dietary lipid content.",
   },
   {
     match: "Lutein",
     required: true,
     optimalContexts: ["with_fat", "with_meal"],
-    optimalMultiplier: 1.80,
-    warningMessage: "Lutein is a carotenoid that requires dietary fat for absorption.",
-    mechanism: "Carotenoid solubilization in mixed micelles requires dietary lipids.",
+    optimalMultiplier: 1.8,
+    warningMessage:
+      "Lutein is a carotenoid that requires dietary fat for absorption.",
+    mechanism:
+      "Carotenoid solubilization in mixed micelles requires dietary lipids.",
   },
 ];
 
@@ -121,33 +138,40 @@ export const FASTED_COMPOUNDS: BioavailabilityModifier[] = [
     match: "L-Tyrosine",
     required: true,
     optimalContexts: ["fasted"],
-    optimalMultiplier: 1.50,
-    warningMessage: "L-Tyrosine competes with other amino acids for absorption. Take on empty stomach for best results.",
-    mechanism: "Large neutral amino acid transporter (LAT1) competition reduces uptake when taken with protein.",
+    optimalMultiplier: 1.5,
+    warningMessage:
+      "L-Tyrosine competes with other amino acids for absorption. Take on empty stomach for best results.",
+    mechanism:
+      "Large neutral amino acid transporter (LAT1) competition reduces uptake when taken with protein.",
   },
   {
     match: "L-Tryptophan",
     required: true,
     optimalContexts: ["fasted"],
-    optimalMultiplier: 1.60,
-    warningMessage: "L-Tryptophan absorption is reduced when taken with protein. Take on empty stomach.",
-    mechanism: "Competes with branched-chain amino acids for blood-brain barrier transport.",
+    optimalMultiplier: 1.6,
+    warningMessage:
+      "L-Tryptophan absorption is reduced when taken with protein. Take on empty stomach.",
+    mechanism:
+      "Competes with branched-chain amino acids for blood-brain barrier transport.",
   },
   {
     match: "5-HTP",
     required: true,
     optimalContexts: ["fasted"],
-    optimalMultiplier: 1.40,
+    optimalMultiplier: 1.4,
     warningMessage: "5-HTP is best absorbed on an empty stomach.",
-    mechanism: "Amino acid derivative absorption is optimal without competing nutrients.",
+    mechanism:
+      "Amino acid derivative absorption is optimal without competing nutrients.",
   },
   {
     match: "Iron",
     required: true,
     optimalContexts: ["fasted"],
-    optimalMultiplier: 1.80,
-    warningMessage: "Iron absorption is significantly reduced by food, especially calcium and phytates. Take on empty stomach with vitamin C.",
-    mechanism: "Dietary inhibitors (phytates, polyphenols, calcium) form insoluble complexes with iron.",
+    optimalMultiplier: 1.8,
+    warningMessage:
+      "Iron absorption is significantly reduced by food, especially calcium and phytates. Take on empty stomach with vitamin C.",
+    mechanism:
+      "Dietary inhibitors (phytates, polyphenols, calcium) form insoluble complexes with iron.",
     researchUrl: "https://pubmed.ncbi.nlm.nih.gov/3290310/",
   },
 ];
@@ -160,24 +184,28 @@ export const MEAL_TIMING_COMPOUNDS: BioavailabilityModifier[] = [
     match: "Magnesium",
     required: false,
     optimalContexts: ["with_meal", "post_meal"],
-    optimalMultiplier: 1.20,
-    warningMessage: "Magnesium may cause GI upset on empty stomach. Consider taking with food.",
-    mechanism: "Food buffers gastric acidity and slows transit time for better absorption.",
+    optimalMultiplier: 1.2,
+    warningMessage:
+      "Magnesium may cause GI upset on empty stomach. Consider taking with food.",
+    mechanism:
+      "Food buffers gastric acidity and slows transit time for better absorption.",
   },
   {
     match: "Zinc",
     required: false,
     optimalContexts: ["with_meal"],
-    optimalMultiplier: 1.10,
-    warningMessage: "Zinc can cause nausea on empty stomach. Take with a light meal (avoid high-phytate foods).",
+    optimalMultiplier: 1.1,
+    warningMessage:
+      "Zinc can cause nausea on empty stomach. Take with a light meal (avoid high-phytate foods).",
     mechanism: "Food reduces gastric irritation; phytates reduce absorption.",
   },
   {
     match: "NAC",
     required: false,
     optimalContexts: ["fasted", "post_meal"],
-    optimalMultiplier: 1.30,
-    warningMessage: "NAC is best absorbed away from meals (30 min before or 2h after).",
+    optimalMultiplier: 1.3,
+    warningMessage:
+      "NAC is best absorbed away from meals (30 min before or 2h after).",
     mechanism: "Food proteins may bind cysteine and reduce absorption.",
   },
 ];
@@ -198,22 +226,23 @@ export function getBioavailabilityRule(
     ...FASTED_COMPOUNDS,
     ...MEAL_TIMING_COMPOUNDS,
   ];
-  
+
   // Check by name first (case-insensitive partial match)
-  const nameMatch = allRules.find((rule) =>
-    supplementName.toLowerCase().includes(rule.match.toLowerCase()) ||
-    rule.match.toLowerCase().includes(supplementName.toLowerCase())
+  const nameMatch = allRules.find(
+    (rule) =>
+      supplementName.toLowerCase().includes(rule.match.toLowerCase()) ||
+      rule.match.toLowerCase().includes(supplementName.toLowerCase()),
   );
-  
+
   if (nameMatch) return nameMatch;
-  
+
   // Check by safety category
   if (safetyCategory) {
-    return allRules.find((rule) =>
-      rule.match.toLowerCase() === safetyCategory.toLowerCase()
+    return allRules.find(
+      (rule) => rule.match.toLowerCase() === safetyCategory.toLowerCase(),
     );
   }
-  
+
   return undefined;
 }
 
@@ -226,11 +255,11 @@ export function isMealContextOptimal(
   safetyCategory?: string | null,
 ): { isOptimal: boolean; warning?: string; multiplier: number } {
   const rule = getBioavailabilityRule(supplementName, safetyCategory);
-  
+
   if (!rule) {
     return { isOptimal: true, multiplier: 1.0 };
   }
-  
+
   if (!mealContext) {
     // No meal context provided - warn if required
     if (rule.required) {
@@ -242,9 +271,9 @@ export function isMealContextOptimal(
     }
     return { isOptimal: true, multiplier: 1.0 };
   }
-  
+
   const isOptimal = rule.optimalContexts.includes(mealContext);
-  
+
   return {
     isOptimal,
     warning: isOptimal ? undefined : rule.warningMessage,

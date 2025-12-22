@@ -150,9 +150,7 @@ export async function scrapeExaminePage(
       };
     }
 
-    logger.info(
-      `Scraped ${chunks.length} chunks for ${supplementName}`,
-    );
+    logger.info(`Scraped ${chunks.length} chunks for ${supplementName}`);
 
     return {
       name: supplementName,
@@ -398,10 +396,7 @@ function inferChunkTypeFromTitle(title: string): ChunkType {
 /**
  * Extract clean text content from an element.
  */
-function extractTextContent(
-  $: cheerio.CheerioAPI,
-  element: AnyNode,
-): string {
+function extractTextContent($: cheerio.CheerioAPI, element: AnyNode): string {
   const $el = $(element);
 
   // Remove script, style, and nav elements
@@ -547,7 +542,7 @@ export function extractEvidenceRatings(
   const ratingSelectors = [
     ".evidence-grade",
     ".grade-badge",
-    '[data-grade]',
+    "[data-grade]",
     ".rating",
   ];
 
@@ -555,7 +550,11 @@ export function extractEvidenceRatings(
     $(selector).each((_i, el) => {
       const $el = $(el);
       const grade =
-        $el.attr("data-grade") ?? $el.text().trim().match(/^[A-D]$/)?.[0];
+        $el.attr("data-grade") ??
+        $el
+          .text()
+          .trim()
+          .match(/^[A-D]$/)?.[0];
       const claim =
         $el.closest(".claim, .outcome, .effect").text().trim() ||
         $el.parent().text().trim();

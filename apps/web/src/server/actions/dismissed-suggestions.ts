@@ -136,7 +136,10 @@ export type DismissedSuggestionWithContext = {
  * Parse a suggestion key into its type and supplement IDs.
  * Key format: "type:id1:id2" or "type:id1"
  */
-function parseSuggestionKey(key: string): { type: string; supplementIds: string[] } {
+function parseSuggestionKey(key: string): {
+  type: string;
+  supplementIds: string[];
+} {
   const parts = key.split(":");
   const type = parts[0] ?? "unknown";
   const supplementIds = parts.slice(1);
@@ -147,7 +150,9 @@ function parseSuggestionKey(key: string): { type: string; supplementIds: string[
  * Get all dismissed suggestions with full context (supplement names).
  * This is used for the Settings page to show what was dismissed.
  */
-export async function getDismissedSuggestionsWithContext(): Promise<DismissedSuggestionWithContext[]> {
+export async function getDismissedSuggestionsWithContext(): Promise<
+  DismissedSuggestionWithContext[]
+> {
   const session = await getSession();
   if (!session) {
     return [];
@@ -172,12 +177,13 @@ export async function getDismissedSuggestionsWithContext(): Promise<DismissedSug
   }
 
   // Batch fetch all supplements
-  const supplements = allSupplementIds.size > 0
-    ? await db.query.supplement.findMany({
-        where: inArray(supplement.id, Array.from(allSupplementIds)),
-        columns: { id: true, name: true },
-      })
-    : [];
+  const supplements =
+    allSupplementIds.size > 0
+      ? await db.query.supplement.findMany({
+          where: inArray(supplement.id, Array.from(allSupplementIds)),
+          columns: { id: true, name: true },
+        })
+      : [];
 
   const supplementMap = new Map(supplements.map((s) => [s.id, s.name]));
 

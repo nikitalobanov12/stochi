@@ -6,7 +6,7 @@ import { BentoCardHeader } from "./bento-card";
 
 /**
  * LandingBioScore - Demo version of the Bio-Score gauge for the landing page
- * 
+ *
  * Features:
  * - Scroll-triggered animation (0 → target score)
  * - Hoverable breakdown modal showing weighted penalty model
@@ -27,10 +27,34 @@ type BreakdownItem = {
 };
 
 const DEMO_BREAKDOWN: BreakdownItem[] = [
-  { id: "zn-mg", type: "penalty", label: "Zinc/Magnesium competition", value: -15, dismissible: false },
-  { id: "d3-k2", type: "bonus", label: "D3 + K2 synergy", value: +5, dismissible: false },
-  { id: "caff-thea", type: "bonus", label: "Caffeine + L-Theanine", value: +5, dismissible: false },
-  { id: "timing-sug", type: "bonus", label: "Optimal timing window", value: +3, dismissible: true },
+  {
+    id: "zn-mg",
+    type: "penalty",
+    label: "Zinc/Magnesium competition",
+    value: -15,
+    dismissible: false,
+  },
+  {
+    id: "d3-k2",
+    type: "bonus",
+    label: "D3 + K2 synergy",
+    value: +5,
+    dismissible: false,
+  },
+  {
+    id: "caff-thea",
+    type: "bonus",
+    label: "Caffeine + L-Theanine",
+    value: +5,
+    dismissible: false,
+  },
+  {
+    id: "timing-sug",
+    type: "bonus",
+    label: "Optimal timing window",
+    value: +3,
+    dismissible: true,
+  },
 ];
 
 const BASE_SCORE = 100;
@@ -49,8 +73,9 @@ function usePrefersReducedMotion(): boolean {
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    
-    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+
+    const handler = (e: MediaQueryListEvent) =>
+      setPrefersReducedMotion(e.matches);
     mediaQuery.addEventListener("change", handler);
     return () => mediaQuery.removeEventListener("change", handler);
   }, []);
@@ -60,7 +85,7 @@ function usePrefersReducedMotion(): boolean {
 
 function useIntersectionObserver(
   callback: (isIntersecting: boolean) => void,
-  options?: IntersectionObserverInit
+  options?: IntersectionObserverInit,
 ) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -72,7 +97,7 @@ function useIntersectionObserver(
       ([entry]) => {
         if (entry) callback(entry.isIntersecting);
       },
-      { threshold: 0.5, ...options }
+      { threshold: 0.5, ...options },
     );
 
     observer.observe(element);
@@ -147,7 +172,7 @@ function BreakdownPanel({
   return (
     <div className="mt-2 space-y-1.5 rounded-xl border border-white/10 bg-[#0A0A0A] p-3">
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-white/50">
+        <span className="text-[10px] font-medium tracking-wider text-white/50 uppercase">
           Score Factors
         </span>
         <span className="font-mono text-[10px] text-white/30">
@@ -171,7 +196,12 @@ function BreakdownPanel({
           <div className="flex items-center gap-2">
             <span
               className="font-mono text-xs tabular-nums"
-              style={{ color: item.type === "penalty" ? "rgb(251 191 36)" : "rgb(52 211 153)" }}
+              style={{
+                color:
+                  item.type === "penalty"
+                    ? "rgb(251 191 36)"
+                    : "rgb(52 211 153)",
+              }}
             >
               {item.value > 0 ? "+" : ""}
               {item.value}
@@ -179,7 +209,7 @@ function BreakdownPanel({
             {item.dismissible && (
               <button
                 onClick={() => onDismiss(item.id)}
-                className="rounded p-0.5 opacity-0 transition-opacity hover:bg-white/10 group-hover:opacity-100"
+                className="rounded p-0.5 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-white/10"
                 aria-label={`Dismiss ${item.label}`}
               >
                 <X className="h-3 w-3 text-white/50" />

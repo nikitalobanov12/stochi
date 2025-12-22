@@ -15,7 +15,11 @@ import {
   getServingPresets,
   type ServingPreset,
 } from "~/server/data/serving-presets";
-import { parseCommand, type ParsedDosage, type ParsedTime } from "~/lib/ai/command-parser";
+import {
+  parseCommand,
+  type ParsedDosage,
+  type ParsedTime,
+} from "~/lib/ai/command-parser";
 import {
   useSemanticSearch,
   type SearchResult,
@@ -215,7 +219,12 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
   const isInjectable = useMemo(() => {
     if (!selectedSupplement) return false;
     const route = selectedSupplement.route;
-    return route && ["subq_injection", "im_injection", "intranasal", "sublingual"].includes(route);
+    return (
+      route &&
+      ["subq_injection", "im_injection", "intranasal", "sublingual"].includes(
+        route,
+      )
+    );
   }, [selectedSupplement]);
 
   const canSubmit = selectedSupplement && parsedDosage;
@@ -279,7 +288,11 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
     inputRef.current?.focus();
   }
 
-  function handleSubmit(supplement?: Supplement, dosage?: ParsedDosage | null, parsedTimeOverride?: ParsedTime | null) {
+  function handleSubmit(
+    supplement?: Supplement,
+    dosage?: ParsedDosage | null,
+    parsedTimeOverride?: ParsedTime | null,
+  ) {
     const targetSupplement = supplement ?? selectedSupplement;
     const targetDosage = dosage ?? parsedDosage;
     const targetTime = parsedTimeOverride ?? parsedCommand.parsedTime;
@@ -291,7 +304,7 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
     if (targetTime) {
       pendingMessage += ` (${targetTime.description})`;
     }
-    
+
     setFeedback({
       type: "pending",
       message: `Logging ${pendingMessage}...`,
@@ -505,7 +518,8 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
             </span>
             {parsedCommand.parsedTime && (
               <span className="text-muted-foreground">
-                {" "}at {parsedCommand.parsedTime.description}
+                {" "}
+                at {parsedCommand.parsedTime.description}
               </span>
             )}
           </span>
@@ -548,7 +562,7 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
 
       {/* Bioavailability hint - show when supplement needs special meal context */}
       {selectedSupplement && bioRule && (
-        <div className="bg-amber-500/10 flex items-start gap-2 rounded-md px-3 py-2">
+        <div className="flex items-start gap-2 rounded-md bg-amber-500/10 px-3 py-2">
           <Salad className="h-4 w-4 shrink-0 text-amber-500" />
           <div className="space-y-0.5">
             <p className="text-foreground text-xs font-medium">
@@ -569,7 +583,7 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
 
       {/* Route hint - show for injectable/non-oral supplements */}
       {selectedSupplement && isInjectable && (
-        <div className="bg-blue-500/10 flex items-start gap-2 rounded-md px-3 py-2">
+        <div className="flex items-start gap-2 rounded-md bg-blue-500/10 px-3 py-2">
           <Syringe className="h-4 w-4 shrink-0 text-blue-500" />
           <div className="space-y-0.5">
             <p className="text-foreground text-xs font-medium">

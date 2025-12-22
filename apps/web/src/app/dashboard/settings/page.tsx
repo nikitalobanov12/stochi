@@ -22,7 +22,13 @@ export default async function SettingsPage() {
   const user = session.user;
 
   // Get counts for stats (efficient, doesn't load all data)
-  const [logCountResult, stackCountResult, userGoals, preferences, dismissedSuggestions] = await Promise.all([
+  const [
+    logCountResult,
+    stackCountResult,
+    userGoals,
+    preferences,
+    dismissedSuggestions,
+  ] = await Promise.all([
     db.select({ count: count() }).from(log).where(eq(log.userId, user.id)),
     db.select({ count: count() }).from(stack).where(eq(stack.userId, user.id)),
     getUserGoals(),

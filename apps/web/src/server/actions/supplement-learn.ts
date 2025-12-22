@@ -197,7 +197,9 @@ export async function getSupplementKnowledge(
     supplementName: supplementData.name,
     hasKnowledge: true,
     sections,
-    sourceUrl: knowledgeByType.values().next().value?.[0]?.sourceUrl ?? supplementData.researchUrl,
+    sourceUrl:
+      knowledgeByType.values().next().value?.[0]?.sourceUrl ??
+      supplementData.researchUrl,
   };
 }
 
@@ -233,7 +235,8 @@ export async function askSupplementQuestion(
       answer: "",
       sources: [],
       query: { originalQuery: question, rewrittenQuery: question },
-      error: "AI features are not configured. Please set up the HuggingFace API key.",
+      error:
+        "AI features are not configured. Please set up the HuggingFace API key.",
     };
   }
 
@@ -272,7 +275,8 @@ export async function askSupplementQuestion(
 
   if (retrievalResult.chunks.length === 0) {
     return {
-      answer: "I don't have enough research data to answer that question about this supplement.",
+      answer:
+        "I don't have enough research data to answer that question about this supplement.",
       sources: [],
       query: {
         originalQuery: retrievalResult.query.originalQuery,
@@ -409,12 +413,7 @@ async function getUserCurrentStack(): Promise<string[]> {
     })
     .from(log)
     .innerJoin(supplement, eq(log.supplementId, supplement.id))
-    .where(
-      and(
-        eq(log.userId, session.user.id),
-        gte(log.loggedAt, oneDayAgo),
-      ),
-    )
+    .where(and(eq(log.userId, session.user.id), gte(log.loggedAt, oneDayAgo)))
     .groupBy(supplement.name);
 
   return recentLogs.map((l) => l.supplementName);

@@ -164,9 +164,7 @@ class LocalNotificationService {
       const reminders = this.getStoredReminders();
       reminders[config.id] = config;
       localStorage.setItem("stochi_reminders", JSON.stringify(reminders));
-      console.log(
-        `[LocalNotifications] Stored web reminder: ${config.id}`,
-      );
+      console.log(`[LocalNotifications] Stored web reminder: ${config.id}`);
     }
   }
 
@@ -195,7 +193,7 @@ class LocalNotificationService {
     if (this.isNative()) {
       const result = await LocalNotifications.getPending();
       return result.notifications.map((n) => ({
-        id: n.extra?.reminderId as string ?? String(n.id),
+        id: (n.extra?.reminderId as string) ?? String(n.id),
         title: n.title ?? "",
         body: n.body ?? "",
         scheduledAt: null, // Schedule info not directly available

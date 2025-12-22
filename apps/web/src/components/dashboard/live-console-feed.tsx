@@ -47,7 +47,7 @@ function generateConsoleEntries(
     timingWarnings.map((tw) => {
       const ids = [tw.source.id, tw.target.id].sort();
       return `${ids[0]}-${ids[1]}`;
-    })
+    }),
   );
 
   // Safety checks
@@ -237,9 +237,9 @@ export function LiveConsoleFeed({
             {entries.length} entries
           </span>
           {isCollapsed ? (
-            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+            <ChevronDown className="text-muted-foreground h-3.5 w-3.5" />
           ) : (
-            <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
+            <ChevronUp className="text-muted-foreground h-3.5 w-3.5" />
           )}
         </div>
       </button>

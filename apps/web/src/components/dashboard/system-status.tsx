@@ -43,7 +43,7 @@ export function SystemStatus({
   const isPastNoon = now.getHours() >= 12;
   const noLogsToday = todayLogCount === 0;
   const showStreakWarning = streak > 0 && isPastNoon && noLogsToday;
-  
+
   // Calculate hours until midnight for escalation
   const hoursUntilMidnight = 24 - now.getHours();
   const isUrgent = hoursUntilMidnight <= 2; // Red + pulse when <2 hours
@@ -117,13 +117,14 @@ export function SystemStatus({
           >
             {isUrgent ? (
               <>
-                <span className="font-medium">Streak expires soon!</span>
-                {" "}Log now to keep your {streak}-day streak.
+                <span className="font-medium">Streak expires soon!</span> Log
+                now to keep your {streak}-day streak.
               </>
             ) : (
               <>
                 Don&apos;t forget to log today to maintain your{" "}
-                <span className="font-mono tabular-nums">{streak}</span>-day streak.
+                <span className="font-mono tabular-nums">{streak}</span>-day
+                streak.
               </>
             )}
           </span>

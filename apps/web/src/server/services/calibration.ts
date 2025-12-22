@@ -272,7 +272,10 @@ export async function calculateCalibration(
 
   // Determine confidence based on data quality
   let confidence: "high" | "medium" | "low" = "low";
-  if (relevantLogs.length >= 60 && daysCovered >= config.steadyStateDays * 0.8) {
+  if (
+    relevantLogs.length >= 60 &&
+    daysCovered >= config.steadyStateDays * 0.8
+  ) {
     confidence = "high";
   } else if (relevantLogs.length >= 20) {
     confidence = "medium";

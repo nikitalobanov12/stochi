@@ -107,16 +107,16 @@ export function CapabilityTable() {
       <div className="min-w-[480px]">
         {/* Header */}
         <div className="grid grid-cols-4 gap-4 border-b border-white/10 bg-white/[0.02] px-4 py-3">
-          <div className="text-[10px] font-medium uppercase tracking-widest text-white/40">
+          <div className="text-[10px] font-medium tracking-widest text-white/40 uppercase">
             Feature
           </div>
-          <div className="text-center text-[10px] font-medium uppercase tracking-widest text-emerald-400">
+          <div className="text-center text-[10px] font-medium tracking-widest text-emerald-400 uppercase">
             Stochi
           </div>
-          <div className="text-center text-[10px] font-medium uppercase tracking-widest text-white/40">
+          <div className="text-center text-[10px] font-medium tracking-widest text-white/40 uppercase">
             Generic Apps
           </div>
-          <div className="text-center text-[10px] font-medium uppercase tracking-widest text-white/40">
+          <div className="text-center text-[10px] font-medium tracking-widest text-white/40 uppercase">
             Spreadsheet
           </div>
         </div>
@@ -180,9 +180,7 @@ export function CapabilityTableCompact() {
         >
           <div className="flex items-center gap-2">
             <SupportIcon support={feature.stochi} />
-            <span className="text-xs text-white/90">
-              {feature.name}
-            </span>
+            <span className="text-xs text-white/90">{feature.name}</span>
           </div>
           <div className="flex items-center gap-4 font-mono text-[10px]">
             <span className="text-white/30">Generic: </span>

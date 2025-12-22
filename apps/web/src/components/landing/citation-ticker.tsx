@@ -94,7 +94,7 @@ export function CitationTicker() {
         <div
           className={cn(
             "flex min-w-0 flex-1 items-center gap-2 transition-opacity duration-300",
-            isAnimating ? "opacity-0" : "opacity-100"
+            isAnimating ? "opacity-0" : "opacity-100",
           )}
         >
           <a

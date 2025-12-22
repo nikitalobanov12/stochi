@@ -13,7 +13,10 @@ import {
 } from "recharts";
 import { EyeOff, ChevronDown, ChevronUp } from "lucide-react";
 import { Skeleton } from "~/components/ui/skeleton";
-import type { TimelineDataPoint, ActiveCompound } from "~/server/services/biological-state";
+import type {
+  TimelineDataPoint,
+  ActiveCompound,
+} from "~/server/services/biological-state";
 
 // ============================================================================
 // Types
@@ -104,9 +107,10 @@ function CustomTooltip({
   // Get timestamp from the first payload item's data point
   const dataPoint = payload[0]?.payload;
   const timestamp = dataPoint?.timestamp;
-  
+
   // Check if this point is in the future (projection)
-  const isFuture = timestamp && currentTime && new Date(timestamp) > new Date(currentTime);
+  const isFuture =
+    timestamp && currentTime && new Date(timestamp) > new Date(currentTime);
 
   // Format the timestamp
   const formatTime = (isoString: string) => {
@@ -126,7 +130,9 @@ function CustomTooltip({
       <div className="mb-1 flex items-center gap-2 font-mono text-xs text-white/40">
         <span>{timestamp ? formatTime(timestamp) : "--:--"}</span>
         {isFuture && (
-          <span className="rounded bg-white/10 px-1 text-[9px] text-white/30">PROJECTED</span>
+          <span className="rounded bg-white/10 px-1 text-[9px] text-white/30">
+            PROJECTED
+          </span>
         )}
       </div>
       <div className="space-y-1">
@@ -135,7 +141,7 @@ function CustomTooltip({
           const dataKeyStr = String(entry.dataKey ?? entry.name);
           const supplementId = dataKeyStr.replace("concentrations.", "");
           const name = supplementNames.get(supplementId) ?? "Unknown";
-          
+
           // Skip if value is 0 or negligible
           if (entry.value < 1) return null;
 
@@ -146,11 +152,9 @@ function CustomTooltip({
                   className="h-2 w-2 rounded-full"
                   style={{ backgroundColor: entry.color }}
                 />
-                <span className="font-mono text-xs text-white/90">
-                  {name}
-                </span>
+                <span className="font-mono text-xs text-white/90">{name}</span>
               </div>
-              <span className="font-mono text-xs tabular-nums text-white">
+              <span className="font-mono text-xs text-white tabular-nums">
                 {Math.round(entry.value)}%
               </span>
             </div>
@@ -174,11 +178,11 @@ type MemoizedAreaProps = {
   phase: "absorbing" | "peak" | "eliminating" | "cleared";
 };
 
-const MemoizedArea = memo(function MemoizedArea({ 
-  id, 
-  index, 
-  allSupplementIds, 
-  name, 
+const MemoizedArea = memo(function MemoizedArea({
+  id,
+  index,
+  allSupplementIds,
+  name,
   isHighlighted,
   phase,
 }: MemoizedAreaProps) {
@@ -187,19 +191,21 @@ const MemoizedArea = memo(function MemoizedArea({
   // Dim other curves when one is highlighted
   const opacity = isHighlighted === null ? 1 : isHighlighted ? 1 : 0.15;
   const strokeOpacity = isHighlighted === null ? 1 : isHighlighted ? 1 : 0.3;
-  
+
   // Surgical Precision v2.0: Absorption phase = solid, Elimination phase = 2px dashed
   // Post-peak phases (eliminating, cleared) use dashed strokes
   const isEliminating = phase === "eliminating" || phase === "cleared";
   const strokeDasharray = isEliminating ? "2 2" : "0";
-  
+
   return (
     <Area
       type="monotone"
       dataKey={`concentrations.${id}`}
       name={name}
       stroke={getCompoundColor(colorIndex >= 0 ? colorIndex : index)}
-      strokeWidth={isHighlighted ? CHART_STROKE_WIDTH_HIGHLIGHTED : CHART_STROKE_WIDTH}
+      strokeWidth={
+        isHighlighted ? CHART_STROKE_WIDTH_HIGHLIGHTED : CHART_STROKE_WIDTH
+      }
       strokeOpacity={strokeOpacity}
       strokeDasharray={strokeDasharray}
       fill={`url(#gradient-${id})`}
@@ -222,9 +228,13 @@ export function BiologicalTimeline({
   // Track whether to show all compounds or just top N
   const [showAll, setShowAll] = useState(true); // Default to showing all
   // Track manually hidden compounds (for fine-grained control)
-  const [hiddenCompounds, setHiddenCompounds] = useState<Set<string>>(new Set());
+  const [hiddenCompounds, setHiddenCompounds] = useState<Set<string>>(
+    new Set(),
+  );
   // Track hovered compound for highlighting (null = no hover)
-  const [hoveredCompoundId, setHoveredCompoundId] = useState<string | null>(null);
+  const [hoveredCompoundId, setHoveredCompoundId] = useState<string | null>(
+    null,
+  );
 
   // Build supplement name map
   const supplementNames = useMemo(() => {
@@ -239,7 +249,7 @@ export function BiologicalTimeline({
     timelineData.forEach((point) => {
       Object.keys(point.concentrations).forEach((id) => ids.add(id));
     });
-    
+
     // Sort by current concentration (use the latest data point)
     const latestPoint = timelineData[timelineData.length - 1];
     const sortedIds = Array.from(ids).sort((a, b) => {
@@ -247,17 +257,17 @@ export function BiologicalTimeline({
       const concB = latestPoint?.concentrations[b] ?? 0;
       return concB - concA;
     });
-    
+
     return sortedIds;
   }, [timelineData]);
 
   // Determine which compounds to show on the chart
   const visibleSupplementIds = useMemo(() => {
     // Start with either all or top N
-    const baseIds = showAll 
-      ? allSupplementIds 
+    const baseIds = showAll
+      ? allSupplementIds
       : allSupplementIds.slice(0, defaultVisibleCount);
-    
+
     // Apply manual hide filters
     return baseIds.filter((id) => !hiddenCompounds.has(id));
   }, [allSupplementIds, showAll, defaultVisibleCount, hiddenCompounds]);
@@ -295,22 +305,26 @@ export function BiologicalTimeline({
   }, [timelineData]);
 
   // Format x-axis ticks using pre-computed timestamps (memoized to prevent Recharts re-renders)
-  const formatXAxis = useCallback((minutes: number) => {
-    const timestamp = timestampMap.get(minutes);
-    if (!timestamp) return "";
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-  }, [timestampMap]);
+  const formatXAxis = useCallback(
+    (minutes: number) => {
+      const timestamp = timestampMap.get(minutes);
+      if (!timestamp) return "";
+      const date = new Date(timestamp);
+      return date.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+    },
+    [timestampMap],
+  );
 
   // Check if there are more compounds than the default visible count
   const hasMoreCompounds = allSupplementIds.length > defaultVisibleCount;
-  
+
   // Check if all compounds are manually hidden
-  const allHidden = allSupplementIds.length > 0 && visibleSupplementIds.length === 0;
+  const allHidden =
+    allSupplementIds.length > 0 && visibleSupplementIds.length === 0;
 
   // No timeline data at all
   if (timelineData.length === 0) {
@@ -322,7 +336,7 @@ export function BiologicalTimeline({
       </div>
     );
   }
-  
+
   // All compounds manually hidden - show restore option
   if (allHidden) {
     return (
@@ -404,7 +418,11 @@ export function BiologicalTimeline({
               dataKey="minutesFromStart"
               tickFormatter={formatXAxis}
               stroke="var(--border)"
-              tick={{ fill: "var(--muted-foreground)", fontSize: 10, fontFamily: "var(--font-mono)" }}
+              tick={{
+                fill: "var(--muted-foreground)",
+                fontSize: 10,
+                fontFamily: "var(--font-mono)",
+              }}
               tickLine={{ stroke: "var(--border)" }}
               axisLine={{ stroke: "var(--border)" }}
               interval="preserveStartEnd"
@@ -415,7 +433,11 @@ export function BiologicalTimeline({
               domain={[0, 120]}
               tickFormatter={(value) => `${value}%`}
               stroke="var(--border)"
-              tick={{ fill: "var(--muted-foreground)", fontSize: 10, fontFamily: "var(--font-mono)" }}
+              tick={{
+                fill: "var(--muted-foreground)",
+                fontSize: 10,
+                fontFamily: "var(--font-mono)",
+              }}
               tickLine={{ stroke: "var(--border)" }}
               axisLine={{ stroke: "var(--border)" }}
               width={40}
@@ -476,9 +498,12 @@ export function BiologicalTimeline({
             {visibleSupplementIds.map((id) => {
               const colorIndex = allSupplementIds.indexOf(id);
               // Determine highlight state: null if nothing hovered, true if this is hovered, false if another is hovered
-              const isHighlighted = hoveredCompoundId === null ? null : hoveredCompoundId === id;
+              const isHighlighted =
+                hoveredCompoundId === null ? null : hoveredCompoundId === id;
               // Get compound phase for stroke style (absorption=solid, elimination=dashed)
-              const compound = activeCompounds.find((c) => c.supplementId === id);
+              const compound = activeCompounds.find(
+                (c) => c.supplementId === id,
+              );
               const phase = compound?.phase ?? "cleared";
               return (
                 <MemoizedArea
@@ -500,7 +525,10 @@ export function BiologicalTimeline({
       <div className="mt-3 space-y-2">
         {/* Compound pills - clickable to toggle, hoverable to highlight */}
         <div className="flex flex-wrap items-center gap-2">
-          {(showAll ? allSupplementIds : allSupplementIds.slice(0, defaultVisibleCount)).map((id) => {
+          {(showAll
+            ? allSupplementIds
+            : allSupplementIds.slice(0, defaultVisibleCount)
+          ).map((id) => {
             const colorIndex = allSupplementIds.indexOf(id);
             const name = supplementNames.get(id) ?? "Unknown";
             const compound = activeCompounds.find((c) => c.supplementId === id);
@@ -518,9 +546,9 @@ export function BiologicalTimeline({
                 onMouseLeave={() => setHoveredCompoundId(null)}
                 className={`flex items-center gap-1.5 rounded-full border px-2 py-0.5 font-mono text-[10px] transition-all ${
                   isHidden
-                    ? "border-border/30 bg-transparent text-muted-foreground/50"
+                    ? "border-border/30 text-muted-foreground/50 bg-transparent"
                     : isHovered
-                      ? "border-foreground/50 bg-card text-foreground ring-1 ring-foreground/20"
+                      ? "border-foreground/50 bg-card text-foreground ring-foreground/20 ring-1"
                       : "border-border/50 bg-card/50 text-foreground hover:bg-card"
                 }`}
               >
@@ -532,9 +560,7 @@ export function BiologicalTimeline({
                     style={{ backgroundColor: getCompoundColor(colorIndex) }}
                   />
                 )}
-                <span className={isHidden ? "line-through" : ""}>
-                  {name}
-                </span>
+                <span className={isHidden ? "line-through" : ""}>{name}</span>
                 {!isHidden && concentration > 0 && (
                   <span className="text-muted-foreground tabular-nums">
                     {Math.round(concentration)}%
@@ -552,7 +578,7 @@ export function BiologicalTimeline({
             <button
               type="button"
               onClick={() => setShowAll(!showAll)}
-              className="text-muted-foreground hover:text-foreground flex items-center gap-1 rounded-full border border-dashed border-border/50 px-2 py-0.5 font-mono text-[10px] transition-colors"
+              className="text-muted-foreground hover:text-foreground border-border/50 flex items-center gap-1 rounded-full border border-dashed px-2 py-0.5 font-mono text-[10px] transition-colors"
             >
               {showAll ? (
                 <>
@@ -561,8 +587,8 @@ export function BiologicalTimeline({
                 </>
               ) : (
                 <>
-                  <ChevronDown className="h-2.5 w-2.5" />
-                  +{allSupplementIds.length - defaultVisibleCount} MORE
+                  <ChevronDown className="h-2.5 w-2.5" />+
+                  {allSupplementIds.length - defaultVisibleCount} MORE
                 </>
               )}
             </button>
@@ -656,21 +682,21 @@ function CompoundRow({
           }}
         />
       </div>
-      
+
       {/* Compound info */}
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <div className="flex items-center gap-2">
           <span className="truncate font-mono text-xs text-white/90">
             {compound.name}
           </span>
-          <span 
+          <span
             className={`shrink-0 font-mono text-[10px] ${phaseConfig.className}`}
             title={phaseConfig.description}
           >
             {phaseConfig.shortLabel}
           </span>
         </div>
-        <span className="font-mono text-[10px] tabular-nums text-white/40">
+        <span className="font-mono text-[10px] text-white/40 tabular-nums">
           {Math.round(compound.concentrationPercent)}%
         </span>
       </div>
@@ -688,7 +714,7 @@ export function BiologicalTimelineSkeleton() {
       {/* Chart area skeleton */}
       <div className="bg-muted/20 relative h-full w-full rounded-md">
         {/* Y-axis skeleton */}
-        <div className="absolute left-0 top-0 flex h-full w-10 flex-col justify-between py-2">
+        <div className="absolute top-0 left-0 flex h-full w-10 flex-col justify-between py-2">
           {[0, 1, 2, 3, 4].map((i) => (
             <Skeleton key={i} className="h-3 w-8" />
           ))}
@@ -700,7 +726,7 @@ export function BiologicalTimelineSkeleton() {
           <Skeleton className="h-px w-full opacity-30" />
         </div>
         {/* X-axis skeleton */}
-        <div className="absolute bottom-0 left-10 right-0 flex justify-between px-4 pb-2">
+        <div className="absolute right-0 bottom-0 left-10 flex justify-between px-4 pb-2">
           {[0, 1, 2, 3, 4].map((i) => (
             <Skeleton key={i} className="h-3 w-10" />
           ))}

@@ -173,7 +173,7 @@ export function LandingPage() {
   }, []);
 
   return (
-      <main className="relative min-h-screen bg-black font-sans text-white/90">
+    <main className="relative min-h-screen bg-black font-sans text-white/90">
       {/* Grid overlay for background texture */}
       <div className="lab-grid" aria-hidden="true" />
 
@@ -368,12 +368,34 @@ export function LandingPage() {
               >
                 <div className="flex h-16 w-16 items-center justify-center">
                   <svg viewBox="0 0 100 100" className="h-14 w-14">
-                    <rect x="10" y="20" width="80" height="60" rx="4" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/60 group-hover:text-white/80 transition-colors" />
-                    <text x="50" y="58" textAnchor="middle" className="text-white/80 group-hover:text-white transition-colors" style={{ fontSize: '24px', fontWeight: 'bold', fontFamily: 'system-ui' }}>NIH</text>
+                    <rect
+                      x="10"
+                      y="20"
+                      width="80"
+                      height="60"
+                      rx="4"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      className="text-white/60 transition-colors group-hover:text-white/80"
+                    />
+                    <text
+                      x="50"
+                      y="58"
+                      textAnchor="middle"
+                      className="text-white/80 transition-colors group-hover:text-white"
+                      style={{
+                        fontSize: "24px",
+                        fontWeight: "bold",
+                        fontFamily: "system-ui",
+                      }}
+                    >
+                      NIH
+                    </text>
                   </svg>
                 </div>
                 <div className="text-center">
-                  <p className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">
+                  <p className="text-sm font-medium text-white/80 transition-colors group-hover:text-white">
                     National Institutes of Health
                   </p>
                   <p className="mt-1 text-xs text-white/40">
@@ -391,13 +413,41 @@ export function LandingPage() {
               >
                 <div className="flex h-16 w-16 items-center justify-center">
                   <svg viewBox="0 0 100 100" className="h-14 w-14">
-                    <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" strokeWidth="2" className="text-blue-400/60 group-hover:text-blue-400/80 transition-colors" />
-                    <text x="50" y="45" textAnchor="middle" className="text-blue-400/80 group-hover:text-blue-400 transition-colors" style={{ fontSize: '14px', fontWeight: 'bold', fontFamily: 'system-ui' }}>PubMed</text>
-                    <text x="50" y="62" textAnchor="middle" className="text-white/50" style={{ fontSize: '10px', fontFamily: 'system-ui' }}>NCBI</text>
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="38"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      className="text-blue-400/60 transition-colors group-hover:text-blue-400/80"
+                    />
+                    <text
+                      x="50"
+                      y="45"
+                      textAnchor="middle"
+                      className="text-blue-400/80 transition-colors group-hover:text-blue-400"
+                      style={{
+                        fontSize: "14px",
+                        fontWeight: "bold",
+                        fontFamily: "system-ui",
+                      }}
+                    >
+                      PubMed
+                    </text>
+                    <text
+                      x="50"
+                      y="62"
+                      textAnchor="middle"
+                      className="text-white/50"
+                      style={{ fontSize: "10px", fontFamily: "system-ui" }}
+                    >
+                      NCBI
+                    </text>
                   </svg>
                 </div>
                 <div className="text-center">
-                  <p className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">
+                  <p className="text-sm font-medium text-white/80 transition-colors group-hover:text-white">
                     PubMed Database
                   </p>
                   <p className="mt-1 text-xs text-white/40">
@@ -415,8 +465,22 @@ export function LandingPage() {
               >
                 <div className="flex h-16 w-16 items-center justify-center">
                   <svg viewBox="0 0 100 100" className="h-14 w-14">
-                    <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" strokeWidth="2" className="text-blue-500/60 group-hover:text-blue-500/80 transition-colors" />
-                    <circle cx="50" cy="50" r="6" fill="currentColor" className="text-yellow-400/70 group-hover:text-yellow-400 transition-colors" />
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="38"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      className="text-blue-500/60 transition-colors group-hover:text-blue-500/80"
+                    />
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="6"
+                      fill="currentColor"
+                      className="text-yellow-400/70 transition-colors group-hover:text-yellow-400"
+                    />
                     {[...Array(12)].map((_, i) => (
                       <circle
                         key={i}
@@ -424,13 +488,13 @@ export function LandingPage() {
                         cy={50 + 25 * Math.sin((i * 30 * Math.PI) / 180)}
                         r="3"
                         fill="currentColor"
-                        className="text-yellow-400/70 group-hover:text-yellow-400 transition-colors"
+                        className="text-yellow-400/70 transition-colors group-hover:text-yellow-400"
                       />
                     ))}
                   </svg>
                 </div>
                 <div className="text-center">
-                  <p className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">
+                  <p className="text-sm font-medium text-white/80 transition-colors group-hover:text-white">
                     EFSA
                   </p>
                   <p className="mt-1 text-xs text-white/40">
@@ -448,12 +512,30 @@ export function LandingPage() {
               >
                 <div className="flex h-16 w-16 items-center justify-center">
                   <svg viewBox="0 0 100 100" className="h-14 w-14">
-                    <rect x="15" y="25" width="70" height="50" rx="6" fill="none" stroke="currentColor" strokeWidth="2" className="text-emerald-400/60 group-hover:text-emerald-400/80 transition-colors" />
-                    <path d="M30 40 L45 55 L70 30" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" fill="none" className="text-emerald-400/80 group-hover:text-emerald-400 transition-colors" />
+                    <rect
+                      x="15"
+                      y="25"
+                      width="70"
+                      height="50"
+                      rx="6"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      className="text-emerald-400/60 transition-colors group-hover:text-emerald-400/80"
+                    />
+                    <path
+                      d="M30 40 L45 55 L70 30"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      fill="none"
+                      className="text-emerald-400/80 transition-colors group-hover:text-emerald-400"
+                    />
                   </svg>
                 </div>
                 <div className="text-center">
-                  <p className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">
+                  <p className="text-sm font-medium text-white/80 transition-colors group-hover:text-white">
                     Examine.com
                   </p>
                   <p className="mt-1 text-xs text-white/40">

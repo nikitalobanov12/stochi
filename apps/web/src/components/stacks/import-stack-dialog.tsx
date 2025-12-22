@@ -68,7 +68,10 @@ export function ImportStackDialog({ children }: ImportStackDialogProps) {
   const [stackName, setStackName] = useState("Imported Stack");
   const [editingItems, setEditingItems] = useState<MatchedItem[]>([]);
   const [resolvedUnmatched, setResolvedUnmatched] = useState<
-    Map<string, { supplementId: string; name: string; dosage: number; unit: string }>
+    Map<
+      string,
+      { supplementId: string; name: string; dosage: number; unit: string }
+    >
   >(new Map());
 
   // Success step state
@@ -112,7 +115,10 @@ export function ImportStackDialog({ children }: ImportStackDialogProps) {
     );
   }
 
-  function handleUpdateUnit(index: number, unit: "mg" | "mcg" | "g" | "IU" | "ml") {
+  function handleUpdateUnit(
+    index: number,
+    unit: "mg" | "mcg" | "g" | "IU" | "ml",
+  ) {
     setEditingItems((prev) =>
       prev.map((item, i) =>
         i === index ? { ...item, resolvedUnit: unit } : item,
@@ -166,8 +172,7 @@ export function ImportStackDialog({ children }: ImportStackDialogProps) {
     }
   }
 
-  const totalItems =
-    editingItems.length + resolvedUnmatched.size;
+  const totalItems = editingItems.length + resolvedUnmatched.size;
   const unresolvedCount =
     (parseResult?.unmatched.length ?? 0) - resolvedUnmatched.size;
 
@@ -175,7 +180,11 @@ export function ImportStackDialog({ children }: ImportStackDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {children ?? (
-          <Button variant="outline" size="sm" className="gap-2 font-mono text-xs">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2 font-mono text-xs"
+          >
             <Upload className="h-3.5 w-3.5" />
             Import
           </Button>
@@ -307,7 +316,10 @@ export function ImportStackDialog({ children }: ImportStackDialogProps) {
                           type="number"
                           value={item.resolvedDosage}
                           onChange={(e) =>
-                            handleUpdateDosage(index, parseFloat(e.target.value) || 0)
+                            handleUpdateDosage(
+                              index,
+                              parseFloat(e.target.value) || 0,
+                            )
                           }
                           className="h-8 w-20 font-mono text-xs"
                         />
@@ -388,7 +400,11 @@ export function ImportStackDialog({ children }: ImportStackDialogProps) {
                                 <button
                                   key={sugg.id}
                                   onClick={() =>
-                                    handleResolveUnmatched(item, sugg.id, sugg.name)
+                                    handleResolveUnmatched(
+                                      item,
+                                      sugg.id,
+                                      sugg.name,
+                                    )
                                   }
                                   className="hover:bg-primary/10 hover:text-primary rounded-full border px-2 py-0.5 text-xs transition-colors"
                                 >

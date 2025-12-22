@@ -4,7 +4,7 @@ import { cn } from "~/lib/utils";
 
 /**
  * BentoGrid - Responsive grid layout for landing page feature sections
- * 
+ *
  * Breakpoints:
  * - Desktop (≥1024px): 12-column grid
  * - Tablet (768-1023px): 2-column grid
@@ -22,7 +22,7 @@ export function BentoGrid({ children, className }: BentoGridProps) {
       className={cn(
         "grid gap-8 md:gap-10 lg:gap-12",
         "grid-cols-1 md:grid-cols-2 lg:grid-cols-12",
-        className
+        className,
       )}
     >
       {children}
@@ -56,8 +56,10 @@ export function BentoSection({
         {/* Attio-style section header */}
         <div className="mb-8 lg:mb-12">
           <div className="mb-3 flex items-center gap-3">
-            <span className="font-mono text-xs font-medium text-emerald-400/80">[{number}]</span>
-            <span className="text-[10px] font-medium uppercase tracking-widest text-white/40">
+            <span className="font-mono text-xs font-medium text-emerald-400/80">
+              [{number}]
+            </span>
+            <span className="text-[10px] font-medium tracking-widest text-white/40 uppercase">
               {label}
             </span>
           </div>

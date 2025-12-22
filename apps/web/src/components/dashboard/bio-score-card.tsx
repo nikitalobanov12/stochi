@@ -1,6 +1,12 @@
 "use client";
 
-import { Activity, AlertTriangle, Zap, ChevronRight, Shield } from "lucide-react";
+import {
+  Activity,
+  AlertTriangle,
+  Zap,
+  ChevronRight,
+  Shield,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +14,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import type { ExclusionZone, OptimizationOpportunity } from "~/server/services/biological-state";
+import type {
+  ExclusionZone,
+  OptimizationOpportunity,
+} from "~/server/services/biological-state";
 
 // ============================================================================
 // Types
@@ -91,7 +100,9 @@ function ScoreGauge({ score, size = 80 }: { score: number; size?: number }) {
       </svg>
       {/* Score value */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className={`font-mono text-xl font-bold tabular-nums ${colorClass}`}>
+        <span
+          className={`font-mono text-xl font-bold tabular-nums ${colorClass}`}
+        >
           {score}
         </span>
       </div>
@@ -118,7 +129,11 @@ function calculateBreakdown(
 
   for (const zone of exclusionZones) {
     const penalty =
-      zone.severity === "critical" ? -50 : zone.severity === "medium" ? -25 : -15;
+      zone.severity === "critical"
+        ? -50
+        : zone.severity === "medium"
+          ? -25
+          : -15;
     items.push({
       type: "penalty",
       label: `${zone.sourceSupplementName}/${zone.targetSupplementName}`,
@@ -175,7 +190,9 @@ function BreakdownModal({
               <div className="text-muted-foreground font-sans text-xs">
                 Current Score
               </div>
-              <div className={`font-mono text-3xl font-bold tabular-nums ${scoreColorClass}`}>
+              <div
+                className={`font-mono text-3xl font-bold tabular-nums ${scoreColorClass}`}
+              >
                 {score}
               </div>
               <div className={`font-mono text-[10px] ${scoreColorClass}`}>
@@ -208,7 +225,7 @@ function BreakdownModal({
                         }`}
                       />
                     ) : (
-                      <Zap className="h-3 w-3 shrink-0 status-optimized" />
+                      <Zap className="status-optimized h-3 w-3 shrink-0" />
                     )}
                     <span className="text-foreground truncate font-sans text-xs">
                       {item.label}
@@ -216,7 +233,9 @@ function BreakdownModal({
                   </div>
                   <span
                     className={`ml-2 shrink-0 font-mono text-xs tabular-nums ${
-                      item.type === "penalty" ? "status-critical" : "status-optimized"
+                      item.type === "penalty"
+                        ? "status-critical"
+                        : "status-optimized"
                     }`}
                   >
                     {item.value > 0 ? "+" : ""}
@@ -241,7 +260,9 @@ function BreakdownModal({
               <div className="status-critical">Critical conflict: -50</div>
               <div className="status-conflict">Medium conflict: -25</div>
               <div className="text-muted-foreground">Low conflict: -15</div>
-              <div className="status-optimized">Active synergy: +5 (max +20)</div>
+              <div className="status-optimized">
+                Active synergy: +5 (max +20)
+              </div>
             </div>
           </div>
         </div>
@@ -254,21 +275,25 @@ function BreakdownModal({
 // Main Component
 // ============================================================================
 
-export function BioScoreCard({ score, exclusionZones, optimizations }: BioScoreCardProps) {
+export function BioScoreCard({
+  score,
+  exclusionZones,
+  optimizations,
+}: BioScoreCardProps) {
   const colorClass = getScoreColorClass(score);
   const label = getScoreLabel(score);
 
   // Calculate stats
   const conflicts = exclusionZones.filter(
-    (z) => z.severity === "critical" || z.severity === "medium"
+    (z) => z.severity === "critical" || z.severity === "medium",
   ).length;
 
   const synergies = optimizations.filter(
-    (o) => o.type === "synergy" && o.title.startsWith("Active synergy")
+    (o) => o.type === "synergy" && o.title.startsWith("Active synergy"),
   ).length;
 
   const pendingWindows = exclusionZones.filter(
-    (z) => z.minutesRemaining > 0
+    (z) => z.minutesRemaining > 0,
   ).length;
 
   return (
@@ -283,10 +308,14 @@ export function BioScoreCard({ score, exclusionZones, optimizations }: BioScoreC
         <div className="flex items-center gap-4">
           <ScoreGauge score={score} size={64} />
           <div className="flex-1">
-            <div className={`font-mono text-2xl font-bold tabular-nums ${colorClass}`}>
+            <div
+              className={`font-mono text-2xl font-bold tabular-nums ${colorClass}`}
+            >
               {score}
             </div>
-            <div className={`font-mono text-[10px] tracking-wider ${colorClass}`}>
+            <div
+              className={`font-mono text-[10px] tracking-wider ${colorClass}`}
+            >
               {label}
             </div>
           </div>
@@ -297,27 +326,31 @@ export function BioScoreCard({ score, exclusionZones, optimizations }: BioScoreC
           {/* Conflicts */}
           <div className="flex items-center gap-1.5">
             {conflicts > 0 ? (
-              <AlertTriangle className="h-3 w-3 status-conflict" />
+              <AlertTriangle className="status-conflict h-3 w-3" />
             ) : (
-              <Shield className="h-3 w-3 status-optimized" />
+              <Shield className="status-optimized h-3 w-3" />
             )}
-            <span className="font-mono text-xs tabular-nums text-white/70">
+            <span className="font-mono text-xs text-white/70 tabular-nums">
               {conflicts} conflict{conflicts !== 1 ? "s" : ""}
             </span>
           </div>
 
           {/* Synergies */}
           <div className="flex items-center gap-1.5">
-            <Zap className={`h-3 w-3 ${synergies > 0 ? "status-optimized" : "text-muted-foreground"}`} />
-            <span className="font-mono text-xs tabular-nums text-white/70">
+            <Zap
+              className={`h-3 w-3 ${synergies > 0 ? "status-optimized" : "text-muted-foreground"}`}
+            />
+            <span className="font-mono text-xs text-white/70 tabular-nums">
               {synergies} synerg{synergies !== 1 ? "ies" : "y"}
             </span>
           </div>
 
           {/* Pending */}
           <div className="flex items-center gap-1.5">
-            <div className={`h-2 w-2 rounded-full ${pendingWindows > 0 ? "animate-pulse bg-cyan-400" : "bg-white/20"}`} />
-            <span className="font-mono text-xs tabular-nums text-white/70">
+            <div
+              className={`h-2 w-2 rounded-full ${pendingWindows > 0 ? "animate-pulse bg-cyan-400" : "bg-white/20"}`}
+            />
+            <span className="font-mono text-xs text-white/70 tabular-nums">
               {pendingWindows} pending
             </span>
           </div>
@@ -360,7 +393,10 @@ export function BioScoreCardSkeleton() {
         </div>
         <div className="mt-3 flex justify-between border-t border-white/5 pt-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-4 w-16 animate-pulse rounded bg-white/5" />
+            <div
+              key={i}
+              className="h-4 w-16 animate-pulse rounded bg-white/5"
+            />
           ))}
         </div>
         <div className="mt-3 h-7 animate-pulse rounded-lg bg-white/5" />

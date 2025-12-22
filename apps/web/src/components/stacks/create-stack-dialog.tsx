@@ -152,7 +152,9 @@ export function CreateStackDialog({
               <Label className="text-muted-foreground text-xs">
                 Quick Start
               </Label>
-              <ProtocolLibraryDialog createStackFromTemplate={createStackFromTemplate}>
+              <ProtocolLibraryDialog
+                createStackFromTemplate={createStackFromTemplate}
+              >
                 <button className="text-muted-foreground hover:text-foreground flex items-center gap-1 font-mono text-[10px] transition-colors">
                   <Library className="h-3 w-3" />
                   View all protocols
@@ -169,7 +171,7 @@ export function CreateStackDialog({
                     onClick={() => handleTemplateSelect(template.key)}
                     disabled={isPending}
                     className={cn(
-                      "border-white/5 bg-white/[0.02] group rounded-lg border p-3 text-left transition-all",
+                      "group rounded-lg border border-white/5 bg-white/[0.02] p-3 text-left transition-all",
                       "hover:border-white/10 hover:bg-white/[0.04]",
                       "disabled:cursor-not-allowed disabled:opacity-50",
                       isSelected && isPending && "border-primary bg-primary/5",

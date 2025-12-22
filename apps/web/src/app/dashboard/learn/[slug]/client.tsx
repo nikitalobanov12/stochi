@@ -25,6 +25,9 @@ export function LearnPageClient({
   );
 
   return (
-    <LearnSection knowledge={initialKnowledge} onAskQuestion={handleAskQuestion} />
+    <LearnSection
+      knowledge={initialKnowledge}
+      onAskQuestion={handleAskQuestion}
+    />
   );
 }

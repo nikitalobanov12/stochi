@@ -95,7 +95,10 @@ type RiskCardCompactProps = {
   limit?: number;
 };
 
-export function RiskCardCompact({ className, limit = 3 }: RiskCardCompactProps) {
+export function RiskCardCompact({
+  className,
+  limit = 3,
+}: RiskCardCompactProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const risks = DEMO_RISKS.slice(0, limit);
 
@@ -145,7 +148,7 @@ function RiskItemCard({ risk, isExpanded, onToggle }: RiskItemCardProps) {
       className={cn(
         "rounded-lg border transition-all duration-200",
         styles.border,
-        styles.bg
+        styles.bg,
       )}
     >
       {/* Header - always visible */}
@@ -171,14 +174,14 @@ function RiskItemCard({ risk, isExpanded, onToggle }: RiskItemCardProps) {
         <ChevronDown
           className={cn(
             "h-3.5 w-3.5 shrink-0 text-white/30 transition-transform duration-200",
-            isExpanded && "rotate-180"
+            isExpanded && "rotate-180",
           )}
         />
       </button>
 
       {/* Expanded details */}
       {isExpanded && (
-        <div className="animate-in fade-in slide-in-from-top-1 duration-200 border-t border-white/10 px-2.5 pb-2.5 pt-2">
+        <div className="animate-in fade-in slide-in-from-top-1 border-t border-white/10 px-2.5 pt-2 pb-2.5 duration-200">
           <p className="mb-2 text-[11px] text-white/50">{risk.description}</p>
 
           {/* Detection & Recommendation */}

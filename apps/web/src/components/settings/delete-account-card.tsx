@@ -84,8 +84,9 @@ export function DeleteAccountCard({
               <DialogDescription asChild>
                 <div className="space-y-3 pt-2">
                   <p>
-                    This action is <strong>permanent and cannot be undone</strong>.
-                    All your data will be deleted immediately.
+                    This action is{" "}
+                    <strong>permanent and cannot be undone</strong>. All your
+                    data will be deleted immediately.
                   </p>
 
                   <div className="bg-destructive/10 rounded-md p-3 text-sm">
@@ -126,9 +127,7 @@ export function DeleteAccountCard({
                     />
                   </div>
 
-                  {error && (
-                    <p className="text-destructive text-sm">{error}</p>
-                  )}
+                  {error && <p className="text-destructive text-sm">{error}</p>}
                 </div>
               </DialogDescription>
             </DialogHeader>

@@ -2,7 +2,14 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { Check, Circle, Loader2, Play, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Check,
+  Circle,
+  Loader2,
+  Play,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import { type StackCompletionStatus } from "~/server/services/analytics";
@@ -25,7 +32,8 @@ export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
   const [isPending, startTransition] = useTransition();
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const { stackId, stackName, totalItems, loggedItems, isComplete, items } = stack;
+  const { stackId, stackName, totalItems, loggedItems, isComplete, items } =
+    stack;
 
   // Status states
   const isIdle = loggedItems === 0;
@@ -99,7 +107,9 @@ export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
 
           {/* Stack Name & Progress */}
           <div className="min-w-0 flex-1">
-            <p className="truncate font-sans text-sm font-medium">{stackName}</p>
+            <p className="truncate font-sans text-sm font-medium">
+              {stackName}
+            </p>
             <p className="text-muted-foreground font-mono text-[10px]">
               {isComplete ? (
                 <span className="status-optimized">COMPLETE</span>
@@ -120,7 +130,7 @@ export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
           <button
             type="button"
             onClick={toggleExpand}
-            className="flex items-center px-2 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+            className="text-muted-foreground/50 hover:text-muted-foreground flex items-center px-2 transition-colors"
             aria-label={isExpanded ? "Collapse" : "Expand"}
           >
             {isExpanded ? (
@@ -137,8 +147,8 @@ export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
         {/* Zone B: The Trigger (Execute) */}
         <div className="flex items-center px-2">
           {isComplete ? (
-            <div className="flex h-11 min-w-[72px] items-center justify-center rounded-xl bg-status-optimized px-3">
-              <span className="font-mono text-[10px] font-medium status-optimized">
+            <div className="bg-status-optimized flex h-11 min-w-[72px] items-center justify-center rounded-xl px-3">
+              <span className="status-optimized font-mono text-[10px] font-medium">
                 DONE
               </span>
             </div>
@@ -178,7 +188,7 @@ export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
                   "flex items-center gap-1.5 rounded-full border px-2 py-0.5 font-mono text-[10px] transition-all",
                   item.logged
                     ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
-                    : "border-white/10 bg-white/[0.02] text-muted-foreground"
+                    : "text-muted-foreground border-white/10 bg-white/[0.02]",
                 )}
               >
                 {item.logged ? (
@@ -186,9 +196,12 @@ export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
                 ) : (
                   <Circle className="h-2.5 w-2.5" />
                 )}
-                <span className={item.logged ? "" : ""}>{item.supplementName}</span>
+                <span className={item.logged ? "" : ""}>
+                  {item.supplementName}
+                </span>
                 <span className="text-muted-foreground/60 tabular-nums">
-                  {item.expectedDosage}{item.expectedUnit}
+                  {item.expectedDosage}
+                  {item.expectedUnit}
                 </span>
               </div>
             ))}

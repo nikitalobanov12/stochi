@@ -246,10 +246,7 @@ TONE: Knowledgeable peer explaining research, not a doctor prescribing treatment
 /**
  * Build a user prompt with retrieved context for RAG.
  */
-export function buildRAGUserPrompt(
-  question: string,
-  context: string,
-): string {
+export function buildRAGUserPrompt(question: string, context: string): string {
   return `RESEARCH CONTEXT:
 ${context}
 

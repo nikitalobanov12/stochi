@@ -174,7 +174,7 @@ function ExpertStackCard({
       className={cn(
         "w-full rounded-xl border border-white/10 bg-[#0A0A0A] p-3 text-left transition-all duration-200",
         "hover:border-white/15 hover:bg-white/[0.04]",
-        isExpanded && "border-white/15 bg-white/[0.04]"
+        isExpanded && "border-white/15 bg-white/[0.04]",
       )}
       aria-expanded={isExpanded}
     >
@@ -190,7 +190,7 @@ function ExpertStackCard({
               <span
                 className={cn(
                   "rounded border px-1.5 py-0.5 font-mono text-[9px]",
-                  SOURCE_BADGE_STYLES[stack.sourceType]
+                  SOURCE_BADGE_STYLES[stack.sourceType],
                 )}
               >
                 {SOURCE_BADGE_LABELS[stack.sourceType]}
@@ -203,7 +203,7 @@ function ExpertStackCard({
         <ChevronRight
           className={cn(
             "h-4 w-4 shrink-0 text-white/30 transition-transform duration-200",
-            isExpanded && "rotate-90"
+            isExpanded && "rotate-90",
           )}
         />
       </div>
@@ -215,7 +215,7 @@ function ExpertStackCard({
 
       {/* Expanded details */}
       {isExpanded && (
-        <div className="mt-3 animate-in fade-in slide-in-from-top-1 duration-200">
+        <div className="animate-in fade-in slide-in-from-top-1 mt-3 duration-200">
           <p className="mb-2 text-[11px] text-white/50">{stack.description}</p>
 
           {/* Supplements */}
@@ -236,8 +236,8 @@ function ExpertStackCard({
           {/* Meta info */}
           <div className="mt-2 flex items-center justify-between text-[10px]">
             <span className="text-emerald-500">
-              {stack.synergies} {stack.synergies === 1 ? "synergy" : "synergies"}{" "}
-              detected
+              {stack.synergies}{" "}
+              {stack.synergies === 1 ? "synergy" : "synergies"} detected
             </span>
             {stack.timing && (
               <span className="text-white/30">{stack.timing}</span>

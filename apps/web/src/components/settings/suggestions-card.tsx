@@ -112,9 +112,13 @@ export function SuggestionsCard({
   const [isPendingToggle, startToggleTransition] = useTransition();
   const [isPendingReset, startResetTransition] = useTransition();
   const [restoringKey, setRestoringKey] = useState<string | null>(null);
-  
+
   // Category preferences from localStorage (instant, no server roundtrip)
-  const { preferences: categoryPrefs, toggleCategory, isHydrated } = useCategoryPreferences();
+  const {
+    preferences: categoryPrefs,
+    toggleCategory,
+    isHydrated,
+  } = useCategoryPreferences();
 
   const handleToggle = (checked: boolean) => {
     // Optimistic update
@@ -135,8 +139,10 @@ export function SuggestionsCard({
   const handleRestore = (suggestionKey: string) => {
     setRestoringKey(suggestionKey);
     // Optimistic update
-    setDismissed((prev) => prev.filter((d) => d.suggestionKey !== suggestionKey));
-    
+    setDismissed((prev) =>
+      prev.filter((d) => d.suggestionKey !== suggestionKey),
+    );
+
     // Server action
     restoreSuggestion(suggestionKey).finally(() => {
       setRestoringKey(null);
@@ -153,9 +159,14 @@ export function SuggestionsCard({
     // synergy or balance: show both supplements
     return item.supplementNames.join(" + ");
   };
-  
+
   // Category order for display
-  const categoryOrder: SuggestionCategory[] = ["safety", "timing", "synergy", "balance"];
+  const categoryOrder: SuggestionCategory[] = [
+    "safety",
+    "timing",
+    "synergy",
+    "balance",
+  ];
 
   return (
     <Card>
@@ -172,9 +183,12 @@ export function SuggestionsCard({
         {/* Show Add Suggestions Toggle */}
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <div className="text-sm font-medium">Add Supplement Suggestions</div>
+            <div className="text-sm font-medium">
+              Add Supplement Suggestions
+            </div>
             <div className="text-muted-foreground text-xs">
-              Show suggestions to add supplements that synergize with your current stack
+              Show suggestions to add supplements that synergize with your
+              current stack
             </div>
           </div>
           <Switch
@@ -196,9 +210,12 @@ export function SuggestionsCard({
             {categoryOrder.map((category) => {
               const config = CATEGORY_CONFIG[category];
               const Icon = config.icon;
-              
+
               return (
-                <div key={category} className="flex items-center justify-between">
+                <div
+                  key={category}
+                  className="flex items-center justify-between"
+                >
                   <div className="flex items-center gap-3">
                     <Icon className={cn("h-4 w-4", config.colorClass)} />
                     <div className="space-y-0.5">
@@ -294,7 +311,10 @@ export function SuggestionsCard({
                     <div className="flex items-center gap-3">
                       <Badge
                         variant="outline"
-                        className={cn("gap-1 font-mono text-[10px]", config.className)}
+                        className={cn(
+                          "gap-1 font-mono text-[10px]",
+                          config.className,
+                        )}
                       >
                         <Icon className="h-2.5 w-2.5" />
                         {config.label}

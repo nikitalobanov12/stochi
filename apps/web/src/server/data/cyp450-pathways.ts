@@ -1,4 +1,7 @@
-import { type cyp450EnzymeEnum, type cyp450EffectEnum } from "~/server/db/schema";
+import {
+  type cyp450EnzymeEnum,
+  type cyp450EffectEnum,
+} from "~/server/db/schema";
 
 type CYP450Enzyme = (typeof cyp450EnzymeEnum.enumValues)[number];
 type CYP450Effect = (typeof cyp450EffectEnum.enumValues)[number];
@@ -16,7 +19,7 @@ export type CYP450PathwayEntry = {
   effect: CYP450Effect;
   /** Strength of the effect */
   strength: "strong" | "moderate" | "weak";
-  /** 
+  /**
    * Confidence score (0-1) based on evidence type:
    * - 0.9-1.0: in_vivo_human (clinical trials)
    * - 0.6-0.8: in_vitro_microsomes (liver microsomes)
@@ -32,7 +35,7 @@ export type CYP450PathwayEntry = {
 
 /**
  * CYP450 pathway data for common supplements
- * 
+ *
  * CYP3A4: Most important enzyme, metabolizes ~50% of drugs
  * CYP1A2: Caffeine, theophylline metabolism
  * CYP2D6: Many medications, codeine activation
@@ -50,7 +53,8 @@ export const CYP450_PATHWAYS: CYP450PathwayEntry[] = [
     effect: "inhibitor",
     strength: "strong",
     confidenceScore: 0.95, // in_vivo_human - well-established clinical data
-    clinicalNote: "Grapefruit juice can dramatically increase blood levels of CYP3A4 substrates. Effects can last 24-72 hours.",
+    clinicalNote:
+      "Grapefruit juice can dramatically increase blood levels of CYP3A4 substrates. Effects can last 24-72 hours.",
     researchUrl: "https://pubmed.ncbi.nlm.nih.gov/21270773/",
   },
   {
@@ -59,7 +63,8 @@ export const CYP450_PATHWAYS: CYP450PathwayEntry[] = [
     effect: "inhibitor",
     strength: "strong",
     confidenceScore: 0.75, // in_vitro_microsomes - furanocoumarin content extrapolated
-    clinicalNote: "Contains furanocoumarins similar to grapefruit. Avoid with CYP3A4 substrates.",
+    clinicalNote:
+      "Contains furanocoumarins similar to grapefruit. Avoid with CYP3A4 substrates.",
     researchUrl: "https://pubmed.ncbi.nlm.nih.gov/28431216/",
   },
   {
@@ -68,7 +73,8 @@ export const CYP450_PATHWAYS: CYP450PathwayEntry[] = [
     effect: "inducer",
     strength: "strong",
     confidenceScore: 0.95, // in_vivo_human - extensive clinical documentation
-    clinicalNote: "Potent inducer that can reduce efficacy of many medications. Effects persist for 1-2 weeks after stopping.",
+    clinicalNote:
+      "Potent inducer that can reduce efficacy of many medications. Effects persist for 1-2 weeks after stopping.",
     researchUrl: "https://pubmed.ncbi.nlm.nih.gov/10825660/",
   },
   {
@@ -77,7 +83,8 @@ export const CYP450_PATHWAYS: CYP450PathwayEntry[] = [
     effect: "inhibitor",
     strength: "moderate",
     confidenceScore: 0.65, // in_vitro_microsomes - bioavailability limits in vivo relevance
-    clinicalNote: "May increase levels of CYP3A4 substrates. Consider timing separation.",
+    clinicalNote:
+      "May increase levels of CYP3A4 substrates. Consider timing separation.",
     researchUrl: "https://pubmed.ncbi.nlm.nih.gov/17190858/",
   },
   {
@@ -85,8 +92,9 @@ export const CYP450_PATHWAYS: CYP450PathwayEntry[] = [
     enzyme: "CYP3A4",
     effect: "inhibitor",
     strength: "moderate",
-    confidenceScore: 0.70, // in_vitro + limited human PK studies
-    clinicalNote: "May increase bioavailability of CYP3A4 substrates including some statins.",
+    confidenceScore: 0.7, // in_vitro + limited human PK studies
+    clinicalNote:
+      "May increase bioavailability of CYP3A4 substrates including some statins.",
     researchUrl: "https://pubmed.ncbi.nlm.nih.gov/24135129/",
   },
   {
@@ -103,8 +111,9 @@ export const CYP450_PATHWAYS: CYP450PathwayEntry[] = [
     enzyme: "CYP3A4",
     effect: "inhibitor",
     strength: "weak",
-    confidenceScore: 0.60, // in_vitro + some human studies showing minimal effect
-    clinicalNote: "Silymarin has mild CYP3A4 inhibition. Generally considered safe.",
+    confidenceScore: 0.6, // in_vitro + some human studies showing minimal effect
+    clinicalNote:
+      "Silymarin has mild CYP3A4 inhibition. Generally considered safe.",
     researchUrl: "https://pubmed.ncbi.nlm.nih.gov/15056709/",
   },
   {
@@ -112,7 +121,7 @@ export const CYP450_PATHWAYS: CYP450PathwayEntry[] = [
     enzyme: "CYP3A4",
     effect: "inhibitor",
     strength: "moderate",
-    confidenceScore: 0.50, // in_vitro - rapid metabolism limits in vivo exposure
+    confidenceScore: 0.5, // in_vitro - rapid metabolism limits in vivo exposure
     clinicalNote: "May increase levels of CYP3A4 substrates at high doses.",
     researchUrl: "https://pubmed.ncbi.nlm.nih.gov/24456125/",
   },
@@ -121,11 +130,12 @@ export const CYP450_PATHWAYS: CYP450PathwayEntry[] = [
     enzyme: "CYP3A4",
     effect: "inhibitor",
     strength: "moderate",
-    confidenceScore: 0.80, // in_vivo_human - clinical studies with Epidiolex
-    clinicalNote: "Cannabidiol inhibits CYP3A4. Monitor medications metabolized by this pathway.",
+    confidenceScore: 0.8, // in_vivo_human - clinical studies with Epidiolex
+    clinicalNote:
+      "Cannabidiol inhibits CYP3A4. Monitor medications metabolized by this pathway.",
     researchUrl: "https://pubmed.ncbi.nlm.nih.gov/28861505/",
   },
-  
+
   // ============================================================================
   // CYP1A2 - Caffeine metabolism
   // ============================================================================
@@ -135,7 +145,8 @@ export const CYP450_PATHWAYS: CYP450PathwayEntry[] = [
     effect: "substrate",
     strength: "strong",
     confidenceScore: 0.95, // in_vivo_human - caffeine is the reference substrate
-    clinicalNote: "Primary metabolic pathway for caffeine. CYP1A2 inhibitors will increase caffeine effects.",
+    clinicalNote:
+      "Primary metabolic pathway for caffeine. CYP1A2 inhibitors will increase caffeine effects.",
   },
   {
     supplementName: "Quercetin",
@@ -151,7 +162,7 @@ export const CYP450_PATHWAYS: CYP450PathwayEntry[] = [
     enzyme: "CYP1A2",
     effect: "inhibitor",
     strength: "moderate",
-    confidenceScore: 0.60, // in_vitro + limited human data
+    confidenceScore: 0.6, // in_vitro + limited human data
     clinicalNote: "May increase caffeine half-life when taken together.",
     researchUrl: "https://pubmed.ncbi.nlm.nih.gov/17190858/",
   },
@@ -168,10 +179,11 @@ export const CYP450_PATHWAYS: CYP450PathwayEntry[] = [
     enzyme: "CYP1A2",
     effect: "substrate",
     strength: "strong",
-    confidenceScore: 0.90, // in_vivo_human - well-characterized PK
-    clinicalNote: "Melatonin is primarily metabolized by CYP1A2. Fluvoxamine dramatically increases levels.",
+    confidenceScore: 0.9, // in_vivo_human - well-characterized PK
+    clinicalNote:
+      "Melatonin is primarily metabolized by CYP1A2. Fluvoxamine dramatically increases levels.",
   },
-  
+
   // ============================================================================
   // CYP2D6 - Important for many medications
   // ============================================================================
@@ -181,7 +193,8 @@ export const CYP450_PATHWAYS: CYP450PathwayEntry[] = [
     effect: "inhibitor",
     strength: "moderate",
     confidenceScore: 0.65, // in_vitro + limited clinical data
-    clinicalNote: "May affect metabolism of CYP2D6 substrates like some antidepressants.",
+    clinicalNote:
+      "May affect metabolism of CYP2D6 substrates like some antidepressants.",
     researchUrl: "https://pubmed.ncbi.nlm.nih.gov/24135129/",
   },
   {
@@ -190,7 +203,8 @@ export const CYP450_PATHWAYS: CYP450PathwayEntry[] = [
     effect: "inhibitor",
     strength: "moderate",
     confidenceScore: 0.75, // in_vivo_human - some clinical evidence
-    clinicalNote: "CBD can inhibit CYP2D6, potentially affecting codeine activation.",
+    clinicalNote:
+      "CBD can inhibit CYP2D6, potentially affecting codeine activation.",
     researchUrl: "https://pubmed.ncbi.nlm.nih.gov/28861505/",
   },
   {
@@ -199,10 +213,11 @@ export const CYP450_PATHWAYS: CYP450PathwayEntry[] = [
     effect: "inhibitor",
     strength: "strong",
     confidenceScore: 0.85, // in_vivo_human - clinical cocktail studies
-    clinicalNote: "Berberine alkaloids strongly inhibit CYP2D6. Significant drug interaction potential.",
+    clinicalNote:
+      "Berberine alkaloids strongly inhibit CYP2D6. Significant drug interaction potential.",
     researchUrl: "https://pubmed.ncbi.nlm.nih.gov/18322934/",
   },
-  
+
   // ============================================================================
   // CYP2C9 - Warfarin metabolism
   // ============================================================================
@@ -211,8 +226,9 @@ export const CYP450_PATHWAYS: CYP450PathwayEntry[] = [
     enzyme: "CYP2C9",
     effect: "substrate",
     strength: "weak",
-    confidenceScore: 0.40, // limited evidence for direct CYP2C9 involvement
-    clinicalNote: "High-dose vitamin E may have anticoagulant effects via CYP2C9 pathway.",
+    confidenceScore: 0.4, // limited evidence for direct CYP2C9 involvement
+    clinicalNote:
+      "High-dose vitamin E may have anticoagulant effects via CYP2C9 pathway.",
   },
   {
     supplementName: "Fish Oil",
@@ -220,18 +236,19 @@ export const CYP450_PATHWAYS: CYP450PathwayEntry[] = [
     effect: "substrate",
     strength: "weak",
     confidenceScore: 0.35, // theoretical - antiplatelet mechanism may be independent
-    clinicalNote: "Omega-3s may have mild antiplatelet effects. Monitor with warfarin.",
+    clinicalNote:
+      "Omega-3s may have mild antiplatelet effects. Monitor with warfarin.",
   },
   {
     supplementName: "Berberine",
     enzyme: "CYP2C9",
     effect: "inhibitor",
     strength: "moderate",
-    confidenceScore: 0.70, // in_vitro + case reports
+    confidenceScore: 0.7, // in_vitro + case reports
     clinicalNote: "May increase warfarin levels and bleeding risk.",
     researchUrl: "https://pubmed.ncbi.nlm.nih.gov/24135129/",
   },
-  
+
   // ============================================================================
   // CYP2C19 - Important for PPIs and clopidogrel
   // ============================================================================
@@ -249,11 +266,11 @@ export const CYP450_PATHWAYS: CYP450PathwayEntry[] = [
     enzyme: "CYP2C19",
     effect: "inhibitor",
     strength: "weak",
-    confidenceScore: 0.50, // in_vitro - mild effect
+    confidenceScore: 0.5, // in_vitro - mild effect
     clinicalNote: "Mild inhibition at typical supplement doses.",
     researchUrl: "https://pubmed.ncbi.nlm.nih.gov/17190858/",
   },
-  
+
   // ============================================================================
   // CYP2E1 - Alcohol and acetaminophen
   // ============================================================================
@@ -262,8 +279,9 @@ export const CYP450_PATHWAYS: CYP450PathwayEntry[] = [
     enzyme: "CYP2E1",
     effect: "inhibitor",
     strength: "weak",
-    confidenceScore: 0.70, // in_vivo_human - acetaminophen toxicity prevention
-    clinicalNote: "N-acetylcysteine may provide protection against acetaminophen toxicity by inhibiting CYP2E1.",
+    confidenceScore: 0.7, // in_vivo_human - acetaminophen toxicity prevention
+    clinicalNote:
+      "N-acetylcysteine may provide protection against acetaminophen toxicity by inhibiting CYP2E1.",
     researchUrl: "https://pubmed.ncbi.nlm.nih.gov/15243923/",
   },
   {
@@ -272,7 +290,8 @@ export const CYP450_PATHWAYS: CYP450PathwayEntry[] = [
     effect: "inhibitor",
     strength: "moderate",
     confidenceScore: 0.55, // animal_model + in_vitro - limited human data
-    clinicalNote: "May protect against alcohol-induced liver damage by CYP2E1 inhibition.",
+    clinicalNote:
+      "May protect against alcohol-induced liver damage by CYP2E1 inhibition.",
     researchUrl: "https://pubmed.ncbi.nlm.nih.gov/17854241/",
   },
 ];
@@ -284,45 +303,56 @@ export const CYP450_PATHWAYS: CYP450PathwayEntry[] = [
 /**
  * Get all CYP450 pathways for a supplement
  */
-export function getCYP450Pathways(supplementName: string): CYP450PathwayEntry[] {
+export function getCYP450Pathways(
+  supplementName: string,
+): CYP450PathwayEntry[] {
   const normalizedName = supplementName.toLowerCase();
   return CYP450_PATHWAYS.filter(
-    (entry) => normalizedName.includes(entry.supplementName.toLowerCase()) ||
-               entry.supplementName.toLowerCase().includes(normalizedName)
+    (entry) =>
+      normalizedName.includes(entry.supplementName.toLowerCase()) ||
+      entry.supplementName.toLowerCase().includes(normalizedName),
   );
 }
 
 /**
  * Get all supplements that affect a specific enzyme
  */
-export function getSupplementsByEnzyme(enzyme: CYP450Enzyme): CYP450PathwayEntry[] {
+export function getSupplementsByEnzyme(
+  enzyme: CYP450Enzyme,
+): CYP450PathwayEntry[] {
   return CYP450_PATHWAYS.filter((entry) => entry.enzyme === enzyme);
 }
 
 /**
  * Get all supplements that are substrates (metabolized by) an enzyme
  */
-export function getSubstratesForEnzyme(enzyme: CYP450Enzyme): CYP450PathwayEntry[] {
+export function getSubstratesForEnzyme(
+  enzyme: CYP450Enzyme,
+): CYP450PathwayEntry[] {
   return CYP450_PATHWAYS.filter(
-    (entry) => entry.enzyme === enzyme && entry.effect === "substrate"
+    (entry) => entry.enzyme === enzyme && entry.effect === "substrate",
   );
 }
 
 /**
  * Get all supplements that inhibit an enzyme
  */
-export function getInhibitorsForEnzyme(enzyme: CYP450Enzyme): CYP450PathwayEntry[] {
+export function getInhibitorsForEnzyme(
+  enzyme: CYP450Enzyme,
+): CYP450PathwayEntry[] {
   return CYP450_PATHWAYS.filter(
-    (entry) => entry.enzyme === enzyme && entry.effect === "inhibitor"
+    (entry) => entry.enzyme === enzyme && entry.effect === "inhibitor",
   );
 }
 
 /**
  * Get all supplements that induce an enzyme
  */
-export function getInducersForEnzyme(enzyme: CYP450Enzyme): CYP450PathwayEntry[] {
+export function getInducersForEnzyme(
+  enzyme: CYP450Enzyme,
+): CYP450PathwayEntry[] {
   return CYP450_PATHWAYS.filter(
-    (entry) => entry.enzyme === enzyme && entry.effect === "inducer"
+    (entry) => entry.enzyme === enzyme && entry.effect === "inducer",
   );
 }
 
@@ -356,21 +386,22 @@ export function checkCYP450Interaction(
 ): CYP450InteractionResult[] {
   const pathways1 = getCYP450Pathways(supplement1);
   const pathways2 = getCYP450Pathways(supplement2);
-  
+
   const interactions: CYP450InteractionResult[] = [];
-  
+
   // Check if supplement1 is a substrate and supplement2 affects that enzyme
   for (const p1 of pathways1) {
     if (p1.effect !== "substrate") continue;
-    
+
     for (const p2 of pathways2) {
       if (p2.enzyme !== p1.enzyme) continue;
       if (p2.effect === "substrate") continue; // Both substrates = competition, handled elsewhere
-      
-      const effectDescription = p2.effect === "inhibitor"
-        ? `${supplement2} inhibits ${p2.enzyme}, which may increase ${supplement1} levels`
-        : `${supplement2} induces ${p2.enzyme}, which may decrease ${supplement1} levels`;
-      
+
+      const effectDescription =
+        p2.effect === "inhibitor"
+          ? `${supplement2} inhibits ${p2.enzyme}, which may increase ${supplement1} levels`
+          : `${supplement2} induces ${p2.enzyme}, which may decrease ${supplement1} levels`;
+
       interactions.push({
         hasInteraction: true,
         enzyme: p2.enzyme,
@@ -385,19 +416,20 @@ export function checkCYP450Interaction(
       });
     }
   }
-  
+
   // Check the reverse direction
   for (const p2 of pathways2) {
     if (p2.effect !== "substrate") continue;
-    
+
     for (const p1 of pathways1) {
       if (p1.enzyme !== p2.enzyme) continue;
       if (p1.effect === "substrate") continue;
-      
-      const effectDescription = p1.effect === "inhibitor"
-        ? `${supplement1} inhibits ${p1.enzyme}, which may increase ${supplement2} levels`
-        : `${supplement1} induces ${p1.enzyme}, which may decrease ${supplement2} levels`;
-      
+
+      const effectDescription =
+        p1.effect === "inhibitor"
+          ? `${supplement1} inhibits ${p1.enzyme}, which may increase ${supplement2} levels`
+          : `${supplement1} induces ${p1.enzyme}, which may decrease ${supplement2} levels`;
+
       interactions.push({
         hasInteraction: true,
         enzyme: p1.enzyme,
@@ -412,7 +444,7 @@ export function checkCYP450Interaction(
       });
     }
   }
-  
+
   return interactions;
 }
 
@@ -423,19 +455,19 @@ export function checkStackCYP450Interactions(
   supplementNames: string[],
 ): CYP450InteractionResult[] {
   const allInteractions: CYP450InteractionResult[] = [];
-  
+
   // Check all pairs
   for (let i = 0; i < supplementNames.length; i++) {
     for (let j = i + 1; j < supplementNames.length; j++) {
       const supp1 = supplementNames[i];
       const supp2 = supplementNames[j];
       if (!supp1 || !supp2) continue;
-      
+
       const interactions = checkCYP450Interaction(supp1, supp2);
       allInteractions.push(...interactions);
     }
   }
-  
+
   return allInteractions;
 }
 
@@ -447,7 +479,10 @@ export function getEnzymeInfo(enzyme: CYP450Enzyme): {
   description: string;
   commonSubstrates: string;
 } {
-  const info: Record<CYP450Enzyme, { name: string; description: string; commonSubstrates: string }> = {
+  const info: Record<
+    CYP450Enzyme,
+    { name: string; description: string; commonSubstrates: string }
+  > = {
     CYP1A2: {
       name: "CYP1A2",
       description: "Caffeine and theophylline metabolism",
@@ -479,6 +514,6 @@ export function getEnzymeInfo(enzyme: CYP450Enzyme): {
       commonSubstrates: "Ethanol, acetaminophen, isoflurane",
     },
   };
-  
+
   return info[enzyme];
 }

@@ -61,19 +61,22 @@ function RatioKPI({
   const effectiveMin = min ?? optimal * 0.5;
   const effectiveMax = max ?? optimal * 2;
   const range = effectiveMax - effectiveMin;
-  
+
   // Clamp current to display range
-  const clampedCurrent = Math.max(effectiveMin, Math.min(effectiveMax, current));
+  const clampedCurrent = Math.max(
+    effectiveMin,
+    Math.min(effectiveMax, current),
+  );
   const position = ((clampedCurrent - effectiveMin) / range) * 100;
-  
+
   // Optimal position (should be ~50% if min/max are symmetric)
   const optimalPosition = ((optimal - effectiveMin) / range) * 100;
-  
+
   // Color based on deviation from optimal
   const deviation = Math.abs(current - optimal) / optimal;
   let statusColor = "bg-emerald-500";
   let textColor = "status-optimized";
-  
+
   if (isWarning || deviation > 0.5) {
     statusColor = "bg-red-500";
     textColor = "status-critical";
@@ -86,33 +89,35 @@ function RatioKPI({
     <div className="flex min-w-[120px] flex-col gap-1.5 rounded-lg border border-white/10 bg-[#0A0A0A] px-3 py-2">
       {/* Label */}
       <div className="flex items-center justify-between">
-        <span className="font-mono text-[10px] uppercase tracking-wider text-white/50">
+        <span className="font-mono text-[10px] tracking-wider text-white/50 uppercase">
           {label}
         </span>
         <span className={`font-mono text-xs tabular-nums ${textColor}`}>
           {current.toFixed(1)}:1
         </span>
       </div>
-      
+
       {/* Balance bar */}
       <div className="relative h-1.5 w-full rounded-full bg-white/10">
         {/* Optimal zone indicator (subtle) */}
-        <div 
+        <div
           className="absolute top-0 h-full w-px bg-white/20"
           style={{ left: `${optimalPosition}%` }}
         />
-        
+
         {/* Current position indicator */}
-        <div 
+        <div
           className={`absolute top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full ${statusColor} shadow-lg`}
-          style={{ 
+          style={{
             left: `${position}%`,
             transform: `translate(-50%, -50%)`,
-            boxShadow: isWarning ? `0 0 8px ${statusColor === "bg-red-500" ? "rgba(239, 68, 68, 0.5)" : "rgba(245, 158, 11, 0.5)"}` : undefined,
+            boxShadow: isWarning
+              ? `0 0 8px ${statusColor === "bg-red-500" ? "rgba(239, 68, 68, 0.5)" : "rgba(245, 158, 11, 0.5)"}`
+              : undefined,
           }}
         />
       </div>
-      
+
       {/* Optimal label */}
       <div className="text-center font-mono text-[9px] text-white/30">
         optimal {optimal}:1
@@ -135,7 +140,7 @@ function SafetyKPI({
   // Color based on percentage used
   let barColor = "bg-emerald-500";
   let textColor = "text-white/70";
-  
+
   if (percentUsed >= 90) {
     barColor = "bg-red-500";
     textColor = "status-critical";
@@ -143,33 +148,35 @@ function SafetyKPI({
     barColor = "bg-amber-500";
     textColor = "status-conflict";
   }
-  
+
   // Format numbers nicely
-  const formatNum = (n: number) => n >= 1000 ? `${(n/1000).toFixed(1)}k` : Math.round(n).toString();
+  const formatNum = (n: number) =>
+    n >= 1000 ? `${(n / 1000).toFixed(1)}k` : Math.round(n).toString();
 
   return (
     <div className="flex min-w-[110px] flex-col gap-1.5 rounded-lg border border-white/10 bg-[#0A0A0A] px-3 py-2">
       {/* Label */}
       <div className="flex items-center justify-between">
-        <span className="font-mono text-[10px] uppercase tracking-wider text-white/50">
+        <span className="font-mono text-[10px] tracking-wider text-white/50 uppercase">
           {label}
         </span>
         {percentUsed >= 70 && (
-          <AlertTriangle className="h-3 w-3 status-conflict" />
+          <AlertTriangle className="status-conflict h-3 w-3" />
         )}
       </div>
-      
+
       {/* Progress bar */}
       <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-        <div 
+        <div
           className={`h-full rounded-full transition-all ${barColor}`}
           style={{ width: `${Math.min(percentUsed, 100)}%` }}
         />
       </div>
-      
+
       {/* Value */}
       <div className={`font-mono text-[10px] tabular-nums ${textColor}`}>
-        {formatNum(current)}/{formatNum(limit)}{unit}
+        {formatNum(current)}/{formatNum(limit)}
+        {unit}
       </div>
     </div>
   );
@@ -196,12 +203,12 @@ function NextWindowKPI({
     return (
       <div className="flex min-w-[110px] flex-col gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2">
         <div className="flex items-center gap-1.5">
-          <Shield className="h-3 w-3 status-optimized" />
-          <span className="font-mono text-[10px] uppercase tracking-wider text-white/50">
+          <Shield className="status-optimized h-3 w-3" />
+          <span className="font-mono text-[10px] tracking-wider text-white/50 uppercase">
             Status
           </span>
         </div>
-        <div className="font-mono text-sm font-medium status-optimized">
+        <div className="status-optimized font-mono text-sm font-medium">
           ALL CLEAR
         </div>
         <div className="font-mono text-[9px] text-white/30">
@@ -214,9 +221,7 @@ function NextWindowKPI({
   // Format time remaining
   const hours = Math.floor(nextWindow.minutesRemaining / 60);
   const minutes = nextWindow.minutesRemaining % 60;
-  const timeStr = hours > 0 
-    ? `${hours}h ${minutes}m`
-    : `${minutes}m`;
+  const timeStr = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
 
   // Urgency color
   const isImminent = nextWindow.minutesRemaining < 30;
@@ -224,14 +229,20 @@ function NextWindowKPI({
   const bgColor = isImminent ? "bg-emerald-500/5" : "bg-[#0A0A0A]";
 
   return (
-    <div className={`flex min-w-[110px] flex-col gap-1.5 rounded-lg border ${borderColor} ${bgColor} px-3 py-2`}>
+    <div
+      className={`flex min-w-[110px] flex-col gap-1.5 rounded-lg border ${borderColor} ${bgColor} px-3 py-2`}
+    >
       <div className="flex items-center gap-1.5">
-        <Clock className={`h-3 w-3 ${isImminent ? "status-optimized" : "text-white/50"}`} />
-        <span className="font-mono text-[10px] uppercase tracking-wider text-white/50">
+        <Clock
+          className={`h-3 w-3 ${isImminent ? "status-optimized" : "text-white/50"}`}
+        />
+        <span className="font-mono text-[10px] tracking-wider text-white/50 uppercase">
           Next Window
         </span>
       </div>
-      <div className={`font-mono text-sm font-medium tabular-nums ${isImminent ? "status-optimized" : "text-white"}`}>
+      <div
+        className={`font-mono text-sm font-medium tabular-nums ${isImminent ? "status-optimized" : "text-white"}`}
+      >
         {timeStr}
       </div>
       <div className="truncate font-mono text-[9px] text-white/30">
@@ -256,7 +267,7 @@ export function MicroKPIRow({
     if (currentRatios && currentRatios.length > 0) {
       return currentRatios.slice(0, 2);
     }
-    
+
     // Fall back to ratio warnings if no explicit ratios provided
     if (ratioWarnings.length > 0) {
       return ratioWarnings.slice(0, 2).map((w) => ({
@@ -270,10 +281,10 @@ export function MicroKPIRow({
         max: w.maxRatio ?? undefined,
       }));
     }
-    
+
     return [];
   }, [ratioWarnings, currentRatios]);
-  
+
   // Get top 2 safety categories approaching limits
   const topSafetyItems = useMemo(() => {
     return safetyHeadroom
@@ -283,14 +294,17 @@ export function MicroKPIRow({
   }, [safetyHeadroom]);
 
   // Check if we have any content to show
-  const hasContent = ratiosToDisplay.length > 0 || topSafetyItems.length > 0 || exclusionZones.length > 0;
-  
+  const hasContent =
+    ratiosToDisplay.length > 0 ||
+    topSafetyItems.length > 0 ||
+    exclusionZones.length > 0;
+
   if (!hasContent) {
     return null;
   }
 
   return (
-    <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none">
+    <div className="scrollbar-none flex gap-3 overflow-x-auto pb-1">
       {/* Ratio KPIs */}
       {ratiosToDisplay.map((ratio, i) => (
         <RatioKPI
@@ -301,12 +315,12 @@ export function MicroKPIRow({
           isWarning={!ratio.isOptimal}
         />
       ))}
-      
+
       {/* Safety Headroom KPIs */}
       {topSafetyItems.map((item) => (
         <SafetyKPI key={item.category} {...item} />
       ))}
-      
+
       {/* Next Window KPI */}
       <NextWindowKPI exclusionZones={exclusionZones} />
     </div>
@@ -321,8 +335,8 @@ export function MicroKPIRowSkeleton() {
   return (
     <div className="flex gap-3 overflow-x-auto pb-1">
       {[1, 2, 3, 4].map((i) => (
-        <div 
-          key={i} 
+        <div
+          key={i}
           className="min-w-[110px] animate-pulse rounded-lg border border-white/10 bg-[#0A0A0A] px-3 py-2"
         >
           <div className="mb-2 h-3 w-16 rounded bg-white/5" />

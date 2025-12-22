@@ -6,7 +6,7 @@ import { Skeleton } from "~/components/ui/skeleton";
 
 /**
  * BentoCard - Attio-inspired translucent card component for the Bento Grid
- * 
+ *
  * Features:
  * - Translucent background with backdrop blur
  * - Subtle top edge highlight for depth
@@ -80,7 +80,7 @@ export function BentoCard({
         SPAN_CLASSES[span],
         // Aspect ratio for CLS prevention
         ASPECT_CLASSES[aspect],
-        className
+        className,
       )}
     >
       {/* Top edge highlight for depth */}
@@ -201,7 +201,12 @@ type BentoCardHeaderProps = {
   id?: string;
 };
 
-export function BentoCardHeader({ title, badge, icon, id }: BentoCardHeaderProps) {
+export function BentoCardHeader({
+  title,
+  badge,
+  icon,
+  id,
+}: BentoCardHeaderProps) {
   return (
     <div className="mb-4 flex items-center justify-between">
       <h3 id={id} className="text-sm font-medium text-white/90">

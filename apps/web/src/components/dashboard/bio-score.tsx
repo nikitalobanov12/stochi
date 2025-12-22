@@ -1,6 +1,12 @@
 "use client";
 
-import { Activity, ChevronRight, AlertTriangle, Zap, ExternalLink } from "lucide-react";
+import {
+  Activity,
+  ChevronRight,
+  AlertTriangle,
+  Zap,
+  ExternalLink,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +14,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import type { ExclusionZone, OptimizationOpportunity } from "~/server/services/biological-state";
+import type {
+  ExclusionZone,
+  OptimizationOpportunity,
+} from "~/server/services/biological-state";
 
 // ============================================================================
 // Types
@@ -65,7 +74,11 @@ function calculateBreakdown(
   // Penalties from exclusion zones
   for (const zone of exclusionZones) {
     const penalty =
-      zone.severity === "critical" ? -50 : zone.severity === "medium" ? -25 : -15;
+      zone.severity === "critical"
+        ? -50
+        : zone.severity === "medium"
+          ? -25
+          : -15;
     items.push({
       type: "penalty",
       label: `${zone.sourceSupplementName}/${zone.targetSupplementName} conflict`,
@@ -79,7 +92,7 @@ function calculateBreakdown(
   const activeSynergies = optimizations.filter(
     (o) => o.type === "synergy" && o.title.startsWith("Active synergy"),
   );
-  
+
   let synergyBonusTotal = 0;
   for (const synergy of activeSynergies) {
     const bonus = Math.min(5, 20 - synergyBonusTotal); // Cap at +20 total
@@ -135,7 +148,9 @@ function ScoreGauge({ score }: { score: number }) {
       </svg>
       {/* Score value */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className={`font-mono text-2xl font-bold tabular-nums ${colorClass}`}>
+        <span
+          className={`font-mono text-2xl font-bold tabular-nums ${colorClass}`}
+        >
           {score}
         </span>
         <span className="text-muted-foreground font-mono text-[8px] tracking-wider">
@@ -174,7 +189,9 @@ function BreakdownModal({
               <div className="text-muted-foreground font-sans text-xs">
                 Current Score
               </div>
-              <div className={`font-mono text-3xl font-bold tabular-nums ${scoreColorClass}`}>
+              <div
+                className={`font-mono text-3xl font-bold tabular-nums ${scoreColorClass}`}
+              >
                 {score}
               </div>
               <div className={`font-mono text-[10px] ${scoreColorClass}`}>
@@ -207,7 +224,7 @@ function BreakdownModal({
                         }`}
                       />
                     ) : (
-                      <Zap className="h-3 w-3 shrink-0 status-optimized" />
+                      <Zap className="status-optimized h-3 w-3 shrink-0" />
                     )}
                     <span className="text-foreground truncate font-sans text-xs">
                       {item.label}
@@ -227,7 +244,9 @@ function BreakdownModal({
                   </div>
                   <span
                     className={`ml-2 shrink-0 font-mono text-xs tabular-nums ${
-                      item.type === "penalty" ? "status-critical" : "status-optimized"
+                      item.type === "penalty"
+                        ? "status-critical"
+                        : "status-optimized"
                     }`}
                   >
                     {item.value > 0 ? "+" : ""}
@@ -252,7 +271,9 @@ function BreakdownModal({
               <div className="status-critical">Critical conflict: -50</div>
               <div className="status-conflict">Medium conflict: -25</div>
               <div className="text-muted-foreground">Low conflict: -15</div>
-              <div className="status-optimized">Active synergy: +5 (max +20)</div>
+              <div className="status-optimized">
+                Active synergy: +5 (max +20)
+              </div>
             </div>
           </div>
         </div>
@@ -265,13 +286,19 @@ function BreakdownModal({
 // Main Export
 // ============================================================================
 
-export function BioScore({ score, exclusionZones, optimizations }: BioScoreProps) {
+export function BioScore({
+  score,
+  exclusionZones,
+  optimizations,
+}: BioScoreProps) {
   const colorClass = getScoreColorClass(score);
   const colorVar = getScoreColorVar(score);
   const label = getScoreLabel(score);
-  const hasModifiers = exclusionZones.length > 0 || optimizations.some(
-    (o) => o.type === "synergy" && o.title.startsWith("Active synergy"),
-  );
+  const hasModifiers =
+    exclusionZones.length > 0 ||
+    optimizations.some(
+      (o) => o.type === "synergy" && o.title.startsWith("Active synergy"),
+    );
 
   return (
     <BreakdownModal
@@ -288,7 +315,7 @@ export function BioScore({ score, exclusionZones, optimizations }: BioScoreProps
             <Activity className={`h-5 w-5 ${colorClass}`} />
             {hasModifiers && (
               <div
-                className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full"
+                className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full"
                 style={{ backgroundColor: colorVar }}
               />
             )}
@@ -297,9 +324,7 @@ export function BioScore({ score, exclusionZones, optimizations }: BioScoreProps
             <div className="text-foreground font-mono text-sm tabular-nums">
               {score}
             </div>
-            <div className={`font-mono text-[10px] ${colorClass}`}>
-              {label}
-            </div>
+            <div className={`font-mono text-[10px] ${colorClass}`}>{label}</div>
           </div>
         </div>
         <ChevronRight className="text-muted-foreground h-4 w-4 transition-transform group-hover:translate-x-0.5" />

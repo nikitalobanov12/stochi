@@ -2,12 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import {
-  Sparkles,
-  ChevronRight,
-  Settings,
-  Library,
-} from "lucide-react";
+import { Sparkles, ChevronRight, Settings, Library } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
@@ -36,7 +31,8 @@ export function RecommendedProtocols({
   existingStackNames,
   createStackFromTemplate,
 }: RecommendedProtocolsProps) {
-  const [selectedTemplate, setSelectedTemplate] = useState<StackTemplate | null>(null);
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<StackTemplate | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
   // No goals set - show CTA
@@ -173,7 +169,9 @@ function TemplateCard({
         <div className="min-w-0 flex-1 space-y-1">
           {/* Header */}
           <div className="flex items-center gap-2">
-            <span className="font-mono text-sm font-medium">{template.name}</span>
+            <span className="font-mono text-sm font-medium">
+              {template.name}
+            </span>
             {template.authority === "high" && (
               <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-500/10 px-1.5 py-0.5 font-mono text-[10px] text-amber-400">
                 <Sparkles className="h-2 w-2" />
@@ -190,10 +188,7 @@ function TemplateCard({
           {/* Supplements preview */}
           <div className="flex flex-wrap gap-1">
             {template.supplements.slice(0, 3).map((supp, i) => (
-              <span
-                key={i}
-                className="text-muted-foreground font-mono text-xs"
-              >
+              <span key={i} className="text-muted-foreground font-mono text-xs">
                 {supp.supplementName}
                 {i < Math.min(template.supplements.length, 3) - 1 && " •"}
               </span>

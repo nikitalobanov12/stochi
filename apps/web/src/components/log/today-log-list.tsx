@@ -201,7 +201,10 @@ export function TodayLogList({ logs, maxVisible = 8 }: TodayLogListProps) {
   return (
     <div className="rounded-xl border border-white/10 bg-[#0A0A0A]">
       {visibleLogs.map((entry, i) => (
-        <div key={entry.id} className={i !== 0 ? "border-t border-white/5" : ""}>
+        <div
+          key={entry.id}
+          className={i !== 0 ? "border-t border-white/5" : ""}
+        >
           <LogRow entry={entry} />
         </div>
       ))}

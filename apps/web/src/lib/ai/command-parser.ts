@@ -145,7 +145,10 @@ function parseRelativeTime(match: string): ParsedTime | null {
   if (hoursAgoMatch?.[1]) {
     const hoursAgo = parseInt(hoursAgoMatch[1], 10);
     const date = new Date(now.getTime() - hoursAgo * 60 * 60 * 1000);
-    return { date, description: `${hoursAgo} hour${hoursAgo > 1 ? "s" : ""} ago` };
+    return {
+      date,
+      description: `${hoursAgo} hour${hoursAgo > 1 ? "s" : ""} ago`,
+    };
   }
 
   return null;
@@ -207,7 +210,9 @@ export function parseCommand(input: string): ParsedCommand {
     if (relativeTimeMatch?.[1]) {
       parsedTime = parseRelativeTime(relativeTimeMatch[1]);
       if (parsedTime) {
-        supplementQuery = supplementQuery.replace(relativeTimeMatch[0], "").trim();
+        supplementQuery = supplementQuery
+          .replace(relativeTimeMatch[0], "")
+          .trim();
       }
     }
   }

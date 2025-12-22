@@ -58,7 +58,7 @@ export function InteractionHeadsUp({
     timingWarnings.map((tw) => {
       const ids = [tw.source.id, tw.target.id].sort();
       return `${ids[0]}-${ids[1]}`;
-    })
+    }),
   );
 
   const deduplicatedInteractions = interactions.filter((interaction) => {
@@ -69,7 +69,9 @@ export function InteractionHeadsUp({
   });
 
   const warnings = deduplicatedInteractions.filter((i) => i.type !== "synergy");
-  const synergies = deduplicatedInteractions.filter((i) => i.type === "synergy");
+  const synergies = deduplicatedInteractions.filter(
+    (i) => i.type === "synergy",
+  );
 
   const totalWarnings =
     warnings.length + ratioWarnings.length + timingWarnings.length;

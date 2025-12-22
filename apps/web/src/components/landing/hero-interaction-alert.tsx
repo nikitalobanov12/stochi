@@ -152,7 +152,8 @@ export function HeroInteractionAlert() {
             </span>
             <span className="text-white/10">•</span>
             <span>
-              <span className="font-mono text-emerald-400">1,423</span> compounds
+              <span className="font-mono text-emerald-400">1,423</span>{" "}
+              compounds
             </span>
             <span className="hidden text-white/10 sm:inline">•</span>
             <span className="hidden font-mono sm:inline">47ms</span>

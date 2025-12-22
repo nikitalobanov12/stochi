@@ -66,7 +66,10 @@ const UNIT_NORMALIZATIONS: Record<string, "mg" | "mcg" | "g" | "IU" | "ml"> = {
 };
 
 // Default dosages when user doesn't provide one (common serving sizes)
-const DEFAULT_DOSAGES: Record<string, { dosage: number; unit: "mg" | "mcg" | "g" | "IU" | "ml" }> = {
+const DEFAULT_DOSAGES: Record<
+  string,
+  { dosage: number; unit: "mg" | "mcg" | "g" | "IU" | "ml" }
+> = {
   "Vitamin D3": { dosage: 5000, unit: "IU" },
   "Vitamin K2 MK-7": { dosage: 100, unit: "mcg" },
   "Vitamin C": { dosage: 1000, unit: "mg" },
@@ -192,7 +195,8 @@ function parseLine(line: string): ParsedItem {
     .trim();
 
   // Regex to match dosage patterns like "5000 IU", "500mg", "2.5 g"
-  const dosagePattern = /(\d+(?:\.\d+)?)\s*(mg|mcg|ug|µg|g|iu|i\.u\.|ml|cc|milligram|microgram|gram|milliliter)s?\b/i;
+  const dosagePattern =
+    /(\d+(?:\.\d+)?)\s*(mg|mcg|ug|µg|g|iu|i\.u\.|ml|cc|milligram|microgram|gram|milliliter)s?\b/i;
 
   const match = cleaned.match(dosagePattern);
 
@@ -321,7 +325,12 @@ function isCloseMatch(parsedName: string, supplementName: string): boolean {
 
   // Check against aliases
   const aliases = supplementAliases[supplementName] ?? [];
-  if (aliases.some((alias) => alias === parsed || alias.includes(parsed) || parsed.includes(alias))) {
+  if (
+    aliases.some(
+      (alias) =>
+        alias === parsed || alias.includes(parsed) || parsed.includes(alias),
+    )
+  ) {
     return true;
   }
 

@@ -284,9 +284,9 @@ async function searchSupplementKnowledge(
   `);
 
   // Handle both Neon (rows array) and postgres-js (direct array) return types
-  const rows = (
-    "rows" in results ? results.rows : results
-  ) as unknown as ResultRow[];
+  const rows = ("rows" in results
+    ? results.rows
+    : results) as unknown as ResultRow[];
 
   // Filter by minimum similarity and map to result type
   return rows
@@ -331,8 +331,7 @@ async function findCoFactorSupplementIds(
 
   // Check which co-factors are missing from user's stack
   const missingCoFactors = coFactorNames.filter(
-    (cf) =>
-      !userStack.some((s) => s.toLowerCase().includes(cf.toLowerCase())),
+    (cf) => !userStack.some((s) => s.toLowerCase().includes(cf.toLowerCase())),
   );
 
   if (missingCoFactors.length === 0) {

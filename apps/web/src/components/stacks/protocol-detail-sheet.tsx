@@ -32,7 +32,9 @@ type ProtocolDetailSheetProps = {
   template: StackTemplate | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onImport: (templateKey: string) => Promise<{ success: boolean; stackId?: string; error?: string }>;
+  onImport: (
+    templateKey: string,
+  ) => Promise<{ success: boolean; stackId?: string; error?: string }>;
   isAlreadyImported?: boolean;
 };
 
@@ -70,8 +72,10 @@ export function ProtocolDetailSheet({
 
   const authority = AUTHORITY_CONFIG[template.authority ?? "community"];
   const AuthorityIcon = authority.icon;
-  const synergyCount = template.interactions.find((i) => i.type === "synergy")?.count ?? 0;
-  const conflictCount = template.interactions.find((i) => i.type === "conflict")?.count ?? 0;
+  const synergyCount =
+    template.interactions.find((i) => i.type === "synergy")?.count ?? 0;
+  const conflictCount =
+    template.interactions.find((i) => i.type === "conflict")?.count ?? 0;
 
   function handleImport() {
     if (!template) return;
@@ -126,7 +130,7 @@ export function ProtocolDetailSheet({
           {/* Source attribution */}
           {template.source && (
             <div className="space-y-2">
-              <h3 className="text-muted-foreground font-mono text-xs uppercase tracking-wider">
+              <h3 className="text-muted-foreground font-mono text-xs tracking-wider uppercase">
                 Source
               </h3>
               <div className="flex items-center gap-2">
@@ -148,7 +152,7 @@ export function ProtocolDetailSheet({
           {/* Usage instructions */}
           {template.usage && (
             <div className="space-y-2">
-              <h3 className="text-muted-foreground font-mono text-xs uppercase tracking-wider">
+              <h3 className="text-muted-foreground font-mono text-xs tracking-wider uppercase">
                 How to Use
               </h3>
               <div className="rounded-lg border bg-white/[0.02] p-3">
@@ -163,7 +167,7 @@ export function ProtocolDetailSheet({
           {/* Interactions summary */}
           {(synergyCount > 0 || conflictCount > 0) && (
             <div className="space-y-2">
-              <h3 className="text-muted-foreground font-mono text-xs uppercase tracking-wider">
+              <h3 className="text-muted-foreground font-mono text-xs tracking-wider uppercase">
                 Interactions
               </h3>
               <div className="flex gap-2">
@@ -191,7 +195,7 @@ export function ProtocolDetailSheet({
 
           {/* Supplements list */}
           <div className="space-y-2">
-            <h3 className="text-muted-foreground font-mono text-xs uppercase tracking-wider">
+            <h3 className="text-muted-foreground font-mono text-xs tracking-wider uppercase">
               Supplements ({template.supplements.length})
             </h3>
             <div className="space-y-2">
@@ -220,7 +224,7 @@ export function ProtocolDetailSheet({
           {/* Goals this targets */}
           {template.goals && template.goals.length > 0 && (
             <div className="space-y-2">
-              <h3 className="text-muted-foreground font-mono text-xs uppercase tracking-wider">
+              <h3 className="text-muted-foreground font-mono text-xs tracking-wider uppercase">
                 Target Goals
               </h3>
               <div className="flex flex-wrap gap-1.5">
@@ -236,7 +240,9 @@ export function ProtocolDetailSheet({
 
         <SheetFooter className="border-t">
           {error && (
-            <p className="text-destructive w-full text-center text-sm">{error}</p>
+            <p className="text-destructive w-full text-center text-sm">
+              {error}
+            </p>
           )}
           <Button
             onClick={handleImport}
@@ -246,7 +252,9 @@ export function ProtocolDetailSheet({
             {imported || isAlreadyImported ? (
               <>
                 <Check className="mr-2 h-4 w-4" />
-                {isAlreadyImported ? "Already in Your Protocols" : "Added to Protocols"}
+                {isAlreadyImported
+                  ? "Already in Your Protocols"
+                  : "Added to Protocols"}
               </>
             ) : isPending ? (
               <>

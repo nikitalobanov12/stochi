@@ -61,7 +61,7 @@ export function AskQuestion({
             key={example}
             onClick={() => handleExampleClick(example)}
             disabled={isLoading}
-            className="rounded-full border border-muted-foreground/20 px-3 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
+            className="border-muted-foreground/20 text-muted-foreground hover:bg-muted hover:text-foreground rounded-full border px-3 py-1 text-xs transition-colors disabled:opacity-50"
           >
             {example}
           </button>
@@ -78,7 +78,11 @@ export function AskQuestion({
           disabled={isLoading}
           className="flex-1"
         />
-        <Button type="submit" disabled={!question.trim() || isLoading} size="icon">
+        <Button
+          type="submit"
+          disabled={!question.trim() || isLoading}
+          size="icon"
+        >
           <Send className="h-4 w-4" />
         </Button>
       </form>

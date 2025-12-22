@@ -76,7 +76,9 @@ export function isEmbeddingsEnabled(): boolean {
  * @returns The embedding vector and token count
  * @throws Error if API call fails or API key is not configured
  */
-export async function generateEmbedding(text: string): Promise<EmbeddingResult> {
+export async function generateEmbedding(
+  text: string,
+): Promise<EmbeddingResult> {
   const result = await generateEmbeddings([text]);
   return {
     embedding: result.embeddings[0]!,

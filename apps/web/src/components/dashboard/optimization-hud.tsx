@@ -1,7 +1,20 @@
 "use client";
 
 import { useState, useEffect, useCallback, useTransition } from "react";
-import { Clock, Zap, AlertTriangle, ChevronDown, Bell, Check, BellRing, X, ShieldAlert, ExternalLink, Scale, Settings } from "lucide-react";
+import {
+  Clock,
+  Zap,
+  AlertTriangle,
+  ChevronDown,
+  Bell,
+  Check,
+  BellRing,
+  X,
+  ShieldAlert,
+  ExternalLink,
+  Scale,
+  Settings,
+} from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import {
@@ -11,7 +24,11 @@ import {
   DialogTitle,
   DialogDescription,
 } from "~/components/ui/dialog";
-import type { ExclusionZone, OptimizationOpportunity, SuggestionCategory } from "~/server/services/biological-state";
+import type {
+  ExclusionZone,
+  OptimizationOpportunity,
+  SuggestionCategory,
+} from "~/server/services/biological-state";
 import { dismissSuggestion } from "~/server/actions/dismissed-suggestions";
 import { useCategoryPreferences } from "~/lib/use-category-preferences";
 import Link from "next/link";
@@ -26,7 +43,11 @@ type OptimizationHUDProps = {
   onLogSupplement?: (supplementId: string) => void;
 };
 
-type NotificationPermissionState = "default" | "granted" | "denied" | "unsupported";
+type NotificationPermissionState =
+  | "default"
+  | "granted"
+  | "denied"
+  | "unsupported";
 
 // ============================================================================
 // Category Configuration
@@ -76,11 +97,13 @@ function useNotificationPermission(): {
   requestPermission: () => Promise<boolean>;
 } {
   // Initialize state lazily to avoid SSR issues
-  const [permission, setPermission] = useState<NotificationPermissionState>(() => {
-    if (typeof window === "undefined") return "default";
-    if (!("Notification" in window)) return "unsupported";
-    return Notification.permission as NotificationPermissionState;
-  });
+  const [permission, setPermission] = useState<NotificationPermissionState>(
+    () => {
+      if (typeof window === "undefined") return "default";
+      if (!("Notification" in window)) return "unsupported";
+      return Notification.permission as NotificationPermissionState;
+    },
+  );
 
   const requestPermission = useCallback(async (): Promise<boolean> => {
     if (!("Notification" in window)) {
@@ -132,7 +155,7 @@ function BioSyncModal({
       <DialogContent className="max-w-md border-white/10 bg-[#0A0A0A]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 font-sans text-base font-medium">
-            <BellRing className="h-5 w-5 status-info" />
+            <BellRing className="status-info h-5 w-5" />
             Enable Bio-Sync
           </DialogTitle>
           <DialogDescription className="text-muted-foreground font-sans text-sm">
@@ -145,9 +168,9 @@ function BioSyncModal({
           <div className="rounded-lg border border-white/5 bg-white/[0.02] p-4">
             <div className="text-foreground font-sans text-sm">
               Your next window for{" "}
-              <span className="status-info">{targetSupplementName}</span>{" "}
-              opens in{" "}
-              <span className="font-mono tabular-nums status-optimized">
+              <span className="status-info">{targetSupplementName}</span> opens
+              in{" "}
+              <span className="status-optimized font-mono tabular-nums">
                 {formatTime(minutesRemaining)}
               </span>
             </div>
@@ -160,19 +183,19 @@ function BioSyncModal({
           {/* Features list */}
           <div className="space-y-2.5">
             <div className="flex items-center gap-2.5">
-              <div className="h-2 w-2 rounded-full bg-status-optimized" />
+              <div className="bg-status-optimized h-2 w-2 rounded-full" />
               <span className="text-muted-foreground font-sans text-xs">
                 Precision timing based on pharmacokinetic half-life
               </span>
             </div>
             <div className="flex items-center gap-2.5">
-              <div className="h-2 w-2 rounded-full bg-status-optimized" />
+              <div className="bg-status-optimized h-2 w-2 rounded-full" />
               <span className="text-muted-foreground font-sans text-xs">
                 Automatic exclusion zone tracking
               </span>
             </div>
             <div className="flex items-center gap-2.5">
-              <div className="h-2 w-2 rounded-full bg-status-optimized" />
+              <div className="bg-status-optimized h-2 w-2 rounded-full" />
               <span className="text-muted-foreground font-sans text-xs">
                 One-tap logging from notification
               </span>
@@ -211,7 +234,11 @@ function BioSyncModal({
 // Countdown Hook
 // ============================================================================
 
-function useCountdown(targetDate: Date): { minutes: number; seconds: number; isExpired: boolean } {
+function useCountdown(targetDate: Date): {
+  minutes: number;
+  seconds: number;
+  isExpired: boolean;
+} {
   const [timeLeft, setTimeLeft] = useState(() => {
     const diff = targetDate.getTime() - Date.now();
     return Math.max(0, diff);
@@ -249,7 +276,9 @@ function formatCountdown(minutes: number, seconds: number): string {
 }
 
 // Semantic color classes for severity levels
-function getSeverityColorClass(severity: "critical" | "medium" | "low"): string {
+function getSeverityColorClass(
+  severity: "critical" | "medium" | "low",
+): string {
   switch (severity) {
     case "critical":
       return "status-critical";
@@ -261,7 +290,9 @@ function getSeverityColorClass(severity: "critical" | "medium" | "low"): string 
 }
 
 // Border classes using semantic system
-function getSeverityBorderClass(severity: "critical" | "medium" | "low"): string {
+function getSeverityBorderClass(
+  severity: "critical" | "medium" | "low",
+): string {
   switch (severity) {
     case "critical":
       return "border-status-critical";
@@ -314,7 +345,7 @@ function ExclusionZoneCard({
     // Permission granted - schedule the notification
     setReminded(true);
     const delayMs = minutes * 60 * 1000 + seconds * 1000;
-    
+
     setTimeout(() => {
       new Notification(`Ready to take ${zone.targetSupplementName}`, {
         body: `${zone.sourceSupplementName} is no longer blocking absorption.`,
@@ -334,15 +365,15 @@ function ExclusionZoneCard({
 
   if (isExpired) {
     return (
-      <div className="rounded-2xl border border-status-optimized bg-status-optimized p-4">
+      <div className="border-status-optimized bg-status-optimized rounded-2xl border p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Check className="h-5 w-5 status-optimized" />
+            <Check className="status-optimized h-5 w-5" />
             <div>
               <div className="text-foreground font-sans text-sm font-medium">
                 {zone.targetSupplementName}
               </div>
-              <div className="font-mono text-[10px] uppercase tracking-wider status-optimized">
+              <div className="status-optimized font-mono text-[10px] tracking-wider uppercase">
                 WINDOW OPEN
               </div>
             </div>
@@ -362,7 +393,9 @@ function ExclusionZoneCard({
   }
 
   return (
-    <div className={`rounded-2xl border ${borderClass} ${bgClass} ${isHero ? "p-5" : "p-3"}`}>
+    <div
+      className={`rounded-2xl border ${borderClass} ${bgClass} ${isHero ? "p-5" : "p-3"}`}
+    >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1">
           {isHero ? (
@@ -370,30 +403,32 @@ function ExclusionZoneCard({
             <div className="relative">
               {/* Ambient glow for imminent windows */}
               {isImminent && (
-                <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-emerald-500/10 blur-3xl" />
+                <div className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-emerald-500/10 blur-3xl" />
               )}
-              
+
               <div className="relative">
                 {/* Label - Sans-serif for prose */}
                 <div className="font-sans text-sm text-white/50">
                   Optimal Window Opens In
                 </div>
-                
+
                 {/* Countdown - Large, prominent, JetBrains Mono for precision */}
-                <div className={`mt-2 font-mono text-4xl font-bold tabular-nums ${isImminent ? "status-optimized" : colorClass}`}>
+                <div
+                  className={`mt-2 font-mono text-4xl font-bold tabular-nums ${isImminent ? "status-optimized" : colorClass}`}
+                >
                   {formatCountdown(minutes, seconds)}
                 </div>
-                
+
                 {/* Target supplement - Sans-serif */}
                 <div className="mt-3 font-sans text-lg font-medium text-white/90">
                   {zone.targetSupplementName}
                 </div>
-                
+
                 {/* Mechanistic reason - Sans-serif prose */}
                 <div className="mt-2 font-sans text-sm leading-relaxed text-white/50">
                   {zone.reason}
                 </div>
-                
+
                 {/* Set Alert button - Soft permission flow */}
                 {permission !== "denied" && !reminded && (
                   <Button
@@ -427,7 +462,9 @@ function ExclusionZoneCard({
                 <span className="text-foreground font-sans text-sm">
                   {zone.targetSupplementName}
                 </span>
-                <span className={`font-mono text-xs tabular-nums ${colorClass}`}>
+                <span
+                  className={`font-mono text-xs tabular-nums ${colorClass}`}
+                >
                   {formatCountdown(minutes, seconds)}
                 </span>
               </div>
@@ -439,9 +476,12 @@ function ExclusionZoneCard({
           )}
         </div>
         {/* Only show side button for non-hero cards */}
-        {!isHero && (
-          permission === "denied" ? (
-            <div className="text-muted-foreground/50" title="Notifications blocked">
+        {!isHero &&
+          (permission === "denied" ? (
+            <div
+              className="text-muted-foreground/50"
+              title="Notifications blocked"
+            >
               <Bell className="h-3 w-3" />
             </div>
           ) : !reminded ? (
@@ -458,8 +498,7 @@ function ExclusionZoneCard({
             <div className="status-info" title="Reminder set">
               <Bell className="h-3 w-3" />
             </div>
-          )
-        )}
+          ))}
       </div>
     </div>
   );
@@ -477,22 +516,20 @@ function TimingCard({
   onDismiss?: () => void;
 }) {
   return (
-    <div
-      className="group relative rounded-2xl border border-status-conflict bg-status-conflict p-3"
-    >
+    <div className="group border-status-conflict bg-status-conflict relative rounded-2xl border p-3">
       {/* Dismiss button - visible on hover */}
       {onDismiss && (
         <button
           type="button"
           onClick={onDismiss}
-          className="absolute right-1 top-1 rounded p-1 text-muted-foreground/50 opacity-0 transition-opacity hover:bg-muted/30 hover:text-muted-foreground group-hover:opacity-100"
+          className="text-muted-foreground/50 hover:bg-muted/30 hover:text-muted-foreground absolute top-1 right-1 rounded p-1 opacity-0 transition-opacity group-hover:opacity-100"
           title="Dismiss suggestion"
         >
           <X className="h-3 w-3" />
         </button>
       )}
       <div className="flex items-start gap-2">
-        <Clock className="mt-0.5 h-4 w-4 shrink-0 status-conflict" />
+        <Clock className="status-conflict mt-0.5 h-4 w-4 shrink-0" />
         <div className="min-w-0 pr-4">
           <div className="font-sans text-sm text-white">
             {optimization.title}
@@ -521,15 +558,18 @@ function SynergyCard({
   const isActive = optimization.title.startsWith("Active synergy");
   const hasSafetyWarning = !!optimization.safetyWarning;
   const suggestedSupp = optimization.suggestedSupplement;
-  const hasDetails = !isActive && suggestedSupp && (suggestedSupp.mechanism || suggestedSupp.description);
+  const hasDetails =
+    !isActive &&
+    suggestedSupp &&
+    (suggestedSupp.mechanism || suggestedSupp.description);
 
   return (
     <div
       className={`group relative rounded-2xl border p-3 ${
         hasSafetyWarning
           ? "border-status-conflict bg-status-conflict"
-          : isActive 
-            ? "border-status-optimized bg-status-optimized" 
+          : isActive
+            ? "border-status-optimized bg-status-optimized"
             : "border-status-info bg-status-info"
       }`}
     >
@@ -538,7 +578,7 @@ function SynergyCard({
         <button
           type="button"
           onClick={onDismiss}
-          className="absolute right-1 top-1 rounded p-1 text-muted-foreground/50 opacity-0 transition-opacity hover:bg-muted/30 hover:text-muted-foreground group-hover:opacity-100"
+          className="text-muted-foreground/50 hover:bg-muted/30 hover:text-muted-foreground absolute top-1 right-1 rounded p-1 opacity-0 transition-opacity group-hover:opacity-100"
           title="Dismiss suggestion"
         >
           <X className="h-3 w-3" />
@@ -546,7 +586,7 @@ function SynergyCard({
       )}
       <div className="flex items-start gap-2">
         {hasSafetyWarning ? (
-          <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 status-conflict" />
+          <ShieldAlert className="status-conflict mt-0.5 h-4 w-4 shrink-0" />
         ) : (
           <Zap
             className={`mt-0.5 h-4 w-4 shrink-0 ${
@@ -556,7 +596,7 @@ function SynergyCard({
         )}
         <div className="min-w-0 flex-1 pr-4">
           <div className="font-sans text-sm text-white">
-            {isActive 
+            {isActive
               ? optimization.title.replace("Active synergy: ", "")
               : optimization.title.replace(/^Enhance .+ with /, "Add ")}
           </div>
@@ -564,14 +604,14 @@ function SynergyCard({
             {optimization.description}
           </div>
           {hasSafetyWarning && (
-            <div className="mt-1.5 flex items-start gap-1.5 rounded-lg bg-status-conflict px-2 py-1">
-              <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0 status-conflict" />
-              <span className="font-sans text-[10px] leading-relaxed status-conflict">
+            <div className="bg-status-conflict mt-1.5 flex items-start gap-1.5 rounded-lg px-2 py-1">
+              <AlertTriangle className="status-conflict mt-0.5 h-3 w-3 shrink-0" />
+              <span className="status-conflict font-sans text-[10px] leading-relaxed">
                 {optimization.safetyWarning}
               </span>
             </div>
           )}
-          
+
           {/* Expandable details section */}
           {hasDetails && (
             <div className="mt-2">
@@ -580,16 +620,18 @@ function SynergyCard({
                 onClick={() => setIsExpanded(!isExpanded)}
                 className="flex items-center gap-1 text-[10px] font-medium text-white/50 hover:text-white/70"
               >
-                <ChevronDown className={`h-3 w-3 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                <ChevronDown
+                  className={`h-3 w-3 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                />
                 {isExpanded ? "Less" : "More about"} {suggestedSupp.name}
               </button>
-              
+
               {isExpanded && (
                 <div className="mt-2 space-y-2 rounded-lg bg-black/20 p-2.5">
                   {/* Mechanism */}
                   {suggestedSupp.mechanism && (
                     <div>
-                      <div className="font-mono text-[9px] uppercase tracking-wider text-white/40">
+                      <div className="font-mono text-[9px] tracking-wider text-white/40 uppercase">
                         Mechanism
                       </div>
                       <p className="mt-0.5 font-sans text-[11px] leading-relaxed text-white/80">
@@ -597,11 +639,11 @@ function SynergyCard({
                       </p>
                     </div>
                   )}
-                  
+
                   {/* Description */}
                   {suggestedSupp.description && (
                     <div>
-                      <div className="font-mono text-[9px] uppercase tracking-wider text-white/40">
+                      <div className="font-mono text-[9px] tracking-wider text-white/40 uppercase">
                         Why Take It
                       </div>
                       <p className="mt-0.5 font-sans text-[11px] leading-relaxed text-white/80">
@@ -609,7 +651,7 @@ function SynergyCard({
                       </p>
                     </div>
                   )}
-                  
+
                   {/* Research link */}
                   {suggestedSupp.researchUrl && (
                     <a
@@ -645,9 +687,11 @@ export function OptimizationHUD({
   const [bioSyncModalOpen, setBioSyncModalOpen] = useState(false);
   const [pendingZone, setPendingZone] = useState<ExclusionZone | null>(null);
   // Track optimistically dismissed suggestions (by suggestionKey)
-  const [optimisticallyDismissed, setOptimisticallyDismissed] = useState<Set<string>>(new Set());
+  const [optimisticallyDismissed, setOptimisticallyDismissed] = useState<
+    Set<string>
+  >(new Set());
   const [, startTransition] = useTransition();
-  
+
   // Category preferences from localStorage
   const { preferences: categoryPrefs, isHydrated } = useCategoryPreferences();
 
@@ -666,14 +710,17 @@ export function OptimizationHUD({
       // Permission granted - schedule the notification
       const now = Date.now();
       const delayMs = pendingZone.endsAt.getTime() - now;
-      
+
       if (delayMs > 0) {
         setTimeout(() => {
-          new Notification(`Ready to take ${pendingZone.targetSupplementName}`, {
-            body: `${pendingZone.sourceSupplementName} is no longer blocking absorption.`,
-            icon: "/icon-192.png",
-            tag: `bio-sync-${pendingZone.ruleId}`,
-          });
+          new Notification(
+            `Ready to take ${pendingZone.targetSupplementName}`,
+            {
+              body: `${pendingZone.sourceSupplementName} is no longer blocking absorption.`,
+              icon: "/icon-192.png",
+              tag: `bio-sync-${pendingZone.ruleId}`,
+            },
+          );
         }, delayMs);
       }
     }
@@ -688,9 +735,11 @@ export function OptimizationHUD({
   const suggestions = optimizations.filter(
     (o) => !(o.type === "synergy" && o.title.startsWith("Active synergy")),
   );
-  
+
   // Group suggestions by category
-  const groupedSuggestions = suggestions.reduce<Record<SuggestionCategory, OptimizationOpportunity[]>>(
+  const groupedSuggestions = suggestions.reduce<
+    Record<SuggestionCategory, OptimizationOpportunity[]>
+  >(
     (acc, opt) => {
       const category = opt.category;
       if (!acc[category]) {
@@ -701,22 +750,30 @@ export function OptimizationHUD({
     },
     { safety: [], synergy: [], timing: [], balance: [] },
   );
-  
+
   // Filter out dismissed suggestions and apply category visibility
   const visibleGroupedSuggestions = Object.entries(groupedSuggestions)
-    .filter(([category]) => isHydrated ? categoryPrefs[category as SuggestionCategory] : true)
+    .filter(([category]) =>
+      isHydrated ? categoryPrefs[category as SuggestionCategory] : true,
+    )
     .map(([category, opts]) => ({
       category: category as SuggestionCategory,
       suggestions: opts.filter(
-        (opt) => opt.suggestionKey && !optimisticallyDismissed.has(opt.suggestionKey),
+        (opt) =>
+          opt.suggestionKey && !optimisticallyDismissed.has(opt.suggestionKey),
       ),
     }))
     .filter(({ suggestions: s }) => s.length > 0)
-    .sort((a, b) => CATEGORY_CONFIG[a.category].priority - CATEGORY_CONFIG[b.category].priority);
-  
+    .sort(
+      (a, b) =>
+        CATEGORY_CONFIG[a.category].priority -
+        CATEGORY_CONFIG[b.category].priority,
+    );
+
   // Check if all categories are hidden
-  const allCategoriesHidden = isHydrated && 
-    Object.values(categoryPrefs).every((v) => !v) && 
+  const allCategoriesHidden =
+    isHydrated &&
+    Object.values(categoryPrefs).every((v) => !v) &&
     suggestions.length > 0;
 
   // Sort exclusion zones by time remaining
@@ -725,7 +782,9 @@ export function OptimizationHUD({
   );
 
   const hasContent =
-    sortedZones.length > 0 || activeSynergies.length > 0 || visibleGroupedSuggestions.length > 0;
+    sortedZones.length > 0 ||
+    activeSynergies.length > 0 ||
+    visibleGroupedSuggestions.length > 0;
 
   if (!hasContent && !allCategoriesHidden) {
     return (
@@ -769,7 +828,7 @@ export function OptimizationHUD({
         {sortedZones.length > 1 && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="h-3 w-3 status-conflict" />
+              <AlertTriangle className="status-conflict h-3 w-3" />
               <span className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
                 Other Windows
               </span>
@@ -792,7 +851,7 @@ export function OptimizationHUD({
         {activeSynergies.length > 0 && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Zap className="h-3 w-3 status-optimized" />
+              <Zap className="status-optimized h-3 w-3" />
               <span className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
                 Active Synergies
               </span>
@@ -811,9 +870,9 @@ export function OptimizationHUD({
             <div className="text-muted-foreground font-mono text-xs">
               All suggestion categories are hidden
             </div>
-            <Link 
+            <Link
               href="/dashboard/settings"
-              className="text-muted-foreground/60 mt-1 flex items-center justify-center gap-1 font-mono text-[10px] hover:text-muted-foreground"
+              className="text-muted-foreground/60 hover:text-muted-foreground mt-1 flex items-center justify-center gap-1 font-mono text-[10px]"
             >
               <Settings className="h-3 w-3" />
               Manage in Settings
@@ -822,57 +881,61 @@ export function OptimizationHUD({
         )}
 
         {/* Grouped Suggestions by Category */}
-        {visibleGroupedSuggestions.map(({ category, suggestions: categorysuggestions }) => {
-          const config = CATEGORY_CONFIG[category];
-          const Icon = config.icon;
-          
-          return (
-            <div key={category} className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Icon className={`h-3 w-3 ${config.colorClass}`} />
-                <span className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
-                  {config.label}
-                </span>
-                <span className="text-muted-foreground/50 font-mono text-[10px]">
-                  ({categorysuggestions.length})
-                </span>
-              </div>
-              <div className="space-y-2">
-                {categorysuggestions.slice(0, 3).map((opt) => {
-                  const handleDismiss = () => {
-                    const key = opt.suggestionKey;
-                    if (!key) return;
-                    // Optimistic update: hide immediately
-                    setOptimisticallyDismissed((prev) => new Set(prev).add(key));
-                    // Persist to server in background
-                    startTransition(() => {
-                      void dismissSuggestion(key);
-                    });
-                  };
-                  
-                  // Use TimingCard for timing suggestions, SynergyCard for others
-                  if (opt.type === "timing") {
+        {visibleGroupedSuggestions.map(
+          ({ category, suggestions: categorysuggestions }) => {
+            const config = CATEGORY_CONFIG[category];
+            const Icon = config.icon;
+
+            return (
+              <div key={category} className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Icon className={`h-3 w-3 ${config.colorClass}`} />
+                  <span className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
+                    {config.label}
+                  </span>
+                  <span className="text-muted-foreground/50 font-mono text-[10px]">
+                    ({categorysuggestions.length})
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  {categorysuggestions.slice(0, 3).map((opt) => {
+                    const handleDismiss = () => {
+                      const key = opt.suggestionKey;
+                      if (!key) return;
+                      // Optimistic update: hide immediately
+                      setOptimisticallyDismissed((prev) =>
+                        new Set(prev).add(key),
+                      );
+                      // Persist to server in background
+                      startTransition(() => {
+                        void dismissSuggestion(key);
+                      });
+                    };
+
+                    // Use TimingCard for timing suggestions, SynergyCard for others
+                    if (opt.type === "timing") {
+                      return (
+                        <TimingCard
+                          key={opt.suggestionKey}
+                          optimization={opt}
+                          onDismiss={handleDismiss}
+                        />
+                      );
+                    }
+
                     return (
-                      <TimingCard
+                      <SynergyCard
                         key={opt.suggestionKey}
                         optimization={opt}
                         onDismiss={handleDismiss}
                       />
                     );
-                  }
-                  
-                  return (
-                    <SynergyCard
-                      key={opt.suggestionKey}
-                      optimization={opt}
-                      onDismiss={handleDismiss}
-                    />
-                  );
-                })}
+                  })}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          },
+        )}
       </div>
     </>
   );
@@ -893,7 +956,10 @@ export function OptimizationHUDSkeleton() {
         </div>
         <div className="space-y-2">
           {[1, 2].map((i) => (
-            <div key={i} className="rounded-lg border border-white/5 bg-white/[0.02] p-3">
+            <div
+              key={i}
+              className="rounded-lg border border-white/5 bg-white/[0.02] p-3"
+            >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 space-y-2">
                   <div className="flex items-center gap-2">
