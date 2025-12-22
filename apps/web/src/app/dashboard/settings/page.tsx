@@ -11,6 +11,7 @@ import { ExportButton } from "~/components/settings/export-button";
 import { GoalsCard } from "~/components/settings/goals-card";
 import { SuggestionsCard } from "~/components/settings/suggestions-card";
 import { DeleteAccountCard } from "~/components/settings/delete-account-card";
+import { SignOutButton } from "~/components/settings/sign-out-button";
 
 // Limit export to last 10,000 entries to prevent memory issues
 const EXPORT_LIMIT = 10000;
@@ -194,6 +195,11 @@ export default async function SettingsPage() {
           Danger Zone
         </p>
         <DeleteAccountCard logCount={logCount} stackCount={stackCount} />
+      </section>
+
+      {/* Sign Out - at the very bottom */}
+      <section className="pt-4">
+        <SignOutButton />
       </section>
     </div>
   );

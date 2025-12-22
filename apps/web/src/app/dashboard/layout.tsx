@@ -35,9 +35,10 @@ export default async function DashboardLayout({
       {/* Micro-grain texture for anti-banding */}
       <div className="hud-noise" />
 
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-black/80 backdrop-blur-xl">
+      {/* Desktop header - hidden on mobile */}
+      <header className="sticky top-0 z-50 hidden border-b border-white/10 bg-black/80 backdrop-blur-xl md:block">
         <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between px-4">
-          <nav className="hidden items-center gap-4 md:flex">
+          <nav className="flex items-center gap-4">
             <NavLink href="/dashboard" iconName="dashboard">
               Dashboard
             </NavLink>
@@ -114,11 +115,13 @@ export default async function DashboardLayout({
         </div>
       </header>
 
-      <main className="relative z-10 flex-1 pb-20 md:pb-0">
+      {/* Main content - safe area padding for mobile PWA */}
+      <main className="relative z-10 flex-1 pt-safe pb-nav-safe md:pt-0 md:pb-0">
         <div className="mx-auto max-w-[1400px] px-4 py-6">{children}</div>
       </main>
 
-      <nav className="pb-safe fixed right-0 bottom-0 left-0 z-50 border-t border-white/10 bg-black/80 backdrop-blur-xl md:hidden">
+      {/* Mobile bottom navigation with safe area for home indicator */}
+      <nav className="fixed right-0 bottom-0 left-0 z-50 border-t border-white/10 bg-black/80 pb-safe backdrop-blur-xl md:hidden">
         <div className="flex items-center justify-around py-2">
           <MobileNavLink href="/dashboard" iconName="dashboard" label="Home" />
           <MobileNavLink

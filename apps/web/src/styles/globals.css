@@ -823,3 +823,33 @@
 .animate-shake {
   animation: shake 0.5s ease-in-out;
 }
+
+/* ============================================================================
+ * iOS Safe Area Utilities
+ * ============================================================================
+ * For PWA standalone mode on notched iPhones (Dynamic Island, home indicator).
+ * These only apply when viewport-fit=cover is set (which it is in layout.tsx).
+ * Values are 0px on non-notched devices and in browser mode.
+ */
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.mt-safe {
+  margin-top: env(safe-area-inset-top, 0px);
+}
+
+.mb-safe {
+  margin-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Combined padding for main content area on mobile */
+/* Accounts for bottom nav height (64px) + home indicator safe area */
+.pb-nav-safe {
+  padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+}
