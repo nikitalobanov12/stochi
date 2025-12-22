@@ -30,7 +30,10 @@ import { MissionControl } from "~/components/dashboard/protocol-card";
 import { DashboardCommandBar } from "./dashboard-command-bar";
 
 // Biological State Engine Components
-import { BiologicalTimeline, ActiveCompoundsList } from "~/components/dashboard/biological-timeline";
+import {
+  BiologicalTimeline,
+  ActiveCompoundsList,
+} from "~/components/dashboard/biological-timeline";
 import { OptimizationHUD } from "~/components/dashboard/optimization-hud";
 
 // Additional Components
@@ -59,49 +62,58 @@ export default async function DashboardPage() {
   });
   const userGoalKeys = userGoals.map((g) => g.goal);
 
-  const [userStacks, todayLogs, allSupplements, stackCompletion, streak, biologicalState, timelineData, safetyHeadroom] =
-    await Promise.all([
-      db.query.stack.findMany({
-        where: eq(stack.userId, session.user.id),
-        with: {
-          items: {
-            with: {
-              supplement: true,
-            },
+  const [
+    userStacks,
+    todayLogs,
+    allSupplements,
+    stackCompletion,
+    streak,
+    biologicalState,
+    timelineData,
+    safetyHeadroom,
+  ] = await Promise.all([
+    db.query.stack.findMany({
+      where: eq(stack.userId, session.user.id),
+      with: {
+        items: {
+          with: {
+            supplement: true,
           },
         },
-        orderBy: [desc(stack.updatedAt)],
-        limit: 5,
-      }),
-      db.query.log.findMany({
-        where: and(
-          eq(log.userId, session.user.id),
-          gte(log.loggedAt, todayStart),
-        ),
-        with: {
-          supplement: true,
-        },
-        orderBy: [desc(log.loggedAt)],
-      }),
-      db.query.supplement.findMany({
-        columns: {
-          id: true,
-          name: true,
-          form: true,
-          defaultUnit: true,
-        },
-        orderBy: [supplement.name],
-      }),
-      getStackCompletionStatus(session.user.id),
-      calculateStreak(session.user.id),
-      getBiologicalState(session.user.id, {
-        dismissedKeys,
-        showAddSuggestions: preferences.showAddSuggestions,
-        userGoals: userGoalKeys,
-      }),
-      getTimelineData(session.user.id),
-      getSafetyHeadroom(session.user.id),
-    ]);
+      },
+      orderBy: [desc(stack.updatedAt)],
+      limit: 5,
+    }),
+    db.query.log.findMany({
+      where: and(
+        eq(log.userId, session.user.id),
+        gte(log.loggedAt, todayStart),
+      ),
+      with: {
+        supplement: true,
+      },
+      orderBy: [desc(log.loggedAt)],
+    }),
+    db.query.supplement.findMany({
+      columns: {
+        id: true,
+        name: true,
+        form: true,
+        defaultUnit: true,
+      },
+      orderBy: [supplement.name],
+    }),
+    getStackCompletionStatus(session.user.id),
+    calculateStreak(session.user.id),
+    getBiologicalState(session.user.id, {
+      dismissedKeys,
+      showAddSuggestions: preferences.showAddSuggestions,
+      userGoals: userGoalKeys,
+      timezone: preferences.timezone,
+    }),
+    getTimelineData(session.user.id),
+    getSafetyHeadroom(session.user.id),
+  ]);
 
   // Get interactions and ratio warnings for today's supplements
   const todaySupplementIds = [
@@ -257,7 +269,9 @@ export default async function DashboardPage() {
               </div>
 
               {/* Active Compounds List */}
-              {biologicalState.activeCompounds.filter(c => c.phase !== "cleared").length > 0 && (
+              {biologicalState.activeCompounds.filter(
+                (c) => c.phase !== "cleared",
+              ).length > 0 && (
                 <div>
                   <h2 className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
                     Active Compounds
@@ -321,22 +335,24 @@ export default async function DashboardPage() {
         )}
 
         {/* Empty State - No stacks configured (not during onboarding) */}
-        {userStacks.length === 0 && stackCompletion.length === 0 && !needsOnboarding && (
-          <div className="glass-card border-dashed py-12 text-center">
-            <Layers className="text-muted-foreground/30 mx-auto mb-3 h-6 w-6" />
-            <p className="text-muted-foreground font-mono text-xs">
-              No protocols configured
-            </p>
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-              className="mt-4 font-mono text-xs"
-            >
-              <Link href="/dashboard/stacks">Create Protocol</Link>
-            </Button>
-          </div>
-        )}
+        {userStacks.length === 0 &&
+          stackCompletion.length === 0 &&
+          !needsOnboarding && (
+            <div className="glass-card border-dashed py-12 text-center">
+              <Layers className="text-muted-foreground/30 mx-auto mb-3 h-6 w-6" />
+              <p className="text-muted-foreground font-mono text-xs">
+                No protocols configured
+              </p>
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="mt-4 font-mono text-xs"
+              >
+                <Link href="/dashboard/stacks">Create Protocol</Link>
+              </Button>
+            </div>
+          )}
       </div>
     </>
   );

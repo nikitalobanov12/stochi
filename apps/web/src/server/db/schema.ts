@@ -397,9 +397,9 @@ export const cyp450EnzymeEnum = pgEnum("cyp450_enzyme", [
 ]);
 
 export const cyp450EffectEnum = pgEnum("cyp450_effect", [
-  "substrate",   // Metabolized by this enzyme
-  "inhibitor",   // Inhibits this enzyme (slows metabolism of substrates)
-  "inducer",     // Induces this enzyme (speeds up metabolism of substrates)
+  "substrate", // Metabolized by this enzyme
+  "inhibitor", // Inhibits this enzyme (slows metabolism of substrates)
+  "inducer", // Induces this enzyme (speeds up metabolism of substrates)
 ]);
 
 // CYP450 enzyme pathway interactions
@@ -422,7 +422,9 @@ export const cyp450Pathway = pgTable(
     // Confidence scoring for alert fatigue prevention (Phase 4)
     // Score 0-1: 1.0 = in vivo human, 0.5 = in vitro, 0.1 = animal/theoretical
     confidenceScore: real("confidence_score").default(0.5),
-    evidenceType: cyp450EvidenceTypeEnum("evidence_type").default("in_vitro_microsomes"),
+    evidenceType: cyp450EvidenceTypeEnum("evidence_type").default(
+      "in_vitro_microsomes",
+    ),
     createdAt: timestamp("created_at")
       .$defaultFn(() => new Date())
       .notNull(),
@@ -488,6 +490,9 @@ export const userPreference = pgTable("user_preference", {
     .unique(),
   // Toggle for "add supplement" suggestions (synergies, balance recommendations)
   showAddSuggestions: boolean("show_add_suggestions").default(true).notNull(),
+  // IANA timezone identifier (e.g., "America/Los_Angeles", "Europe/London")
+  // Used for timezone-aware timing suggestions
+  timezone: text("timezone"),
   createdAt: timestamp("created_at")
     .$defaultFn(() => new Date())
     .notNull(),

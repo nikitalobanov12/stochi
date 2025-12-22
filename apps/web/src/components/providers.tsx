@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { authClient } from "~/server/better-auth/client";
 import { SupplementSheetProvider } from "~/components/supplements/supplement-sheet";
+import { TimezoneSync } from "~/components/timezone-sync";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -23,6 +24,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         providers: ["google", "github"],
       }}
     >
+      <TimezoneSync />
       <SupplementSheetProvider>{children}</SupplementSheetProvider>
     </AuthUIProvider>
   );

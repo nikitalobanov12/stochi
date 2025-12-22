@@ -98,6 +98,8 @@ export type OptimizationFilterOptions = {
   showAddSuggestions?: boolean;
   /** User's health goals for filtering suggestions by relevance */
   userGoals?: string[];
+  /** User's IANA timezone identifier for timezone-aware timing suggestions */
+  timezone?: string | null;
 };
 
 export type BiologicalState = {
@@ -280,7 +282,12 @@ function calculateMichaelisMentenConcentration(
   );
 
   // Normalize to percentage of theoretical max concentration
-  const maxConcentration = calculateMMAbsorbedAmount(dose, vmax, km, peakMinutes);
+  const maxConcentration = calculateMMAbsorbedAmount(
+    dose,
+    vmax,
+    km,
+    peakMinutes,
+  );
   if (maxConcentration <= 0) return 0;
 
   // During absorption phase
@@ -414,7 +421,10 @@ export function calculateConcentration(
   // Default to first-order, but check if we should apply heuristic dampening
   // for supplements with RDA but no MM params
   if (params.rdaAmount && params.dose) {
-    const effectiveDose = applyAbsorptionDampening(params.dose, params.rdaAmount);
+    const effectiveDose = applyAbsorptionDampening(
+      params.dose,
+      params.rdaAmount,
+    );
     // Scale concentration proportionally to dampening effect
     const dampeningFactor = effectiveDose / params.dose;
     const baseConcentration = calculateFirstOrderConcentration(params);
@@ -453,7 +463,7 @@ const DEFAULT_HALF_LIFE_MINUTES = 240; // 4 hours
 /**
  * Get the biological state for a user over a rolling 24-hour window.
  * This returns all active compounds, exclusion zones, and optimization opportunities.
- * 
+ *
  * @param userId - The user ID to get state for
  * @param filterOptions - Options for filtering suggestions (dismissed keys, preferences)
  */
@@ -533,7 +543,11 @@ export async function getBiologicalState(
   );
 
   // Calculate bio-score
-  const bioScore = calculateBioScore(activeCompounds, exclusionZones, optimizations);
+  const bioScore = calculateBioScore(
+    activeCompounds,
+    exclusionZones,
+    optimizations,
+  );
 
   return {
     activeCompounds,
@@ -549,7 +563,12 @@ export async function getBiologicalState(
  */
 async function calculateExclusionZones(
   _userId: string,
-  recentLogs: Array<{ id: string; supplementId: string; loggedAt: Date; supplement: { id: string; name: string } }>,
+  recentLogs: Array<{
+    id: string;
+    supplementId: string;
+    loggedAt: Date;
+    supplement: { id: string; name: string };
+  }>,
   now: Date,
 ): Promise<ExclusionZone[]> {
   if (recentLogs.length === 0) return [];
@@ -567,12 +586,16 @@ async function calculateExclusionZones(
 
   for (const rule of timingRules) {
     // Check if user has logged the source supplement
-    const sourceLog = recentLogs.find((l) => l.supplementId === rule.sourceSupplementId);
+    const sourceLog = recentLogs.find(
+      (l) => l.supplementId === rule.sourceSupplementId,
+    );
     if (!sourceLog) continue;
 
     // Calculate when the exclusion zone ends
     const minMinutesApart = rule.minHoursApart * 60;
-    const exclusionEndsAt = new Date(sourceLog.loggedAt.getTime() + minMinutesApart * 60 * 1000);
+    const exclusionEndsAt = new Date(
+      sourceLog.loggedAt.getTime() + minMinutesApart * 60 * 1000,
+    );
 
     // Skip if exclusion zone has already passed
     if (exclusionEndsAt <= now) continue;
@@ -585,7 +608,9 @@ async function calculateExclusionZones(
     // (ones the user has logged in the last 24h)
     if (!isTargetRelevant) continue;
 
-    const minutesRemaining = Math.round((exclusionEndsAt.getTime() - now.getTime()) / (1000 * 60));
+    const minutesRemaining = Math.round(
+      (exclusionEndsAt.getTime() - now.getTime()) / (1000 * 60),
+    );
 
     exclusionZones.push({
       ruleId: rule.id,
@@ -662,7 +687,8 @@ function determineSuggestionCategory(
   if (hasSafetyWarning) return "safety";
 
   // Check if it's a balance suggestion
-  if (isBalanceSuggestion(title, description, supplementNames)) return "balance";
+  if (isBalanceSuggestion(title, description, supplementNames))
+    return "balance";
 
   // Default to "synergy" for synergy type suggestions
   return "synergy";
@@ -691,7 +717,9 @@ function generateSuggestionKey(
  * - evening: 5pm - 8:59pm
  * - bedtime: 9pm - 4:59am
  */
-function getTimeOfDayCategory(hour: number): "morning" | "afternoon" | "evening" | "bedtime" {
+function getTimeOfDayCategory(
+  hour: number,
+): "morning" | "afternoon" | "evening" | "bedtime" {
   if (hour >= 5 && hour < 12) return "morning";
   if (hour >= 12 && hour < 17) return "afternoon";
   if (hour >= 17 && hour < 21) return "evening";
@@ -699,29 +727,61 @@ function getTimeOfDayCategory(hour: number): "morning" | "afternoon" | "evening"
 }
 
 /**
+ * Get the hour (0-23) from a Date in a specific timezone.
+ * Uses Intl.DateTimeFormat for timezone conversion without external dependencies.
+ *
+ * @param date - The UTC date to convert
+ * @param timezone - IANA timezone identifier (e.g., "America/Los_Angeles")
+ * @returns Hour in the specified timezone (0-23)
+ */
+function getHourInTimezone(date: Date, timezone: string): number {
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    hour12: false,
+    timeZone: timezone,
+  });
+  // Intl returns "24" for midnight in hour12: false mode, normalize to 0
+  const hourStr = formatter.format(date);
+  const hour = parseInt(hourStr, 10);
+  return hour === 24 ? 0 : hour;
+}
+
+/**
  * Check if the logged time matches the optimal time of day.
  * Returns true if the timing is appropriate, false if suboptimal.
  */
-function isOptimalTiming(
-  loggedHour: number,
-  optimalTime: string,
-): boolean {
+function isOptimalTiming(loggedHour: number, optimalTime: string): boolean {
   const loggedTimeOfDay = getTimeOfDayCategory(loggedHour);
-  
+
   // "any" and "with_meals" are always considered optimal
   if (optimalTime === "any" || optimalTime === "with_meals") return true;
-  
+
   // Direct match
   if (loggedTimeOfDay === optimalTime) return true;
-  
+
   // Allow adjacent time periods with some flexibility:
   // - morning supplements are ok in early afternoon
   // - evening supplements are ok in late afternoon
   // - bedtime supplements are ok in evening
-  if (optimalTime === "morning" && loggedTimeOfDay === "afternoon" && loggedHour < 14) return true;
-  if (optimalTime === "evening" && loggedTimeOfDay === "afternoon" && loggedHour >= 16) return true;
-  if (optimalTime === "bedtime" && loggedTimeOfDay === "evening" && loggedHour >= 20) return true;
-  
+  if (
+    optimalTime === "morning" &&
+    loggedTimeOfDay === "afternoon" &&
+    loggedHour < 14
+  )
+    return true;
+  if (
+    optimalTime === "evening" &&
+    loggedTimeOfDay === "afternoon" &&
+    loggedHour >= 16
+  )
+    return true;
+  if (
+    optimalTime === "bedtime" &&
+    loggedTimeOfDay === "evening" &&
+    loggedHour >= 20
+  )
+    return true;
+
   return false;
 }
 
@@ -730,19 +790,24 @@ function isOptimalTiming(
  */
 function getTimingRecommendation(optimalTime: string): string {
   const recommendations: Record<string, string> = {
-    morning: "Best taken in the morning (before noon) for optimal absorption and to avoid sleep interference.",
+    morning:
+      "Best taken in the morning (before noon) for optimal absorption and to avoid sleep interference.",
     afternoon: "Best taken in the afternoon for optimal effects.",
-    evening: "Best taken in the evening (after 5pm) for relaxation and better sleep quality.",
+    evening:
+      "Best taken in the evening (after 5pm) for relaxation and better sleep quality.",
     bedtime: "Best taken 30-60 minutes before sleep for maximum effectiveness.",
     with_meals: "Best taken with food for improved absorption.",
     any: "Can be taken at any time of day.",
   };
-  return recommendations[optimalTime] ?? "Consider adjusting the timing of this supplement.";
+  return (
+    recommendations[optimalTime] ??
+    "Consider adjusting the timing of this supplement."
+  );
 }
 
 /**
  * Calculate optimization opportunities based on active compounds and interactions.
- * 
+ *
  * @param userId - User ID (unused but kept for potential future personalization)
  * @param activeCompounds - Currently active supplements in the user's system
  * @param filterOptions - Options for filtering suggestions
@@ -755,12 +820,15 @@ async function calculateOptimizations(
   if (activeCompounds.length === 0) return [];
 
   const optimizations: OptimizationOpportunity[] = [];
-  const activeSupplementIds = new Set(activeCompounds.map((c) => c.supplementId));
-  
+  const activeSupplementIds = new Set(
+    activeCompounds.map((c) => c.supplementId),
+  );
+
   // Extract filter options with defaults
   const dismissedKeys = filterOptions?.dismissedKeys ?? new Set<string>();
   const showAddSuggestions = filterOptions?.showAddSuggestions ?? true;
   const userGoals = filterOptions?.userGoals ?? [];
+  const timezone = filterOptions?.timezone;
 
   /**
    * Check if a supplement is relevant to the user's goals.
@@ -781,52 +849,59 @@ async function calculateOptimizations(
   // ==========================================================================
   // Timing Suggestions - Check if supplements were logged at suboptimal times
   // ==========================================================================
-  
-  // Get supplement details including optimalTimeOfDay
-  const supplementIds = activeCompounds.map((c) => c.supplementId);
-  const supplements = await db.query.supplement.findMany({
-    where: (s, { inArray }) => inArray(s.id, supplementIds),
-  });
-  const supplementMap = new Map(supplements.map((s) => [s.id, s]));
-  
-  // Track which supplements we've already added timing suggestions for
-  // (to avoid duplicates from multiple logs of the same supplement)
-  const processedTimingSuggestions = new Set<string>();
-  
-  for (const compound of activeCompounds) {
-    const supp = supplementMap.get(compound.supplementId);
-    if (!supp?.optimalTimeOfDay) continue;
-    
-    // Skip if we've already processed this supplement
-    if (processedTimingSuggestions.has(compound.supplementId)) continue;
-    
-    const loggedHour = compound.loggedAt.getHours();
-    
-    // Check if timing is suboptimal
-    if (!isOptimalTiming(loggedHour, supp.optimalTimeOfDay)) {
-      const suggestionKey = generateSuggestionKey("timing", [compound.supplementId]);
-      
-      // Skip if dismissed
-      if (dismissedKeys.has(suggestionKey)) continue;
-      
-      processedTimingSuggestions.add(compound.supplementId);
-      
-      optimizations.push({
-        type: "timing",
-        category: "timing",
-        supplementIds: [compound.supplementId],
-        title: `Optimize ${supp.name} timing`,
-        description: getTimingRecommendation(supp.optimalTimeOfDay),
-        priority: 3, // Higher priority than synergy suggestions
-        suggestionKey,
-      });
+
+  // Skip timing suggestions if timezone is not set (can't accurately determine local time)
+  // The timezone will be auto-synced by the client on first load
+  if (timezone) {
+    // Get supplement details including optimalTimeOfDay
+    const supplementIds = activeCompounds.map((c) => c.supplementId);
+    const supplements = await db.query.supplement.findMany({
+      where: (s, { inArray }) => inArray(s.id, supplementIds),
+    });
+    const supplementMap = new Map(supplements.map((s) => [s.id, s]));
+
+    // Track which supplements we've already added timing suggestions for
+    // (to avoid duplicates from multiple logs of the same supplement)
+    const processedTimingSuggestions = new Set<string>();
+
+    for (const compound of activeCompounds) {
+      const supp = supplementMap.get(compound.supplementId);
+      if (!supp?.optimalTimeOfDay) continue;
+
+      // Skip if we've already processed this supplement
+      if (processedTimingSuggestions.has(compound.supplementId)) continue;
+
+      // Get hour in user's local timezone for accurate timing comparison
+      const loggedHour = getHourInTimezone(compound.loggedAt, timezone);
+
+      // Check if timing is suboptimal
+      if (!isOptimalTiming(loggedHour, supp.optimalTimeOfDay)) {
+        const suggestionKey = generateSuggestionKey("timing", [
+          compound.supplementId,
+        ]);
+
+        // Skip if dismissed
+        if (dismissedKeys.has(suggestionKey)) continue;
+
+        processedTimingSuggestions.add(compound.supplementId);
+
+        optimizations.push({
+          type: "timing",
+          category: "timing",
+          supplementIds: [compound.supplementId],
+          title: `Optimize ${supp.name} timing`,
+          description: getTimingRecommendation(supp.optimalTimeOfDay),
+          priority: 3, // Higher priority than synergy suggestions
+          suggestionKey,
+        });
+      }
     }
   }
 
   // ==========================================================================
   // Synergy Suggestions - Find synergistic combinations
   // ==========================================================================
-  
+
   // Get synergy interactions for active supplements
   const synergyInteractions = await db.query.interaction.findMany({
     where: eq(interaction.type, "synergy"),
@@ -840,18 +915,26 @@ async function calculateOptimizations(
    * Generate safety warning for high-risk supplements.
    * Returns a warning string if the supplement has a hard safety limit.
    */
-  function getSafetyWarning(supplement: { name: string; safetyCategory: string | null }): string | undefined {
+  function getSafetyWarning(supplement: {
+    name: string;
+    safetyCategory: string | null;
+  }): string | undefined {
     if (!supplement.safetyCategory) return undefined;
     const category = supplement.safetyCategory as SafetyCategory;
     if (!isHardLimit(category)) return undefined;
-    
+
     // Custom warnings for specific high-risk supplements
     const warnings: Partial<Record<SafetyCategory, string>> = {
       iron: "Caution: Only supplement if Ferritin <150ng/mL. Test before use.",
-      "vitamin-a": "Caution: High doses are teratogenic. Not recommended during pregnancy.",
-      selenium: "Caution: Narrow therapeutic window. Don't exceed 200mcg/day without testing.",
+      "vitamin-a":
+        "Caution: High doses are teratogenic. Not recommended during pregnancy.",
+      selenium:
+        "Caution: Narrow therapeutic window. Don't exceed 200mcg/day without testing.",
     };
-    return warnings[category] ?? `Caution: ${supplement.name} has a hard safety limit.`;
+    return (
+      warnings[category] ??
+      `Caution: ${supplement.name} has a hard safety limit.`
+    );
   }
 
   /**
@@ -883,7 +966,7 @@ async function calculateOptimizations(
   for (const synergy of synergyInteractions) {
     const hasSource = activeSupplementIds.has(synergy.sourceId);
     const hasTarget = activeSupplementIds.has(synergy.targetId);
-    
+
     // Generate the suggestion key for this pair
     const suggestionKey = generateSuggestionKey("synergy", [
       synergy.sourceId,
@@ -898,9 +981,11 @@ async function calculateOptimizations(
       if (dismissedKeys.has(suggestionKey)) continue;
       // Skip if the suggested supplement isn't relevant to user's goals
       if (!isRelevantToUserGoals(synergy.target.commonGoals)) continue;
-      
+
       const title = `Enhance ${synergy.source.name} with ${synergy.target.name}`;
-      const description = synergy.suggestion ?? `${synergy.source.name} and ${synergy.target.name} have synergistic effects.`;
+      const description =
+        synergy.suggestion ??
+        `${synergy.source.name} and ${synergy.target.name} have synergistic effects.`;
       const hasSafetyWarning = !!getSafetyWarning(synergy.target);
       const category = determineSuggestionCategory(
         "synergy",
@@ -909,7 +994,7 @@ async function calculateOptimizations(
         [synergy.source.name, synergy.target.name],
         hasSafetyWarning,
       );
-      
+
       optimizations.push({
         type: "synergy",
         category,
@@ -928,9 +1013,11 @@ async function calculateOptimizations(
       if (dismissedKeys.has(suggestionKey)) continue;
       // Skip if the suggested supplement isn't relevant to user's goals
       if (!isRelevantToUserGoals(synergy.source.commonGoals)) continue;
-      
+
       const title = `Enhance ${synergy.target.name} with ${synergy.source.name}`;
-      const description = synergy.suggestion ?? `${synergy.target.name} and ${synergy.source.name} have synergistic effects.`;
+      const description =
+        synergy.suggestion ??
+        `${synergy.target.name} and ${synergy.source.name} have synergistic effects.`;
       const hasSafetyWarning = !!getSafetyWarning(synergy.source);
       const category = determineSuggestionCategory(
         "synergy",
@@ -939,7 +1026,7 @@ async function calculateOptimizations(
         [synergy.target.name, synergy.source.name],
         hasSafetyWarning,
       );
-      
+
       optimizations.push({
         type: "synergy",
         category,
@@ -955,8 +1042,9 @@ async function calculateOptimizations(
       // User already has both - note the active synergy
       // Active synergies are not dismissible (they're positive feedback, not suggestions)
       const title = `Active synergy: ${synergy.source.name} + ${synergy.target.name}`;
-      const description = synergy.suggestion ?? "You're getting the benefit of this synergy!";
-      
+      const description =
+        synergy.suggestion ?? "You're getting the benefit of this synergy!";
+
       optimizations.push({
         type: "synergy",
         category: "synergy", // Active synergies are always in synergy category
@@ -975,14 +1063,14 @@ async function calculateOptimizations(
 
 /**
  * Calculate bio-score based on current state.
- * 
+ *
  * Formula:
  * - Start at 100
  * - Critical interactions: -50 points each
- * - Medium interactions: -25 points each  
+ * - Medium interactions: -25 points each
  * - Timing violations: -15 points each
  * - Active synergies: +5 points each (capped at +20)
- * 
+ *
  * Clamped to 0-100 range.
  */
 function calculateBioScore(
@@ -1021,7 +1109,7 @@ function calculateBioScore(
 /**
  * Generate timeline data points for visualization.
  * Returns concentration curves for the rolling 24h window.
- * 
+ *
  * @param userId - User ID
  * @param intervalMinutes - Interval between data points (default: 15)
  * @param windowHours - Window size in hours (default: 24)
@@ -1051,7 +1139,8 @@ export async function getTimelineData(
   if (logs.length === 0) return [];
 
   const dataPoints: TimelineDataPoint[] = [];
-  const totalMinutes = (windowEnd.getTime() - windowStart.getTime()) / (1000 * 60);
+  const totalMinutes =
+    (windowEnd.getTime() - windowStart.getTime()) / (1000 * 60);
 
   // Generate data points at each interval
   for (let minutes = 0; minutes <= totalMinutes; minutes += intervalMinutes) {
@@ -1101,7 +1190,9 @@ export async function getTimelineData(
  * Get supplements that are currently in their peak window.
  * Useful for showing "active now" indicators.
  */
-export async function getActiveSupplements(userId: string): Promise<ActiveCompound[]> {
+export async function getActiveSupplements(
+  userId: string,
+): Promise<ActiveCompound[]> {
   const state = await getBiologicalState(userId);
   return state.activeCompounds.filter(
     (c) => c.phase === "peak" || c.phase === "absorbing",
@@ -1117,10 +1208,12 @@ export async function checkTimingSafety(
   supplementId: string,
 ): Promise<ExclusionZone | null> {
   const state = await getBiologicalState(userId);
-  
-  return state.exclusionZones.find(
-    (zone) => zone.targetSupplementId === supplementId,
-  ) ?? null;
+
+  return (
+    state.exclusionZones.find(
+      (zone) => zone.targetSupplementId === supplementId,
+    ) ?? null
+  );
 }
 
 // ============================================================================
@@ -1145,14 +1238,19 @@ export type SafetyHeadroom = {
 };
 
 // Import safety limits dynamically to avoid circular dependency
-import { SAFETY_LIMITS, type SafetyCategory as SafetyCategoryType } from "~/server/data/safety-limits";
+import {
+  SAFETY_LIMITS,
+  type SafetyCategory as SafetyCategoryType,
+} from "~/server/data/safety-limits";
 import { getElementalTotal } from "~/server/services/safety";
 
 /**
  * Get safety headroom for all relevant categories.
  * Shows how close the user is to daily limits for tracked minerals/vitamins.
  */
-export async function getSafetyHeadroom(userId: string): Promise<SafetyHeadroom[]> {
+export async function getSafetyHeadroom(
+  userId: string,
+): Promise<SafetyHeadroom[]> {
   // Categories to track (most relevant for daily monitoring)
   const categoriesToCheck: SafetyCategoryType[] = [
     "magnesium",
