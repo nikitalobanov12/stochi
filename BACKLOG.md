@@ -46,6 +46,10 @@ View Research`
   - E.g., "I know about caffeine + L-theanine, don't warn me"
   - Different from dismissing - this is a permanent "I accept this interaction"
 
+- [ ] Better indicators
+  - currently when you perform a navigation action that uses the router, theres a 500 ms delay that is noticeably slow but also amplified by the fact that theres no visual indicators that the action is going through
+  - we need to add a loading indicator rigth where the user clicked that shows that the action is processing, this speeds up the perceived speed of how things happen
+
 ## Completed
 
 - [x] **Suggestion categories/grouping**
