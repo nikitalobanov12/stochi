@@ -6,19 +6,13 @@
 
 ## Up Next
 
-- [ ] **Goal-based suggestion filtering**
-  - Only show "add supplement" suggestions relevant to user's selected goals
-  - Filter synergy suggestions by goal relevance (e.g., sleep goal → prioritize sleep supplements)
-  - Update `biological-state.ts` to check user goals when generating suggestions
-  - Leverage existing `commonGoals` field on supplements and `goal` table
-
-## Planned
-
 - [ ] **Undo dismiss feature**
   - Add "Dismissed Suggestions" section to Settings page
   - List all dismissed suggestions with context (supplement name, reason)
   - "Restore" button to remove from `dismissedSuggestion` table
   - Consider grouping by suggestion type
+
+## Planned
 
 - [ ] **Suggestion categories/grouping**
   - Group suggestions in OptimizationHUD by type: Safety, Synergy, Timing, Balance
@@ -34,6 +28,17 @@
   - Add notification preferences to Settings (enable/disable, quiet hours)
 
 ## Completed
+
+- [x] **Goal-based suggestion filtering**
+  - Filter synergy suggestions by user's selected health goals
+  - Check supplement.commonGoals against user goals in biological-state.ts
+  - Fetch user goals in dashboard and pass to getBiologicalState
+  - Show all suggestions if user has no goals or supplement has no commonGoals
+
+- [x] **Protocol Library & Detail View**
+  - ProtocolDetailSheet component with full protocol info
+  - Protocol Library page at /dashboard/stacks/library with filtering
+  - Updated RecommendedProtocols to open detail sheet instead of auto-import
 
 - [x] **Active Protocol Manager (Stacks page enhancement)**
   - Added `lastLoggedAt` column to track when stacks were last used
@@ -56,7 +61,7 @@
   - E.g., "I know about caffeine + L-theanine, don't warn me"
   - Different from dismissing - this is a permanent "I accept this interaction"
 
-- [ ] **Stack templates / protocols**
-  - Pre-built supplement stacks for common goals (sleep, focus, energy)
-  - One-click import from protocol library
+- [ ] **Stack templates / protocols** (MOSTLY DONE)
+  - Pre-built supplement stacks for common goals (sleep, focus, energy) ✓
+  - One-click import from protocol library ✓
   - Community-shared stacks (future)
