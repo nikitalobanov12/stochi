@@ -6,19 +6,13 @@
 
 ## Up Next
 
-- [ ] **Undo dismiss feature**
-  - Add "Dismissed Suggestions" section to Settings page
-  - List all dismissed suggestions with context (supplement name, reason)
-  - "Restore" button to remove from `dismissedSuggestion` table
-  - Consider grouping by suggestion type
-
-## Planned
-
 - [ ] **Suggestion categories/grouping**
   - Group suggestions in OptimizationHUD by type: Safety, Synergy, Timing, Balance
   - Add category badges/headers to visually separate suggestion types
   - Add per-category toggle in Settings (e.g., "Show safety warnings", "Show synergy tips")
   - Store category preferences in `userPreference` table
+
+## Planned
 
 - [ ] **Smart notification timing**
   - Push notification when optimal window opens for a supplement
@@ -28,6 +22,13 @@
   - Add notification preferences to Settings (enable/disable, quiet hours)
 
 ## Completed
+
+- [x] **Undo dismiss feature**
+  - Added "Dismissed Suggestions" section to Settings page
+  - Expandable list showing all dismissed suggestions with type badges
+  - Individual Restore button for each dismissed suggestion
+  - Reset All button for bulk restore
+  - Optimistic UI updates
 
 - [x] **Goal-based suggestion filtering**
   - Filter synergy suggestions by user's selected health goals
