@@ -6,7 +6,7 @@ import { log, stack } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
 import { getUserGoals } from "~/server/actions/goals";
 import { getUserPreferences } from "~/server/actions/preferences";
-import { getDismissedSuggestionsCount } from "~/server/actions/dismissed-suggestions";
+import { getDismissedSuggestionsWithContext } from "~/server/actions/dismissed-suggestions";
 import { ExportButton } from "~/components/settings/export-button";
 import { GoalsCard } from "~/components/settings/goals-card";
 import { SuggestionsCard } from "~/components/settings/suggestions-card";
@@ -22,12 +22,12 @@ export default async function SettingsPage() {
   const user = session.user;
 
   // Get counts for stats (efficient, doesn't load all data)
-  const [logCountResult, stackCountResult, userGoals, preferences, dismissedCount] = await Promise.all([
+  const [logCountResult, stackCountResult, userGoals, preferences, dismissedSuggestions] = await Promise.all([
     db.select({ count: count() }).from(log).where(eq(log.userId, user.id)),
     db.select({ count: count() }).from(stack).where(eq(stack.userId, user.id)),
     getUserGoals(),
     getUserPreferences(),
-    getDismissedSuggestionsCount(),
+    getDismissedSuggestionsWithContext(),
   ]);
 
   const logCount = logCountResult[0]?.count ?? 0;
@@ -126,7 +126,7 @@ export default async function SettingsPage() {
         </p>
         <SuggestionsCard
           initialShowAddSuggestions={preferences.showAddSuggestions}
-          dismissedCount={dismissedCount}
+          dismissedSuggestions={dismissedSuggestions}
         />
       </section>
 

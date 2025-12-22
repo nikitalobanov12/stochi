@@ -1,11 +1,11 @@
 "use server";
 
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { db } from "~/server/db";
-import { dismissedSuggestion } from "~/server/db/schema";
+import { dismissedSuggestion, supplement } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
 
 /**
@@ -117,4 +117,83 @@ export async function restoreSuggestion(suggestionKey: string): Promise<void> {
     );
 
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/settings");
+}
+
+/**
+ * Dismissed suggestion with parsed context for display.
+ */
+export type DismissedSuggestionWithContext = {
+  id: string;
+  suggestionKey: string;
+  type: "synergy" | "timing" | "balance" | "unknown";
+  /** For synergy/balance: both supplement names. For timing: single supplement name */
+  supplementNames: string[];
+  dismissedAt: Date;
+};
+
+/**
+ * Parse a suggestion key into its type and supplement IDs.
+ * Key format: "type:id1:id2" or "type:id1"
+ */
+function parseSuggestionKey(key: string): { type: string; supplementIds: string[] } {
+  const parts = key.split(":");
+  const type = parts[0] ?? "unknown";
+  const supplementIds = parts.slice(1);
+  return { type, supplementIds };
+}
+
+/**
+ * Get all dismissed suggestions with full context (supplement names).
+ * This is used for the Settings page to show what was dismissed.
+ */
+export async function getDismissedSuggestionsWithContext(): Promise<DismissedSuggestionWithContext[]> {
+  const session = await getSession();
+  if (!session) {
+    return [];
+  }
+
+  const dismissed = await db.query.dismissedSuggestion.findMany({
+    where: eq(dismissedSuggestion.userId, session.user.id),
+    orderBy: (d, { desc }) => [desc(d.dismissedAt)],
+  });
+
+  if (dismissed.length === 0) {
+    return [];
+  }
+
+  // Collect all unique supplement IDs from all dismissed suggestions
+  const allSupplementIds = new Set<string>();
+  for (const d of dismissed) {
+    const { supplementIds } = parseSuggestionKey(d.suggestionKey);
+    for (const id of supplementIds) {
+      allSupplementIds.add(id);
+    }
+  }
+
+  // Batch fetch all supplements
+  const supplements = allSupplementIds.size > 0
+    ? await db.query.supplement.findMany({
+        where: inArray(supplement.id, Array.from(allSupplementIds)),
+        columns: { id: true, name: true },
+      })
+    : [];
+
+  const supplementMap = new Map(supplements.map((s) => [s.id, s.name]));
+
+  // Build the result with supplement names
+  return dismissed.map((d) => {
+    const { type, supplementIds } = parseSuggestionKey(d.suggestionKey);
+    const supplementNames = supplementIds
+      .map((id) => supplementMap.get(id))
+      .filter((name): name is string => name !== undefined);
+
+    return {
+      id: d.id,
+      suggestionKey: d.suggestionKey,
+      type: type as DismissedSuggestionWithContext["type"],
+      supplementNames,
+      dismissedAt: d.dismissedAt,
+    };
+  });
 }
