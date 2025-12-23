@@ -11,7 +11,7 @@ import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { CreateStackDialog } from "~/components/stacks/create-stack-dialog";
 import { ImportStackDialog } from "~/components/stacks/import-stack-dialog";
-import { LogStackButton } from "~/components/stacks/log-stack-button";
+import { SimpleLogStackButton } from "~/components/stacks/log-stack-button";
 import { StackTimingBadge } from "~/components/stacks/stack-timing-badge";
 import { RecommendedProtocols } from "~/components/stacks/recommended-protocols";
 import { formatRelativeTime } from "~/lib/utils";
@@ -167,7 +167,7 @@ export default async function StacksPage() {
 
                     <div className="flex items-center gap-3">
                       {/* Log button */}
-                      <LogStackButton stackId={s.id} itemCount={s.items.length} />
+                      <SimpleLogStackButton stackId={s.id} stackName={s.name} itemCount={s.items.length} />
 
                       {/* Navigate arrow */}
                       <Link href={`/dashboard/stacks/${s.id}`}>
