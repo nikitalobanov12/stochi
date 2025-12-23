@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { Pencil } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { updateStackItem } from "~/server/actions/stacks";
+import { useStackItemsContext } from "~/components/stacks/stack-items-context";
 
 type EditStackItemDialogProps = {
   itemId: string;
@@ -34,26 +34,34 @@ export function EditStackItemDialog({
   currentDosage,
   currentUnit,
 }: EditStackItemDialogProps) {
+  const { updateItemOptimistic, isPending } = useStackItemsContext();
   const [open, setOpen] = useState(false);
   const [dosage, setDosage] = useState(currentDosage.toString());
   const [unit, setUnit] = useState<"mg" | "mcg" | "g" | "IU" | "ml">(
     currentUnit,
   );
-  const [isPending, startTransition] = useTransition();
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const dosageNum = parseFloat(dosage);
     if (!dosageNum || dosageNum <= 0) return;
 
-    startTransition(async () => {
-      await updateStackItem(itemId, dosageNum, unit);
-      setOpen(false);
-    });
+    // Use optimistic update
+    updateItemOptimistic(itemId, dosageNum, unit, supplementName);
+    setOpen(false);
+  }
+
+  // Reset form when dialog opens
+  function handleOpenChange(newOpen: boolean) {
+    if (newOpen) {
+      setDosage(currentDosage.toString());
+      setUnit(currentUnit);
+    }
+    setOpen(newOpen);
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <button
           type="button"
@@ -117,7 +125,7 @@ export function EditStackItemDialog({
               size="sm"
               disabled={isPending || !dosage || parseFloat(dosage) <= 0}
             >
-              {isPending ? "Saving..." : "Save"}
+              Save
             </Button>
           </div>
         </form>

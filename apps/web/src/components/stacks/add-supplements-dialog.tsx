@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useTransition, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useMemo } from "react";
 import {
   Plus,
   Trash2,
@@ -40,12 +39,15 @@ import {
 import { Badge } from "~/components/ui/badge";
 import { fuzzySearchSupplements } from "~/server/data/supplement-aliases";
 import { cn } from "~/lib/utils";
+import { useStackItemsContext } from "~/components/stacks/stack-items-context";
 
 type Supplement = {
   id: string;
   name: string;
   form: string | null;
-  defaultUnit: "mg" | "mcg" | "g" | "IU" | "ml" | null;
+  defaultUnit: string | null;
+  isResearchChemical?: boolean | null;
+  route?: string | null;
 };
 
 type PendingItem = {
@@ -54,27 +56,22 @@ type PendingItem = {
   supplementForm: string | null;
   dosage: number;
   unit: "mg" | "mcg" | "g" | "IU" | "ml";
+  supplement: Supplement;
 };
 
 type AddSupplementsDialogProps = {
   stackId: string;
   supplements: Supplement[];
-  addStackItems: (
-    stackId: string,
-    items: Array<{ supplementId: string; dosage: number; unit: string }>,
-  ) => Promise<void>;
   children?: React.ReactNode;
 };
 
 export function AddSupplementsDialog({
   stackId,
   supplements,
-  addStackItems,
   children,
 }: AddSupplementsDialogProps) {
-  const router = useRouter();
+  const { addItemsOptimistic, isPending, items: existingItems } = useStackItemsContext();
   const [open, setOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
   const [pendingItems, setPendingItems] = useState<PendingItem[]>([]);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
 
@@ -86,14 +83,14 @@ export function AddSupplementsDialog({
   const [unit, setUnit] = useState<"mg" | "mcg" | "g" | "IU" | "ml">("mg");
   const [showDropdown, setShowDropdown] = useState(false);
 
-  // Filter out supplements already in pending list
-  const availableSupplements = useMemo(
-    () =>
-      supplements.filter(
-        (s) => !pendingItems.some((item) => item.supplementId === s.id),
-      ),
-    [supplements, pendingItems],
-  );
+  // Filter out supplements already in stack or pending list
+  const availableSupplements = useMemo(() => {
+    const existingIds = new Set(existingItems.map((item) => item.supplementId));
+    const pendingIds = new Set(pendingItems.map((item) => item.supplementId));
+    return supplements.filter(
+      (s) => !existingIds.has(s.id) && !pendingIds.has(s.id),
+    );
+  }, [supplements, existingItems, pendingItems]);
 
   // Fuzzy search results
   const searchResults = useMemo(() => {
@@ -109,7 +106,8 @@ export function AddSupplementsDialog({
   function handleSelectSupplement(supplement: Supplement) {
     setSelectedSupplement(supplement);
     setSearchQuery(supplement.name);
-    setUnit(supplement.defaultUnit ?? "mg");
+    const defaultUnit = supplement.defaultUnit as "mg" | "mcg" | "g" | "IU" | "ml" | null;
+    setUnit(defaultUnit ?? "mg");
     setShowDropdown(false);
   }
 
@@ -133,6 +131,7 @@ export function AddSupplementsDialog({
         supplementForm: selectedSupplement.form,
         dosage: parseFloat(dosage),
         unit,
+        supplement: selectedSupplement,
       },
     ]);
 
@@ -152,19 +151,25 @@ export function AddSupplementsDialog({
   function handleSubmitAll() {
     if (pendingItems.length === 0) return;
 
-    startTransition(async () => {
-      await addStackItems(
-        stackId,
-        pendingItems.map((item) => ({
-          supplementId: item.supplementId,
-          dosage: item.dosage,
-          unit: item.unit,
-        })),
-      );
-      setPendingItems([]);
-      setOpen(false);
-      router.refresh();
-    });
+    // Use optimistic update via context
+    addItemsOptimistic(
+      stackId,
+      pendingItems.map((item) => ({
+        supplementId: item.supplementId,
+        dosage: item.dosage,
+        unit: item.unit,
+        supplement: {
+          id: item.supplement.id,
+          name: item.supplement.name,
+          form: item.supplement.form,
+          isResearchChemical: item.supplement.isResearchChemical,
+          route: item.supplement.route,
+        },
+      })),
+    );
+
+    setPendingItems([]);
+    setOpen(false);
   }
 
   function handleOpenChange(newOpen: boolean) {
