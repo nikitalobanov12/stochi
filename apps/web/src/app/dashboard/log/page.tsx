@@ -2,20 +2,14 @@ import { db } from "~/server/db";
 import { log, stack } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
 import { eq, desc } from "drizzle-orm";
-import { Trash2 } from "lucide-react";
 
-import { deleteLog } from "~/server/actions/logs";
-import { logStack } from "~/server/actions/stacks";
 import {
   checkInteractions,
   checkTimingWarnings,
   type TimingWarning,
 } from "~/server/actions/interactions";
-import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge";
-import { SafeCommandBar } from "~/components/log/safe-command-bar";
-import { InteractionHeadsUp } from "~/components/dashboard/interaction-heads-up";
-import { formatTime, formatRelativeDate } from "~/lib/utils";
+import { LogPageClient } from "./log-page-client";
+import type { LogEntry, StackItem } from "~/components/log/log-context";
 
 export default async function LogPage() {
   const session = await getSession();
@@ -26,6 +20,12 @@ export default async function LogPage() {
 
   const [allSupplements, userStacks, recentLogs] = await Promise.all([
     db.query.supplement.findMany({
+      columns: {
+        id: true,
+        name: true,
+        form: true,
+        defaultUnit: true,
+      },
       orderBy: (s, { asc }) => [asc(s.name)],
     }),
     db.query.stack.findMany({
@@ -96,194 +96,65 @@ export default async function LogPage() {
   }
   const timingWarnings = Array.from(timingWarningsMap.values());
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="font-mono text-lg font-medium tracking-tight">Log</h1>
-        <p className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
-          {todaysLogs.length === 0
-            ? "NO ENTRIES TODAY"
-            : `${todaysLogs.length} LOG${todaysLogs.length !== 1 ? "S" : ""} TODAY`}
-        </p>
-      </div>
-
-      {/* Interaction HUD - PRIMARY FEATURE at top */}
-      {todaysLogs.length > 0 && (
-        <InteractionHeadsUp
-          interactions={interactions}
-          ratioWarnings={ratioWarnings}
-          timingWarnings={timingWarnings}
-        />
-      )}
-
-      {/* Command Bar */}
-      <div className="glass-card p-3">
-        <SafeCommandBar supplements={allSupplements} />
-      </div>
-
-      {/* Quick Log Stacks */}
-      {userStacks.length > 0 && (
-        <div className="space-y-3">
-          <h2 className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
-            Quick Log
-          </h2>
-          <div className="flex flex-wrap gap-2">
-            {userStacks.map((s) => (
-              <form key={s.id} action={logStack.bind(null, s.id)}>
-                <Button
-                  type="submit"
-                  variant="outline"
-                  size="sm"
-                  className="border-white/10 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.04] font-mono text-xs"
-                  disabled={s.items.length === 0}
-                >
-                  {s.name}
-                  <Badge
-                    variant="secondary"
-                    className="bg-muted/50 ml-2 font-mono text-[10px] tabular-nums"
-                  >
-                    {s.items.length}
-                  </Badge>
-                </Button>
-              </form>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Today's Logs */}
-      <div className="space-y-3">
-        <h2 className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
-          Today&apos;s Activity
-        </h2>
-        {todaysLogs.length === 0 ? (
-          <div className="glass-card border-dashed py-12 text-center">
-            <p className="text-muted-foreground font-mono text-xs">
-              No logs yet today
-            </p>
-            <p className="text-muted-foreground/60 mt-1 font-mono text-[10px]">
-              Use command bar or tap a protocol
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-1">
-            {todaysLogs.map((entry) => (
-              <div
-                key={entry.id}
-                className="group glass-card flex items-center justify-between px-3 py-2 transition-colors"
-              >
-                <div className="flex min-w-0 flex-1 items-center gap-3">
-                  <span className="text-muted-foreground/60 shrink-0 font-mono text-[10px] tabular-nums">
-                    {formatTime(new Date(entry.loggedAt))}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <span className="font-mono text-sm">
-                      {entry.supplement.name}
-                    </span>
-                    {entry.supplement.form && (
-                      <span className="text-muted-foreground/60 ml-2 font-mono text-[10px]">
-                        {entry.supplement.form}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  <span className="text-muted-foreground font-mono text-xs tabular-nums">
-                    {entry.dosage}
-                    {entry.unit}
-                  </span>
-                  <form action={deleteLog.bind(null, entry.id)}>
-                    <Button
-                      type="submit"
-                      variant="ghost"
-                      size="icon"
-                      className="text-destructive/70 hover:bg-destructive/10 hover:text-destructive h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </form>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Recent History */}
-      <div className="space-y-3">
-        <h2 className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
-          History
-        </h2>
-        <RecentLogsGrouped logs={recentLogs} />
-      </div>
-    </div>
-  );
-}
-
-type LogEntry = {
-  id: string;
-  loggedAt: Date;
-  dosage: number;
-  unit: "mg" | "mcg" | "g" | "IU" | "ml";
-  supplement: {
-    id: string;
-    name: string;
-    form: string | null;
-  };
-};
-
-function RecentLogsGrouped({ logs }: { logs: LogEntry[] }) {
-  if (logs.length === 0) {
-    return (
-      <div className="glass-card border-dashed py-8 text-center">
-        <p className="text-muted-foreground font-mono text-xs">
-          No recent logs
-        </p>
-      </div>
-    );
-  }
-
-  const grouped = logs.reduce(
-    (acc, entry) => {
-      const date = formatRelativeDate(new Date(entry.loggedAt));
-      acc[date] ??= [];
-      acc[date].push(entry);
-      return acc;
+  // Transform logs to match LogEntry type
+  const formattedTodayLogs: LogEntry[] = todaysLogs.map((l) => ({
+    id: l.id,
+    loggedAt: l.loggedAt,
+    dosage: l.dosage,
+    unit: l.unit,
+    supplement: {
+      id: l.supplement.id,
+      name: l.supplement.name,
+      isResearchChemical: l.supplement.isResearchChemical ?? false,
+      route: l.supplement.route,
+      category: l.supplement.category,
     },
-    {} as Record<string, LogEntry[]>,
-  );
+  }));
+
+  // Recent logs (excluding today) for history section
+  const recentLogsExcludingToday = recentLogs
+    .filter((l) => new Date(l.loggedAt) < today)
+    .map((l) => ({
+      id: l.id,
+      loggedAt: l.loggedAt,
+      dosage: l.dosage,
+      unit: l.unit,
+      supplement: {
+        id: l.supplement.id,
+        name: l.supplement.name,
+        isResearchChemical: l.supplement.isResearchChemical ?? false,
+        route: l.supplement.route,
+        category: l.supplement.category,
+      },
+    }));
+
+  // Transform stacks with items for optimistic logging
+  const userStacksWithItems = userStacks.map((s) => ({
+    id: s.id,
+    name: s.name,
+    items: s.items.map((item): StackItem => ({
+      supplementId: item.supplementId,
+      dosage: item.dosage,
+      unit: item.unit,
+      supplement: {
+        id: item.supplement.id,
+        name: item.supplement.name,
+        isResearchChemical: item.supplement.isResearchChemical ?? false,
+        route: item.supplement.route,
+        form: item.supplement.form,
+      },
+    })),
+  }));
 
   return (
-    <div className="max-h-[400px] space-y-4 overflow-y-auto">
-      {Object.entries(grouped).map(([date, entries]) => (
-        <div key={date}>
-          <h4 className="text-muted-foreground/60 mb-2 font-mono text-[10px] tracking-wider uppercase">
-            {date}
-          </h4>
-          <div className="space-y-1">
-            {entries.map((entry) => (
-              <div
-                key={entry.id}
-                className="glass-card flex items-center justify-between px-3 py-1.5"
-              >
-                <div className="flex min-w-0 flex-1 items-center gap-3">
-                  <span className="text-muted-foreground/40 shrink-0 font-mono text-[10px] tabular-nums">
-                    {formatTime(new Date(entry.loggedAt))}
-                  </span>
-                  <span className="text-muted-foreground truncate font-mono text-xs">
-                    {entry.supplement.name}
-                  </span>
-                </div>
-                <span className="text-muted-foreground/60 shrink-0 font-mono text-[10px] tabular-nums">
-                  {entry.dosage}
-                  {entry.unit}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
+    <LogPageClient
+      todayLogs={formattedTodayLogs}
+      recentLogs={recentLogsExcludingToday}
+      allSupplements={allSupplements}
+      userStacks={userStacksWithItems}
+      interactions={interactions}
+      ratioWarnings={ratioWarnings}
+      timingWarnings={timingWarnings}
+    />
   );
 }
