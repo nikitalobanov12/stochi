@@ -128,10 +128,10 @@ export function StackItemsProvider({
   const removeItemOptimistic: StackItemsContextValue["removeItemOptimistic"] = (
     item,
   ) => {
-    // Optimistic update - remove immediately
-    dispatchOptimistic({ type: "remove", id: item.id });
-
     startTransition(async () => {
+      // Optimistic update - remove immediately (must be inside startTransition)
+      dispatchOptimistic({ type: "remove", id: item.id });
+
       const result = await retryWithBackoff(() => removeStackItem(item.id));
 
       if (!result.success) {
@@ -150,10 +150,10 @@ export function StackItemsProvider({
     unit,
     supplementName,
   ) => {
-    // Optimistic update - update immediately
-    dispatchOptimistic({ type: "update", id: itemId, dosage, unit });
-
     startTransition(async () => {
+      // Optimistic update - update immediately (must be inside startTransition)
+      dispatchOptimistic({ type: "update", id: itemId, dosage, unit });
+
       const result = await retryWithBackoff(() =>
         updateStackItem(itemId, dosage, unit),
       );
@@ -182,10 +182,10 @@ export function StackItemsProvider({
       supplement: item.supplement,
     }));
 
-    // Optimistic update - add immediately
-    dispatchOptimistic({ type: "add", items: optimisticEntries });
-
     startTransition(async () => {
+      // Optimistic update - add immediately (must be inside startTransition)
+      dispatchOptimistic({ type: "add", items: optimisticEntries });
+
       const itemsForServer = newItems.map((item) => ({
         supplementId: item.supplementId,
         dosage: item.dosage,

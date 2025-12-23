@@ -124,7 +124,7 @@ export function LogProvider({ children, initialLogs }: LogProviderProps) {
     optimisticReducer,
   );
 
-  const createLogOptimistic: LogContextValue["createLogOptimistic"] = async (
+  const createLogOptimistic: LogContextValue["createLogOptimistic"] = (
     options,
     supplementData,
   ) => {
@@ -142,27 +142,33 @@ export function LogProvider({ children, initialLogs }: LogProviderProps) {
       },
     };
 
-    // Optimistic update - show immediately
-    dispatchOptimistic({ type: "add", log: optimisticEntry });
+    // Return a promise that resolves when the server action completes
+    return new Promise<{ success: boolean; needsSafetyCheck?: boolean }>((resolve) => {
+      startTransition(async () => {
+        // Optimistic update - show immediately (must be inside startTransition)
+        dispatchOptimistic({ type: "add", log: optimisticEntry });
 
-    // Persist to server
-    const result = await createLog(options);
+        // Persist to server
+        const result = await createLog(options);
 
-    if (!result.success) {
-      // Safety check failed - let the caller handle the warning dialog
-      // Don't rollback yet - user might override
-      return { success: false, needsSafetyCheck: true };
-    }
+        if (!result.success) {
+          // Safety check failed - let the caller handle the warning dialog
+          // Don't rollback yet - user might override
+          resolve({ success: false, needsSafetyCheck: true });
+          return;
+        }
 
-    toast.success(`Logged ${supplementData.name}`);
-    return { success: true };
+        toast.success(`Logged ${supplementData.name}`);
+        resolve({ success: true });
+      });
+    });
   };
 
   const deleteLogOptimistic: LogContextValue["deleteLogOptimistic"] = (entry) => {
-    // Optimistic update - remove immediately
-    dispatchOptimistic({ type: "remove", id: entry.id });
-
     startTransition(async () => {
+      // Optimistic update - remove immediately (must be inside startTransition)
+      dispatchOptimistic({ type: "remove", id: entry.id });
+
       const result = await retryWithBackoff(() => deleteLog(entry.id));
 
       if (!result.success) {
@@ -196,10 +202,10 @@ export function LogProvider({ children, initialLogs }: LogProviderProps) {
       },
     }));
 
-    // Optimistic update - show all entries immediately
-    dispatchOptimistic({ type: "add_many", logs: optimisticLogs });
-
     startTransition(async () => {
+      // Optimistic update - show all entries immediately (must be inside startTransition)
+      dispatchOptimistic({ type: "add_many", logs: optimisticLogs });
+
       const result = await retryWithBackoff(() => logStack(stackId));
 
       if (!result.success) {
