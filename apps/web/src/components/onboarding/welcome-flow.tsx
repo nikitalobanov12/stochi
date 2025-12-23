@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useSyncExternalStore } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -16,6 +16,16 @@ import {
 import { InteractionsStep } from "./steps/interactions-step";
 import { createStackFromOnboarding } from "~/server/actions/onboarding";
 import { type GoalKey } from "~/server/data/goal-recommendations";
+
+// Client-only check using useSyncExternalStore to avoid hydration mismatch
+const emptySubscribe = () => () => {};
+function useIsClient() {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false,
+  );
+}
 
 type Supplement = {
   id: string;
@@ -55,6 +65,9 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
     SelectedSupplement[]
   >([]);
   const [stackName, setStackName] = useState("Morning Stack");
+  
+  // Defer rendering until after hydration to avoid Radix ID mismatches
+  const isClient = useIsClient();
 
   const goNext = useCallback(() => {
     setDirection(1);
@@ -99,7 +112,7 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
     }
   }, [stackName, selectedSupplements, selectedGoals, router]);
 
-  if (!open) return null;
+  if (!open || !isClient) return null;
 
   return (
     <div className="bg-background sm:bg-background/80 fixed inset-0 z-[60] flex items-center justify-center sm:backdrop-blur-sm">
