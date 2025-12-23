@@ -481,11 +481,25 @@ export function LandingPage() {
                       fill="currentColor"
                       className="text-yellow-400/70 transition-colors group-hover:text-yellow-400"
                     />
-                    {[...Array(12)].map((_, i) => (
+                    {/* Pre-computed clock positions to avoid hydration mismatch from floating-point differences */}
+                    {[
+                      { cx: "75", cy: "50" },
+                      { cx: "71.65", cy: "62.5" },
+                      { cx: "62.5", cy: "71.65" },
+                      { cx: "50", cy: "75" },
+                      { cx: "37.5", cy: "71.65" },
+                      { cx: "28.35", cy: "62.5" },
+                      { cx: "25", cy: "50" },
+                      { cx: "28.35", cy: "37.5" },
+                      { cx: "37.5", cy: "28.35" },
+                      { cx: "50", cy: "25" },
+                      { cx: "62.5", cy: "28.35" },
+                      { cx: "71.65", cy: "37.5" },
+                    ].map((pos, i) => (
                       <circle
                         key={i}
-                        cx={50 + 25 * Math.cos((i * 30 * Math.PI) / 180)}
-                        cy={50 + 25 * Math.sin((i * 30 * Math.PI) / 180)}
+                        cx={pos.cx}
+                        cy={pos.cy}
                         r="3"
                         fill="currentColor"
                         className="text-yellow-400/70 transition-colors group-hover:text-yellow-400"
