@@ -1,30 +1,16 @@
 "use client";
 
-import { useTransition, useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useTransition } from "react";
 import Link from "next/link";
 import { X, FlaskConical, Syringe, Clock, Check } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "~/components/ui/button";
-import { deleteLog, updateLogTime } from "~/server/actions/logs";
+import { updateLogTime } from "~/server/actions/logs";
 import { formatTime } from "~/lib/utils";
-
-type LogEntry = {
-  id: string;
-  loggedAt: Date;
-  dosage: number;
-  unit: string;
-  supplement: {
-    id: string;
-    name: string;
-    isResearchChemical?: boolean;
-    route?: string | null;
-    category?: string | null;
-  };
-};
+import { useLogContext, type LogEntry } from "./log-context";
 
 type TodayLogListProps = {
-  logs: LogEntry[];
   maxVisible?: number;
 };
 
@@ -48,6 +34,7 @@ function parseTimeInput(timeValue: string, originalDate: Date): Date {
 }
 
 function LogRow({ entry }: { entry: LogEntry }) {
+  const { deleteLogOptimistic } = useLogContext();
   const [isPending, startTransition] = useTransition();
   const [isEditingTime, setIsEditingTime] = useState(false);
   const [timeValue, setTimeValue] = useState(() =>
@@ -64,14 +51,8 @@ function LogRow({ entry }: { entry: LogEntry }) {
   }, [isEditingTime]);
 
   function handleDelete() {
-    startTransition(async () => {
-      try {
-        await deleteLog(entry.id);
-        toast.success(`Removed ${entry.supplement.name} from log`);
-      } catch {
-        toast.error("Failed to delete log");
-      }
-    });
+    // Use optimistic delete from context
+    deleteLogOptimistic(entry);
   }
 
   function handleTimeClick() {
@@ -194,7 +175,8 @@ function LogRow({ entry }: { entry: LogEntry }) {
   );
 }
 
-export function TodayLogList({ logs, maxVisible = 8 }: TodayLogListProps) {
+export function TodayLogList({ maxVisible = 8 }: TodayLogListProps) {
+  const { logs } = useLogContext();
   const visibleLogs = logs.slice(0, maxVisible);
   const remainingCount = logs.length - maxVisible;
 

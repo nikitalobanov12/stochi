@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import {
   Check,
@@ -10,13 +10,15 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import { type StackCompletionStatus } from "~/server/services/analytics";
+import { useLogContext, type StackItem } from "~/components/log/log-context";
 
 type ProtocolCardProps = {
   stack: StackCompletionStatus;
-  onLog: () => Promise<void>;
+  stackItems?: StackItem[];
 };
 
 /**
@@ -28,9 +30,10 @@ type ProtocolCardProps = {
  * This solves the "invisible action" problem by making the LOG button
  * always visible and physically distinct from navigation.
  */
-export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
-  const [isPending, startTransition] = useTransition();
+export function ProtocolCard({ stack, stackItems }: ProtocolCardProps) {
+  const { logStackOptimistic, isPending } = useLogContext();
   const [isExpanded, setIsExpanded] = useState(false);
+  const [logState, setLogState] = useState<"idle" | "success">("idle");
 
   const { stackId, stackName, totalItems, loggedItems, isComplete, items } =
     stack;
@@ -42,9 +45,23 @@ export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
   function handleExecute(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-    startTransition(async () => {
-      await onLog();
-    });
+
+    if (!stackItems || stackItems.length === 0) {
+      toast.error("No items in stack to log");
+      return;
+    }
+
+    // Optimistic update via context
+    logStackOptimistic(stackId, stackItems);
+
+    // Show success state
+    setLogState("success");
+    toast.success(`Logged ${stackName}`);
+
+    // Revert to idle after animation
+    setTimeout(() => {
+      setLogState("idle");
+    }, 2000);
   }
 
   function toggleExpand(e: React.MouseEvent) {
@@ -162,10 +179,17 @@ export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
                 "border-border/60 h-11 min-w-[72px] gap-1.5 rounded-xl font-mono text-xs",
                 "hover:border-primary hover:bg-primary hover:text-primary-foreground",
                 isPending && "pointer-events-none",
+                logState === "success" &&
+                  "border-emerald-500/50 bg-emerald-500/10 text-emerald-500",
               )}
             >
               {isPending ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : logState === "success" ? (
+                <>
+                  <Check className="h-3 w-3" />
+                  DONE
+                </>
               ) : (
                 <>
                   <Play className="h-3 w-3" />
@@ -217,14 +241,23 @@ export function ProtocolCard({ stack, onLog }: ProtocolCardProps) {
  */
 export function MissionControl({
   stacks,
-  onLogStack,
+  userStacksWithItems,
 }: {
   stacks: StackCompletionStatus[];
-  onLogStack: (stackId: string) => Promise<void>;
+  userStacksWithItems: Array<{
+    id: string;
+    name: string;
+    items: StackItem[];
+  }>;
 }) {
   if (stacks.length === 0) {
     return null;
   }
+
+  // Create a map for quick lookup
+  const stackItemsMap = new Map(
+    userStacksWithItems.map((s) => [s.id, s.items]),
+  );
 
   return (
     <section className="space-y-3">
@@ -236,7 +269,7 @@ export function MissionControl({
           <ProtocolCard
             key={stack.stackId}
             stack={stack}
-            onLog={() => onLogStack(stack.stackId)}
+            stackItems={stackItemsMap.get(stack.stackId)}
           />
         ))}
       </div>

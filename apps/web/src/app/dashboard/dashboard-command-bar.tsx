@@ -7,6 +7,7 @@ import { ToxicityWarningDialog } from "~/components/ui/toxicity-warning-dialog";
 import { createLog, type CreateLogResult } from "~/server/actions/logs";
 import { type SafetyCheckResult } from "~/server/services/safety";
 import { type routeEnum } from "~/server/db/schema";
+import { useLogContext } from "~/components/log/log-context";
 
 type RouteOfAdministration = (typeof routeEnum.enumValues)[number];
 
@@ -14,6 +15,7 @@ type Supplement = {
   id: string;
   name: string;
   form: string | null;
+  defaultUnit?: string | null;
   route?: RouteOfAdministration | null;
   isResearchChemical?: boolean | null;
   safetyCategory?: string | null;
@@ -23,7 +25,7 @@ type DashboardCommandBarProps = {
   supplements: Supplement[];
 };
 
-type PendingLog = LogOptions;
+type PendingLog = LogOptions & { supplementName: string };
 
 const PROMPTS = [
   "Log Stack...",
@@ -34,6 +36,7 @@ const PROMPTS = [
 ];
 
 export function DashboardCommandBar({ supplements }: DashboardCommandBarProps) {
+  const { createLogOptimistic } = useLogContext();
   const [isPending, startTransition] = useTransition();
   const [pendingLog, setPendingLog] = useState<PendingLog | null>(null);
   const [safetyCheck, setSafetyCheck] = useState<SafetyCheckResult | null>(
@@ -55,27 +58,47 @@ export function DashboardCommandBar({ supplements }: DashboardCommandBarProps) {
   }, [isExpanded]);
 
   async function handleLog(options: LogOptions): Promise<void> {
-    setPendingLog(options);
+    const supplement = supplements.find((s) => s.id === options.supplementId);
+    if (!supplement) return;
 
-    const result: CreateLogResult = await createLog({
-      supplementId: options.supplementId,
-      dosage: options.dosage,
-      unit: options.unit,
-      route: options.route,
-      mealContext: options.mealContext,
-      loggedAt: options.loggedAt,
-    });
+    // Collapse immediately for snappy UX
+    setIsExpanded(false);
 
-    if (result.success) {
-      setPendingLog(null);
-      setSafetyCheck(null);
-      // Collapse after successful log
-      setIsExpanded(false);
-      return;
+    // Use optimistic update
+    const result = await createLogOptimistic(
+      {
+        supplementId: options.supplementId,
+        dosage: options.dosage,
+        unit: options.unit,
+        route: options.route,
+        mealContext: options.mealContext,
+        loggedAt: options.loggedAt,
+      },
+      {
+        name: supplement.name,
+        isResearchChemical: supplement.isResearchChemical ?? false,
+        route: supplement.route,
+        category: supplement.safetyCategory,
+      },
+    );
+
+    if (!result.success && result.needsSafetyCheck) {
+      // Fetch the actual safety check result to show in dialog
+      const safetyResult: CreateLogResult = await createLog({
+        supplementId: options.supplementId,
+        dosage: options.dosage,
+        unit: options.unit,
+        route: options.route,
+        mealContext: options.mealContext,
+        loggedAt: options.loggedAt,
+      });
+
+      if (!safetyResult.success) {
+        setPendingLog({ ...options, supplementName: supplement.name });
+        setSafetyCheck(safetyResult.safetyCheck);
+        setShowWarning(true);
+      }
     }
-
-    setSafetyCheck(result.safetyCheck);
-    setShowWarning(true);
   }
 
   function handleWarningCancel() {
@@ -102,7 +125,6 @@ export function DashboardCommandBar({ supplements }: DashboardCommandBarProps) {
         setPendingLog(null);
         setSafetyCheck(null);
         setShowWarning(false);
-        setIsExpanded(false);
       } else {
         setSafetyCheck(result.safetyCheck);
       }
