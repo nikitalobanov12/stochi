@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useOptimistic, useTransition } from "react";
 import { Target, Check, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 import {
   Card,
@@ -10,47 +12,46 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
 import { goals, type GoalKey } from "~/server/data/goal-recommendations";
 import { setUserGoals } from "~/server/actions/goals";
+import { retryWithBackoff } from "~/lib/retry";
 
 type GoalsCardProps = {
   initialGoals: GoalKey[];
 };
 
 export function GoalsCard({ initialGoals }: GoalsCardProps) {
-  const [selectedGoals, setSelectedGoals] = useState<GoalKey[]>(initialGoals);
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [hasChanges, setHasChanges] = useState(false);
+  const [optimisticGoals, setOptimisticGoals] = useOptimistic(initialGoals);
 
   const toggleGoal = (key: GoalKey) => {
-    setSelectedGoals((prev) => {
-      let newGoals: GoalKey[];
-      if (prev.includes(key)) {
-        // Remove
-        newGoals = prev.filter((g) => g !== key);
-      } else if (prev.length < 3) {
-        // Add (max 3)
-        newGoals = [...prev, key];
-      } else {
-        // At max, replace last
-        newGoals = [...prev.slice(0, 2), key];
-      }
-      setHasChanges(true);
-      return newGoals;
-    });
-  };
+    let newGoals: GoalKey[];
 
-  const handleSave = () => {
+    if (optimisticGoals.includes(key)) {
+      // Remove
+      newGoals = optimisticGoals.filter((g) => g !== key);
+    } else if (optimisticGoals.length < 3) {
+      // Add (max 3)
+      newGoals = [...optimisticGoals, key];
+    } else {
+      // At max, replace last
+      newGoals = [...optimisticGoals.slice(0, 2), key];
+    }
+
+    // Optimistic update - show new state immediately
+    setOptimisticGoals(newGoals);
+
+    // Persist to server in background
     startTransition(async () => {
-      await setUserGoals(selectedGoals);
-      setHasChanges(false);
-    });
-  };
+      const result = await retryWithBackoff(() => setUserGoals(newGoals));
 
-  const handleReset = () => {
-    setSelectedGoals(initialGoals);
-    setHasChanges(false);
+      if (!result.success) {
+        toast.error("Failed to save goals. Please try again.");
+        // Sync with server to restore original state
+        router.refresh();
+      }
+    });
   };
 
   return (
@@ -59,6 +60,9 @@ export function GoalsCard({ initialGoals }: GoalsCardProps) {
         <CardTitle className="flex items-center gap-2 font-mono">
           <Target className="h-4 w-4" />
           Your Goals
+          {isPending && (
+            <Loader2 className="text-muted-foreground h-3 w-3 animate-spin" />
+          )}
         </CardTitle>
         <CardDescription>
           What are you optimizing for? Select up to 3 goals.
@@ -67,15 +71,16 @@ export function GoalsCard({ initialGoals }: GoalsCardProps) {
       <CardContent className="space-y-4">
         <div className="grid gap-2">
           {goals.map((goal) => {
-            const isSelected = selectedGoals.includes(goal.key);
-            const priority = selectedGoals.indexOf(goal.key) + 1;
+            const isSelected = optimisticGoals.includes(goal.key);
+            const priority = optimisticGoals.indexOf(goal.key) + 1;
 
             return (
               <button
                 key={goal.key}
                 type="button"
                 onClick={() => toggleGoal(goal.key)}
-                className={`flex items-center gap-3 rounded-lg border p-3 text-left transition-colors ${
+                disabled={isPending}
+                className={`flex items-center gap-3 rounded-lg border p-3 text-left transition-colors disabled:opacity-70 ${
                   isSelected
                     ? "border-primary bg-primary/5"
                     : "bg-muted/50 hover:bg-muted border-transparent"
@@ -101,43 +106,15 @@ export function GoalsCard({ initialGoals }: GoalsCardProps) {
           })}
         </div>
 
-        {selectedGoals.length > 0 && (
+        {optimisticGoals.length > 0 && (
           <p className="text-muted-foreground text-xs">
             Priority order:{" "}
-            {selectedGoals
+            {optimisticGoals
               .map(
                 (g, i) => `${i + 1}. ${goals.find((x) => x.key === g)?.name}`,
               )
               .join(", ")}
           </p>
-        )}
-
-        {hasChanges && (
-          <div className="flex gap-2 pt-2">
-            <Button
-              onClick={handleSave}
-              disabled={isPending}
-              size="sm"
-              className="flex-1"
-            >
-              {isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                "Save Changes"
-              )}
-            </Button>
-            <Button
-              onClick={handleReset}
-              disabled={isPending}
-              variant="outline"
-              size="sm"
-            >
-              Reset
-            </Button>
-          </div>
         )}
       </CardContent>
     </Card>
