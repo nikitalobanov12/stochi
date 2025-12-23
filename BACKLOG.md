@@ -6,19 +6,12 @@
 
 ## Up Next
 
-- [ ] **Smart notification timing**
-  - Push notification when optimal window opens for a supplement
-  - "Time to take your evening magnesium" based on supplement's `optimalTimeOfDay`
-  - Respect user's typical schedule / timezone
-  - Integrate with existing Capacitor push notification setup (`lib/capacitor/push.ts`)
-  - Add notification preferences to Settings (enable/disable, quiet hours)
-
-## Planned
-
 - [ ] Optimistic UI updates
   - when the user logs their stack, it takes upwards of 5 seconds to process in the database, we need to figure out a cleaner solution to this
   - either use redis to store the information first and than have eventual consistency with postgres, or just use optimistic ui updates
   - this applies to deleting logs too, it takes upwards of 3 seconds to delete a supplement from the log and than the ui never updates, it just grays out the supplement
+
+## Planned
 
 - [ ] fix the ai suggestions
   - right now you can get a suggestion like
@@ -49,6 +42,13 @@ View Research`
 - [ ] Better indicators
   - currently when you perform a navigation action that uses the router, theres a 500 ms delay that is noticeably slow but also amplified by the fact that theres no visual indicators that the action is going through
   - we need to add a loading indicator rigth where the user clicked that shows that the action is processing, this speeds up the perceived speed of how things happen
+
+- [ ] **Smart notification timing**
+  - Push notification when optimal window opens for a supplement
+  - "Time to take your evening magnesium" based on supplement's `optimalTimeOfDay`
+  - Respect user's typical schedule / timezone
+  - Integrate with existing Capacitor push notification setup (`lib/capacitor/push.ts`)
+  - Add notification preferences to Settings (enable/disable, quiet hours)
 
 ## Completed
 
