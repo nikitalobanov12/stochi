@@ -120,56 +120,61 @@ export default async function StacksPage() {
             {userStacks.map((s) => (
               <div
                 key={s.id}
-                className="group glass-card flex items-center justify-between px-4 py-3 transition-colors"
+                className="group glass-card px-4 py-3 transition-colors"
               >
-                {/* Left side - Stack info (clickable link) */}
-                <Link
-                  href={`/dashboard/stacks/${s.id}`}
-                  className="min-w-0 flex-1"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono text-base font-medium">
-                      {s.name}
-                    </span>
-                    <Badge
-                      variant="secondary"
-                      className="bg-muted/50 font-mono text-xs tabular-nums"
-                    >
-                      {s.items.length}
-                    </Badge>
-                  </div>
-                  <div className="mt-1 flex items-center gap-2">
-                    {/* Timing badge */}
-                    <StackTimingBadge items={s.items} />
+                {/* Mobile: stacked layout, Desktop: single row */}
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  {/* Left side - Stack info (clickable link) */}
+                  <Link
+                    href={`/dashboard/stacks/${s.id}`}
+                    className="min-w-0 flex-1"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="font-mono text-base font-medium">
+                        {s.name}
+                      </span>
+                      <Badge
+                        variant="secondary"
+                        className="bg-muted/50 font-mono text-xs tabular-nums"
+                      >
+                        {s.items.length}
+                      </Badge>
+                    </div>
+                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                      {/* Timing badge */}
+                      <StackTimingBadge items={s.items} />
 
-                    {/* Supplements preview */}
-                    <p className="text-muted-foreground truncate font-mono text-xs">
-                      {s.items.length === 0
-                        ? "Empty protocol"
-                        : s.items
-                            .slice(0, 3)
-                            .map((item) => item.supplement.name)
-                            .join(" • ") + (s.items.length > 3 ? " ..." : "")}
-                    </p>
-                  </div>
-                </Link>
-
-                {/* Right side - Actions */}
-                <div className="flex shrink-0 items-center gap-3">
-                  {/* Last logged indicator */}
-                  <span className="text-muted-foreground font-mono text-xs">
-                    {s.lastLoggedAt
-                      ? formatRelativeTime(new Date(s.lastLoggedAt))
-                      : "Never logged"}
-                  </span>
-
-                  {/* Log button */}
-                  <LogStackButton stackId={s.id} itemCount={s.items.length} />
-
-                  {/* Navigate arrow */}
-                  <Link href={`/dashboard/stacks/${s.id}`}>
-                    <ChevronRight className="text-muted-foreground h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                      {/* Supplements preview - hidden on mobile to reduce clutter */}
+                      <p className="text-muted-foreground hidden truncate font-mono text-xs sm:block">
+                        {s.items.length === 0
+                          ? "Empty protocol"
+                          : s.items
+                              .slice(0, 3)
+                              .map((item) => item.supplement.name)
+                              .join(" • ") + (s.items.length > 3 ? " ..." : "")}
+                      </p>
+                    </div>
                   </Link>
+
+                  {/* Right side - Actions */}
+                  <div className="flex shrink-0 items-center justify-between gap-3 sm:justify-end">
+                    {/* Last logged indicator */}
+                    <span className="text-muted-foreground font-mono text-xs">
+                      {s.lastLoggedAt
+                        ? formatRelativeTime(new Date(s.lastLoggedAt))
+                        : "Never logged"}
+                    </span>
+
+                    <div className="flex items-center gap-3">
+                      {/* Log button */}
+                      <LogStackButton stackId={s.id} itemCount={s.items.length} />
+
+                      {/* Navigate arrow */}
+                      <Link href={`/dashboard/stacks/${s.id}`}>
+                        <ChevronRight className="text-muted-foreground h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                      </Link>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}

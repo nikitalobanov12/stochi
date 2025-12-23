@@ -100,10 +100,10 @@ export function RecommendedProtocols({
 
   return (
     <section className="space-y-3">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      {/* Header - stacks on mobile, row on desktop */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+          <Sparkles className="h-3.5 w-3.5 shrink-0 text-amber-400" />
           <h2 className="text-muted-foreground font-mono text-xs tracking-wider uppercase">
             Recommended for {goalLabels}
           </h2>

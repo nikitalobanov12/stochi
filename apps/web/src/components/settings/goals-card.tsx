@@ -54,7 +54,7 @@ export function GoalsCard({ initialGoals }: GoalsCardProps) {
   };
 
   return (
-    <Card>
+    <Card className="overflow-hidden">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-mono">
           <Target className="h-4 w-4" />
@@ -81,15 +81,15 @@ export function GoalsCard({ initialGoals }: GoalsCardProps) {
                     : "bg-muted/50 hover:bg-muted border-transparent"
                 }`}
               >
-                <span className="text-lg">{goal.icon}</span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium">{goal.name}</p>
+                <span className="shrink-0 text-lg">{goal.icon}</span>
+                <div className="min-w-0 flex-1 overflow-hidden">
+                  <p className="truncate text-sm font-medium">{goal.name}</p>
                   <p className="text-muted-foreground truncate text-xs">
                     {goal.description}
                   </p>
                 </div>
                 {isSelected && (
-                  <div className="flex items-center gap-2">
+                  <div className="flex shrink-0 items-center gap-2">
                     <span className="bg-primary text-primary-foreground flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold">
                       {priority}
                     </span>

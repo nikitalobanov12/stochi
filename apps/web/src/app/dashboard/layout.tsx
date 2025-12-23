@@ -116,7 +116,7 @@ export default async function DashboardLayout({
       </header>
 
       {/* Main content - safe area padding for mobile PWA */}
-      <main className="relative z-10 flex-1 pt-safe pb-nav-safe md:pt-0 md:pb-0">
+      <main className="relative z-10 flex-1 overflow-x-hidden pt-safe pb-nav-safe md:pt-0 md:pb-0">
         <div className="mx-auto max-w-[1400px] px-4 py-6">{children}</div>
       </main>
 
