@@ -1,7 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { ChevronRight, Clock, Layers } from "lucide-react";
+import { useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { ChevronRight, Clock, Layers, Loader2 } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
 import { TodayLogList } from "~/components/log/today-log-list";
@@ -265,17 +266,7 @@ function DashboardContent({
             <h2 className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
               Activity Log
             </h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              asChild
-              className="text-muted-foreground hover:text-foreground h-auto py-1 font-mono text-[10px]"
-            >
-              <Link href="/dashboard/log">
-                VIEW ALL
-                <ChevronRight className="ml-1 h-3 w-3" />
-              </Link>
-            </Button>
+            <ViewAllLink />
           </div>
           <TodayLogList maxVisible={5} />
         </div>
@@ -301,16 +292,69 @@ function DashboardContent({
           <p className="text-muted-foreground font-mono text-xs">
             No protocols configured
           </p>
-          <Button
-            asChild
-            variant="outline"
-            size="sm"
-            className="mt-4 font-mono text-xs"
-          >
-            <Link href="/dashboard/stacks">Create Protocol</Link>
-          </Button>
+          <CreateProtocolLink />
         </div>
       )}
     </div>
+  );
+}
+
+/** VIEW ALL link with loading spinner */
+function ViewAllLink() {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  function handleClick() {
+    startTransition(() => {
+      router.push("/dashboard/log");
+    });
+  }
+
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={handleClick}
+      disabled={isPending}
+      className="text-muted-foreground hover:text-foreground h-auto py-1 font-mono text-[10px]"
+    >
+      VIEW ALL
+      {isPending ? (
+        <Loader2 className="ml-1 h-3 w-3 animate-spin" />
+      ) : (
+        <ChevronRight className="ml-1 h-3 w-3" />
+      )}
+    </Button>
+  );
+}
+
+/** Create Protocol link with loading spinner */
+function CreateProtocolLink() {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  function handleClick() {
+    startTransition(() => {
+      router.push("/dashboard/stacks");
+    });
+  }
+
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={handleClick}
+      disabled={isPending}
+      className="mt-4 font-mono text-xs"
+    >
+      {isPending ? (
+        <>
+          <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+          Loading...
+        </>
+      ) : (
+        "Create Protocol"
+      )}
+    </Button>
   );
 }
