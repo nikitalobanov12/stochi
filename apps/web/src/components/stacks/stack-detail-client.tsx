@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Play,
@@ -10,6 +11,7 @@ import {
   CheckCircle2,
   FlaskConical,
   Syringe,
+  Loader2,
 } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
@@ -55,14 +57,42 @@ export function StackDetailClient({
   interactions,
   ratioWarnings,
 }: StackDetailClientProps) {
+  const router = useRouter();
   const { items, removeItemOptimistic, isPending } = useStackItemsContext();
+
+  // Loading states for different actions
+  const [isNavigatingBack, startBackTransition] = useTransition();
+  const [isLoggingAll, startLogTransition] = useTransition();
+  const [isRenaming, startRenameTransition] = useTransition();
+  const [isDeleting, startDeleteTransition] = useTransition();
 
   const warnings = interactions.filter((i) => i.type !== "synergy");
   const synergies = interactions.filter((i) => i.type === "synergy");
 
-  const logStackWithId = logStack.bind(null, stack.id);
-  const deleteStackWithId = deleteStack.bind(null, stack.id);
-  const updateStackWithId = updateStack.bind(null, stack.id);
+  function handleBack(e: React.MouseEvent) {
+    e.preventDefault();
+    startBackTransition(() => {
+      router.push("/dashboard/stacks");
+    });
+  }
+
+  function handleLogAll() {
+    startLogTransition(async () => {
+      await logStack(stack.id);
+    });
+  }
+
+  function handleRename(formData: FormData) {
+    startRenameTransition(async () => {
+      await updateStack(stack.id, formData);
+    });
+  }
+
+  function handleDelete() {
+    startDeleteTransition(async () => {
+      await deleteStack(stack.id);
+    });
+  }
 
   function handleRemoveItem(item: StackItemEntry) {
     removeItemOptimistic(item);
@@ -72,29 +102,38 @@ export function StackDetailClient({
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Link
-          href="/dashboard/stacks"
-          className="text-muted-foreground hover:text-foreground transition-colors"
+        <button
+          type="button"
+          onClick={handleBack}
+          disabled={isNavigatingBack}
+          className="text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
         >
-          <ArrowLeft className="h-4 w-4" />
-        </Link>
+          {isNavigatingBack ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <ArrowLeft className="h-4 w-4" />
+          )}
+        </button>
         <div className="flex-1">
           <p className="text-muted-foreground text-[10px] tracking-wider uppercase">
             Protocol
           </p>
           <h1 className="font-mono text-lg font-medium">{stack.name}</h1>
         </div>
-        <form action={logStackWithId}>
-          <Button
-            type="submit"
-            size="sm"
-            disabled={items.length === 0}
-            className="h-8 gap-1.5 font-mono text-xs"
-          >
+        <Button
+          type="button"
+          size="sm"
+          disabled={items.length === 0 || isLoggingAll}
+          onClick={handleLogAll}
+          className="h-8 gap-1.5 font-mono text-xs"
+        >
+          {isLoggingAll ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : (
             <Play className="h-3 w-3" />
-            Log All
-          </Button>
-        </form>
+          )}
+          {isLoggingAll ? "Logging..." : "Log All"}
+        </Button>
       </div>
 
       {/* Supplements Section */}
@@ -183,7 +222,7 @@ export function StackDetailClient({
           Settings
         </p>
         <div className="glass-card p-3">
-          <form action={updateStackWithId} className="flex gap-2">
+          <form action={handleRename} className="flex gap-2">
             <div className="flex-1">
               <label htmlFor="stack-name" className="sr-only">
                 Protocol Name
@@ -193,6 +232,7 @@ export function StackDetailClient({
                 name="name"
                 defaultValue={stack.name}
                 placeholder="Protocol name"
+                disabled={isRenaming}
                 className="border-border/40 h-8 bg-transparent font-mono text-sm"
               />
             </div>
@@ -200,9 +240,11 @@ export function StackDetailClient({
               type="submit"
               variant="outline"
               size="sm"
-              className="h-8 font-mono text-xs"
+              disabled={isRenaming}
+              className="h-8 gap-1.5 font-mono text-xs"
             >
-              Rename
+              {isRenaming && <Loader2 className="h-3 w-3 animate-spin" />}
+              {isRenaming ? "Saving..." : "Rename"}
             </Button>
           </form>
         </div>
@@ -214,23 +256,26 @@ export function StackDetailClient({
           Danger Zone
         </p>
         <div className="border-destructive/30 bg-destructive/5 rounded-lg border p-3">
-          <form
-            action={deleteStackWithId}
-            className="flex items-center justify-between"
-          >
+          <div className="flex items-center justify-between">
             <p className="text-muted-foreground font-mono text-xs">
               Permanently delete this protocol
             </p>
             <Button
-              type="submit"
+              type="button"
               variant="ghost"
               size="sm"
+              onClick={handleDelete}
+              disabled={isDeleting}
               className="text-destructive hover:bg-destructive hover:text-destructive-foreground h-7 gap-1.5 font-mono text-xs"
             >
-              <Trash2 className="h-3 w-3" />
-              Delete
+              {isDeleting ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <Trash2 className="h-3 w-3" />
+              )}
+              {isDeleting ? "Deleting..." : "Delete"}
             </Button>
-          </form>
+          </div>
         </div>
       </section>
     </div>

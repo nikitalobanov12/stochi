@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil } from "lucide-react";
+import { Pencil, Loader2 } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -124,8 +124,10 @@ export function EditStackItemDialog({
               type="submit"
               size="sm"
               disabled={isPending || !dosage || parseFloat(dosage) <= 0}
+              className="gap-1.5"
             >
-              Save
+              {isPending && <Loader2 className="h-3 w-3 animate-spin" />}
+              {isPending ? "Saving..." : "Save"}
             </Button>
           </div>
         </form>
