@@ -11,6 +11,7 @@ import {
   type EngineTimingWarning,
 } from "~/lib/engine/client";
 import { getSession } from "~/server/better-auth/server";
+import { getStartOfDayInTimezone } from "~/lib/utils";
 
 // ============================================================================
 // Types
@@ -541,10 +542,15 @@ export async function checkTimingWarnings(
 }
 
 /**
- * Get interaction count and severity breakdown for today's logged supplements.
- * Used for the dashboard summary card.
+ * Get summary of today's interactions.
+ *
+ * @param userId - User ID
+ * @param timezone - User's IANA timezone for accurate "today" calculation
  */
-export async function getTodayInteractionSummary(userId: string): Promise<{
+export async function getTodayInteractionSummary(
+  userId: string,
+  timezone?: string | null,
+): Promise<{
   total: number;
   critical: number;
   medium: number;
@@ -552,8 +558,7 @@ export async function getTodayInteractionSummary(userId: string): Promise<{
   synergies: number;
   ratioWarnings: number;
 }> {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const today = getStartOfDayInTimezone(timezone);
 
   // Get today's logged supplements with dosages
   const todayLogs = await db.query.log.findMany({
@@ -615,8 +620,14 @@ export async function getTodayInteractionSummary(userId: string): Promise<{
 /**
  * Get all interactions relevant to a user's stacks and recent logs.
  * Used for detailed interaction display.
+ *
+ * @param userId - User ID
+ * @param timezone - User's IANA timezone for accurate "today" calculation
  */
-export async function getUserInteractions(userId: string): Promise<{
+export async function getUserInteractions(
+  userId: string,
+  timezone?: string | null,
+): Promise<{
   today: InteractionWarning[];
   ratioWarnings: RatioWarning[];
   inStacks: Array<{
@@ -627,8 +638,7 @@ export async function getUserInteractions(userId: string): Promise<{
 }> {
   const { stack } = await import("~/server/db/schema");
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const today = getStartOfDayInTimezone(timezone);
 
   // Get today's logged supplements with dosages
   const todayLogs = await db.query.log.findMany({
@@ -689,6 +699,13 @@ export async function getUserInteractions(userId: string): Promise<{
 /**
  * Comprehensive check for a new log entry.
  * Returns all relevant warnings (interactions, ratios, timing).
+ *
+ * @param userId - User ID
+ * @param supplementId - Supplement being logged
+ * @param dosage - Dosage amount
+ * @param unit - Dosage unit
+ * @param loggedAt - Timestamp of the log
+ * @param timezone - User's IANA timezone for accurate day boundary calculation
  */
 export async function checkLogWarnings(
   userId: string,
@@ -696,13 +713,14 @@ export async function checkLogWarnings(
   dosage: number,
   unit: string,
   loggedAt: Date,
+  timezone?: string | null,
 ): Promise<{
   interactions: InteractionWarning[];
   ratioWarnings: RatioWarning[];
   timingWarnings: TimingWarning[];
 }> {
-  const today = new Date(loggedAt);
-  today.setHours(0, 0, 0, 0);
+  // Calculate "today" for the logged timestamp in user's timezone
+  const today = getStartOfDayInTimezone(timezone);
 
   // Get today's other logged supplements
   const todayLogs = await db.query.log.findMany({

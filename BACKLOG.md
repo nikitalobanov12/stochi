@@ -6,21 +6,6 @@
 
 ## Up Next
 
-- [ ] fix the ai suggestions
-  - right now you can get a suggestion like
-    `Add Magnesium Glycinate
-    Take together! Magnesium activates vitamin D. Many D3 'non-responders' are actually magnesium deficient
-    Less Magnesium Glycinate
-    Mechanism
-    Glycine chelation enhances absorption; glycine itself acts as inhibitory neurotransmitter
-
-Why Take It
-Highly bioavailable magnesium form that promotes relaxation and quality sleep
-
-View Research`
-
-- it's true that megnasium enhances absorbtion of vitamin d3, but the nuance here is that you don't want to take them together since magnesium glycinate is more beneficial for lowering your body temp and lowering cortisol causing you to get better sleep, the nuance is that you should be taking them together but at different times, but the suggestions here say that you should take them together which implies that you should be taking them at the same time
-
 - [ ] **AI-generated research summaries**
   - Summarize Examine.com or PubMed content on-demand using HuggingFace API
   - Cache summaries in database after first generation
@@ -39,7 +24,29 @@ View Research`
   - Integrate with existing Capacitor push notification setup (`lib/capacitor/push.ts`)
   - Add notification preferences to Settings (enable/disable, quiet hours)
 
+- [ ] **Retroactive logging ("I forgot to log")**
+  - Allow users to log supplements/stacks at an earlier time
+  - "I forgot to log my morning stack, I took it at 9am"
+  - Add time picker to log confirmation dialog
+  - Default to current time, with option to backdate
+  - Validate: time must be today (or yesterday?), not in future
+  - Backend: `logStack` and `logSupplement` already accept `loggedAt` - need UI
+
 ## Completed
+
+- [x] **Smart synergy timing suggestions**
+  - Synergy suggestions now detect when supplements have different optimal intake times
+  - "Take together!" replaced with "These synergize" + timing guidance for conflicting timings
+  - Example: D3 (morning) + Magnesium Glycinate (evening) now shows:
+    "These synergize – take at different times: Vitamin D3 morning, Magnesium Glycinate evening"
+  - Added `timingExplanation` field with detailed rationales for expanded view
+  - Active synergies also show timing guidance when applicable
+
+- [x] **Timezone-aware day boundaries**
+  - Fixed bug where "today" was calculated in server timezone (UTC) instead of user's timezone
+  - Added `getStartOfDayInTimezone()` utility for consistent timezone-aware date calculations
+  - Updated: dashboard page, log page, analytics service, interactions, onboarding
+  - Ensures stack completion status, daily logs, etc. reset at user's local midnight
 
 - [x] **Universal loading indicators for navigation & actions**
   - Added `loading.tsx` skeleton files for all dashboard routes
@@ -96,8 +103,6 @@ View Research`
   - Database transactions for ACID-compliant logging
 
 ## Ideas / Future
-
-- [ ] fix the ai suggestions
 
 - [ ] **AI-generated research summaries**
   - Summarize Examine.com or PubMed content on-demand using HuggingFace API

@@ -17,6 +17,7 @@ import {
   getTimelineData,
   getSafetyHeadroom,
 } from "~/server/services/biological-state";
+import { getStartOfDayInTimezone } from "~/lib/utils";
 
 import { DashboardClient, type LogEntry, type StackItem } from "./dashboard-client";
 
@@ -24,14 +25,14 @@ export default async function DashboardPage() {
   const session = await getSession();
   if (!session) return null;
 
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-
-  // Fetch preferences and dismissed suggestions first (needed for biological state filtering)
+  // Fetch preferences first (needed for timezone-aware "today" calculation)
   const [preferences, dismissedKeys] = await Promise.all([
     getUserPreferences(),
     getDismissedSuggestionKeys(),
   ]);
+
+  // Calculate "today" in user's timezone
+  const todayStart = getStartOfDayInTimezone(preferences.timezone);
 
   // Fetch user goals for goal-based suggestion filtering
   const userGoals = await db.query.userGoal.findMany({
@@ -82,7 +83,7 @@ export default async function DashboardPage() {
       },
       orderBy: [supplement.name],
     }),
-    getStackCompletionStatus(session.user.id),
+    getStackCompletionStatus(session.user.id, preferences.timezone),
     calculateStreak(session.user.id),
     getBiologicalState(session.user.id, {
       dismissedKeys,

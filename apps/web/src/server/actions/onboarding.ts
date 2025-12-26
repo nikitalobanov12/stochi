@@ -14,6 +14,8 @@ import {
 import { getSession } from "~/server/better-auth/server";
 import { getTemplateByKey } from "~/server/data/stack-templates";
 import { type GoalKey, goals } from "~/server/data/goal-recommendations";
+import { getUserTimezone } from "~/server/actions/preferences";
+import { getStartOfDayInTimezone } from "~/lib/utils";
 
 /**
  * Instantiate a template stack for the user.
@@ -186,9 +188,9 @@ export async function clearTemplateData(
     return { success: false, error: "Stack not found" };
   }
 
-  // Get today's start timestamp
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
+  // Get today's start timestamp in user's timezone
+  const timezone = await getUserTimezone();
+  const todayStart = getStartOfDayInTimezone(timezone);
 
   // Get supplement IDs from the stack
   const supplementIds = userStack.items.map((item) => item.supplementId);

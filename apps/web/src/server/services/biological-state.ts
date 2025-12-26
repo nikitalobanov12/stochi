@@ -86,6 +86,8 @@ export type OptimizationOpportunity = {
     category: string | null;
     commonGoals: string[] | null;
   };
+  /** Detailed timing explanation for synergies with different optimal times (for expanded view) */
+  timingExplanation?: string | null;
 };
 
 /**
@@ -805,6 +807,161 @@ function getTimingRecommendation(optimalTime: string): string {
   );
 }
 
+// =============================================================================
+// Timing-Aware Synergy Helpers
+// =============================================================================
+
+type OptimalTimeOfDay =
+  | "morning"
+  | "afternoon"
+  | "evening"
+  | "bedtime"
+  | "with_meals"
+  | "any";
+
+/**
+ * Get a short timing phrase for display (e.g., "morning", "evening")
+ */
+function getTimingPhrase(timing: OptimalTimeOfDay): string {
+  const phrases: Record<OptimalTimeOfDay, string> = {
+    morning: "morning",
+    afternoon: "afternoon",
+    evening: "evening",
+    bedtime: "bedtime",
+    with_meals: "with meals",
+    any: "any time",
+  };
+  return phrases[timing];
+}
+
+/**
+ * Get the detailed rationale for WHY a supplement should be taken at a specific time.
+ * Used for expanded explanations to educate users on timing.
+ */
+function getTimingRationale(
+  timing: OptimalTimeOfDay,
+  supplementName: string,
+): string | null {
+  const lowerName = supplementName.toLowerCase();
+
+  if (timing === "morning") {
+    if (lowerName.includes("vitamin d") || lowerName.includes("d3")) {
+      return "Vitamin D promotes wakefulness and alertness, and may interfere with melatonin production if taken late";
+    }
+    if (lowerName.includes("iron")) {
+      return "Iron absorbs best on an empty stomach in the morning; taking it with coffee/tea reduces absorption";
+    }
+    if (lowerName.includes("caffeine") || lowerName.includes("coffee")) {
+      return "Caffeine has a 5-6 hour half-life and can interfere with sleep if taken after noon";
+    }
+    if (lowerName.includes("b12") || lowerName.includes("b-12")) {
+      return "B12 can be energizing and may interfere with sleep if taken late";
+    }
+  }
+
+  if (timing === "evening" || timing === "bedtime") {
+    if (lowerName.includes("magnesium")) {
+      return "Magnesium glycinate helps lower body temperature and cortisol, promoting relaxation and better sleep quality";
+    }
+    if (lowerName.includes("glycine")) {
+      return "Glycine helps lower core body temperature, a key signal for sleep onset";
+    }
+    if (lowerName.includes("ashwagandha")) {
+      return "Ashwagandha reduces cortisol levels and promotes calm, making it ideal for evening";
+    }
+    if (lowerName.includes("melatonin")) {
+      return "Melatonin signals to your body that it's time to sleep; take 30-60 min before bed";
+    }
+    if (lowerName.includes("l-theanine") || lowerName.includes("theanine")) {
+      return "L-Theanine promotes alpha brain waves and relaxation without sedation";
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Detailed timing explanation for the expanded view.
+ * Provides full context on why two supplements should be taken at different times.
+ */
+export function getDetailedTimingExplanation(
+  sourceName: string,
+  targetName: string,
+  sourceTiming: OptimalTimeOfDay | null,
+  targetTiming: OptimalTimeOfDay | null,
+): string | null {
+  if (!sourceTiming || !targetTiming) return null;
+  if (sourceTiming === "any" || targetTiming === "any") return null;
+  if (sourceTiming === targetTiming) return null;
+
+  const sourceRationale = getTimingRationale(sourceTiming, sourceName);
+  const targetRationale = getTimingRationale(targetTiming, targetName);
+
+  if (!sourceRationale && !targetRationale) return null;
+
+  const parts: string[] = [];
+  if (sourceRationale) {
+    parts.push(`${sourceName}: ${sourceRationale}.`);
+  }
+  if (targetRationale) {
+    parts.push(`${targetName}: ${targetRationale}.`);
+  }
+
+  return parts.join(" ");
+}
+
+/**
+ * Build a timing-aware synergy description.
+ * If supplements have conflicting optimal times, add timing clarification.
+ *
+ * @returns Object with short description and optional detailed explanation
+ */
+function buildTimingAwareSynergyDescription(
+  originalSuggestion: string | null,
+  sourceName: string,
+  targetName: string,
+  sourceTiming: OptimalTimeOfDay | null,
+  targetTiming: OptimalTimeOfDay | null,
+): { description: string; timingNote: string | null } {
+  const baseDescription =
+    originalSuggestion ??
+    `${sourceName} and ${targetName} have synergistic effects.`;
+
+  // If either has no timing or is flexible, just use original
+  if (!sourceTiming || !targetTiming) {
+    return { description: baseDescription, timingNote: null };
+  }
+  if (sourceTiming === "any" || targetTiming === "any") {
+    return { description: baseDescription, timingNote: null };
+  }
+  if (sourceTiming === "with_meals" || targetTiming === "with_meals") {
+    return { description: baseDescription, timingNote: null };
+  }
+
+  // If same timing, no conflict
+  if (sourceTiming === targetTiming) {
+    return { description: baseDescription, timingNote: null };
+  }
+
+  // Different timings - build nuanced description
+  // Replace "Take together!" with "These synergize"
+  let description = baseDescription.replace(
+    /take together!?/gi,
+    "These synergize",
+  );
+
+  // Add timing guidance
+  const sourcePhrase = getTimingPhrase(sourceTiming);
+  const targetPhrase = getTimingPhrase(targetTiming);
+
+  const timingNote = `Take at different times: ${sourceName} ${sourcePhrase}, ${targetName} ${targetPhrase}.`;
+
+  // Append short timing note to description
+  description += ` ${timingNote}`;
+
+  return { description, timingNote };
+}
+
 /**
  * Calculate optimization opportunities based on active compounds and interactions.
  *
@@ -983,9 +1140,21 @@ async function calculateOptimizations(
       if (!isRelevantToUserGoals(synergy.target.commonGoals)) continue;
 
       const title = `Enhance ${synergy.source.name} with ${synergy.target.name}`;
-      const description =
-        synergy.suggestion ??
-        `${synergy.source.name} and ${synergy.target.name} have synergistic effects.`;
+      // Build timing-aware description
+      const { description } = buildTimingAwareSynergyDescription(
+        synergy.suggestion,
+        synergy.source.name,
+        synergy.target.name,
+        synergy.source.optimalTimeOfDay as OptimalTimeOfDay | null,
+        synergy.target.optimalTimeOfDay as OptimalTimeOfDay | null,
+      );
+      // Get detailed explanation for expanded view
+      const timingExplanation = getDetailedTimingExplanation(
+        synergy.source.name,
+        synergy.target.name,
+        synergy.source.optimalTimeOfDay as OptimalTimeOfDay | null,
+        synergy.target.optimalTimeOfDay as OptimalTimeOfDay | null,
+      );
       const hasSafetyWarning = !!getSafetyWarning(synergy.target);
       const category = determineSuggestionCategory(
         "synergy",
@@ -1005,6 +1174,7 @@ async function calculateOptimizations(
         safetyWarning: getSafetyWarning(synergy.target),
         suggestionKey,
         suggestedSupplement: getSupplementDetails(synergy.target),
+        timingExplanation,
       });
     } else if (hasTarget && !hasSource) {
       // Skip if user has disabled "add supplement" suggestions
@@ -1015,9 +1185,21 @@ async function calculateOptimizations(
       if (!isRelevantToUserGoals(synergy.source.commonGoals)) continue;
 
       const title = `Enhance ${synergy.target.name} with ${synergy.source.name}`;
-      const description =
-        synergy.suggestion ??
-        `${synergy.target.name} and ${synergy.source.name} have synergistic effects.`;
+      // Build timing-aware description
+      const { description } = buildTimingAwareSynergyDescription(
+        synergy.suggestion,
+        synergy.target.name,
+        synergy.source.name,
+        synergy.target.optimalTimeOfDay as OptimalTimeOfDay | null,
+        synergy.source.optimalTimeOfDay as OptimalTimeOfDay | null,
+      );
+      // Get detailed explanation for expanded view
+      const timingExplanation = getDetailedTimingExplanation(
+        synergy.target.name,
+        synergy.source.name,
+        synergy.target.optimalTimeOfDay as OptimalTimeOfDay | null,
+        synergy.source.optimalTimeOfDay as OptimalTimeOfDay | null,
+      );
       const hasSafetyWarning = !!getSafetyWarning(synergy.source);
       const category = determineSuggestionCategory(
         "synergy",
@@ -1037,13 +1219,27 @@ async function calculateOptimizations(
         safetyWarning: getSafetyWarning(synergy.source),
         suggestionKey,
         suggestedSupplement: getSupplementDetails(synergy.source),
+        timingExplanation,
       });
     } else if (hasSource && hasTarget) {
-      // User already has both - note the active synergy
+      // User already has both - note the active synergy with timing guidance
       // Active synergies are not dismissible (they're positive feedback, not suggestions)
       const title = `Active synergy: ${synergy.source.name} + ${synergy.target.name}`;
-      const description =
-        synergy.suggestion ?? "You're getting the benefit of this synergy!";
+      // Build timing-aware description for active synergies too
+      const { description } = buildTimingAwareSynergyDescription(
+        synergy.suggestion ?? "You're getting the benefit of this synergy!",
+        synergy.source.name,
+        synergy.target.name,
+        synergy.source.optimalTimeOfDay as OptimalTimeOfDay | null,
+        synergy.target.optimalTimeOfDay as OptimalTimeOfDay | null,
+      );
+      // Get detailed explanation for expanded view
+      const timingExplanation = getDetailedTimingExplanation(
+        synergy.source.name,
+        synergy.target.name,
+        synergy.source.optimalTimeOfDay as OptimalTimeOfDay | null,
+        synergy.target.optimalTimeOfDay as OptimalTimeOfDay | null,
+      );
 
       optimizations.push({
         type: "synergy",
@@ -1053,6 +1249,7 @@ async function calculateOptimizations(
         description,
         priority: 1,
         suggestionKey, // Included but won't be used for dismissal
+        timingExplanation,
       });
     }
   }

@@ -8,6 +8,8 @@ import {
   checkTimingWarnings,
   type TimingWarning,
 } from "~/server/actions/interactions";
+import { getUserPreferences } from "~/server/actions/preferences";
+import { getStartOfDayInTimezone } from "~/lib/utils";
 import { LogPageClient } from "./log-page-client";
 import type { LogEntry, StackItem } from "~/components/log/log-context";
 
@@ -15,8 +17,9 @@ export default async function LogPage() {
   const session = await getSession();
   if (!session) return null;
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // Fetch user preferences for timezone-aware "today" calculation
+  const preferences = await getUserPreferences();
+  const today = getStartOfDayInTimezone(preferences.timezone);
 
   const [allSupplements, userStacks, recentLogs] = await Promise.all([
     db.query.supplement.findMany({

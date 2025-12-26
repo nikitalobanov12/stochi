@@ -1,6 +1,7 @@
 import { eq, and, gte } from "drizzle-orm";
 import { db } from "~/server/db";
 import { log, stack } from "~/server/db/schema";
+import { getStartOfDayInTimezone } from "~/lib/utils";
 
 // ============================================================================
 // Stack Completion Status
@@ -23,12 +24,16 @@ export type StackCompletionStatus = {
 
 /**
  * Get completion status for user's stacks (what's been logged today).
+ *
+ * @param userId - User ID
+ * @param timezone - User's IANA timezone for accurate "today" calculation
  */
 export async function getStackCompletionStatus(
   userId: string,
+  timezone?: string | null,
 ): Promise<StackCompletionStatus[]> {
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
+  // Calculate "today" in user's timezone
+  const todayStart = getStartOfDayInTimezone(timezone);
 
   // Get user's stacks with items
   const userStacks = await db.query.stack.findMany({
