@@ -1,12 +1,13 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useTransition } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Layers,
   PlusCircle,
   Settings,
+  Loader2,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "~/lib/utils";
@@ -27,22 +28,41 @@ type NavLinkProps = {
 
 export function NavLink({ href, children, iconName }: NavLinkProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
   const isActive =
     pathname === href ||
     (href !== "/dashboard" && pathname.startsWith(`${href}/`));
   const Icon = iconMap[iconName];
 
+  function handleClick(e: React.MouseEvent) {
+    // Don't navigate if already on this page
+    if (isActive) return;
+
+    e.preventDefault();
+    startTransition(() => {
+      router.push(href);
+    });
+  }
+
   return (
-    <Link
+    <a
       href={href}
+      onClick={handleClick}
       className={cn(
         "hover:text-foreground flex items-center gap-2 text-sm font-medium transition-colors",
         isActive ? "text-foreground" : "text-muted-foreground",
+        isPending && "pointer-events-none",
       )}
     >
-      {Icon && <Icon className={cn("h-4 w-4", isActive && "text-primary")} />}
+      {isPending ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        Icon && <Icon className={cn("h-4 w-4", isActive && "text-primary")} />
+      )}
       {children}
-    </Link>
+    </a>
   );
 }
 
@@ -54,21 +74,40 @@ type MobileNavLinkProps = {
 
 export function MobileNavLink({ href, iconName, label }: MobileNavLinkProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
   const isActive =
     pathname === href ||
     (href !== "/dashboard" && pathname.startsWith(`${href}/`));
   const Icon = iconMap[iconName];
 
+  function handleClick(e: React.MouseEvent) {
+    // Don't navigate if already on this page
+    if (isActive) return;
+
+    e.preventDefault();
+    startTransition(() => {
+      router.push(href);
+    });
+  }
+
   return (
-    <Link
+    <a
       href={href}
+      onClick={handleClick}
       className={cn(
         "hover:text-foreground flex min-h-[44px] flex-col items-center justify-center gap-1 px-3 text-xs transition-colors",
         isActive ? "text-foreground" : "text-muted-foreground",
+        isPending && "pointer-events-none",
       )}
     >
-      {Icon && <Icon className={cn("h-5 w-5", isActive && "text-primary")} />}
+      {isPending ? (
+        <Loader2 className="h-5 w-5 animate-spin" />
+      ) : (
+        Icon && <Icon className={cn("h-5 w-5", isActive && "text-primary")} />
+      )}
       {label}
-    </Link>
+    </a>
   );
 }
