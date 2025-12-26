@@ -9,9 +9,18 @@ import {
   Play,
   ChevronDown,
   ChevronUp,
+  Clock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 import { cn } from "~/lib/utils";
 import { type StackCompletionStatus } from "~/server/services/analytics";
 import { useLogContext, type StackItem } from "~/components/log/log-context";
@@ -22,6 +31,55 @@ type ProtocolCardProps = {
 };
 
 type LogState = "idle" | "loading" | "success" | "error";
+
+/**
+ * Generate time presets relative to now.
+ * Returns "Now" plus past times rounded to nearest 30 min.
+ */
+function generateTimePresets(): Array<{ label: string; getTime: () => Date }> {
+  const now = new Date();
+  const presets: Array<{ label: string; getTime: () => Date }> = [
+    { label: "Now", getTime: () => new Date() },
+  ];
+
+  // Round current time down to nearest 30 minutes for past options
+  const roundedMinutes = Math.floor(now.getMinutes() / 30) * 30;
+  const currentRounded = new Date(now);
+  currentRounded.setMinutes(roundedMinutes, 0, 0);
+
+  // If we're not close to the rounded time, add it as an option
+  const minutesSinceRounded = (now.getTime() - currentRounded.getTime()) / 60000;
+  if (minutesSinceRounded > 5) {
+    const capturedTime = new Date(currentRounded);
+    presets.push({
+      label: formatTime(capturedTime),
+      getTime: () => new Date(capturedTime),
+    });
+  }
+
+  // Add past 30-min intervals (up to 4 hours back)
+  for (let i = 1; i <= 8; i++) {
+    const pastTime = new Date(currentRounded.getTime() - i * 30 * 60 * 1000);
+    // Only show times from today
+    if (pastTime.getDate() === now.getDate()) {
+      const capturedTime = new Date(pastTime);
+      presets.push({
+        label: formatTime(capturedTime),
+        getTime: () => new Date(capturedTime),
+      });
+    }
+  }
+
+  return presets;
+}
+
+function formatTime(date: Date): string {
+  return date.toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
 
 /**
  * ProtocolCard - Split-Action Row Design
@@ -38,6 +96,7 @@ export function ProtocolCard({ stack, stackItems }: ProtocolCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [logState, setLogState] = useState<LogState>("idle");
   const [isNavigating, startNavTransition] = useTransition();
+  const [isTimeMenuOpen, setIsTimeMenuOpen] = useState(false);
 
   const { stackId, stackName, totalItems, loggedItems, isComplete, items } =
     stack;
@@ -48,7 +107,7 @@ export function ProtocolCard({ stack, stackItems }: ProtocolCardProps) {
   // Local loading state for this specific button
   const isLoading = logState === "loading";
 
-  async function handleExecute(e: React.MouseEvent) {
+  async function handleExecute(e: React.MouseEvent, loggedAt?: Date) {
     e.preventDefault();
     e.stopPropagation();
 
@@ -58,13 +117,15 @@ export function ProtocolCard({ stack, stackItems }: ProtocolCardProps) {
     }
 
     setLogState("loading");
+    setIsTimeMenuOpen(false);
 
     // Await the optimistic update to get actual result
-    const result = await logStackOptimistic(stackId, stackItems);
+    const result = await logStackOptimistic(stackId, stackItems, loggedAt);
 
     if (result.success) {
       setLogState("success");
-      toast.success(`Logged ${stackName}`);
+      const timeLabel = loggedAt ? ` at ${formatTime(loggedAt)}` : "";
+      toast.success(`Logged ${stackName}${timeLabel}`);
       // Revert to idle after animation
       setTimeout(() => {
         setLogState("idle");
@@ -192,40 +253,82 @@ export function ProtocolCard({ stack, stackItems }: ProtocolCardProps) {
               </span>
             </div>
           ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExecute}
-              disabled={isLoading || totalItems === 0}
-              className={cn(
-                "border-border/60 h-11 min-w-[72px] gap-1.5 rounded-xl font-mono text-xs",
-                "hover:border-primary hover:bg-primary hover:text-primary-foreground",
-                isLoading && "pointer-events-none",
-                logState === "success" &&
-                  "border-emerald-500/50 bg-emerald-500/10 text-emerald-500",
-                logState === "error" &&
-                  "animate-shake border-destructive/50 bg-destructive/10 text-destructive",
-              )}
-            >
-              {isLoading ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : logState === "success" ? (
-                <>
-                  <Check className="h-3 w-3" />
-                  DONE
-                </>
-              ) : logState === "error" ? (
-                <>
-                  <Play className="h-3 w-3" />
-                  RETRY
-                </>
-              ) : (
-                <>
-                  <Play className="h-3 w-3" />
-                  LOG
-                </>
-              )}
-            </Button>
+            <div className="flex items-center">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => handleExecute(e)}
+                disabled={isLoading || totalItems === 0}
+                className={cn(
+                  "border-border/60 h-11 min-w-[56px] gap-1.5 rounded-l-xl rounded-r-none border-r-0 font-mono text-xs",
+                  "hover:border-primary hover:bg-primary hover:text-primary-foreground",
+                  isLoading && "pointer-events-none",
+                  logState === "success" &&
+                    "border-emerald-500/50 bg-emerald-500/10 text-emerald-500 hover:border-emerald-500/50 hover:bg-emerald-500/10 hover:text-emerald-500",
+                  logState === "error" &&
+                    "animate-shake border-destructive/50 bg-destructive/10 text-destructive",
+                )}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : logState === "success" ? (
+                  <>
+                    <Check className="h-3 w-3" />
+                    DONE
+                  </>
+                ) : logState === "error" ? (
+                  <>
+                    <Play className="h-3 w-3" />
+                    RETRY
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-3 w-3" />
+                    LOG
+                  </>
+                )}
+              </Button>
+
+              <DropdownMenu open={isTimeMenuOpen} onOpenChange={setIsTimeMenuOpen}>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={isLoading || totalItems === 0}
+                    onClick={(e) => e.stopPropagation()}
+                    className={cn(
+                      "border-border/60 h-11 w-8 rounded-l-none rounded-r-xl px-0 font-mono text-xs",
+                      "hover:border-primary hover:bg-primary hover:text-primary-foreground",
+                      logState === "success" &&
+                        "border-emerald-500/50 bg-emerald-500/10 text-emerald-500",
+                      logState === "error" &&
+                        "border-destructive/50 bg-destructive/10 text-destructive",
+                    )}
+                  >
+                    <ChevronDown className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-40">
+                  <DropdownMenuLabel className="flex items-center gap-1.5 text-xs">
+                    <Clock className="h-3 w-3" />
+                    Log at different time
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {generateTimePresets().map((preset, index) => (
+                    <DropdownMenuItem
+                      key={index}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleExecute(e as unknown as React.MouseEvent, preset.getTime());
+                      }}
+                      className="font-mono text-xs"
+                    >
+                      {preset.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           )}
         </div>
       </div>
