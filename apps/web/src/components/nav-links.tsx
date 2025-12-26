@@ -37,10 +37,10 @@ export function NavLink({ href, children, iconName }: NavLinkProps) {
   const Icon = iconMap[iconName];
 
   function handleClick(e: React.MouseEvent) {
+    e.preventDefault();
     // Don't navigate if already on this page
     if (isActive) return;
 
-    e.preventDefault();
     startTransition(() => {
       router.push(href);
     });
@@ -83,10 +83,10 @@ export function MobileNavLink({ href, iconName, label }: MobileNavLinkProps) {
   const Icon = iconMap[iconName];
 
   function handleClick(e: React.MouseEvent) {
+    e.preventDefault();
     // Don't navigate if already on this page
     if (isActive) return;
 
-    e.preventDefault();
     startTransition(() => {
       router.push(href);
     });
