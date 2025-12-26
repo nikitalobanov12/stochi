@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   Check,
   Circle,
@@ -33,15 +33,16 @@ type LogState = "idle" | "loading" | "success" | "error";
  * always visible and physically distinct from navigation.
  */
 export function ProtocolCard({ stack, stackItems }: ProtocolCardProps) {
+  const router = useRouter();
   const { logStackOptimistic } = useLogContext();
   const [isExpanded, setIsExpanded] = useState(false);
   const [logState, setLogState] = useState<LogState>("idle");
+  const [isNavigating, startNavTransition] = useTransition();
 
   const { stackId, stackName, totalItems, loggedItems, isComplete, items } =
     stack;
 
   // Status states
-  const isIdle = loggedItems === 0;
   const isPartial = loggedItems > 0 && !isComplete;
 
   // Local loading state for this specific button
@@ -83,6 +84,12 @@ export function ProtocolCard({ stack, stackItems }: ProtocolCardProps) {
     setIsExpanded(!isExpanded);
   }
 
+  function handleNavigate() {
+    startNavTransition(() => {
+      router.push(`/dashboard/stacks/${stackId}`);
+    });
+  }
+
   return (
     <div
       className={cn(
@@ -94,18 +101,21 @@ export function ProtocolCard({ stack, stackItems }: ProtocolCardProps) {
     >
       <div className="flex items-stretch">
         {/* Zone A: The Briefing (Navigate to detail) */}
-        <Link
-          href={`/dashboard/stacks/${stackId}`}
-          className="flex flex-1 items-center gap-3 px-4 py-3 transition-colors hover:bg-white/[0.02]"
+        <button
+          type="button"
+          onClick={handleNavigate}
+          disabled={isNavigating}
+          className="flex flex-1 items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-white/[0.02] disabled:opacity-70"
         >
           {/* Status Indicator */}
           <div className="relative flex h-5 w-5 shrink-0 items-center justify-center">
-            {isComplete && (
+            {isNavigating ? (
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            ) : isComplete ? (
               <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500">
                 <Check className="h-3 w-3 text-white" strokeWidth={3} />
               </div>
-            )}
-            {isPartial && (
+            ) : isPartial ? (
               <svg className="h-5 w-5 -rotate-90" viewBox="0 0 20 20">
                 <circle
                   cx="10"
@@ -126,8 +136,7 @@ export function ProtocolCard({ stack, stackItems }: ProtocolCardProps) {
                   strokeDasharray={`${(loggedItems / totalItems) * 50.27} 50.27`}
                 />
               </svg>
-            )}
-            {isIdle && (
+            ) : (
               <Circle
                 className="text-muted-foreground/40 h-5 w-5"
                 strokeWidth={2}
@@ -153,7 +162,7 @@ export function ProtocolCard({ stack, stackItems }: ProtocolCardProps) {
               )}
             </p>
           </div>
-        </Link>
+        </button>
 
         {/* Expand Toggle */}
         {items.length > 0 && (
