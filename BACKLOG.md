@@ -6,13 +6,6 @@
 
 ## Up Next
 
-- [ ] Optimistic UI updates
-  - when the user logs their stack, it takes upwards of 5 seconds to process in the database, we need to figure out a cleaner solution to this
-  - either use redis to store the information first and than have eventual consistency with postgres, or just use optimistic ui updates
-  - this applies to deleting logs too, it takes upwards of 3 seconds to delete a supplement from the log and than the ui never updates, it just grays out the supplement
-
-## Planned
-
 - [ ] fix the ai suggestions
   - right now you can get a suggestion like
     `Add Magnesium Glycinate
@@ -52,6 +45,14 @@ View Research`
 
 ## Completed
 
+- [x] **Optimistic UI updates**
+  - Created `retryWithBackoff` utility for resilient server actions (3 retries, exponential backoff)
+  - `LogContext` provider for dashboard/log page with `useOptimistic` hook
+  - `StackItemsContext` provider for stack detail page
+  - Instant UI updates for: logging supplements, logging stacks, deleting logs, editing stack items, adding supplements to stacks
+  - Goals card auto-saves on toggle with optimistic feedback
+  - Error handling: toast notification + page refresh on failure to rollback
+
 - [x] **Suggestion categories/grouping**
   - Group suggestions in OptimizationHUD by type: Safety, Synergy, Timing, Balance
   - Add category badges/headers to visually separate suggestion types
@@ -87,11 +88,6 @@ View Research`
   - Database transactions for ACID-compliant logging
 
 ## Ideas / Future
-
-- [ ] Optimistic UI updates
-  - when the user logs their stack, it takes upwards of 5 seconds to process in the database, we need to figure out a cleaner solution to this
-  - either use redis to store the information first and than have eventual consistency with postgres, or just use optimistic ui updates
-  - this applies to deleting logs too, it takes upwards of 3 seconds to delete a supplement from the log and than the ui never updates, it just grays out the supplement
 
 - [ ] fix the ai suggestions
 
