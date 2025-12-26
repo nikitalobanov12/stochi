@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Library,
@@ -11,6 +11,7 @@ import {
   Beaker,
   Search,
   Filter,
+  Loader2,
 } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
@@ -45,12 +46,20 @@ const AUTHORITY_CONFIG = {
 };
 
 export default function ProtocolLibraryPage() {
+  const router = useRouter();
+  const [isNavigating, startTransition] = useTransition();
   const [selectedTemplate, setSelectedTemplate] =
     useState<StackTemplate | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedGoal, setSelectedGoal] = useState<GoalKey | "all">("all");
   const [showResearch, setShowResearch] = useState(false);
+
+  function handleBack() {
+    startTransition(() => {
+      router.push("/dashboard/stacks");
+    });
+  }
 
   // Get all templates sorted by authority
   const allTemplates = getTemplatesByAuthority();
@@ -107,11 +116,19 @@ export default function ProtocolLibraryPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link href="/dashboard/stacks">
-          <Button variant="ghost" size="icon" className="h-8 w-8">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={handleBack}
+          disabled={isNavigating}
+        >
+          {isNavigating ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
             <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
+          )}
+        </Button>
         <div>
           <div className="flex items-center gap-2">
             <Library className="h-5 w-5 text-amber-400" />
