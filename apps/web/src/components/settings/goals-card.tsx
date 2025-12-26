@@ -1,6 +1,6 @@
 "use client";
 
-import { useOptimistic, useTransition } from "react";
+import { useOptimistic, useTransition, useRef, useCallback } from "react";
 import { Target, Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -20,31 +20,20 @@ type GoalsCardProps = {
   initialGoals: GoalKey[];
 };
 
+const DEBOUNCE_MS = 500;
+
 export function GoalsCard({ initialGoals }: GoalsCardProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [optimisticGoals, setOptimisticGoals] = useOptimistic(initialGoals);
+  
+  // Track the latest goals to save (for debouncing)
+  const pendingGoalsRef = useRef<GoalKey[] | null>(null);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const toggleGoal = (key: GoalKey) => {
-    let newGoals: GoalKey[];
-
-    if (optimisticGoals.includes(key)) {
-      // Remove
-      newGoals = optimisticGoals.filter((g) => g !== key);
-    } else if (optimisticGoals.length < 3) {
-      // Add (max 3)
-      newGoals = [...optimisticGoals, key];
-    } else {
-      // At max, replace last
-      newGoals = [...optimisticGoals.slice(0, 2), key];
-    }
-
-    // Optimistic update - show new state immediately
-    setOptimisticGoals(newGoals);
-
-    // Persist to server in background
+  const saveGoals = useCallback((goalsToSave: GoalKey[]) => {
     startTransition(async () => {
-      const result = await retryWithBackoff(() => setUserGoals(newGoals));
+      const result = await retryWithBackoff(() => setUserGoals(goalsToSave));
 
       if (!result.success) {
         toast.error("Failed to save goals. Please try again.");
@@ -52,7 +41,41 @@ export function GoalsCard({ initialGoals }: GoalsCardProps) {
         router.refresh();
       }
     });
-  };
+  }, [router]);
+
+  const toggleGoal = useCallback((key: GoalKey) => {
+    // Use functional update to avoid stale closure
+    setOptimisticGoals((currentGoals) => {
+      let newGoals: GoalKey[];
+
+      if (currentGoals.includes(key)) {
+        // Remove
+        newGoals = currentGoals.filter((g) => g !== key);
+      } else if (currentGoals.length < 3) {
+        // Add (max 3)
+        newGoals = [...currentGoals, key];
+      } else {
+        // At max, replace last
+        newGoals = [...currentGoals.slice(0, 2), key];
+      }
+
+      // Store latest goals and debounce the save
+      pendingGoalsRef.current = newGoals;
+      
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+      
+      debounceTimerRef.current = setTimeout(() => {
+        if (pendingGoalsRef.current) {
+          saveGoals(pendingGoalsRef.current);
+          pendingGoalsRef.current = null;
+        }
+      }, DEBOUNCE_MS);
+
+      return newGoals;
+    });
+  }, [saveGoals, setOptimisticGoals]);
 
   return (
     <Card className="overflow-hidden">

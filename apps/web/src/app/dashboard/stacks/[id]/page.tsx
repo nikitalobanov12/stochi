@@ -68,7 +68,7 @@ export default async function StackDetailPage({
   }));
 
   return (
-    <StackItemsProvider initialItems={formattedItems} stackId={userStack.id}>
+    <StackItemsProvider initialItems={formattedItems}>
       <StackDetailClient
         stack={{
           id: userStack.id,

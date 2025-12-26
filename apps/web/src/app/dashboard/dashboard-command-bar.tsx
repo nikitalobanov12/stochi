@@ -4,7 +4,7 @@ import { useState, useTransition, useEffect } from "react";
 import { Search } from "lucide-react";
 import { CommandBar, type LogOptions } from "~/components/log/command-bar";
 import { ToxicityWarningDialog } from "~/components/ui/toxicity-warning-dialog";
-import { createLog, type CreateLogResult } from "~/server/actions/logs";
+import { createLog } from "~/server/actions/logs";
 import { type SafetyCheckResult } from "~/server/services/safety";
 import { type routeEnum } from "~/server/db/schema";
 import { useLogContext } from "~/components/log/log-context";
@@ -64,7 +64,7 @@ export function DashboardCommandBar({ supplements }: DashboardCommandBarProps) {
     // Collapse immediately for snappy UX
     setIsExpanded(false);
 
-    // Use optimistic update
+    // Use optimistic update - returns safety check data if failed
     const result = await createLogOptimistic(
       {
         supplementId: options.supplementId,
@@ -82,22 +82,11 @@ export function DashboardCommandBar({ supplements }: DashboardCommandBarProps) {
       },
     );
 
-    if (!result.success && result.needsSafetyCheck) {
-      // Fetch the actual safety check result to show in dialog
-      const safetyResult: CreateLogResult = await createLog({
-        supplementId: options.supplementId,
-        dosage: options.dosage,
-        unit: options.unit,
-        route: options.route,
-        mealContext: options.mealContext,
-        loggedAt: options.loggedAt,
-      });
-
-      if (!safetyResult.success) {
-        setPendingLog({ ...options, supplementName: supplement.name });
-        setSafetyCheck(safetyResult.safetyCheck);
-        setShowWarning(true);
-      }
+    if (!result.success && result.needsSafetyCheck && result.safetyCheck) {
+      // Show warning dialog with safety data from first call (no duplicate request)
+      setPendingLog({ ...options, supplementName: supplement.name });
+      setSafetyCheck(result.safetyCheck);
+      setShowWarning(true);
     }
   }
 

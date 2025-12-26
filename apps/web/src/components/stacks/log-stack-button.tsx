@@ -38,7 +38,7 @@ export function LogStackButton({
 
   const isDisabled = items.length === 0 || isPending || logState === "loading";
 
-  function handleLog() {
+  async function handleLog() {
     if (isDisabled) return;
 
     if (items.length === 0) {
@@ -48,17 +48,23 @@ export function LogStackButton({
 
     setLogState("loading");
 
-    // Use optimistic update via context
-    logStackOptimistic(stackId, items);
+    // Await the optimistic update to get actual result
+    const result = await logStackOptimistic(stackId, items);
 
-    // Show success state
-    setLogState("success");
-    toast.success(`Logged ${stackName}`);
-
-    // Revert to idle after 2s success animation
-    setTimeout(() => {
-      setLogState("idle");
-    }, 2000);
+    if (result.success) {
+      setLogState("success");
+      toast.success(`Logged ${stackName}`);
+      // Revert to idle after 2s success animation
+      setTimeout(() => {
+        setLogState("idle");
+      }, 2000);
+    } else {
+      setLogState("error");
+      // Revert to idle after 3s error animation
+      setTimeout(() => {
+        setLogState("idle");
+      }, 3000);
+    }
   }
 
   return (

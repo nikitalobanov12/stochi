@@ -90,7 +90,6 @@ export function useStackItemsContext() {
 type StackItemsProviderProps = {
   children: ReactNode;
   initialItems: StackItemEntry[];
-  stackId: string;
 };
 
 function optimisticReducer(
@@ -116,7 +115,6 @@ function optimisticReducer(
 export function StackItemsProvider({
   children,
   initialItems,
-  stackId: _stackId,
 }: StackItemsProviderProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -172,9 +170,9 @@ export function StackItemsProvider({
     targetStackId,
     newItems,
   ) => {
-    // Create optimistic entries with temporary IDs
-    const optimisticEntries: StackItemEntry[] = newItems.map((item, index) => ({
-      id: `optimistic-${Date.now()}-${index}-${Math.random().toString(36).slice(2)}`,
+    // Create optimistic entries with crypto UUIDs
+    const optimisticEntries: StackItemEntry[] = newItems.map((item) => ({
+      id: crypto.randomUUID(),
       stackId: targetStackId,
       supplementId: item.supplementId,
       dosage: item.dosage,
@@ -205,8 +203,8 @@ export function StackItemsProvider({
         toast.success(
           `Added ${count} supplement${count !== 1 ? "s" : ""} to stack`,
         );
-        // Refresh to get real IDs from server
-        router.refresh();
+        // No need for router.refresh() - optimistic UI is already correct
+        // Real IDs from server will sync on next page load
       }
     });
   };

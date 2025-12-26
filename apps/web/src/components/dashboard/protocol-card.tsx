@@ -21,6 +21,8 @@ type ProtocolCardProps = {
   stackItems?: StackItem[];
 };
 
+type LogState = "idle" | "loading" | "success" | "error";
+
 /**
  * ProtocolCard - Split-Action Row Design
  *
@@ -31,9 +33,9 @@ type ProtocolCardProps = {
  * always visible and physically distinct from navigation.
  */
 export function ProtocolCard({ stack, stackItems }: ProtocolCardProps) {
-  const { logStackOptimistic, isPending } = useLogContext();
+  const { logStackOptimistic } = useLogContext();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [logState, setLogState] = useState<"idle" | "success">("idle");
+  const [logState, setLogState] = useState<LogState>("idle");
 
   const { stackId, stackName, totalItems, loggedItems, isComplete, items } =
     stack;
@@ -42,7 +44,10 @@ export function ProtocolCard({ stack, stackItems }: ProtocolCardProps) {
   const isIdle = loggedItems === 0;
   const isPartial = loggedItems > 0 && !isComplete;
 
-  function handleExecute(e: React.MouseEvent) {
+  // Local loading state for this specific button
+  const isLoading = logState === "loading";
+
+  async function handleExecute(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
 
@@ -51,17 +56,25 @@ export function ProtocolCard({ stack, stackItems }: ProtocolCardProps) {
       return;
     }
 
-    // Optimistic update via context
-    logStackOptimistic(stackId, stackItems);
+    setLogState("loading");
 
-    // Show success state
-    setLogState("success");
-    toast.success(`Logged ${stackName}`);
+    // Await the optimistic update to get actual result
+    const result = await logStackOptimistic(stackId, stackItems);
 
-    // Revert to idle after animation
-    setTimeout(() => {
-      setLogState("idle");
-    }, 2000);
+    if (result.success) {
+      setLogState("success");
+      toast.success(`Logged ${stackName}`);
+      // Revert to idle after animation
+      setTimeout(() => {
+        setLogState("idle");
+      }, 2000);
+    } else {
+      setLogState("error");
+      // Revert to idle after error animation
+      setTimeout(() => {
+        setLogState("idle");
+      }, 3000);
+    }
   }
 
   function toggleExpand(e: React.MouseEvent) {
@@ -174,21 +187,28 @@ export function ProtocolCard({ stack, stackItems }: ProtocolCardProps) {
               variant="outline"
               size="sm"
               onClick={handleExecute}
-              disabled={isPending || totalItems === 0}
+              disabled={isLoading || totalItems === 0}
               className={cn(
                 "border-border/60 h-11 min-w-[72px] gap-1.5 rounded-xl font-mono text-xs",
                 "hover:border-primary hover:bg-primary hover:text-primary-foreground",
-                isPending && "pointer-events-none",
+                isLoading && "pointer-events-none",
                 logState === "success" &&
                   "border-emerald-500/50 bg-emerald-500/10 text-emerald-500",
+                logState === "error" &&
+                  "animate-shake border-destructive/50 bg-destructive/10 text-destructive",
               )}
             >
-              {isPending ? (
+              {isLoading ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : logState === "success" ? (
                 <>
                   <Check className="h-3 w-3" />
                   DONE
+                </>
+              ) : logState === "error" ? (
+                <>
+                  <Play className="h-3 w-3" />
+                  RETRY
                 </>
               ) : (
                 <>
@@ -220,7 +240,7 @@ export function ProtocolCard({ stack, stackItems }: ProtocolCardProps) {
                 ) : (
                   <Circle className="h-2.5 w-2.5" />
                 )}
-                <span className={item.logged ? "" : ""}>
+                <span>
                   {item.supplementName}
                 </span>
                 <span className="text-muted-foreground/60 tabular-nums">

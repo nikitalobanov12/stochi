@@ -10,9 +10,10 @@ import {
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import { deleteLog, createLog, type CreateLogOptions } from "~/server/actions/logs";
+import { deleteLog, createLog, type CreateLogOptions, type CreateLogResult } from "~/server/actions/logs";
 import { logStack } from "~/server/actions/stacks";
 import { retryWithBackoff } from "~/lib/retry";
+import type { SafetyCheckResult } from "~/server/services/safety";
 
 // ============================================================================
 // Types
@@ -64,11 +65,18 @@ type LogContextValue = {
       route?: string | null;
       category?: string | null;
     },
-  ) => Promise<{ success: boolean; needsSafetyCheck?: boolean }>;
+  ) => Promise<{
+    success: boolean;
+    needsSafetyCheck?: boolean;
+    safetyCheck?: SafetyCheckResult;
+  }>;
   /** Remove a log entry optimistically, then delete from server */
   deleteLogOptimistic: (entry: LogEntry) => void;
-  /** Log an entire stack optimistically */
-  logStackOptimistic: (stackId: string, items: StackItem[]) => void;
+  /** Log an entire stack optimistically, returns success status */
+  logStackOptimistic: (
+    stackId: string,
+    items: StackItem[],
+  ) => Promise<{ success: boolean }>;
 };
 
 // ============================================================================
@@ -99,18 +107,31 @@ function optimisticReducer(
   action: OptimisticAction,
 ): LogEntry[] {
   switch (action.type) {
-    case "add":
-      // Insert at beginning, sorted by loggedAt desc
-      return [action.log, ...state].sort(
-        (a, b) => new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime(),
-      );
+    case "add": {
+      // Use binary search for O(log n) insertion instead of O(n log n) sort
+      const newTime = new Date(action.log.loggedAt).getTime();
+      // Find insertion point (logs are sorted desc by loggedAt)
+      let low = 0;
+      let high = state.length;
+      while (low < high) {
+        const mid = (low + high) >>> 1;
+        if (new Date(state[mid]!.loggedAt).getTime() > newTime) {
+          low = mid + 1;
+        } else {
+          high = mid;
+        }
+      }
+      return [...state.slice(0, low), action.log, ...state.slice(low)];
+    }
     case "remove":
       return state.filter((log) => log.id !== action.id);
-    case "add_many":
-      // Insert all at beginning, sorted by loggedAt desc
+    case "add_many": {
+      // For multiple additions, sort once is more efficient
       return [...action.logs, ...state].sort(
-        (a, b) => new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime(),
+        (a, b) =>
+          new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime(),
       );
+    }
     default:
       return state;
   }
@@ -129,7 +150,7 @@ export function LogProvider({ children, initialLogs }: LogProviderProps) {
     supplementData,
   ) => {
     const optimisticEntry: LogEntry = {
-      id: `optimistic-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      id: crypto.randomUUID(),
       loggedAt: options.loggedAt ?? new Date(),
       dosage: options.dosage,
       unit: options.unit,
@@ -143,18 +164,25 @@ export function LogProvider({ children, initialLogs }: LogProviderProps) {
     };
 
     // Return a promise that resolves when the server action completes
-    return new Promise<{ success: boolean; needsSafetyCheck?: boolean }>((resolve) => {
+    return new Promise<{
+      success: boolean;
+      needsSafetyCheck?: boolean;
+      safetyCheck?: SafetyCheckResult;
+    }>((resolve) => {
       startTransition(async () => {
         // Optimistic update - show immediately (must be inside startTransition)
         dispatchOptimistic({ type: "add", log: optimisticEntry });
 
         // Persist to server
-        const result = await createLog(options);
+        const result: CreateLogResult = await createLog(options);
 
         if (!result.success) {
-          // Safety check failed - let the caller handle the warning dialog
-          // Don't rollback yet - user might override
-          resolve({ success: false, needsSafetyCheck: true });
+          // Safety check failed - return the safety data for the caller to handle
+          resolve({
+            success: false,
+            needsSafetyCheck: true,
+            safetyCheck: result.safetyCheck,
+          });
           return;
         }
 
@@ -189,7 +217,7 @@ export function LogProvider({ children, initialLogs }: LogProviderProps) {
 
     // Create optimistic entries for all items in the stack
     const optimisticLogs: LogEntry[] = items.map((item) => ({
-      id: `optimistic-stack-${stackId}-${item.supplementId}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      id: crypto.randomUUID(),
       loggedAt: now,
       dosage: item.dosage,
       unit: item.unit,
@@ -202,18 +230,22 @@ export function LogProvider({ children, initialLogs }: LogProviderProps) {
       },
     }));
 
-    startTransition(async () => {
-      // Optimistic update - show all entries immediately (must be inside startTransition)
-      dispatchOptimistic({ type: "add_many", logs: optimisticLogs });
+    return new Promise<{ success: boolean }>((resolve) => {
+      startTransition(async () => {
+        // Optimistic update - show all entries immediately (must be inside startTransition)
+        dispatchOptimistic({ type: "add_many", logs: optimisticLogs });
 
-      const result = await retryWithBackoff(() => logStack(stackId));
+        const result = await retryWithBackoff(() => logStack(stackId));
 
-      if (!result.success) {
-        toast.error("Failed to log stack");
-        // Sync with server to remove optimistic entries
-        router.refresh();
-      }
-      // Success toast is handled by the LogStackButton component
+        if (!result.success) {
+          toast.error("Failed to log stack");
+          // Sync with server to remove optimistic entries
+          router.refresh();
+          resolve({ success: false });
+        } else {
+          resolve({ success: true });
+        }
+      });
     });
   };
 

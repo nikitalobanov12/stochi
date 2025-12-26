@@ -117,10 +117,12 @@ function LogPageContent({
                 size="sm"
                 className="border-white/10 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.04] font-mono text-xs"
                 disabled={s.items.length === 0}
-                onClick={() => {
+                onClick={async () => {
                   if (s.items.length > 0) {
-                    logStackOptimistic(s.id, s.items);
-                    toast.success(`Logged ${s.name}`);
+                    const result = await logStackOptimistic(s.id, s.items);
+                    if (result.success) {
+                      toast.success(`Logged ${s.name}`);
+                    }
                   }
                 }}
               >
