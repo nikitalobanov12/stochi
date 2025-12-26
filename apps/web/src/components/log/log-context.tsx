@@ -76,6 +76,7 @@ type LogContextValue = {
   logStackOptimistic: (
     stackId: string,
     items: StackItem[],
+    loggedAt?: Date,
   ) => Promise<{ success: boolean }>;
 };
 
@@ -212,13 +213,14 @@ export function LogProvider({ children, initialLogs }: LogProviderProps) {
   const logStackOptimistic: LogContextValue["logStackOptimistic"] = (
     stackId,
     items,
+    loggedAt,
   ) => {
-    const now = new Date();
+    const logTime = loggedAt ?? new Date();
 
     // Create optimistic entries for all items in the stack
     const optimisticLogs: LogEntry[] = items.map((item) => ({
       id: crypto.randomUUID(),
-      loggedAt: now,
+      loggedAt: logTime,
       dosage: item.dosage,
       unit: item.unit,
       supplement: {
@@ -235,7 +237,7 @@ export function LogProvider({ children, initialLogs }: LogProviderProps) {
         // Optimistic update - show all entries immediately (must be inside startTransition)
         dispatchOptimistic({ type: "add_many", logs: optimisticLogs });
 
-        const result = await retryWithBackoff(() => logStack(stackId));
+        const result = await retryWithBackoff(() => logStack(stackId, logTime));
 
         if (!result.success) {
           toast.error("Failed to log stack");
