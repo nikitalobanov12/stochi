@@ -24,14 +24,14 @@
   - Integrate with existing Capacitor push notification setup (`lib/capacitor/push.ts`)
   - Add notification preferences to Settings (enable/disable, quiet hours)
 
-- [ ] **Simplified "Add to Stack" UX**
-  - Current flow requires: type supplement → click "Add to Stack" → confirm
-  - Works for initial stack creation (adding multiple), but clunky for adding single supplement to existing stack
-  - Improve: single-click add from search results when adding to existing stack
-  - Consider: inline dosage input in search results, or smart defaults
-  - Keep multi-add flow for stack creation wizard
-
 ## Completed
+
+- [x] **Simplified "Add to Stack" UX**
+  - Replaced batch-add dialog with inline quick-add in search results
+  - Each search result now shows: supplement name + dosage input + unit selector + Add button
+  - Single click/Enter to add directly to stack (no pending list, no confirm step)
+  - Default unit pre-filled from supplement's `defaultUnit`
+  - Reduced flow from 6 steps to 2-3 steps
 
 - [x] **Retroactive logging ("I forgot to log")**
   - Added `loggedAt` parameter to `logStack()` and `logStackWithSafetyCheck()` server actions
