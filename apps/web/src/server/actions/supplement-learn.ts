@@ -21,6 +21,7 @@ import {
   generateCompletion,
   buildRAGSystemPrompt,
   buildRAGUserPrompt,
+  buildResearchSummaryPrompt,
   isLlamaEnabled,
 } from "~/server/services/llama-client";
 import { logger } from "~/lib/logger";
@@ -60,6 +61,13 @@ export type AskQuestionResult = {
     originalQuery: string;
     rewrittenQuery: string;
   };
+  error?: string;
+};
+
+export type ResearchSummaryResult = {
+  summary: string | null;
+  generatedAt: Date | null;
+  isAIGenerated: boolean;
   error?: string;
 };
 
@@ -335,6 +343,192 @@ export async function askSupplementQuestion(
   setCache(cacheKey, result);
 
   return result;
+}
+
+// ============================================================================
+// Research Summary Cache Configuration
+// ============================================================================
+
+const RESEARCH_SUMMARY_STALE_DAYS = 30; // Regenerate after 30 days
+
+/**
+ * Get or generate an AI research summary for a supplement.
+ * Uses cached summary if available and fresh, otherwise generates on-demand.
+ *
+ * Returns fallback content (description + mechanism) if:
+ * - AI is not enabled
+ * - No knowledge chunks available
+ * - Generation fails
+ */
+export async function getOrGenerateResearchSummary(
+  supplementId: string,
+): Promise<ResearchSummaryResult> {
+  // Get supplement data including existing summary
+  const supplementData = await db.query.supplement.findFirst({
+    where: eq(supplement.id, supplementId),
+    columns: {
+      id: true,
+      name: true,
+      description: true,
+      mechanism: true,
+      researchSummary: true,
+      researchSummaryGeneratedAt: true,
+    },
+  });
+
+  if (!supplementData) {
+    return {
+      summary: null,
+      generatedAt: null,
+      isAIGenerated: false,
+      error: "Supplement not found",
+    };
+  }
+
+  // Check if we have a fresh cached summary
+  if (supplementData.researchSummary && supplementData.researchSummaryGeneratedAt) {
+    const ageInDays =
+      (Date.now() - supplementData.researchSummaryGeneratedAt.getTime()) /
+      (1000 * 60 * 60 * 24);
+
+    if (ageInDays < RESEARCH_SUMMARY_STALE_DAYS) {
+      logger.info(`Using cached research summary for ${supplementData.name}`);
+      return {
+        summary: supplementData.researchSummary,
+        generatedAt: supplementData.researchSummaryGeneratedAt,
+        isAIGenerated: true,
+      };
+    }
+    logger.info(
+      `Cached summary for ${supplementData.name} is stale (${Math.floor(ageInDays)} days old)`,
+    );
+  }
+
+  // Build fallback content from description + mechanism
+  const fallbackSummary = buildFallbackSummary(
+    supplementData.description,
+    supplementData.mechanism,
+  );
+
+  // Check if AI is enabled
+  if (!isLlamaEnabled()) {
+    logger.info("AI not enabled, using fallback summary");
+    return {
+      summary: fallbackSummary,
+      generatedAt: null,
+      isAIGenerated: false,
+    };
+  }
+
+  // Check if we have knowledge chunks to build context
+  const hasKnowledge = await hasSupplementKnowledge(supplementId);
+  if (!hasKnowledge) {
+    logger.info(
+      `No knowledge chunks for ${supplementData.name}, using fallback`,
+    );
+    return {
+      summary: fallbackSummary,
+      generatedAt: null,
+      isAIGenerated: false,
+    };
+  }
+
+  // Fetch knowledge chunks and build context
+  const knowledgeByType = await getSupplementKnowledgeByType(supplementId);
+
+  // Build context prioritizing overview, mechanism, benefits
+  const priorityTypes = ["overview", "mechanism", "benefits", "dosing", "timing"];
+  const contextChunks: string[] = [];
+
+  for (const type of priorityTypes) {
+    const chunks = knowledgeByType.get(type);
+    if (chunks) {
+      for (const chunk of chunks) {
+        contextChunks.push(`[${type.toUpperCase()}]\n${chunk.content}`);
+      }
+    }
+  }
+
+  if (contextChunks.length === 0) {
+    logger.info(`No relevant knowledge chunks for ${supplementData.name}`);
+    return {
+      summary: fallbackSummary,
+      generatedAt: null,
+      isAIGenerated: false,
+    };
+  }
+
+  const knowledgeContext = contextChunks.slice(0, 5).join("\n\n---\n\n");
+
+  // Generate summary using Llama
+  const { system, user } = buildResearchSummaryPrompt(
+    supplementData.name,
+    knowledgeContext,
+  );
+
+  logger.info(`Generating research summary for ${supplementData.name}`);
+
+  const completion = await generateCompletion(
+    [
+      { role: "system", content: system },
+      { role: "user", content: user },
+    ],
+    {
+      maxTokens: 600,
+      temperature: 0.6, // Slightly lower for more factual output
+      timeoutMs: 45000, // Longer timeout for summary generation
+    },
+  );
+
+  if (completion.finishReason === "error") {
+    logger.error(
+      `Failed to generate summary for ${supplementData.name}: ${completion.error}`,
+    );
+    return {
+      summary: fallbackSummary,
+      generatedAt: null,
+      isAIGenerated: false,
+      error: completion.error,
+    };
+  }
+
+  // Save the generated summary to database
+  const now = new Date();
+  await db
+    .update(supplement)
+    .set({
+      researchSummary: completion.content,
+      researchSummaryGeneratedAt: now,
+      updatedAt: now,
+    })
+    .where(eq(supplement.id, supplementId));
+
+  logger.info(`Saved research summary for ${supplementData.name}`);
+
+  return {
+    summary: completion.content,
+    generatedAt: now,
+    isAIGenerated: true,
+  };
+}
+
+/**
+ * Build a fallback summary from description and mechanism.
+ */
+function buildFallbackSummary(
+  description: string | null,
+  mechanism: string | null,
+): string | null {
+  const parts: string[] = [];
+
+  if (mechanism) {
+    parts.push(mechanism);
+  }
+  if (description) {
+    parts.push(description);
+  }
+
+  return parts.length > 0 ? parts.join("\n\n") : null;
 }
 
 /**

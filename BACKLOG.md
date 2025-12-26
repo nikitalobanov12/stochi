@@ -6,12 +6,6 @@
 
 ## Up Next
 
-- [ ] **AI-generated research summaries**
-  - Summarize Examine.com or PubMed content on-demand using HuggingFace API
-  - Cache summaries in database after first generation
-  - Fallback for supplements without pre-written summaries
-  - Show in supplement sheet / detail view
-
 - [ ] **Interaction severity customization**
   - Let users set personal tolerance levels for interactions
   - E.g., "I know about caffeine + L-theanine, don't warn me"
@@ -25,6 +19,14 @@
   - Add notification preferences to Settings (enable/disable, quiet hours)
 
 ## Completed
+
+- [x] **AI-generated research summaries**
+  - Summarize Examine.com/knowledge chunks on-demand using Llama 3.1 8B via HuggingFace
+  - Cache summaries in database (`researchSummary`, `researchSummaryGeneratedAt` columns)
+  - Lazy generation on first view with loading indicator
+  - Shows "AI" badge when AI-generated
+  - Fallback to `description` + `mechanism` if AI unavailable or no knowledge chunks
+  - 30-day cache freshness (regenerates after staleness)
 
 - [x] **Simplified "Add to Stack" UX**
   - Replaced batch-add dialog with inline quick-add in search results
@@ -110,12 +112,6 @@
   - Database transactions for ACID-compliant logging
 
 ## Ideas / Future
-
-- [ ] **AI-generated research summaries**
-  - Summarize Examine.com or PubMed content on-demand using HuggingFace API
-  - Cache summaries in database after first generation
-  - Fallback for supplements without pre-written summaries
-  - Show in supplement sheet / detail view
 
 - [ ] **Interaction severity customization**
   - Let users set personal tolerance levels for interactions

@@ -15,6 +15,7 @@ import {
   FlaskConical,
   BookOpen,
   Loader2,
+  Sparkles,
 } from "lucide-react";
 
 import {
@@ -31,8 +32,10 @@ import { LearnSection } from "~/components/learn";
 import {
   getSupplementKnowledge,
   askSupplementQuestion,
+  getOrGenerateResearchSummary,
   type SupplementKnowledgeResult,
   type AskQuestionResult,
+  type ResearchSummaryResult,
 } from "~/server/actions/supplement-learn";
 
 type SupplementData = {
@@ -104,6 +107,44 @@ const goalLabels: Record<string, string> = {
 // ============================================================================
 
 function OverviewContent({ supplement }: { supplement: SupplementData }) {
+  const [summaryResult, setSummaryResult] =
+    useState<ResearchSummaryResult | null>(null);
+  const [isLoadingSummary, setIsLoadingSummary] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadSummary() {
+      setIsLoadingSummary(true);
+      try {
+        const result = await getOrGenerateResearchSummary(supplement.id);
+        if (mounted) {
+          setSummaryResult(result);
+        }
+      } catch (err) {
+        if (mounted) {
+          // On error, we'll just show fallback content
+          setSummaryResult({
+            summary: null,
+            generatedAt: null,
+            isAIGenerated: false,
+            error: err instanceof Error ? err.message : "Failed to load",
+          });
+        }
+      } finally {
+        if (mounted) {
+          setIsLoadingSummary(false);
+        }
+      }
+    }
+
+    void loadSummary();
+
+    return () => {
+      mounted = false;
+    };
+  }, [supplement.id]);
+
   return (
     <div className="space-y-6">
       {/* Route & Storage Section (for peptides/research chemicals) */}
@@ -131,25 +172,50 @@ function OverviewContent({ supplement }: { supplement: SupplementData }) {
         </div>
       ) : null}
 
-      {/* Mechanism Section */}
-      {supplement.mechanism && (
-        <div className="space-y-2">
+      {/* Research Summary Section */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
           <h3 className="text-muted-foreground text-[10px] font-medium tracking-[0.2em] uppercase">
-            Mechanism
+            Research Summary
           </h3>
-          <p className="text-sm leading-relaxed">{supplement.mechanism}</p>
+          {summaryResult?.isAIGenerated && (
+            <Badge
+              variant="outline"
+              className="border-violet-500/30 bg-violet-500/10 text-violet-400 text-[9px] px-1.5 py-0"
+            >
+              <Sparkles className="mr-1 h-2.5 w-2.5" />
+              AI
+            </Badge>
+          )}
         </div>
-      )}
-
-      {/* Why Take It Section */}
-      {supplement.description && (
-        <div className="space-y-2">
-          <h3 className="text-muted-foreground text-[10px] font-medium tracking-[0.2em] uppercase">
-            Why Take It
-          </h3>
-          <p className="text-sm leading-relaxed">{supplement.description}</p>
-        </div>
-      )}
+        {isLoadingSummary ? (
+          <div className="flex items-center gap-2 py-4">
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">
+              Generating summary...
+            </span>
+          </div>
+        ) : summaryResult?.summary ? (
+          <div className="text-sm leading-relaxed whitespace-pre-line">
+            {summaryResult.summary}
+          </div>
+        ) : (
+          // Fallback to description + mechanism if no summary available
+          <div className="space-y-4">
+            {supplement.mechanism && (
+              <p className="text-sm leading-relaxed">{supplement.mechanism}</p>
+            )}
+            {supplement.description && (
+              <p className="text-sm leading-relaxed">{supplement.description}</p>
+            )}
+            {!supplement.mechanism && !supplement.description && (
+              <p className="text-sm text-muted-foreground">
+                No research summary available for this supplement.
+              </p>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Goals Section */}
       {supplement.commonGoals && supplement.commonGoals.length > 0 && (

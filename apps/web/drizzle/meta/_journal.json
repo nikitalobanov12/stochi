@@ -99,6 +99,13 @@
       "when": 1766428816074,
       "tag": "0013_add-user-timezone",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1766860800000,
+      "tag": "0014_add-research-summary",
+      "breakpoints": true
     }
   ]
 }

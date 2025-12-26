@@ -285,3 +285,38 @@ Original question: "${question}"
 
 Output ONLY the optimized search query (no explanation, no quotes):`;
 }
+
+/**
+ * Build a prompt for generating a research summary for a supplement.
+ * Used for the AI-generated research summary feature in supplement sheets.
+ */
+export function buildResearchSummaryPrompt(
+  supplementName: string,
+  knowledgeContext: string,
+): { system: string; user: string } {
+  const system = `You are a concise supplement researcher writing for biohackers and health-conscious individuals.
+
+CRITICAL RULES:
+1. Use ONLY the research context provided - do NOT use your training data
+2. Write in a clear, informative tone - like a knowledgeable peer explaining research
+3. Use phrases like "research suggests" or "studies indicate" - NEVER prescribe or give medical advice
+4. Focus on: mechanism of action, key benefits, and practical considerations (timing, absorption, co-factors)
+5. Keep it concise: 2-3 short paragraphs maximum
+6. If the context doesn't have enough information for a section, skip it rather than making things up
+7. Do NOT include dosage recommendations
+
+FORMAT:
+- First paragraph: What it is and how it works (mechanism)
+- Second paragraph: Key research-backed benefits
+- Third paragraph (optional): Practical tips (timing, absorption, synergies) if info is available`;
+
+  const user = `Generate a research summary for ${supplementName} using ONLY the following research context:
+
+---
+${knowledgeContext}
+---
+
+Write a concise 2-3 paragraph summary covering mechanism, benefits, and practical tips (if available in the context).`;
+
+  return { system, user };
+}

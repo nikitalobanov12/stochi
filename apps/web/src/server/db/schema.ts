@@ -236,6 +236,10 @@ export const supplement = pgTable(
       .notNull(),
     route: routeEnum("route").default("oral").notNull(),
     storageInstructions: text("storage_instructions"),
+    // AI-generated research summary (cached from Llama 3.1 8B)
+    // Built from supplementKnowledge chunks on first view
+    researchSummary: text("research_summary"),
+    researchSummaryGeneratedAt: timestamp("research_summary_generated_at"),
     // Pharmacokinetic fields (sourced from Examine.com/PubMed)
     // Used for biological state timeline visualization
     peakMinutes: integer("peak_minutes"), // Time to Cmax (peak plasma concentration)
