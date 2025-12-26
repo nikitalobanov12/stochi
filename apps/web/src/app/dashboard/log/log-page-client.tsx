@@ -1,6 +1,7 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
+import { useState } from "react";
+import { Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "~/components/ui/button";
@@ -75,6 +76,21 @@ function LogPageContent({
   timingWarnings,
 }: Omit<LogPageClientProps, "todayLogs">) {
   const { logs: todayLogs, deleteLogOptimistic, logStackOptimistic } = useLogContext();
+  const [loggingStackId, setLoggingStackId] = useState<string | null>(null);
+
+  async function handleLogStack(stack: UserStack) {
+    if (stack.items.length === 0) return;
+    
+    setLoggingStackId(stack.id);
+    try {
+      const result = await logStackOptimistic(stack.id, stack.items);
+      if (result.success) {
+        toast.success(`Logged ${stack.name}`);
+      }
+    } finally {
+      setLoggingStackId(null);
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -109,32 +125,29 @@ function LogPageContent({
             Quick Log
           </h2>
           <div className="flex flex-wrap gap-2">
-            {userStacks.map((s) => (
-              <Button
-                key={s.id}
-                type="button"
-                variant="outline"
-                size="sm"
-                className="border-white/10 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.04] font-mono text-xs"
-                disabled={s.items.length === 0}
-                onClick={async () => {
-                  if (s.items.length > 0) {
-                    const result = await logStackOptimistic(s.id, s.items);
-                    if (result.success) {
-                      toast.success(`Logged ${s.name}`);
-                    }
-                  }
-                }}
-              >
-                {s.name}
-                <Badge
-                  variant="secondary"
-                  className="bg-muted/50 ml-2 font-mono text-[10px] tabular-nums"
+            {userStacks.map((s) => {
+              const isLogging = loggingStackId === s.id;
+              return (
+                <Button
+                  key={s.id}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="border-white/10 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.04] font-mono text-xs"
+                  disabled={s.items.length === 0 || isLogging}
+                  onClick={() => handleLogStack(s)}
                 >
-                  {s.items.length}
-                </Badge>
-              </Button>
-            ))}
+                  {isLogging && <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />}
+                  {s.name}
+                  <Badge
+                    variant="secondary"
+                    className="bg-muted/50 ml-2 font-mono text-[10px] tabular-nums"
+                  >
+                    {s.items.length}
+                  </Badge>
+                </Button>
+              );
+            })}
           </div>
         </div>
       )}
