@@ -269,8 +269,12 @@ export async function updateStackItem(
  * This does NOT perform safety checks - use logStackWithSafetyCheck for that.
  *
  * @param stackId - The stack to log
+ * @param loggedAt - Optional timestamp for the log (defaults to now)
  */
-export async function logStack(stackId: string): Promise<void> {
+export async function logStack(
+  stackId: string,
+  loggedAt?: Date,
+): Promise<void> {
   const session = await getSession();
   if (!session) {
     redirect("/auth/sign-in");
@@ -291,7 +295,20 @@ export async function logStack(stackId: string): Promise<void> {
     throw new Error("Stack has no items to log");
   }
 
-  const now = new Date();
+  // Validate loggedAt if provided
+  const logTime = loggedAt ?? new Date();
+  
+  // Don't allow future dates more than 1 minute ahead (account for clock skew)
+  const maxFutureTime = new Date(Date.now() + 60 * 1000);
+  if (logTime > maxFutureTime) {
+    throw new Error("Cannot log supplements in the future");
+  }
+  
+  // Don't allow dates more than 7 days in the past
+  const minPastTime = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  if (logTime < minPastTime) {
+    throw new Error("Cannot log supplements more than 7 days in the past");
+  }
 
   // Insert all log entries
   await db.insert(log).values(
@@ -300,14 +317,14 @@ export async function logStack(stackId: string): Promise<void> {
       supplementId: item.supplementId,
       dosage: item.dosage,
       unit: item.unit,
-      loggedAt: now,
+      loggedAt: logTime,
     })),
   );
 
   // Update lastLoggedAt on the stack
   await db
     .update(stack)
-    .set({ lastLoggedAt: now, updatedAt: now })
+    .set({ lastLoggedAt: logTime, updatedAt: new Date() })
     .where(eq(stack.id, stackId));
 
   revalidatePath("/dashboard");
@@ -321,10 +338,12 @@ export async function logStack(stackId: string): Promise<void> {
  *
  * @param stackId - The stack to log
  * @param forceOverride - If true, bypass soft limit warnings (hard limits still block)
+ * @param loggedAt - Optional timestamp for the log (defaults to now)
  */
 export async function logStackWithSafetyCheck(
   stackId: string,
   forceOverride?: boolean,
+  loggedAt?: Date,
 ): Promise<LogStackResult> {
   const session = await getSession();
   if (!session) {
@@ -384,7 +403,20 @@ export async function logStackWithSafetyCheck(
     // If forceOverride is true, continue with the log
   }
 
-  const now = new Date();
+  // Validate loggedAt if provided
+  const logTime = loggedAt ?? new Date();
+  
+  // Don't allow future dates more than 1 minute ahead (account for clock skew)
+  const maxFutureTime = new Date(Date.now() + 60 * 1000);
+  if (logTime > maxFutureTime) {
+    throw new Error("Cannot log supplements in the future");
+  }
+  
+  // Don't allow dates more than 7 days in the past
+  const minPastTime = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  if (logTime < minPastTime) {
+    throw new Error("Cannot log supplements more than 7 days in the past");
+  }
 
   // Insert all log entries
   await db.insert(log).values(
@@ -393,14 +425,14 @@ export async function logStackWithSafetyCheck(
       supplementId: item.supplementId,
       dosage: item.dosage,
       unit: item.unit,
-      loggedAt: now,
+      loggedAt: logTime,
     })),
   );
 
   // Update lastLoggedAt on the stack
   await db
     .update(stack)
-    .set({ lastLoggedAt: now, updatedAt: now })
+    .set({ lastLoggedAt: logTime, updatedAt: new Date() })
     .where(eq(stack.id, stackId));
 
   revalidatePath("/dashboard");
