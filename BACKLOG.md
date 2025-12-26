@@ -32,10 +32,6 @@ View Research`
   - E.g., "I know about caffeine + L-theanine, don't warn me"
   - Different from dismissing - this is a permanent "I accept this interaction"
 
-- [ ] Better indicators
-  - currently when you perform a navigation action that uses the router, theres a 500 ms delay that is noticeably slow but also amplified by the fact that theres no visual indicators that the action is going through
-  - we need to add a loading indicator rigth where the user clicked that shows that the action is processing, this speeds up the perceived speed of how things happen
-
 - [ ] **Smart notification timing**
   - Push notification when optimal window opens for a supplement
   - "Time to take your evening magnesium" based on supplement's `optimalTimeOfDay`
@@ -44,6 +40,18 @@ View Research`
   - Add notification preferences to Settings (enable/disable, quiet hours)
 
 ## Completed
+
+- [x] **Universal loading indicators for navigation & actions**
+  - Added `loading.tsx` skeleton files for all dashboard routes
+  - Navigation links show spinner while navigating (nav-links.tsx)
+  - Stack detail page: Back, Log All, Rename, Delete buttons with loading states
+  - Protocol card Zone A navigation with status indicator spinner
+  - Stack list page rows with chevron → spinner transition
+  - Quick Log buttons with per-button loading state
+  - VIEW ALL and Create Protocol links with loading spinners
+  - Protocol Library back button with loading state
+  - Learn page back button with loading state
+  - Pattern: `useTransition` + `router.push` with icon swap to `Loader2`
 
 - [x] **Optimistic UI updates**
   - Created `retryWithBackoff` utility for resilient server actions (3 retries, exponential backoff)
