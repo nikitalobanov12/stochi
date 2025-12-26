@@ -24,15 +24,22 @@
   - Integrate with existing Capacitor push notification setup (`lib/capacitor/push.ts`)
   - Add notification preferences to Settings (enable/disable, quiet hours)
 
-- [ ] **Retroactive logging ("I forgot to log")**
-  - Allow users to log supplements/stacks at an earlier time
-  - "I forgot to log my morning stack, I took it at 9am"
-  - Add time picker to log confirmation dialog
-  - Default to current time, with option to backdate
-  - Validate: time must be today (or yesterday?), not in future
-  - Backend: `logStack` and `logSupplement` already accept `loggedAt` - need UI
+- [ ] **Simplified "Add to Stack" UX**
+  - Current flow requires: type supplement → click "Add to Stack" → confirm
+  - Works for initial stack creation (adding multiple), but clunky for adding single supplement to existing stack
+  - Improve: single-click add from search results when adding to existing stack
+  - Consider: inline dosage input in search results, or smart defaults
+  - Keep multi-add flow for stack creation wizard
 
 ## Completed
+
+- [x] **Retroactive logging ("I forgot to log")**
+  - Added `loggedAt` parameter to `logStack()` and `logStackWithSafetyCheck()` server actions
+  - Split button UI: primary "LOG" action + dropdown for time selection
+  - Time presets: "Now" + 30-minute intervals up to 4 hours back (today only)
+  - Validation: no future dates, max 7 days in past
+  - Updated: LogStackButton, SimpleLogStackButton, ProtocolCard
+  - Updated LogContext's `logStackOptimistic` to accept `loggedAt` parameter
 
 - [x] **Smart synergy timing suggestions**
   - Synergy suggestions now detect when supplements have different optimal intake times
