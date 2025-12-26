@@ -1,13 +1,11 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 
-import { Button } from "~/components/ui/button";
 import {
   getSupplementBySlug,
   getSupplementKnowledge,
 } from "~/server/actions/supplement-learn";
 import { LearnPageClient } from "./client";
+import { BackToDashboardButton } from "./back-button";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -30,12 +28,7 @@ export default async function LearnPage({ params }: PageProps) {
     <div className="space-y-6">
       {/* Back Button */}
       <div>
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/dashboard">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
-          </Link>
-        </Button>
+        <BackToDashboardButton />
       </div>
 
       {/* Learn Content */}
