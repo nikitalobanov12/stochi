@@ -10,6 +10,8 @@ import {
   log,
   supplement,
   userGoal,
+  protocol,
+  protocolItem,
 } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
 import { getTemplateByKey } from "~/server/data/stack-templates";
@@ -219,7 +221,7 @@ export async function clearTemplateData(
 }
 
 /**
- * Check if user needs onboarding (has no stacks).
+ * Check if user needs onboarding (has no stacks AND no protocol items).
  */
 export async function checkNeedsOnboarding(): Promise<boolean> {
   const session = await getSession();
@@ -227,17 +229,38 @@ export async function checkNeedsOnboarding(): Promise<boolean> {
     return false;
   }
 
+  // Check for stacks
   const userStacks = await db.query.stack.findMany({
     where: eq(stack.userId, session.user.id),
     limit: 1,
   });
 
-  return userStacks.length === 0;
+  if (userStacks.length > 0) {
+    return false;
+  }
+
+  // Check for protocol items
+  const userProtocol = await db.query.protocol.findFirst({
+    where: eq(protocol.userId, session.user.id),
+    with: {
+      items: {
+        limit: 1,
+      },
+    },
+  });
+
+  if (userProtocol && userProtocol.items.length > 0) {
+    return false;
+  }
+
+  return true;
 }
 
 /**
- * Create a stack from onboarding flow data.
- * Takes user-selected supplements with dosages and creates a new stack.
+ * Create a stack and protocol from onboarding flow data.
+ * Takes user-selected supplements with dosages and creates:
+ * 1. A new stack (for backward compatibility)
+ * 2. A protocol with items in the "morning" time slot
  * Optionally saves the selected goals.
  */
 export async function createStackFromOnboarding(data: {
@@ -282,7 +305,7 @@ export async function createStackFromOnboarding(data: {
     }
   }
 
-  // Create stack
+  // Create stack (for backward compatibility)
   const [newStack] = await db
     .insert(stack)
     .values({
@@ -304,6 +327,52 @@ export async function createStackFromOnboarding(data: {
   }));
 
   await db.insert(stackItem).values(stackItems);
+
+  // Create or get user's protocol
+  let userProtocol = await db.query.protocol.findFirst({
+    where: eq(protocol.userId, session.user.id),
+    columns: { id: true },
+  });
+
+  if (!userProtocol) {
+    const [newProtocol] = await db
+      .insert(protocol)
+      .values({
+        userId: session.user.id,
+        name: "My Protocol",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    if (newProtocol) {
+      userProtocol = { id: newProtocol.id };
+    }
+  }
+
+  // Add supplements to protocol as morning items (grouped by stack name)
+  if (userProtocol) {
+    const protocolItems = data.supplements.map((s, index) => ({
+      protocolId: userProtocol.id,
+      supplementId: s.supplementId,
+      dosage: s.dosage,
+      unit: s.unit,
+      timeSlot: "morning" as const,
+      frequency: "daily" as const,
+      groupName: data.stackName.trim(),
+      sortOrder: index,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }));
+
+    await db.insert(protocolItem).values(protocolItems);
+
+    // Update protocol timestamp
+    await db
+      .update(protocol)
+      .set({ updatedAt: new Date() })
+      .where(eq(protocol.id, userProtocol.id));
+  }
 
   // Save goals if provided (with priority based on selection order)
   if (data.goals && data.goals.length > 0) {
