@@ -113,6 +113,25 @@ export const optimalTimeOfDayEnum = pgEnum("optimal_time_of_day", [
 ]);
 
 // ============================================================================
+// Protocol Enums (Master Protocol feature)
+// ============================================================================
+
+// Time slots for protocol scheduling (user-configurable times)
+export const timeSlotEnum = pgEnum("time_slot", [
+  "morning", // Default: 8:00 AM
+  "afternoon", // Default: 12:00 PM
+  "evening", // Default: 6:00 PM
+  "bedtime", // Default: 10:00 PM
+]);
+
+// Frequency of supplement intake
+export const frequencyEnum = pgEnum("frequency", [
+  "daily", // Take every day
+  "specific_days", // Take only on selected days (uses daysOfWeek array)
+  "as_needed", // PRN / situational use (not auto-logged)
+]);
+
+// ============================================================================
 // Ratio Rules (for stoichiometric imbalance detection)
 // ============================================================================
 
@@ -253,6 +272,11 @@ export const supplement = pgTable(
     km: real("km"), // Michaelis constant (mg) - substrate concentration at half Vmax
     absorptionSaturationDose: real("absorption_saturation_dose"), // Dose (mg) above which absorption efficiency drops
     rdaAmount: real("rda_amount"), // Recommended Daily Allowance (mg) - for heuristic dampening
+    // Protocol frequency suggestions (for Master Protocol feature)
+    // System recommendation for how often to take this supplement
+    suggestedFrequency: frequencyEnum("suggested_frequency"),
+    // Notes about dosing frequency (e.g., "Consider cycling 8 weeks on, 2-4 off")
+    frequencyNotes: text("frequency_notes"),
     createdAt: timestamp("created_at")
       .$defaultFn(() => new Date())
       .notNull(),
@@ -583,6 +607,76 @@ export const supplementKnowledge = pgTable(
 );
 
 // ============================================================================
+// Protocol Tables (Master Protocol feature)
+// ============================================================================
+
+/**
+ * Master Protocol - A user's complete supplement regimen with scheduling.
+ * One protocol per user, containing all their scheduled supplements.
+ */
+export const protocol = pgTable("protocol", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" })
+    .unique(), // One protocol per user
+  name: text("name").default("My Protocol").notNull(),
+  // Auto-logging: when enabled, logs are created automatically at scheduled times
+  autoLogEnabled: boolean("auto_log_enabled").default(false).notNull(),
+  // User-configurable times for each slot (stored as "HH:MM" in 24h format)
+  morningTime: text("morning_time").default("08:00").notNull(),
+  afternoonTime: text("afternoon_time").default("12:00").notNull(),
+  eveningTime: text("evening_time").default("18:00").notNull(),
+  bedtimeTime: text("bedtime_time").default("22:00").notNull(),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+});
+
+/**
+ * Protocol Item - Individual supplement in a protocol with scheduling info.
+ * Includes timing, frequency, and optional grouping.
+ */
+export const protocolItem = pgTable(
+  "protocol_item",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    protocolId: uuid("protocol_id")
+      .notNull()
+      .references(() => protocol.id, { onDelete: "cascade" }),
+    supplementId: uuid("supplement_id")
+      .notNull()
+      .references(() => supplement.id, { onDelete: "cascade" }),
+    dosage: real("dosage").notNull(),
+    unit: dosageUnitEnum("unit").notNull(),
+    // Timing
+    timeSlot: timeSlotEnum("time_slot").notNull(),
+    // Frequency
+    frequency: frequencyEnum("frequency").default("daily").notNull(),
+    // Days of week when frequency = 'specific_days' (e.g., ["monday", "wednesday", "friday"])
+    daysOfWeek: text("days_of_week").array(),
+    // Optional grouping (e.g., "Morning Stack", "Pre-Workout")
+    // NULL means ungrouped (standalone item)
+    groupName: text("group_name"),
+    // Display order within the time slot
+    sortOrder: integer("sort_order").default(0).notNull(),
+    createdAt: timestamp("created_at")
+      .$defaultFn(() => new Date())
+      .notNull(),
+    updatedAt: timestamp("updated_at")
+      .$defaultFn(() => new Date())
+      .notNull(),
+  },
+  (t) => [
+    index("protocol_item_protocol_idx").on(t.protocolId),
+    index("protocol_item_time_slot_idx").on(t.protocolId, t.timeSlot),
+  ],
+);
+
+// ============================================================================
 // Relations
 // ============================================================================
 
@@ -595,6 +689,7 @@ export const userRelations = relations(user, ({ many, one }) => ({
   biomarkers: many(userBiomarker),
   preference: one(userPreference),
   dismissedSuggestions: many(dismissedSuggestion),
+  protocol: one(protocol),
 }));
 
 export const accountRelations = relations(account, ({ one }) => ({
@@ -616,6 +711,7 @@ export const supplementRelations = relations(supplement, ({ many }) => ({
   stackItems: many(stackItem),
   logs: many(log),
   knowledge: many(supplementKnowledge),
+  protocolItems: many(protocolItem),
 }));
 
 export const interactionRelations = relations(interaction, ({ one }) => ({
@@ -720,3 +816,19 @@ export const supplementKnowledgeRelations = relations(
     }),
   }),
 );
+
+export const protocolRelations = relations(protocol, ({ one, many }) => ({
+  user: one(user, { fields: [protocol.userId], references: [user.id] }),
+  items: many(protocolItem),
+}));
+
+export const protocolItemRelations = relations(protocolItem, ({ one }) => ({
+  protocol: one(protocol, {
+    fields: [protocolItem.protocolId],
+    references: [protocol.id],
+  }),
+  supplement: one(supplement, {
+    fields: [protocolItem.supplementId],
+    references: [supplement.id],
+  }),
+}));
