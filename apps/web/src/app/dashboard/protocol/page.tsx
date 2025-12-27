@@ -6,7 +6,9 @@ import { getOrCreateProtocol } from "~/server/actions/protocol";
 import { db } from "~/server/db";
 import { ProtocolBuilder } from "~/components/protocol/protocol-builder";
 import { ProtocolSettingsDialog } from "~/components/protocol/protocol-settings-dialog";
+import { ProtocolHealthScore } from "~/components/protocol/protocol-health-score";
 import { Button } from "~/components/ui/button";
+import { analyzeProtocol } from "~/server/services/protocol-analysis";
 
 export default async function ProtocolPage() {
   const session = await getSession();
@@ -17,7 +19,7 @@ export default async function ProtocolPage() {
   // Get or create the user's protocol
   const protocol = await getOrCreateProtocol();
 
-  // Fetch all supplements for the search
+  // Fetch all supplements for the search (includes fields needed for analysis)
   const supplements = await db.query.supplement.findMany({
     columns: {
       id: true,
@@ -29,9 +31,37 @@ export default async function ProtocolPage() {
       route: true,
       suggestedFrequency: true,
       frequencyNotes: true,
+      safetyCategory: true,
+      elementalWeight: true,
     },
     orderBy: (s, { asc }) => [asc(s.name)],
   });
+
+  // Build protocol data with full supplement info for analysis
+  const protocolForAnalysis = {
+    id: protocol.id,
+    name: protocol.name,
+    items: protocol.items.map((item) => {
+      // Find the full supplement data
+      const fullSupplement = supplements.find(
+        (s) => s.id === item.supplementId,
+      );
+      return {
+        ...item,
+        supplement: {
+          id: item.supplement.id,
+          name: item.supplement.name,
+          form: item.supplement.form,
+          optimalTimeOfDay: item.supplement.optimalTimeOfDay,
+          safetyCategory: fullSupplement?.safetyCategory ?? null,
+          elementalWeight: fullSupplement?.elementalWeight ?? null,
+        },
+      };
+    }),
+  };
+
+  // Analyze the protocol for issues
+  const analysis = await analyzeProtocol(protocolForAnalysis);
 
   return (
     <div className="space-y-6">
@@ -54,6 +84,9 @@ export default async function ProtocolPage() {
           </Button>
         </ProtocolSettingsDialog>
       </div>
+
+      {/* Protocol Health Score */}
+      <ProtocolHealthScore analysis={analysis} />
 
       {/* Protocol Builder */}
       <ProtocolBuilder protocol={protocol} supplements={supplements} />
