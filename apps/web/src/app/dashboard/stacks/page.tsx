@@ -2,7 +2,7 @@ import { eq, desc, asc } from "drizzle-orm";
 import { Plus, Layers, Upload } from "lucide-react";
 
 import { db } from "~/server/db";
-import { stack, userGoal } from "~/server/db/schema";
+import { stack, userGoal, protocol } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
 import { createStack } from "~/server/actions/stacks";
 import { createStackFromTemplate } from "~/server/actions/onboarding";
@@ -11,14 +11,15 @@ import { CreateStackDialog } from "~/components/stacks/create-stack-dialog";
 import { ImportStackDialog } from "~/components/stacks/import-stack-dialog";
 import { StackRow } from "~/components/stacks/stack-row";
 import { RecommendedProtocols } from "~/components/stacks/recommended-protocols";
+import { ProtocolCard } from "~/components/protocol/protocol-card";
 import { type GoalKey } from "~/server/data/goal-recommendations";
 
 export default async function StacksPage() {
   const session = await getSession();
   if (!session) return null;
 
-  // Fetch stacks and user goals in parallel
-  const [userStacks, userGoals] = await Promise.all([
+  // Fetch stacks, protocol, and user goals in parallel
+  const [userStacks, userProtocol, userGoals] = await Promise.all([
     db.query.stack.findMany({
       where: eq(stack.userId, session.user.id),
       with: {
@@ -35,6 +36,25 @@ export default async function StacksPage() {
         },
       },
       orderBy: [desc(stack.lastLoggedAt), desc(stack.updatedAt)],
+    }),
+    db.query.protocol.findFirst({
+      where: eq(protocol.userId, session.user.id),
+      with: {
+        items: {
+          with: {
+            supplement: {
+              columns: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+          orderBy: (items, { asc: asc_ }) => [
+            asc_(items.timeSlot),
+            asc_(items.sortOrder),
+          ],
+        },
+      },
     }),
     db.query.userGoal.findMany({
       where: eq(userGoal.userId, session.user.id),
@@ -54,9 +74,9 @@ export default async function StacksPage() {
             Protocols
           </h1>
           <p className="text-muted-foreground font-mono text-xs tracking-wider uppercase">
-            {userStacks.length === 0
-              ? "NO PROTOCOLS"
-              : `${userStacks.length} PROTOCOL${userStacks.length !== 1 ? "S" : ""}`}
+            {userProtocol
+              ? `${userProtocol.items.length} SUPPLEMENT${userProtocol.items.length !== 1 ? "S" : ""} IN PROTOCOL`
+              : "SET UP YOUR DAILY ROUTINE"}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -68,15 +88,19 @@ export default async function StacksPage() {
         </div>
       </div>
 
-      {/* Active Stacks Section */}
-      <section className="space-y-3">
-        {userStacks.length > 0 && (
+      {/* Master Protocol Section */}
+      {userProtocol && (
+        <section className="space-y-3">
           <h2 className="text-muted-foreground font-mono text-xs tracking-wider uppercase">
-            Your Protocols
+            Your Daily Protocol
           </h2>
-        )}
+          <ProtocolCard protocol={userProtocol} />
+        </section>
+      )}
 
-        {userStacks.length === 0 ? (
+      {/* Empty state for new users - prompt to set up protocol */}
+      {!userProtocol && userStacks.length === 0 && (
+        <section className="space-y-3">
           <div className="glass-card border-dashed py-16 text-center">
             <Layers className="text-muted-foreground/50 mx-auto mb-4 h-10 w-10" />
             <p className="text-muted-foreground font-mono text-sm">
@@ -111,14 +135,22 @@ export default async function StacksPage() {
               </CreateStackDialog>
             </div>
           </div>
-        ) : (
+        </section>
+      )}
+
+      {/* Legacy Stacks Section (if user has stacks but also has protocol) */}
+      {userStacks.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-muted-foreground font-mono text-xs tracking-wider uppercase">
+            {userProtocol ? "Quick Log Stacks" : "Your Protocols"}
+          </h2>
           <div className="space-y-2">
             {userStacks.map((s) => (
               <StackRow key={s.id} stack={s} />
             ))}
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* Recommended Protocols Section */}
       <RecommendedProtocols
