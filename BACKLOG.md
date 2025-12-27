@@ -20,6 +20,16 @@
 
 ## Completed
 
+- [x] **Master Protocol**
+  - Schema: `protocol` table (one per user), `protocolItem` table with time slots, frequency, day-of-week
+  - Protocol Builder UI at `/dashboard/protocol` with 4 time slot sections (morning, midday, evening, bedtime)
+  - User-configurable slot times (stored as HH:MM strings)
+  - Protocol Health Score (0-100) analyzing conflicts, timing issues, spacing, ratio imbalances, redundancies
+  - Protocol Card on Stacks page for quick access
+  - Auto-log cron job (hourly) for users who enable it
+  - Onboarding integration: creates protocol items alongside stacks for new users
+  - Group management for organizing supplements within protocol
+
 - [x] **AI-generated research summaries**
   - Summarize Examine.com/knowledge chunks on-demand using Llama 3.1 8B via HuggingFace
   - Cache summaries in database (`researchSummary`, `researchSummaryGeneratedAt` columns)
