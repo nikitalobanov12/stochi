@@ -8,6 +8,7 @@ import {
   PlusCircle,
   Settings,
   Loader2,
+  Calendar,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "~/lib/utils";
@@ -18,6 +19,7 @@ const iconMap: Record<string, LucideIcon> = {
   stacks: Layers,
   log: PlusCircle,
   settings: Settings,
+  protocol: Calendar,
 };
 
 type NavLinkProps = {
