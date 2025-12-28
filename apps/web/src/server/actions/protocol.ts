@@ -803,6 +803,127 @@ export async function ungroupProtocolItems(groupName: string) {
   revalidatePath("/dashboard/stacks");
 }
 
+// ============================================================================
+// Stack Import
+// ============================================================================
+
+/**
+ * Import all items from a stack into a protocol time slot.
+ * Uses each supplement's suggestedFrequency if set, otherwise defaults to "daily".
+ * Groups items under the stack name.
+ * Skips supplements already in the protocol.
+ */
+export async function addStackToProtocol(
+  stackId: string,
+  timeSlot: string,
+): Promise<{ added: number; skipped: number }> {
+  const session = await getSession();
+  if (!session) {
+    redirect("/auth/sign-in");
+  }
+
+  if (!isValidTimeSlot(timeSlot)) {
+    throw new Error(`Invalid time slot: ${timeSlot}`);
+  }
+
+  // Fetch the stack with its items
+  const userStack = await db.query.stack.findFirst({
+    where: (s, { eq, and }) =>
+      and(eq(s.id, stackId), eq(s.userId, session.user.id)),
+    with: {
+      items: {
+        with: {
+          supplement: {
+            columns: {
+              id: true,
+              name: true,
+              suggestedFrequency: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!userStack) {
+    throw new Error("Stack not found");
+  }
+
+  if (userStack.items.length === 0) {
+    throw new Error("Stack has no items");
+  }
+
+  // Get or create protocol
+  const userProtocol = await getOrCreateProtocol();
+
+  // Get existing supplement IDs in protocol to skip duplicates
+  const existingSupplementIds = new Set(
+    userProtocol.items.map((item) => item.supplementId),
+  );
+
+  // Filter out items already in protocol
+  const itemsToAdd = userStack.items.filter(
+    (item) => !existingSupplementIds.has(item.supplementId),
+  );
+
+  if (itemsToAdd.length === 0) {
+    return { added: 0, skipped: userStack.items.length };
+  }
+
+  // Get current max sort order for this slot
+  const existingItems = await db.query.protocolItem.findMany({
+    where: and(
+      eq(protocolItem.protocolId, userProtocol.id),
+      eq(protocolItem.timeSlot, timeSlot as TimeSlot),
+    ),
+    columns: { sortOrder: true },
+  });
+
+  let currentSortOrder = existingItems.reduce(
+    (max, item) => Math.max(max, item.sortOrder),
+    -1,
+  );
+
+  // Build protocol items from stack items
+  const protocolItems = itemsToAdd.map((stackItem) => {
+    currentSortOrder += 1;
+
+    // Use supplement's suggested frequency if set, otherwise default to daily
+    const frequency: Frequency =
+      stackItem.supplement.suggestedFrequency ?? "daily";
+
+    return {
+      protocolId: userProtocol.id,
+      supplementId: stackItem.supplementId,
+      dosage: stackItem.dosage,
+      unit: stackItem.unit,
+      timeSlot: timeSlot as TimeSlot,
+      frequency,
+      daysOfWeek: null, // For specific_days, user can edit later
+      groupName: userStack.name,
+      sortOrder: currentSortOrder,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+  });
+
+  await db.insert(protocolItem).values(protocolItems);
+
+  await db
+    .update(protocol)
+    .set({ updatedAt: new Date() })
+    .where(eq(protocol.id, userProtocol.id));
+
+  revalidatePath("/dashboard/protocol");
+  revalidatePath("/dashboard/stacks");
+  revalidatePath("/dashboard");
+
+  return {
+    added: itemsToAdd.length,
+    skipped: userStack.items.length - itemsToAdd.length,
+  };
+}
+
 /**
  * Get all unique group names in the protocol.
  */

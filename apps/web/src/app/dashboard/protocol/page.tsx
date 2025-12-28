@@ -1,9 +1,11 @@
 import { redirect } from "next/navigation";
+import { eq } from "drizzle-orm";
 import { Settings2 } from "lucide-react";
 
 import { getSession } from "~/server/better-auth/server";
 import { getOrCreateProtocol } from "~/server/actions/protocol";
 import { db } from "~/server/db";
+import { stack } from "~/server/db/schema";
 import { ProtocolBuilder } from "~/components/protocol/protocol-builder";
 import { ProtocolSettingsDialog } from "~/components/protocol/protocol-settings-dialog";
 import { ProtocolHealthScore } from "~/components/protocol/protocol-health-score";
@@ -19,23 +21,41 @@ export default async function ProtocolPage() {
   // Get or create the user's protocol
   const protocol = await getOrCreateProtocol();
 
-  // Fetch all supplements for the search (includes fields needed for analysis)
-  const supplements = await db.query.supplement.findMany({
-    columns: {
-      id: true,
-      name: true,
-      form: true,
-      defaultUnit: true,
-      optimalTimeOfDay: true,
-      isResearchChemical: true,
-      route: true,
-      suggestedFrequency: true,
-      frequencyNotes: true,
-      safetyCategory: true,
-      elementalWeight: true,
-    },
-    orderBy: (s, { asc }) => [asc(s.name)],
-  });
+  // Fetch supplements and user stacks in parallel
+  const [supplements, userStacks] = await Promise.all([
+    db.query.supplement.findMany({
+      columns: {
+        id: true,
+        name: true,
+        form: true,
+        defaultUnit: true,
+        optimalTimeOfDay: true,
+        isResearchChemical: true,
+        route: true,
+        suggestedFrequency: true,
+        frequencyNotes: true,
+        safetyCategory: true,
+        elementalWeight: true,
+      },
+      orderBy: (s, { asc }) => [asc(s.name)],
+    }),
+    db.query.stack.findMany({
+      where: eq(stack.userId, session.user.id),
+      with: {
+        items: {
+          with: {
+            supplement: {
+              columns: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: (s, { asc }) => [asc(s.name)],
+    }),
+  ]);
 
   // Build protocol data with full supplement info for analysis
   const protocolForAnalysis = {
@@ -89,7 +109,7 @@ export default async function ProtocolPage() {
       <ProtocolHealthScore analysis={analysis} />
 
       {/* Protocol Builder */}
-      <ProtocolBuilder protocol={protocol} supplements={supplements} />
+      <ProtocolBuilder protocol={protocol} supplements={supplements} stacks={userStacks} />
     </div>
   );
 }

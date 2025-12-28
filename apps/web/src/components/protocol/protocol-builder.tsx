@@ -13,6 +13,7 @@ import {
   Loader2,
   Trash2,
   GripVertical,
+  Layers,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -20,6 +21,7 @@ import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { AddProtocolItemDialog } from "~/components/protocol/add-protocol-item-dialog";
 import { EditProtocolItemDialog } from "~/components/protocol/edit-protocol-item-dialog";
+import { ImportStackDialog } from "~/components/protocol/import-stack-dialog";
 import {
   removeProtocolItem,
   logProtocolSlot,
@@ -45,6 +47,22 @@ type Supplement = {
   route: string | null;
   suggestedFrequency: Frequency | null;
   frequencyNotes: string | null;
+};
+
+type StackItem = {
+  id: string;
+  dosage: number;
+  unit: DosageUnit;
+  supplement: {
+    id: string;
+    name: string;
+  };
+};
+
+type Stack = {
+  id: string;
+  name: string;
+  items: StackItem[];
 };
 
 type ProtocolItem = {
@@ -79,6 +97,7 @@ type Protocol = {
 type ProtocolBuilderProps = {
   protocol: Protocol;
   supplements: Supplement[];
+  stacks: Stack[];
 };
 
 const TIME_SLOTS: { slot: TimeSlot; label: string; icon: typeof Sun }[] = [
@@ -119,7 +138,7 @@ function formatTime(time: string): string {
   return `${displayHour}:${minutes} ${ampm}`;
 }
 
-export function ProtocolBuilder({ protocol, supplements }: ProtocolBuilderProps) {
+export function ProtocolBuilder({ protocol, supplements, stacks }: ProtocolBuilderProps) {
   const router = useRouter();
   const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
   const [loggingSlot, setLoggingSlot] = useState<TimeSlot | null>(null);
@@ -228,6 +247,18 @@ export function ProtocolBuilder({ protocol, supplements }: ProtocolBuilderProps)
                     )}
                     Log {label}
                   </Button>
+                )}
+                {stacks.length > 0 && (
+                  <ImportStackDialog
+                    timeSlot={slot}
+                    stacks={stacks}
+                    existingSupplementIds={existingSupplementIds}
+                  >
+                    <Button variant="ghost" size="sm" className="font-mono text-xs">
+                      <Layers className="mr-1 h-3 w-3" />
+                      Import
+                    </Button>
+                  </ImportStackDialog>
                 )}
                 <AddProtocolItemDialog
                   _protocolId={protocol.id}
