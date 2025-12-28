@@ -18,8 +18,6 @@ export const env = createEnv({
     HUGGINGFACE_API_KEY: z.string().optional(),
     // OpenAI API key (optional - enables RAG embeddings for Learn section)
     OPENAI_API_KEY: z.string().optional(),
-    // Cron job secret (optional - secures /api/cron/* endpoints)
-    CRON_SECRET: z.string().optional(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -42,7 +40,6 @@ export const env = createEnv({
     ENGINE_INTERNAL_KEY: process.env.ENGINE_INTERNAL_KEY,
     HUGGINGFACE_API_KEY: process.env.HUGGINGFACE_API_KEY,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-    CRON_SECRET: process.env.CRON_SECRET,
     NODE_ENV: process.env.NODE_ENV,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,

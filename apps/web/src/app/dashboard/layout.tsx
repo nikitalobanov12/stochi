@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { NavLink, MobileNavLink } from "~/components/nav-links";
+import { AutoLogTrigger } from "~/components/auto-log-trigger";
 import { headers } from "next/headers";
 
 export default async function DashboardLayout({
@@ -32,6 +33,9 @@ export default async function DashboardLayout({
 
   return (
     <div className="relative flex min-h-screen flex-col">
+      {/* Auto-log trigger on app open */}
+      <AutoLogTrigger />
+
       {/* Micro-grain texture for anti-banding */}
       <div className="hud-noise" />
 
