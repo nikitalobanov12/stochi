@@ -42,8 +42,11 @@ export default async function DashboardLayout({
             <NavLink href="/dashboard" iconName="dashboard">
               Dashboard
             </NavLink>
+            <NavLink href="/dashboard/protocol" iconName="protocol">
+              Protocol
+            </NavLink>
             <NavLink href="/dashboard/stacks" iconName="stacks">
-              Protocols
+              Stacks
             </NavLink>
             <NavLink href="/dashboard/log" iconName="log">
               Log
@@ -125,9 +128,14 @@ export default async function DashboardLayout({
         <div className="flex items-center justify-around py-2">
           <MobileNavLink href="/dashboard" iconName="dashboard" label="Home" />
           <MobileNavLink
+            href="/dashboard/protocol"
+            iconName="protocol"
+            label="Protocol"
+          />
+          <MobileNavLink
             href="/dashboard/stacks"
             iconName="stacks"
-            label="Protocols"
+            label="Stacks"
           />
           <MobileNavLink href="/dashboard/log" iconName="log" label="Log" />
           <MobileNavLink
