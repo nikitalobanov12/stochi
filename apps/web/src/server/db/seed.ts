@@ -884,7 +884,7 @@ const supplements = [
   },
 
   // ============================================
-  // ANTIOXIDANTS (5)
+  // ANTIOXIDANTS (6)
   // PK from clinical pharmacology literature
   // ============================================
   {
@@ -986,6 +986,27 @@ const supplements = [
     halfLifeMinutes: 90, // 1.5h
     absorptionWindowMinutes: 90,
     bioavailabilityPercent: 3, // Standard oral; liposomal ~15%
+  },
+  {
+    name: "PQQ",
+    form: "Pyrroloquinoline Quinone",
+    elementalWeight: 100,
+    defaultUnit: "mg" as const,
+    aliases: ["pyrroloquinoline quinone", "biopqq", "methoxatin"],
+    description:
+      "Redox cofactor that supports mitochondrial biogenesis and neuroprotection",
+    mechanism:
+      "Activates PGC-1α to stimulate new mitochondria formation; potent antioxidant 5000x more redox cycles than vitamin C",
+    researchUrl: "https://examine.com/supplements/pyrroloquinoline-quinone/",
+    category: "antioxidant" as SupplementCategory,
+    commonGoals: ["energy", "longevity", "focus"],
+    safetyCategory: null as SafetyCategoryKey,
+    optimalTimeOfDay: "morning" as OptimalTimeOfDay,
+    // PK: Good absorption, long half-life
+    peakMinutes: 180, // 3h
+    halfLifeMinutes: 180, // ~3h plasma, but effects are longer due to gene expression
+    absorptionWindowMinutes: 120,
+    bioavailabilityPercent: 62, // Good oral bioavailability
   },
 
   // ============================================
@@ -2094,6 +2115,19 @@ async function seed() {
       researchUrl: "https://examine.com/supplements/alpha-lipoic-acid/",
       suggestion:
         "Take together! ALA recycles CoQ10 - powerful mitochondrial support combo",
+    },
+    {
+      sourceId: supplementMap.get("PQQ")!,
+      targetId: supplementMap.get("CoQ10")!,
+      type: "synergy" as const,
+      mechanism:
+        "PQQ stimulates mitochondrial biogenesis while CoQ10 supports existing mitochondria; complementary mechanisms",
+      severity: "low" as const,
+      synergyStrength: "strong" as const, // Well-established combination
+      researchUrl:
+        "https://examine.com/supplements/pyrroloquinoline-quinone/#interactions-with-other-nutrients",
+      suggestion:
+        "Take together! PQQ creates new mitochondria, CoQ10 powers them - ideal combo for energy and longevity",
     },
     {
       sourceId: supplementMap.get("NAC")!,
