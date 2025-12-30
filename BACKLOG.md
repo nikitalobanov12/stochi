@@ -6,6 +6,11 @@
 
 ## Up Next
 
+- [ ] AI tutor feature
+  - have an ai chat that is grounded in the search results from the examine.com database
+  - it can be a small local chat model like llama 8.1 that runs via huggingface inference and just retreives information from examine.com or other similar websites and shares it with the user
+  - this will let users ask questions about their protocol or specific supplements and help get a better understanding about it.
+
 - [ ] **Interaction severity customization**
   - Let users set personal tolerance levels for interactions
   - E.g., "I know about caffeine + L-theanine, don't warn me"
