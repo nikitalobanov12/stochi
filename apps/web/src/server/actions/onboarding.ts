@@ -12,6 +12,7 @@ import {
   userGoal,
   protocol,
   protocolItem,
+  userPreference,
 } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
 import { getTemplateByKey } from "~/server/data/stack-templates";
@@ -271,6 +272,7 @@ export async function createStackFromOnboarding(data: {
     unit: "mg" | "mcg" | "g" | "IU" | "ml";
   }>;
   goals?: GoalKey[];
+  experienceLevel?: "beginner" | "intermediate" | "advanced";
 }): Promise<{ success: boolean; stackId?: string; error?: string }> {
   const session = await getSession();
   if (!session) {
@@ -388,6 +390,28 @@ export async function createStackFromOnboarding(data: {
     }));
 
     await db.insert(userGoal).values(goalInserts);
+  }
+
+  // Save experience level if provided
+  if (data.experienceLevel) {
+    const existing = await db.query.userPreference.findFirst({
+      where: eq(userPreference.userId, session.user.id),
+    });
+
+    if (existing) {
+      await db
+        .update(userPreference)
+        .set({
+          experienceLevel: data.experienceLevel,
+          updatedAt: new Date(),
+        })
+        .where(eq(userPreference.userId, session.user.id));
+    } else {
+      await db.insert(userPreference).values({
+        userId: session.user.id,
+        experienceLevel: data.experienceLevel,
+      });
+    }
   }
 
   revalidatePath("/dashboard");

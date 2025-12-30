@@ -10,6 +10,10 @@ import { StepIndicator } from "./step-indicator";
 import { WelcomeStep } from "./steps/welcome-step";
 import { GoalStep } from "./steps/goal-step";
 import {
+  ExperienceStep,
+  type ExperienceLevel,
+} from "./steps/experience-step";
+import {
   BuildStackStep,
   type SelectedSupplement,
 } from "./steps/build-stack-step";
@@ -39,7 +43,7 @@ type WelcomeFlowProps = {
   supplements: Supplement[];
 };
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 5;
 
 const slideVariants = {
   enter: (direction: number) => ({
@@ -61,6 +65,9 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(0);
   const [selectedGoals, setSelectedGoals] = useState<GoalKey[]>([]);
+  const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel | null>(
+    null,
+  );
   const [selectedSupplements, setSelectedSupplements] = useState<
     SelectedSupplement[]
   >([]);
@@ -92,6 +99,19 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
     goNext();
   }, [goNext]);
 
+  const handleExperienceNext = useCallback(
+    (level: ExperienceLevel) => {
+      setExperienceLevel(level);
+      goNext();
+    },
+    [goNext],
+  );
+
+  const handleExperienceSkip = useCallback(() => {
+    setExperienceLevel("beginner"); // Default to beginner if skipped
+    goNext();
+  }, [goNext]);
+
   const handleAddSupplement = useCallback((supplement: SelectedSupplement) => {
     setSelectedSupplements((prev) => [...prev, supplement]);
   }, []);
@@ -105,12 +125,13 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
         unit: s.unit,
       })),
       goals: selectedGoals.length > 0 ? selectedGoals : undefined,
+      experienceLevel: experienceLevel ?? undefined,
     });
 
     if (result.success) {
       router.refresh();
     }
-  }, [stackName, selectedSupplements, selectedGoals, router]);
+  }, [stackName, selectedSupplements, selectedGoals, experienceLevel, router]);
 
   if (!open || !isClient) return null;
 
@@ -162,6 +183,13 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
                 />
               )}
               {step === 2 && (
+                <ExperienceStep
+                  onNext={handleExperienceNext}
+                  onSkip={handleExperienceSkip}
+                  onBack={goBack}
+                />
+              )}
+              {step === 3 && (
                 <BuildStackStep
                   supplements={supplements}
                   selectedGoals={selectedGoals}
@@ -173,7 +201,7 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
                   onBack={goBack}
                 />
               )}
-              {step === 3 && (
+              {step === 4 && (
                 <InteractionsStep
                   supplements={selectedSupplements}
                   allSupplements={supplements}
