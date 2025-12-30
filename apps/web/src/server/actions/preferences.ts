@@ -12,11 +12,20 @@ export type UserPreferences = {
   showAddSuggestions: boolean;
   /** IANA timezone identifier (e.g., "America/Los_Angeles") */
   timezone: string | null;
+  /** User's supplement experience level for filtering advanced suggestions */
+  experienceLevel: "beginner" | "intermediate" | "advanced";
+  /** Synergy strength filter level */
+  suggestionFilterLevel: "critical_only" | "strong" | "moderate" | "all";
+  /** Whether to show supplements that require specific conditions (deficiency, etc.) */
+  showConditionalSupplements: boolean;
 };
 
 const DEFAULT_PREFERENCES: UserPreferences = {
   showAddSuggestions: true,
   timezone: null,
+  experienceLevel: "beginner",
+  suggestionFilterLevel: "strong",
+  showConditionalSupplements: false,
 };
 
 /**
@@ -40,6 +49,12 @@ export async function getUserPreferences(): Promise<UserPreferences> {
   return {
     showAddSuggestions: existing.showAddSuggestions,
     timezone: existing.timezone,
+    experienceLevel: existing.experienceLevel ?? DEFAULT_PREFERENCES.experienceLevel,
+    suggestionFilterLevel:
+      existing.suggestionFilterLevel ?? DEFAULT_PREFERENCES.suggestionFilterLevel,
+    showConditionalSupplements:
+      existing.showConditionalSupplements ??
+      DEFAULT_PREFERENCES.showConditionalSupplements,
   };
 }
 
@@ -129,6 +144,108 @@ export async function setShowAddSuggestions(value: boolean): Promise<void> {
     await db.insert(userPreference).values({
       userId: session.user.id,
       showAddSuggestions: value,
+    });
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/settings");
+}
+
+/**
+ * Set the user's experience level for filtering advanced supplement suggestions.
+ */
+export async function setExperienceLevel(
+  value: "beginner" | "intermediate" | "advanced",
+): Promise<void> {
+  const session = await getSession();
+  if (!session) {
+    redirect("/auth/sign-in");
+  }
+
+  const existing = await db.query.userPreference.findFirst({
+    where: eq(userPreference.userId, session.user.id),
+  });
+
+  if (existing) {
+    await db
+      .update(userPreference)
+      .set({
+        experienceLevel: value,
+        updatedAt: new Date(),
+      })
+      .where(eq(userPreference.userId, session.user.id));
+  } else {
+    await db.insert(userPreference).values({
+      userId: session.user.id,
+      experienceLevel: value,
+    });
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/settings");
+}
+
+/**
+ * Set the user's suggestion filter level for synergy strength.
+ */
+export async function setSuggestionFilterLevel(
+  value: "critical_only" | "strong" | "moderate" | "all",
+): Promise<void> {
+  const session = await getSession();
+  if (!session) {
+    redirect("/auth/sign-in");
+  }
+
+  const existing = await db.query.userPreference.findFirst({
+    where: eq(userPreference.userId, session.user.id),
+  });
+
+  if (existing) {
+    await db
+      .update(userPreference)
+      .set({
+        suggestionFilterLevel: value,
+        updatedAt: new Date(),
+      })
+      .where(eq(userPreference.userId, session.user.id));
+  } else {
+    await db.insert(userPreference).values({
+      userId: session.user.id,
+      suggestionFilterLevel: value,
+    });
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/settings");
+}
+
+/**
+ * Set whether to show conditional supplements (deficiency-required, etc.).
+ */
+export async function setShowConditionalSupplements(
+  value: boolean,
+): Promise<void> {
+  const session = await getSession();
+  if (!session) {
+    redirect("/auth/sign-in");
+  }
+
+  const existing = await db.query.userPreference.findFirst({
+    where: eq(userPreference.userId, session.user.id),
+  });
+
+  if (existing) {
+    await db
+      .update(userPreference)
+      .set({
+        showConditionalSupplements: value,
+        updatedAt: new Date(),
+      })
+      .where(eq(userPreference.userId, session.user.id));
+  } else {
+    await db.insert(userPreference).values({
+      userId: session.user.id,
+      showConditionalSupplements: value,
     });
   }
 
