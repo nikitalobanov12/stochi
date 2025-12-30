@@ -134,6 +134,11 @@ export default async function SettingsPage() {
         <SuggestionsCard
           initialShowAddSuggestions={preferences.showAddSuggestions}
           dismissedSuggestions={dismissedSuggestions}
+          initialExperienceLevel={preferences.experienceLevel}
+          initialSuggestionFilterLevel={preferences.suggestionFilterLevel}
+          initialShowConditionalSupplements={
+            preferences.showConditionalSupplements
+          }
         />
       </section>
 

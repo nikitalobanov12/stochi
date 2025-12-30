@@ -12,6 +12,9 @@ import {
   ChevronUp,
   Undo2,
   ShieldAlert,
+  GraduationCap,
+  Filter,
+  FlaskConical,
 } from "lucide-react";
 
 import {
@@ -24,7 +27,12 @@ import {
 import { Button } from "~/components/ui/button";
 import { Switch } from "~/components/ui/switch";
 import { Badge } from "~/components/ui/badge";
-import { setShowAddSuggestions } from "~/server/actions/preferences";
+import {
+  setShowAddSuggestions,
+  setExperienceLevel,
+  setSuggestionFilterLevel,
+  setShowConditionalSupplements,
+} from "~/server/actions/preferences";
 import {
   resetDismissedSuggestions,
   restoreSuggestion,
@@ -39,6 +47,9 @@ import {
 type SuggestionsCardProps = {
   initialShowAddSuggestions: boolean;
   dismissedSuggestions: DismissedSuggestionWithContext[];
+  initialExperienceLevel: "beginner" | "intermediate" | "advanced";
+  initialSuggestionFilterLevel: "critical_only" | "strong" | "moderate" | "all";
+  initialShowConditionalSupplements: boolean;
 };
 
 const TYPE_CONFIG = {
@@ -100,9 +111,39 @@ const CATEGORY_CONFIG: Record<
   },
 };
 
+// Experience level options
+const EXPERIENCE_LEVELS = [
+  {
+    key: "beginner" as const,
+    label: "Beginner",
+    description: "Common, well-studied supplements",
+  },
+  {
+    key: "intermediate" as const,
+    label: "Intermediate",
+    description: "Includes nootropics and targeted stacks",
+  },
+  {
+    key: "advanced" as const,
+    label: "Advanced",
+    description: "Includes peptides and research chemicals",
+  },
+];
+
+// Suggestion filter level options
+const FILTER_LEVELS = [
+  { key: "critical_only" as const, label: "Critical Only" },
+  { key: "strong" as const, label: "Strong" },
+  { key: "moderate" as const, label: "Moderate" },
+  { key: "all" as const, label: "All" },
+];
+
 export function SuggestionsCard({
   initialShowAddSuggestions,
   dismissedSuggestions: initialDismissed,
+  initialExperienceLevel,
+  initialSuggestionFilterLevel,
+  initialShowConditionalSupplements,
 }: SuggestionsCardProps) {
   const [showAddSuggestions, setShowAddSuggestionsState] = useState(
     initialShowAddSuggestions,
@@ -112,6 +153,18 @@ export function SuggestionsCard({
   const [isPendingToggle, startToggleTransition] = useTransition();
   const [isPendingReset, startResetTransition] = useTransition();
   const [restoringKey, setRestoringKey] = useState<string | null>(null);
+  // New state for quality filtering
+  const [experienceLevel, setExperienceLevelState] = useState(
+    initialExperienceLevel,
+  );
+  const [suggestionFilterLevel, setSuggestionFilterLevelState] = useState(
+    initialSuggestionFilterLevel,
+  );
+  const [showConditionalSupplements, setShowConditionalSupplementsState] =
+    useState(initialShowConditionalSupplements);
+  const [isPendingExperience, startExperienceTransition] = useTransition();
+  const [isPendingFilter, startFilterTransition] = useTransition();
+  const [isPendingConditional, startConditionalTransition] = useTransition();
 
   // Category preferences from localStorage (instant, no server roundtrip)
   const {
@@ -133,6 +186,31 @@ export function SuggestionsCard({
       await resetDismissedSuggestions();
       setDismissed([]);
       setIsExpanded(false);
+    });
+  };
+
+  const handleExperienceChange = (
+    level: "beginner" | "intermediate" | "advanced",
+  ) => {
+    setExperienceLevelState(level);
+    startExperienceTransition(async () => {
+      await setExperienceLevel(level);
+    });
+  };
+
+  const handleFilterChange = (
+    level: "critical_only" | "strong" | "moderate" | "all",
+  ) => {
+    setSuggestionFilterLevelState(level);
+    startFilterTransition(async () => {
+      await setSuggestionFilterLevel(level);
+    });
+  };
+
+  const handleConditionalToggle = (checked: boolean) => {
+    setShowConditionalSupplementsState(checked);
+    startConditionalTransition(async () => {
+      await setShowConditionalSupplements(checked);
     });
   };
 
@@ -196,6 +274,89 @@ export function SuggestionsCard({
             onCheckedChange={handleToggle}
             disabled={isPendingToggle}
           />
+        </div>
+
+        {/* Experience Level */}
+        <div className="border-t pt-4">
+          <div className="mb-3 flex items-center gap-2">
+            <GraduationCap className="text-muted-foreground h-4 w-4" />
+            <div className="space-y-0.5">
+              <div className="text-sm font-medium">Experience Level</div>
+              <div className="text-muted-foreground text-xs">
+                Controls which supplements appear in suggestions
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {EXPERIENCE_LEVELS.map((level) => (
+              <Button
+                key={level.key}
+                variant={experienceLevel === level.key ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleExperienceChange(level.key)}
+                disabled={isPendingExperience}
+                className="flex-1"
+              >
+                {level.label}
+              </Button>
+            ))}
+          </div>
+          <div className="text-muted-foreground mt-2 text-xs">
+            {EXPERIENCE_LEVELS.find((l) => l.key === experienceLevel)
+              ?.description ?? ""}
+          </div>
+        </div>
+
+        {/* Synergy Strength Filter */}
+        <div className="border-t pt-4">
+          <div className="mb-3 flex items-center gap-2">
+            <Filter className="text-muted-foreground h-4 w-4" />
+            <div className="space-y-0.5">
+              <div className="text-sm font-medium">Synergy Quality Filter</div>
+              <div className="text-muted-foreground text-xs">
+                Only show synergies above this strength threshold
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {FILTER_LEVELS.map((level) => (
+              <Button
+                key={level.key}
+                variant={
+                  suggestionFilterLevel === level.key ? "default" : "outline"
+                }
+                size="sm"
+                onClick={() => handleFilterChange(level.key)}
+                disabled={isPendingFilter}
+                className="flex-1"
+              >
+                {level.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {/* Conditional Supplements Toggle */}
+        <div className="border-t pt-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <FlaskConical className="text-muted-foreground h-4 w-4" />
+              <div className="space-y-0.5">
+                <div className="text-sm font-medium">
+                  Conditional Supplements
+                </div>
+                <div className="text-muted-foreground text-xs">
+                  Show supplements that may only benefit specific conditions
+                  (e.g., Iron for deficiency)
+                </div>
+              </div>
+            </div>
+            <Switch
+              checked={showConditionalSupplements}
+              onCheckedChange={handleConditionalToggle}
+              disabled={isPendingConditional}
+            />
+          </div>
         </div>
 
         {/* Category Toggles */}
