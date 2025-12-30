@@ -8,10 +8,58 @@ import {
   user,
   stack,
   stackItem,
+  type SuggestionProfile,
 } from "./schema";
 
 // System user ID for public protocol stacks
 const SYSTEM_USER_ID = "system";
+
+// Default suggestion profile for most supplements (universal, safe for beginners)
+// Not explicitly used - supplements without a profile use these defaults implicitly
+const _DEFAULT_SUGGESTION_PROFILE: SuggestionProfile = {
+  requiresDeficiency: false,
+  relevantBiomarkers: [],
+  deficiencyWarning: null,
+  chronicUseRisk: "none",
+  chronicUseWarning: null,
+  minExperienceLevel: "beginner",
+};
+
+// Deficiency-only supplements (Iron, B12, Copper, Iodine)
+const DEFICIENCY_ONLY_PROFILE = (
+  biomarkers: string[],
+  warning: string,
+): SuggestionProfile => ({
+  requiresDeficiency: true,
+  relevantBiomarkers: biomarkers,
+  deficiencyWarning: warning,
+  chronicUseRisk: "none",
+  chronicUseWarning: null,
+  minExperienceLevel: "beginner",
+});
+
+// Chronic use risk supplements (Melatonin, 5-HTP, Berberine)
+const CHRONIC_RISK_PROFILE = (
+  risk: "low" | "moderate" | "high",
+  warning: string,
+): SuggestionProfile => ({
+  requiresDeficiency: false,
+  relevantBiomarkers: [],
+  deficiencyWarning: null,
+  chronicUseRisk: risk,
+  chronicUseWarning: warning,
+  minExperienceLevel: "intermediate",
+});
+
+// Advanced supplements (peptides, research chemicals)
+const ADVANCED_PROFILE: SuggestionProfile = {
+  requiresDeficiency: false,
+  relevantBiomarkers: [],
+  deficiencyWarning: null,
+  chronicUseRisk: "none",
+  chronicUseWarning: null,
+  minExperienceLevel: "advanced",
+};
 
 type SupplementCategory =
   | "mineral"
@@ -365,6 +413,10 @@ const supplements = [
     category: "vitamin" as SupplementCategory,
     commonGoals: ["energy", "focus", "health"],
     safetyCategory: null as SafetyCategoryKey,
+    suggestionProfile: DEFICIENCY_ONLY_PROFILE(
+      ["b12"],
+      "B12 supplementation is mainly beneficial for vegans/vegetarians, those over 50, or with confirmed deficiency.",
+    ),
     // PK: Long tissue retention
     peakMinutes: 180,
     halfLifeMinutes: 8640, // ~6 days tissue t½
@@ -491,6 +543,10 @@ const supplements = [
     commonGoals: ["energy", "health"],
     safetyCategory: "iron" as SafetyCategoryKey,
     optimalTimeOfDay: "morning" as OptimalTimeOfDay,
+    suggestionProfile: DEFICIENCY_ONLY_PROFILE(
+      ["ferritin", "serum_iron"],
+      "Iron supplementation is only recommended if you have confirmed deficiency via blood test. Excess iron causes oxidative stress.",
+    ),
     // PK: Well-absorbed chelate, but still subject to DMT1 saturation
     peakMinutes: 120,
     halfLifeMinutes: 360, // 6h plasma
@@ -519,6 +575,10 @@ const supplements = [
     category: "mineral" as SupplementCategory,
     commonGoals: ["health"],
     safetyCategory: "copper" as SafetyCategoryKey,
+    suggestionProfile: DEFICIENCY_ONLY_PROFILE(
+      ["serum_copper"],
+      "Copper supplementation is typically only needed to balance high zinc intake or if deficiency is confirmed.",
+    ),
     // PK: Rapid tissue distribution
     peakMinutes: 120,
     halfLifeMinutes: 1440, // 24h
@@ -618,6 +678,10 @@ const supplements = [
     category: "mineral" as SupplementCategory,
     commonGoals: ["health", "energy"],
     safetyCategory: null as SafetyCategoryKey,
+    suggestionProfile: DEFICIENCY_ONLY_PROFILE(
+      [],
+      "Iodine supplementation depends on dietary intake and location. Excess iodine can cause thyroid dysfunction.",
+    ),
     // PK: Rapid thyroid uptake
     peakMinutes: 120,
     halfLifeMinutes: 480, // 8h plasma
@@ -747,6 +811,10 @@ const supplements = [
     category: "amino-acid" as SupplementCategory,
     commonGoals: ["sleep", "stress"],
     safetyCategory: null as SafetyCategoryKey,
+    suggestionProfile: CHRONIC_RISK_PROFILE(
+      "high",
+      "Long-term 5-HTP use can deplete dopamine and catecholamines. Consider cycling or pairing with EGCG/green tea. Max 3 months continuous use.",
+    ),
     // PK: Rapid serotonin conversion
     peakMinutes: 90,
     halfLifeMinutes: 300, // 5h
@@ -1039,6 +1107,10 @@ const supplements = [
     category: "other" as SupplementCategory,
     commonGoals: ["longevity", "health"],
     safetyCategory: null as SafetyCategoryKey,
+    suggestionProfile: CHRONIC_RISK_PROFILE(
+      "moderate",
+      "Berberine affects gut microbiome and may deplete B vitamins long-term. Consider cycling 8 weeks on, 2-4 weeks off. Take with B-complex.",
+    ),
     // PK: Poor bioavailability, gut-first-pass
     peakMinutes: 240, // 4h
     halfLifeMinutes: 300, // ~5h plasma
@@ -1162,6 +1234,10 @@ const supplements = [
     category: "other" as SupplementCategory,
     commonGoals: ["sleep"],
     safetyCategory: null as SafetyCategoryKey,
+    suggestionProfile: CHRONIC_RISK_PROFILE(
+      "high",
+      "Regular melatonin use may suppress natural production. Use lowest effective dose (0.3-1mg). Reserve for jet lag, shift work, or occasional use.",
+    ),
     // PK: Rapid absorption, short half-life
     peakMinutes: 50, // 20-90min depending on formulation
     halfLifeMinutes: 45, // 35-50min
@@ -1172,6 +1248,7 @@ const supplements = [
 
   // ============================================
   // PEPTIDES & RESEARCH COMPOUNDS (6)
+  // All peptides require advanced experience level
   // ============================================
   {
     name: "BPC-157",
@@ -1191,6 +1268,7 @@ const supplements = [
     route: "subq_injection" as RouteOfAdministration,
     storageInstructions:
       "Keep refrigerated (2-8°C). Reconstituted peptide stable for 30 days.",
+    suggestionProfile: ADVANCED_PROFILE,
     // PK: SubQ peptide kinetics
     peakMinutes: 30, // Rapid subQ absorption
     halfLifeMinutes: 240, // ~4h estimated
@@ -1215,6 +1293,7 @@ const supplements = [
     route: "subq_injection" as RouteOfAdministration,
     storageInstructions:
       "Keep refrigerated (2-8°C). Reconstituted peptide stable for 30 days.",
+    suggestionProfile: ADVANCED_PROFILE,
     // PK: Larger peptide, slower distribution
     peakMinutes: 60, // ~1h subQ
     halfLifeMinutes: 480, // ~8h
@@ -1239,6 +1318,7 @@ const supplements = [
     route: "subq_injection" as RouteOfAdministration,
     storageInstructions:
       "Keep refrigerated (2-8°C). Protect from light. Do not freeze.",
+    suggestionProfile: ADVANCED_PROFILE, // Still advanced due to injection and medical supervision typically required
     // PK: Engineered for long half-life (weekly dosing)
     peakMinutes: 1440, // 1-3 days to Cmax
     halfLifeMinutes: 10080, // ~7 days (168h)
@@ -1263,6 +1343,7 @@ const supplements = [
     route: "topical" as RouteOfAdministration,
     storageInstructions:
       "Keep refrigerated (2-8°C). Topical solutions stable for 60 days.",
+    suggestionProfile: ADVANCED_PROFILE,
     // PK: Topical - local tissue retention
     peakMinutes: 60, // Local dermal peak
     halfLifeMinutes: 180, // ~3h in skin tissue
@@ -1287,6 +1368,7 @@ const supplements = [
     route: "subq_injection" as RouteOfAdministration,
     storageInstructions:
       "Keep refrigerated (2-8°C). Administer fasted for optimal GH response.",
+    suggestionProfile: ADVANCED_PROFILE,
     // PK: Short-acting GHRP
     peakMinutes: 30, // Rapid GH pulse
     halfLifeMinutes: 120, // ~2h
@@ -1311,6 +1393,7 @@ const supplements = [
     route: "subq_injection" as RouteOfAdministration,
     storageInstructions:
       "Keep refrigerated (2-8°C). Administer fasted, typically with Ipamorelin.",
+    suggestionProfile: ADVANCED_PROFILE,
     // PK: No DAC = shorter duration than DAC version
     peakMinutes: 30, // Rapid onset
     halfLifeMinutes: 30, // ~30min (No DAC version)
@@ -1320,6 +1403,7 @@ const supplements = [
 
   // ============================================
   // RUSSIAN NOOTROPICS (5)
+  // All research chemicals require advanced experience level
   // ============================================
   {
     name: "Semax",
@@ -1339,6 +1423,7 @@ const supplements = [
     route: "intranasal" as RouteOfAdministration,
     storageInstructions:
       "Keep refrigerated (2-8°C). Fragile peptide - handle with care.",
+    suggestionProfile: ADVANCED_PROFILE,
     // PK: Intranasal peptide - rapid CNS entry
     peakMinutes: 10, // Rapid nasal absorption
     halfLifeMinutes: 180, // ~3h
@@ -1363,6 +1448,7 @@ const supplements = [
     route: "intranasal" as RouteOfAdministration,
     storageInstructions:
       "Keep refrigerated (2-8°C). Use within 30 days of opening.",
+    suggestionProfile: ADVANCED_PROFILE,
     // PK: Intranasal anxiolytic peptide
     peakMinutes: 15, // Rapid nasal absorption
     halfLifeMinutes: 60, // ~1h (short-acting)
@@ -1387,6 +1473,7 @@ const supplements = [
     route: "oral" as RouteOfAdministration,
     storageInstructions:
       "Store in cool, dry place. Sublingual administration common for faster onset.",
+    suggestionProfile: ADVANCED_PROFILE,
     // PK: Rapid oral/sublingual absorption
     peakMinutes: 20, // 15-20min (sublingual faster)
     halfLifeMinutes: 60, // ~1h (but metabolite cycloprolylglycine longer)
@@ -1411,6 +1498,7 @@ const supplements = [
     route: "oral" as RouteOfAdministration,
     storageInstructions:
       "Store away from light and moisture. Sublingual option available.",
+    suggestionProfile: ADVANCED_PROFILE,
     // PK: Lipophilic actoprotector
     peakMinutes: 180, // 2-4h (slow due to lipophilicity)
     halfLifeMinutes: 690, // ~11.5h
@@ -1435,6 +1523,7 @@ const supplements = [
     route: "oral" as RouteOfAdministration,
     storageInstructions:
       "Store in cool, dry place. Tolerance builds rapidly - cycle 2-3 days on, 2-3 days off.",
+    suggestionProfile: ADVANCED_PROFILE,
     // PK: Racetam with stimulant kinetics
     peakMinutes: 60, // ~1h
     halfLifeMinutes: 210, // 3-5h
@@ -1734,6 +1823,8 @@ async function seed() {
           absorptionSaturationDose: supp.absorptionSaturationDose ?? null,
           rdaAmount: supp.rdaAmount ?? null,
           optimalTimeOfDay: supp.optimalTimeOfDay ?? null,
+          // Smart suggestion filtering
+          suggestionProfile: supp.suggestionProfile ?? null,
           updatedAt: new Date(),
         },
       })
@@ -1924,6 +2015,11 @@ async function seed() {
 
     // ============================================
     // SYNERGIES
+    // synergyStrength: "critical" | "strong" | "moderate" | "weak"
+    // - critical: Y won't work properly without X (D3+K2, Curcumin+Piperine)
+    // - strong: Significant enhancement, strong evidence (Caffeine+Theanine)
+    // - moderate: Helpful synergy, moderate evidence
+    // - weak: Nice-to-have, limited benefit
     // ============================================
     {
       sourceId: supplementMap.get("Vitamin C")!,
@@ -1931,6 +2027,7 @@ async function seed() {
       type: "synergy" as const,
       mechanism: "Reduces ferric iron to ferrous form, enhances absorption",
       severity: "low" as const,
+      synergyStrength: "strong" as const,
       researchUrl:
         "https://examine.com/supplements/iron/#interactions-with-other-nutrients_vitamin-c",
       suggestion:
@@ -1943,6 +2040,7 @@ async function seed() {
       mechanism:
         "K2 directs calcium mobilized by D3 to bones, prevents arterial calcification",
       severity: "low" as const,
+      synergyStrength: "critical" as const, // D3 without K2 risks arterial calcification
       researchUrl:
         "https://examine.com/supplements/vitamin-k/#interactions-with-other-nutrients_vitamin-d",
       suggestion:
@@ -1955,6 +2053,7 @@ async function seed() {
       mechanism:
         "L-Theanine smooths caffeine effects, reduces jitters, improves focus",
       severity: "low" as const,
+      synergyStrength: "strong" as const, // Classic nootropic stack with strong evidence
       researchUrl:
         "https://examine.com/supplements/theanine/#interactions-with-other-nutrients_caffeine",
       suggestion:
@@ -1967,6 +2066,7 @@ async function seed() {
       mechanism:
         "Inhibits glucuronidation, increases curcumin bioavailability by 2000%",
       severity: "low" as const,
+      synergyStrength: "critical" as const, // Curcumin barely works without piperine
       researchUrl:
         "https://examine.com/supplements/curcumin/#interactions-with-other-nutrients_piperine",
       suggestion:
@@ -1978,6 +2078,7 @@ async function seed() {
       type: "synergy" as const,
       mechanism: "Piperine enhances CoQ10 absorption and bioavailability",
       severity: "low" as const,
+      synergyStrength: "moderate" as const, // Helpful but CoQ10 works without it
       researchUrl: "https://examine.com/supplements/coq10/",
       suggestion:
         "Take together! Piperine boosts CoQ10 absorption, especially important for ubiquinone form",
@@ -1989,6 +2090,7 @@ async function seed() {
       mechanism:
         "ALA regenerates CoQ10, both work synergistically as antioxidants",
       severity: "low" as const,
+      synergyStrength: "moderate" as const,
       researchUrl: "https://examine.com/supplements/alpha-lipoic-acid/",
       suggestion:
         "Take together! ALA recycles CoQ10 - powerful mitochondrial support combo",
@@ -2000,6 +2102,7 @@ async function seed() {
       mechanism:
         "NAC and Vitamin C work synergistically to regenerate glutathione",
       severity: "low" as const,
+      synergyStrength: "moderate" as const,
       researchUrl: "https://examine.com/supplements/n-acetylcysteine/",
       suggestion:
         "Take together! Both support glutathione - your body's master antioxidant",
@@ -2010,6 +2113,7 @@ async function seed() {
       type: "synergy" as const,
       mechanism: "NAC is a precursor to glutathione synthesis",
       severity: "low" as const,
+      synergyStrength: "weak" as const, // Redundant - NAC already boosts glutathione
       researchUrl: "https://examine.com/supplements/n-acetylcysteine/",
       suggestion:
         "Good combo but potentially redundant - NAC boosts glutathione production naturally. Choose one or use both for acute support",
@@ -2021,6 +2125,7 @@ async function seed() {
       mechanism:
         "Magnesium is required for vitamin D activation and metabolism",
       severity: "low" as const,
+      synergyStrength: "strong" as const, // Many D3 non-responders are Mg deficient
       researchUrl:
         "https://examine.com/supplements/vitamin-d/#interactions-with-other-nutrients_magnesium",
       suggestion:
@@ -2033,6 +2138,7 @@ async function seed() {
       mechanism:
         "Quercetin enhances vitamin C absorption and both have synergistic antioxidant effects",
       severity: "low" as const,
+      synergyStrength: "moderate" as const,
       researchUrl: "https://examine.com/supplements/quercetin/",
       suggestion:
         "Take together! Quercetin recycles vitamin C and both enhance immune function",
@@ -2048,6 +2154,7 @@ async function seed() {
       mechanism:
         "B6 and B12 work together in methylation cycle and homocysteine metabolism",
       severity: "low" as const,
+      synergyStrength: "moderate" as const,
       researchUrl: "https://examine.com/supplements/vitamin-b12/",
       suggestion:
         "Take together! B-vitamins work as a team. Consider a B-complex or pair B6+B12+Folate",
@@ -2059,6 +2166,7 @@ async function seed() {
       mechanism:
         "Folate and B12 are co-dependent in methylation and DNA synthesis",
       severity: "low" as const,
+      synergyStrength: "critical" as const, // High-dose folate without B12 is dangerous (masks B12 deficiency)
       researchUrl: "https://examine.com/supplements/folate/",
       suggestion:
         "Take together! Critical pairing for methylation. Never take high-dose folate without B12",
@@ -2154,6 +2262,7 @@ async function seed() {
       mechanism:
         "Magnesium enhances melatonin production and supports GABA activity for sleep",
       severity: "low" as const,
+      synergyStrength: "strong" as const, // Classic sleep stack
       researchUrl: "https://examine.com/supplements/melatonin/",
       suggestion:
         "Take together before bed! Classic sleep stack - magnesium relaxes muscles, melatonin signals sleep",
