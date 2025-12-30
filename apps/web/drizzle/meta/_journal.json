@@ -113,6 +113,13 @@
       "when": 1766947200000,
       "tag": "0015_add-protocol-tables",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1767033600000,
+      "tag": "0016_add-suggestion-quality-filtering",
+      "breakpoints": true
     }
   ]
 }

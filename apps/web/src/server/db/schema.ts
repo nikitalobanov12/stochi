@@ -4,6 +4,7 @@ import {
   customType,
   index,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   real,
@@ -132,6 +133,33 @@ export const frequencyEnum = pgEnum("frequency", [
 ]);
 
 // ============================================================================
+// Suggestion Quality Enums (Smart filtering for suggestions)
+// ============================================================================
+
+// Synergy strength - determines which synergies to show by default
+export const synergyStrengthEnum = pgEnum("synergy_strength", [
+  "critical", // Y won't work properly without X (D3+K2, Curcumin+Piperine)
+  "strong", // Significant enhancement, backed by strong evidence (Caffeine+Theanine)
+  "moderate", // Helpful synergy, moderate evidence
+  "weak", // Nice-to-have, limited or theoretical benefit
+]);
+
+// User experience level - controls which supplements are suggested
+export const experienceLevelEnum = pgEnum("experience_level", [
+  "beginner", // New to supplements - show only well-established options
+  "intermediate", // Comfortable with supplements - include those requiring careful usage
+  "advanced", // Familiar with research compounds - show everything
+]);
+
+// Suggestion filter level - user preference for synergy quality threshold
+export const suggestionFilterLevelEnum = pgEnum("suggestion_filter_level", [
+  "critical_only", // Only show critical synergies
+  "strong", // Show critical + strong (DEFAULT)
+  "moderate", // Show critical + strong + moderate
+  "all", // Show everything including weak
+]);
+
+// ============================================================================
 // Ratio Rules (for stoichiometric imbalance detection)
 // ============================================================================
 
@@ -231,6 +259,25 @@ export const supplementCategoryEnum = pgEnum("supplement_category", [
   "other",
 ]);
 
+/**
+ * Suggestion profile metadata for smart filtering.
+ * Controls when a supplement should be suggested based on user context.
+ */
+export type SuggestionProfile = {
+  /** Only suggest if user has deficiency in relevant biomarkers */
+  requiresDeficiency: boolean;
+  /** Biomarker types to check for deficiency (e.g., "ferritin", "b12") */
+  relevantBiomarkers: string[];
+  /** Warning shown when suggesting to potentially non-deficient users */
+  deficiencyWarning: string | null;
+  /** Risk level for chronic/long-term use */
+  chronicUseRisk: "none" | "low" | "moderate" | "high";
+  /** Warning about chronic use risks */
+  chronicUseWarning: string | null;
+  /** Minimum experience level required to see this supplement in suggestions */
+  minExperienceLevel: "beginner" | "intermediate" | "advanced";
+};
+
 export const supplement = pgTable(
   "supplement",
   {
@@ -277,6 +324,9 @@ export const supplement = pgTable(
     suggestedFrequency: frequencyEnum("suggested_frequency"),
     // Notes about dosing frequency (e.g., "Consider cycling 8 weeks on, 2-4 off")
     frequencyNotes: text("frequency_notes"),
+    // Smart suggestion filtering profile
+    // Controls when this supplement appears in suggestions based on user context
+    suggestionProfile: jsonb("suggestion_profile").$type<SuggestionProfile>(),
     createdAt: timestamp("created_at")
       .$defaultFn(() => new Date())
       .notNull(),
@@ -303,6 +353,9 @@ export const interaction = pgTable(
     // New fields for enhanced interaction info
     researchUrl: text("research_url"), // Link to Examine.com or study
     suggestion: text("suggestion"), // Actionable fix (e.g., "Take 2h apart")
+    // Synergy strength for filtering (only applies to type="synergy")
+    // Used to filter suggestions by quality threshold
+    synergyStrength: synergyStrengthEnum("synergy_strength"),
     createdAt: timestamp("created_at")
       .$defaultFn(() => new Date())
       .notNull(),
@@ -521,6 +574,13 @@ export const userPreference = pgTable("user_preference", {
   // IANA timezone identifier (e.g., "America/Los_Angeles", "Europe/London")
   // Used for timezone-aware timing suggestions
   timezone: text("timezone"),
+  // Smart suggestion filtering preferences
+  // User's experience level with supplements (controls which supplements are suggested)
+  experienceLevel: experienceLevelEnum("experience_level").default("beginner"),
+  // Synergy quality threshold (controls which synergies are shown)
+  suggestionFilterLevel: suggestionFilterLevelEnum("suggestion_filter_level").default("strong"),
+  // Show supplements that require specific conditions (deficiency, etc.)
+  showConditionalSupplements: boolean("show_conditional_supplements").default(false).notNull(),
   createdAt: timestamp("created_at")
     .$defaultFn(() => new Date())
     .notNull(),
