@@ -1,6 +1,6 @@
 import { and, gte, lte, eq } from "drizzle-orm";
 import { db } from "~/server/db";
-import { log, interaction } from "~/server/db/schema";
+import { log, interaction, type SuggestionProfile } from "~/server/db/schema";
 import { type SafetyCategory, isHardLimit } from "~/server/data/safety-limits";
 
 // ============================================================================
@@ -102,6 +102,12 @@ export type OptimizationFilterOptions = {
   userGoals?: string[];
   /** User's IANA timezone identifier for timezone-aware timing suggestions */
   timezone?: string | null;
+  /** User's experience level for filtering advanced supplements */
+  experienceLevel?: "beginner" | "intermediate" | "advanced";
+  /** Synergy strength filter level */
+  suggestionFilterLevel?: "critical_only" | "strong" | "moderate" | "all";
+  /** Whether to show supplements that require specific conditions (deficiency, etc.) */
+  showConditionalSupplements?: boolean;
 };
 
 export type BiologicalState = {
@@ -986,6 +992,11 @@ async function calculateOptimizations(
   const showAddSuggestions = filterOptions?.showAddSuggestions ?? true;
   const userGoals = filterOptions?.userGoals ?? [];
   const timezone = filterOptions?.timezone;
+  // New smart filtering options
+  const experienceLevel = filterOptions?.experienceLevel ?? "beginner";
+  const suggestionFilterLevel = filterOptions?.suggestionFilterLevel ?? "strong";
+  const showConditionalSupplements =
+    filterOptions?.showConditionalSupplements ?? false;
 
   /**
    * Check if a supplement is relevant to the user's goals.
@@ -1001,6 +1012,61 @@ async function calculateOptimizations(
     if (!commonGoals || commonGoals.length === 0) return true;
     // Check for overlap between supplement goals and user goals
     return commonGoals.some((goal) => userGoals.includes(goal));
+  }
+
+  /**
+   * Check if a synergy's strength passes the user's filter threshold.
+   * Strength hierarchy: critical > strong > moderate > weak
+   */
+  function passesSynergyStrengthFilter(
+    synergyStrength: "critical" | "strong" | "moderate" | "weak" | null,
+  ): boolean {
+    // Synergies without strength default to "moderate" behavior
+    const strength = synergyStrength ?? "moderate";
+
+    switch (suggestionFilterLevel) {
+      case "critical_only":
+        return strength === "critical";
+      case "strong":
+        return strength === "critical" || strength === "strong";
+      case "moderate":
+        return strength !== "weak";
+      case "all":
+        return true;
+      default:
+        return strength !== "weak"; // Default to "strong" behavior
+    }
+  }
+
+  /**
+   * Check if a supplement passes the suggestion profile filter.
+   * Filters based on:
+   * - Experience level requirement
+   * - Conditional supplement preference (deficiency-required)
+   */
+  function passesSuggestionProfileFilter(
+    suggestionProfile: SuggestionProfile | null,
+  ): boolean {
+    // No profile means universal supplement - always show
+    if (!suggestionProfile) return true;
+
+    // Check experience level requirement
+    const experienceLevels = ["beginner", "intermediate", "advanced"] as const;
+    const userLevelIndex = experienceLevels.indexOf(experienceLevel);
+    const requiredLevelIndex = experienceLevels.indexOf(
+      suggestionProfile.minExperienceLevel,
+    );
+    if (userLevelIndex < requiredLevelIndex) {
+      return false;
+    }
+
+    // Check conditional supplement preference
+    // If supplement requires deficiency and user hasn't opted in, skip it
+    if (suggestionProfile.requiresDeficiency && !showConditionalSupplements) {
+      return false;
+    }
+
+    return true;
   }
 
   // ==========================================================================
@@ -1138,6 +1204,11 @@ async function calculateOptimizations(
       if (dismissedKeys.has(suggestionKey)) continue;
       // Skip if the suggested supplement isn't relevant to user's goals
       if (!isRelevantToUserGoals(synergy.target.commonGoals)) continue;
+      // Skip if synergy strength doesn't pass the filter threshold
+      if (!passesSynergyStrengthFilter(synergy.synergyStrength)) continue;
+      // Skip if supplement doesn't pass suggestion profile filter (experience level, deficiency)
+      if (!passesSuggestionProfileFilter(synergy.target.suggestionProfile))
+        continue;
 
       const title = `Enhance ${synergy.source.name} with ${synergy.target.name}`;
       // Build timing-aware description
@@ -1183,6 +1254,11 @@ async function calculateOptimizations(
       if (dismissedKeys.has(suggestionKey)) continue;
       // Skip if the suggested supplement isn't relevant to user's goals
       if (!isRelevantToUserGoals(synergy.source.commonGoals)) continue;
+      // Skip if synergy strength doesn't pass the filter threshold
+      if (!passesSynergyStrengthFilter(synergy.synergyStrength)) continue;
+      // Skip if supplement doesn't pass suggestion profile filter (experience level, deficiency)
+      if (!passesSuggestionProfileFilter(synergy.source.suggestionProfile))
+        continue;
 
       const title = `Enhance ${synergy.target.name} with ${synergy.source.name}`;
       // Build timing-aware description
