@@ -20,6 +20,17 @@
 
 ## Completed
 
+- [x] **Smart suggestion quality filtering**
+  - Schema: `synergyStrength` on interaction, `suggestionProfile` JSONB on supplement
+  - User preferences: `experienceLevel`, `suggestionFilterLevel`, `showConditionalSupplements`
+  - Synergy strength levels: critical > strong > moderate > weak
+  - Experience levels: beginner < intermediate < advanced
+  - Filters peptides/research chemicals for advanced users only
+  - Filters deficiency-only supplements (Iron, B12) unless user opts in
+  - Onboarding: new ExperienceStep asks user's comfort level
+  - Settings: controls for experience level, synergy quality filter, conditional supplements
+  - Seed data: strength ratings for all synergy interactions, profiles for 20+ supplements
+
 - [x] **Master Protocol**
   - Schema: `protocol` table (one per user), `protocolItem` table with time slots, frequency, day-of-week
   - Protocol Builder UI at `/dashboard/protocol` with 4 time slot sections (morning, midday, evening, bedtime)
