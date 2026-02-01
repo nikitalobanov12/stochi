@@ -324,9 +324,9 @@ function ProtocolCard({
     <button
       onClick={onClick}
       className={cn(
-        "group w-full rounded-lg border p-4 text-left transition-all",
-        "hover:border-border hover:bg-white/[0.02]",
-        template.isResearchStack && "border-violet-500/20 bg-violet-500/[0.02]",
+        "group w-full rounded-lg border border-white/10 bg-[#0A0A0A] p-4 text-left transition-all",
+        "hover:border-white/15 hover:bg-[#0F0F0F]",
+        template.isResearchStack && "border-violet-500/20 bg-[#0A0A0A]",
       )}
     >
       {/* Header with badges */}
