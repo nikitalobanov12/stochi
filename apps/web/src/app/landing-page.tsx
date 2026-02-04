@@ -233,6 +233,14 @@ export function LandingPage() {
                 size="sm"
                 className="text-xs text-white/50 hover:text-white/90"
               >
+                <Link href="/demo">Try Demo</Link>
+              </Button>
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="text-xs text-white/50 hover:text-white/90"
+              >
                 <Link href="/auth/sign-in">Sign in</Link>
               </Button>
               <Button
@@ -304,13 +312,23 @@ export function LandingPage() {
                       delay: 0.4,
                     }}
                   >
-                    <Button
-                      asChild
-                      size="lg"
-                      className="rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 px-8 text-sm font-medium text-white shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/30 hover:brightness-110"
-                    >
-                      <Link href="/auth/sign-up">Run Your Stack Audit</Link>
-                    </Button>
+                    <div className="flex items-center gap-3">
+                      <Button
+                        asChild
+                        size="lg"
+                        className="rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 px-8 text-sm font-medium text-white shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/30 hover:brightness-110"
+                      >
+                        <Link href="/auth/sign-up">Run Your Stack Audit</Link>
+                      </Button>
+                      <Button
+                        asChild
+                        size="lg"
+                        variant="outline"
+                        className="rounded-full border-white/20 px-6 text-sm font-medium text-white/80 transition-all duration-300 hover:border-white/40 hover:bg-white/5 hover:text-white"
+                      >
+                        <Link href="/demo">Try Demo</Link>
+                      </Button>
+                    </div>
                     <span className="text-xs tracking-wide text-white/30">
                       Free forever • No credit card required
                     </span>
