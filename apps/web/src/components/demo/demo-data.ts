@@ -41,6 +41,10 @@ export const DEMO_SUPPLEMENTS: DemoSupplement[] = [
   { id: "supp-8", name: "Ashwagandha KSM-66", form: "capsule", defaultUnit: "mg", category: "adaptogen" },
   { id: "supp-9", name: "Melatonin", form: "tablet", defaultUnit: "mg", category: "other" },
   { id: "supp-10", name: "Caffeine", form: "tablet", defaultUnit: "mg", category: "nootropic" },
+  { id: "supp-11", name: "Iron Bisglycinate", form: "capsule", defaultUnit: "mg", category: "mineral" },
+  { id: "supp-12", name: "Vitamin B12", form: "sublingual", defaultUnit: "mcg", category: "vitamin" },
+  { id: "supp-13", name: "L-Tyrosine", form: "capsule", defaultUnit: "mg", category: "amino-acid" },
+  { id: "supp-14", name: "5-HTP", form: "capsule", defaultUnit: "mg", category: "amino-acid" },
 ];
 
 // ============================================================================
@@ -281,6 +285,36 @@ export const DEMO_INTERACTIONS: InteractionWarning[] = [
     source: { id: "supp-10", name: "Caffeine", form: "tablet" },
     target: { id: "supp-7", name: "L-Theanine", form: "capsule" },
   },
+  {
+    id: "int-3",
+    type: "competition",
+    severity: "medium",
+    mechanism: "Zinc and Iron compete for DMT1 transporter absorption",
+    researchUrl: "https://examine.com/supplements/zinc/",
+    suggestion: "Space zinc and iron by 2-4 hours",
+    source: { id: "supp-3", name: "Zinc Picolinate", form: "capsule" },
+    target: { id: "supp-11", name: "Iron Bisglycinate", form: "capsule" },
+  },
+  {
+    id: "int-4",
+    type: "inhibition",
+    severity: "medium",
+    mechanism: "Caffeine increases renal magnesium excretion by up to 30%",
+    researchUrl: "https://examine.com/supplements/caffeine/",
+    suggestion: "Take magnesium 2+ hours after caffeine",
+    source: { id: "supp-10", name: "Caffeine", form: "tablet" },
+    target: { id: "supp-2", name: "Magnesium Glycinate", form: "capsule" },
+  },
+  {
+    id: "int-5",
+    type: "competition",
+    severity: "critical",
+    mechanism: "L-Tyrosine and 5-HTP compete for LNAAT transporter; concurrent use may reduce serotonin/dopamine synthesis",
+    researchUrl: null,
+    suggestion: "Never take simultaneously — space by 4+ hours or use on alternating days",
+    source: { id: "supp-13", name: "L-Tyrosine", form: "capsule" },
+    target: { id: "supp-14", name: "5-HTP", form: "capsule" },
+  },
 ];
 
 export const DEMO_RATIO_WARNINGS: RatioWarning[] = [
@@ -298,7 +332,26 @@ export const DEMO_RATIO_WARNINGS: RatioWarning[] = [
   },
 ];
 
-export const DEMO_TIMING_WARNINGS: TimingWarning[] = [];
+export const DEMO_TIMING_WARNINGS: TimingWarning[] = [
+  {
+    id: "timing-1",
+    severity: "medium",
+    reason: "Caffeine increases renal magnesium excretion — space by 2h minimum",
+    minHoursApart: 2,
+    actualHoursApart: 0.5,
+    source: { id: "supp-10", name: "Caffeine", loggedAt: getRelativeTime(0.5) },
+    target: { id: "supp-2", name: "Magnesium Glycinate", loggedAt: getRelativeTime(1) },
+  },
+  {
+    id: "timing-2",
+    severity: "medium",
+    reason: "Iron and Zinc compete for DMT1 transporter — space by 2h minimum",
+    minHoursApart: 2,
+    actualHoursApart: 0,
+    source: { id: "supp-11", name: "Iron Bisglycinate", loggedAt: getRelativeTime(1) },
+    target: { id: "supp-3", name: "Zinc Picolinate", loggedAt: getRelativeTime(1) },
+  },
+];
 
 // ============================================================================
 // Biological State (for timeline visualization)
@@ -352,7 +405,20 @@ export function generateDemoBiologicalState(): BiologicalState {
         category: "vitamin",
       },
     ],
-    exclusionZones: [],
+    exclusionZones: [
+      {
+        ruleId: "timing-rule-1",
+        sourceSupplementId: "supp-10",
+        sourceSupplementName: "Caffeine",
+        targetSupplementId: "supp-2",
+        targetSupplementName: "Magnesium Glycinate",
+        endsAt: new Date(Date.now() + 90 * 60 * 1000), // 90 min from now
+        minutesRemaining: 90,
+        reason: "Caffeine increases renal magnesium excretion",
+        severity: "medium",
+        researchUrl: null,
+      },
+    ],
     optimizations: [
       {
         type: "timing",
@@ -362,6 +428,15 @@ export function generateDemoBiologicalState(): BiologicalState {
         description: "Take Magnesium before bed for optimal sleep",
         priority: 1,
         suggestionKey: "timing:supp-2",
+      },
+      {
+        type: "timing",
+        category: "timing",
+        supplementIds: ["supp-3", "supp-11"],
+        title: "Space Zinc & Iron",
+        description: "DMT1 transporter competition — take 2+ hours apart for optimal absorption",
+        priority: 2,
+        suggestionKey: "spacing:supp-3:supp-11",
       },
     ],
   };
@@ -459,6 +534,22 @@ export const DEMO_SAFETY_HEADROOM: SafetyHeadroom[] = [
     limit: 10000,
     unit: "IU",
     percentUsed: 50,
+  },
+  {
+    category: "magnesium",
+    label: "Magnesium",
+    current: 400,
+    limit: 500,
+    unit: "mg",
+    percentUsed: 80,
+  },
+  {
+    category: "caffeine",
+    label: "Caffeine",
+    current: 100,
+    limit: 400,
+    unit: "mg",
+    percentUsed: 25,
   },
 ];
 
