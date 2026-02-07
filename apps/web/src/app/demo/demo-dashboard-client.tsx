@@ -37,6 +37,7 @@ import type {
 
 import { DemoCommandBar } from "./demo-command-bar";
 import { DemoLogList } from "./demo-log-list";
+import { DemoHint } from "~/components/demo/demo-hint";
 
 type DemoSupplement = {
   id: string;
@@ -95,6 +96,16 @@ export function DemoDashboardClient({
       {/* Command Bar */}
       <DemoCommandBar supplements={allSupplements} />
 
+      <DemoHint id="command-bar">
+        Try the command bar — type a supplement name like{" "}
+        <kbd className="rounded border border-cyan-500/30 bg-cyan-500/10 px-1">mag 400mg</kbd>{" "}
+        to log with natural language parsing
+      </DemoHint>
+
+      <DemoHint id="protocol-tap">
+        Tap <strong className="text-cyan-300">Log Stack</strong> to execute an entire supplement protocol in one click
+      </DemoHint>
+
       {/* Protocols Section */}
       {stackCompletion.length > 0 && (
         <DemoMissionControl stacks={stackCompletion} />
@@ -105,6 +116,10 @@ export function DemoDashboardClient({
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
           {/* Left Column */}
           <div className="space-y-4 lg:col-span-8">
+            <DemoHint id="bio-timeline">
+              Pharmacokinetic curves modeled with Michaelis-Menten kinetics — each compound shows real absorption and elimination phases
+            </DemoHint>
+
             {timelineData.length > 0 && (
               <div>
                 <h2 className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
@@ -139,6 +154,10 @@ export function DemoDashboardClient({
 
           {/* Right Column */}
           <div className="space-y-4 lg:col-span-4">
+            <DemoHint id="bio-score">
+              Bio-Score factors in exclusion zones, timing conflicts, and stoichiometric ratios — not just a count
+            </DemoHint>
+
             <BioScoreCard
               score={biologicalState.bioScore}
               exclusionZones={biologicalState.exclusionZones}
