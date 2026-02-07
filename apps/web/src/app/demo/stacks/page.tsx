@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useDemoContext } from "~/components/demo/demo-provider";
 import { Button } from "~/components/ui/button";
 import { Layers, Loader2 } from "lucide-react";
@@ -75,12 +76,25 @@ function DemoStackCard({
     <div className="glass-card overflow-hidden">
       <div className="flex items-center justify-between border-b border-white/5 p-4">
         <div>
-          <h3 className="font-medium">{stack.name}</h3>
+          <Link
+            href={`/demo/stacks/${stack.id}`}
+            className="font-medium transition-colors hover:text-cyan-300"
+          >
+            {stack.name}
+          </Link>
           <p className="text-muted-foreground text-xs">
             {stack.items.length} supplements
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground text-xs"
+          >
+            <Link href={`/demo/stacks/${stack.id}`}>Details</Link>
+          </Button>
           <Button
             size="sm"
             variant={isComplete ? "outline" : "default"}
