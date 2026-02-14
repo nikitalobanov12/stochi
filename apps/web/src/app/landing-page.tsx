@@ -2,9 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronRight, Zap } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 import { Button } from "~/components/ui/button";
 import { HeroInteractionAlert } from "~/components/landing/hero-interaction-alert";
@@ -153,25 +153,6 @@ const INTERACTION_DATABASE: Record<
 // ============================================================================
 
 export function LandingPage() {
-  const heroCTARef = useRef<HTMLDivElement>(null);
-  const [showStickyCTA, setShowStickyCTA] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        // Show sticky CTA when hero CTA is NOT visible
-        setShowStickyCTA(!entry?.isIntersecting);
-      },
-      { threshold: 0, rootMargin: "-50px 0px 0px 0px" },
-    );
-
-    if (heroCTARef.current) {
-      observer.observe(heroCTARef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
   return (
     <main className="relative min-h-screen bg-black pt-safe pb-safe font-sans text-white/90">
       {/* Grid overlay for background texture */}
@@ -186,27 +167,6 @@ export function LandingPage() {
         >
           Skip to main content
         </a>
-
-        {/* Sticky CTA - appears when hero CTA scrolls out of view */}
-        <AnimatePresence>
-          {showStickyCTA && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-              className="fixed top-4 right-4 z-50"
-            >
-              <Button
-                asChild
-                size="sm"
-                className="rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 px-4 text-xs font-medium text-white shadow-lg shadow-emerald-500/25 transition-all hover:shadow-xl hover:shadow-emerald-500/30 hover:brightness-110"
-              >
-                <Link href="/auth/sign-up">Get Started</Link>
-              </Button>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {/* Navigation - scrollable */}
         <nav
@@ -301,8 +261,7 @@ export function LandingPage() {
                 </motion.p>
 
                 {/* Primary CTA - Attio-style clean button */}
-                <div ref={heroCTARef}>
-                  <motion.div
+                <motion.div
                     className="mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -333,7 +292,6 @@ export function LandingPage() {
                       Free forever • No credit card required
                     </span>
                   </motion.div>
-                </div>
               </div>
 
               {/* Right: Hero Visual (5 columns = ~42%) */}
@@ -386,30 +344,25 @@ export function LandingPage() {
               >
                 <div className="flex h-16 w-16 items-center justify-center">
                   <svg viewBox="0 0 100 100" className="h-14 w-14">
-                    <rect
-                      x="10"
-                      y="20"
-                      width="80"
-                      height="60"
-                      rx="4"
+                    {/* Shield/crest shape representing government health authority */}
+                    <path
+                      d="M50 8 L85 20 L85 45 C85 68 50 92 50 92 C50 92 15 68 15 45 L15 20 Z"
                       fill="none"
                       stroke="currentColor"
-                      strokeWidth="2"
-                      className="text-white/60 transition-colors group-hover:text-white/80"
+                      strokeWidth="2.5"
+                      className="text-blue-500/60 transition-colors group-hover:text-blue-500/80"
                     />
-                    <text
-                      x="50"
-                      y="58"
-                      textAnchor="middle"
-                      className="text-white/80 transition-colors group-hover:text-white"
-                      style={{
-                        fontSize: "24px",
-                        fontWeight: "bold",
-                        fontFamily: "system-ui",
-                      }}
-                    >
-                      NIH
-                    </text>
+                    {/* Medical cross inside */}
+                    <path
+                      d="M50 28 L50 72 M28 50 L72 50"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      strokeLinecap="round"
+                      className="text-white/70 transition-colors group-hover:text-white/90"
+                    />
+                    {/* Corner accents */}
+                    <circle cx="28" cy="35" r="3" fill="currentColor" className="text-blue-400/50 transition-colors group-hover:text-blue-400/70" />
+                    <circle cx="72" cy="35" r="3" fill="currentColor" className="text-blue-400/50 transition-colors group-hover:text-blue-400/70" />
                   </svg>
                 </div>
                 <div className="text-center">
@@ -431,37 +384,41 @@ export function LandingPage() {
               >
                 <div className="flex h-16 w-16 items-center justify-center">
                   <svg viewBox="0 0 100 100" className="h-14 w-14">
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="38"
+                    {/* Document/book shape */}
+                    <rect
+                      x="18"
+                      y="12"
+                      width="64"
+                      height="76"
+                      rx="4"
                       fill="none"
                       stroke="currentColor"
-                      strokeWidth="2"
-                      className="text-blue-400/60 transition-colors group-hover:text-blue-400/80"
+                      strokeWidth="2.5"
+                      className="text-blue-500/60 transition-colors group-hover:text-blue-500/80"
                     />
-                    <text
-                      x="50"
-                      y="45"
-                      textAnchor="middle"
-                      className="text-blue-400/80 transition-colors group-hover:text-blue-400"
-                      style={{
-                        fontSize: "14px",
-                        fontWeight: "bold",
-                        fontFamily: "system-ui",
-                      }}
-                    >
-                      PubMed
-                    </text>
-                    <text
-                      x="50"
-                      y="62"
-                      textAnchor="middle"
-                      className="text-white/50"
-                      style={{ fontSize: "10px", fontFamily: "system-ui" }}
-                    >
-                      NCBI
-                    </text>
+                    {/* Book spine */}
+                    <line
+                      x1="35"
+                      y1="12"
+                      x2="35"
+                      y2="88"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      className="text-blue-500/40 transition-colors group-hover:text-blue-500/60"
+                    />
+                    {/* Text lines representing citations */}
+                    <line x1="44" y1="28" x2="74" y2="28" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-white/60 transition-colors group-hover:text-white/80" />
+                    <line x1="44" y1="40" x2="74" y2="40" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-white/60 transition-colors group-hover:text-white/80" />
+                    <line x1="44" y1="52" x2="74" y2="52" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-white/40 transition-colors group-hover:text-white/60" />
+                    <line x1="44" y1="64" x2="62" y2="64" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-white/40 transition-colors group-hover:text-white/60" />
+                    {/* DNA helix accent */}
+                    <path
+                      d="M26 32 Q30 28 26 24 Q22 20 26 16 M26 48 Q30 44 26 40 Q22 36 26 32 M26 64 Q30 60 26 56 Q22 52 26 48 M26 80 Q30 76 26 72 Q22 68 26 64"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      className="text-blue-400/50 transition-colors group-hover:text-blue-400/70"
+                    />
                   </svg>
                 </div>
                 <div className="text-center">
@@ -483,46 +440,41 @@ export function LandingPage() {
               >
                 <div className="flex h-16 w-16 items-center justify-center">
                   <svg viewBox="0 0 100 100" className="h-14 w-14">
+                    {/* Outer ring - EU circle */}
                     <circle
                       cx="50"
                       cy="50"
-                      r="38"
+                      r="40"
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="2"
-                      className="text-blue-500/60 transition-colors group-hover:text-blue-500/80"
+                      className="text-blue-600/50 transition-colors group-hover:text-blue-600/70"
                     />
+                    {/* Stars arranged in EU flag pattern - 12 stars */}
+                    <g className="text-yellow-400/70 transition-colors group-hover:text-yellow-400">
+                      <polygon points="50,14 52,20 58,20 53,24 55,30 50,26 45,30 47,24 42,20 48,20" fill="currentColor" />
+                      <polygon points="72,22 74,28 80,28 75,32 77,38 72,34 67,38 69,32 64,28 70,28" fill="currentColor" />
+                      <polygon points="86,38 88,44 94,44 89,48 91,54 86,50 81,54 83,48 78,44 84,44" fill="currentColor" />
+                      <polygon points="86,62 88,68 94,68 89,72 91,78 86,74 81,78 83,72 78,68 84,68" fill="currentColor" />
+                      <polygon points="72,78 74,84 80,84 75,88 77,94 72,90 67,94 69,88 64,84 70,84" fill="currentColor" />
+                      <polygon points="50,86 52,92 58,92 53,96 55,102 50,98 45,102 47,96 42,92 48,92" fill="currentColor" />
+                      <polygon points="28,78 30,84 36,84 31,88 33,94 28,90 23,94 25,88 20,84 26,84" fill="currentColor" />
+                      <polygon points="14,62 16,68 22,68 17,72 19,78 14,74 9,78 11,72 6,68 12,68" fill="currentColor" />
+                      <polygon points="14,38 16,44 22,44 17,48 19,54 14,50 9,54 11,48 6,44 12,44" fill="currentColor" />
+                      <polygon points="28,22 30,28 36,28 31,32 33,38 28,34 23,38 25,32 20,28 26,28" fill="currentColor" />
+                      <polygon points="50,38 51,41 54,41 52,43 53,46 50,44 47,46 48,43 46,41 49,41" fill="currentColor" />
+                      <polygon points="50,54 51,57 54,57 52,59 53,62 50,60 47,62 48,59 46,57 49,57" fill="currentColor" />
+                    </g>
+                    {/* Center plate with fork/knife */}
                     <circle
                       cx="50"
                       cy="50"
-                      r="6"
-                      fill="currentColor"
-                      className="text-yellow-400/70 transition-colors group-hover:text-yellow-400"
+                      r="16"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      className="text-white/30 transition-colors group-hover:text-white/50"
                     />
-                    {/* Pre-computed clock positions to avoid hydration mismatch from floating-point differences */}
-                    {[
-                      { cx: "75", cy: "50" },
-                      { cx: "71.65", cy: "62.5" },
-                      { cx: "62.5", cy: "71.65" },
-                      { cx: "50", cy: "75" },
-                      { cx: "37.5", cy: "71.65" },
-                      { cx: "28.35", cy: "62.5" },
-                      { cx: "25", cy: "50" },
-                      { cx: "28.35", cy: "37.5" },
-                      { cx: "37.5", cy: "28.35" },
-                      { cx: "50", cy: "25" },
-                      { cx: "62.5", cy: "28.35" },
-                      { cx: "71.65", cy: "37.5" },
-                    ].map((pos, i) => (
-                      <circle
-                        key={i}
-                        cx={pos.cx}
-                        cy={pos.cy}
-                        r="3"
-                        fill="currentColor"
-                        className="text-yellow-400/70 transition-colors group-hover:text-yellow-400"
-                      />
-                    ))}
                   </svg>
                 </div>
                 <div className="text-center">
@@ -544,26 +496,42 @@ export function LandingPage() {
               >
                 <div className="flex h-16 w-16 items-center justify-center">
                   <svg viewBox="0 0 100 100" className="h-14 w-14">
-                    <rect
-                      x="15"
-                      y="25"
-                      width="70"
-                      height="50"
-                      rx="6"
+                    {/* Magnifying glass representing "examine" */}
+                    <circle
+                      cx="45"
+                      cy="45"
+                      r="28"
                       fill="none"
                       stroke="currentColor"
-                      strokeWidth="2"
+                      strokeWidth="3"
                       className="text-emerald-400/60 transition-colors group-hover:text-emerald-400/80"
                     />
+                    {/* Handle */}
+                    <line
+                      x1="66"
+                      y1="66"
+                      x2="85"
+                      y2="85"
+                      stroke="currentColor"
+                      strokeWidth="5"
+                      strokeLinecap="round"
+                      className="text-emerald-400/70 transition-colors group-hover:text-emerald-400"
+                    />
+                    {/* Checkmark inside - evidence verified */}
                     <path
-                      d="M30 40 L45 55 L70 30"
+                      d="M32 45 L42 55 L58 35"
                       stroke="currentColor"
                       strokeWidth="4"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       fill="none"
-                      className="text-emerald-400/80 transition-colors group-hover:text-emerald-400"
+                      className="text-white/70 transition-colors group-hover:text-white"
                     />
+                    {/* Data points representing research */}
+                    <circle cx="45" cy="20" r="2" fill="currentColor" className="text-emerald-500/50 transition-colors group-hover:text-emerald-500/70" />
+                    <circle cx="70" cy="45" r="2" fill="currentColor" className="text-emerald-500/50 transition-colors group-hover:text-emerald-500/70" />
+                    <circle cx="45" cy="70" r="2" fill="currentColor" className="text-emerald-500/50 transition-colors group-hover:text-emerald-500/70" />
+                    <circle cx="20" cy="45" r="2" fill="currentColor" className="text-emerald-500/50 transition-colors group-hover:text-emerald-500/70" />
                   </svg>
                 </div>
                 <div className="text-center">
