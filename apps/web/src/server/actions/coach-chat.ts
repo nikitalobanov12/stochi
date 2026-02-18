@@ -7,6 +7,7 @@ import {
   buildCoachSystemPrompt,
   buildCoachUserPrompt,
 } from "~/lib/ai/coach-prompts";
+import { type CoachPageContext } from "~/lib/ai/coach-page-context";
 import {
   generateCompletion,
   isLlamaEnabled,
@@ -88,7 +89,10 @@ function validateCoachResponse(answer: string): boolean {
     return false;
   }
 
-  if (!lower.includes("what this means") || !lower.includes("what to do next")) {
+  if (
+    !lower.includes("what this means") ||
+    !lower.includes("what to do next")
+  ) {
     return false;
   }
 
@@ -102,6 +106,7 @@ function validateCoachResponse(answer: string): boolean {
 function buildFallbackAnswer(
   question: string,
   context: Awaited<ReturnType<typeof getCoachContext>>,
+  pageContext?: CoachPageContext,
 ): string {
   const criticalLine =
     context.warningSummary.critical > 0
@@ -134,10 +139,13 @@ function buildFallbackAnswer(
     );
   }
 
-  return `WHAT THIS MEANS\nYour recent pattern shows ${context.logSummary.totalLogs} logs across ${context.logSummary.activeDays} active days in the last 7 days. ${context.keyFacts[3] ?? "Your warning profile is currently stable."} I answered your question ("${question}") using only your account data. This is not medical advice.\n\nWHAT TO DO NEXT\n- ${topActions.slice(0, 3).join("\n- ")}\n${criticalLine}`.trim();
+  return `WHAT THIS MEANS\nYour recent pattern shows ${context.logSummary.totalLogs} logs across ${context.logSummary.activeDays} active days in the last 7 days. ${context.keyFacts[3] ?? "Your warning profile is currently stable."}${pageContext ? ` You are currently on ${pageContext.section.toLowerCase()}.` : ""} I answered your question ("${question}") using only your account data. This is not medical advice.\n\nWHAT TO DO NEXT\n- ${topActions.slice(0, 3).join("\n- ")}\n${criticalLine}`.trim();
 }
 
-export async function askCoachQuestion(question: string): Promise<CoachChatResult> {
+export async function askCoachQuestion(
+  question: string,
+  pageContext?: CoachPageContext,
+): Promise<CoachChatResult> {
   const trimmedQuestion = question.trim();
   if (trimmedQuestion.length < 3) {
     return {
@@ -167,28 +175,25 @@ export async function askCoachQuestion(question: string): Promise<CoachChatResul
   const preferences = await getUserPreferences();
   const context = await getCoachContext(session.user.id, preferences.timezone);
 
-  let answer = buildFallbackAnswer(trimmedQuestion, context);
+  let answer = buildFallbackAnswer(trimmedQuestion, context, pageContext);
 
   const modelMessages = [
     { role: "system" as const, content: buildCoachSystemPrompt() },
     {
       role: "user" as const,
-      content: buildCoachUserPrompt(context, trimmedQuestion),
+      content: buildCoachUserPrompt(context, trimmedQuestion, pageContext),
     },
   ];
 
   let hasValidModelAnswer = false;
 
   if (isGeminiEnabled()) {
-    const completion = await generateGeminiCompletion(
-      modelMessages,
-      {
-        maxTokens: 400,
-        temperature: 0.4,
-        topP: 0.9,
-        timeoutMs: 25000,
-      },
-    );
+    const completion = await generateGeminiCompletion(modelMessages, {
+      maxTokens: 400,
+      temperature: 0.4,
+      topP: 0.9,
+      timeoutMs: 25000,
+    });
 
     if (completion.finishReason === "error") {
       logger.warn("Coach Gemini generation failed, falling back", {
@@ -226,7 +231,9 @@ export async function askCoachQuestion(question: string): Promise<CoachChatResul
     context.warningSummary.critical > 0 &&
     !answer
       .toLowerCase()
-      .includes("please consult a healthcare professional before making major changes")
+      .includes(
+        "please consult a healthcare professional before making major changes",
+      )
   ) {
     answer = `${answer}\n\nPlease consult a healthcare professional before making major changes.`;
   }

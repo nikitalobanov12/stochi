@@ -1,6 +1,10 @@
 import { Sparkles, ShieldCheck, CalendarDays } from "lucide-react";
 
-export function CoachEmptyState() {
+type CoachEmptyStateProps = {
+  sectionLabel: string;
+};
+
+export function CoachEmptyState({ sectionLabel }: CoachEmptyStateProps) {
   return (
     <div className="space-y-4 rounded-lg border border-white/10 bg-white/5 p-4">
       <div className="flex items-center gap-2">
@@ -9,8 +13,9 @@ export function CoachEmptyState() {
       </div>
 
       <p className="text-muted-foreground text-sm leading-relaxed">
-        I review your last 7 days of logs, interactions, and stack consistency to
-        explain what your pattern means and what to adjust next.
+        I review your current {sectionLabel.toLowerCase()} context plus the last
+        7 days of logs, interactions, and stack consistency to explain what your
+        pattern means and what to adjust next.
       </p>
 
       <div className="grid gap-2 text-xs sm:grid-cols-2">

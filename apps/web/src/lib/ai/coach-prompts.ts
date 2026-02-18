@@ -1,4 +1,5 @@
 import { type CoachContext } from "~/server/services/coach-context";
+import { type CoachPageContext } from "~/lib/ai/coach-page-context";
 
 export function buildCoachSystemPrompt(): string {
   return `You are Stochi Coach, an account-aware supplement guidance assistant.
@@ -21,6 +22,7 @@ CRITICAL RULES:
 export function buildCoachUserPrompt(
   context: CoachContext,
   question: string,
+  pageContext?: CoachPageContext,
 ): string {
   const topSupplements = context.logSummary.topSupplements
     .map((item) => `${item.name}:${item.count}`)
@@ -41,6 +43,12 @@ export function buildCoachUserPrompt(
 - Average estimated adherence: ${context.adherence.averageEstimatedRate}%
 - Lowest adherence stacks: ${lowestStacks || "none"}
 - Warnings: critical=${context.warningSummary.critical}, medium=${context.warningSummary.medium}, low=${context.warningSummary.low}, ratio=${context.warningSummary.ratioWarnings}, synergies=${context.warningSummary.synergies}
+
+CURRENT PAGE CONTEXT
+- Route: ${pageContext?.route ?? "unknown"}
+- Section: ${pageContext?.section ?? "unknown"}
+- Entity: ${pageContext?.entityId ?? "none"}
+- Summary: ${pageContext?.summary ?? "No page context was provided."}
 
 DETERMINISTIC FACTS
 ${context.keyFacts.map((fact) => `- ${fact}`).join("\n")}

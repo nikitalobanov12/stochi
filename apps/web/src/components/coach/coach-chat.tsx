@@ -7,6 +7,7 @@ import { Button } from "~/components/ui/button";
 import { askCoachQuestion } from "~/server/actions/coach-chat";
 import { CoachEmptyState } from "~/components/coach/coach-empty-state";
 import { CoachMessage } from "~/components/coach/coach-message";
+import { type CoachPageContext } from "~/lib/ai/coach-page-context";
 
 type CoachChatMessage = {
   id: string;
@@ -15,7 +16,11 @@ type CoachChatMessage = {
   highlights?: string[];
 };
 
-export function CoachChat() {
+type CoachChatProps = {
+  pageContext: CoachPageContext;
+};
+
+export function CoachChat({ pageContext }: CoachChatProps) {
   const [messages, setMessages] = useState<CoachChatMessage[]>([]);
   const [question, setQuestion] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -39,7 +44,7 @@ export function CoachChat() {
     setQuestion("");
 
     startTransition(async () => {
-      const result = await askCoachQuestion(trimmedQuestion);
+      const result = await askCoachQuestion(trimmedQuestion, pageContext);
 
       const assistantMessage: CoachChatMessage = {
         id: `assistant-${Date.now()}`,
@@ -55,7 +60,7 @@ export function CoachChat() {
   return (
     <div className="space-y-4">
       {messages.length === 0 ? (
-        <CoachEmptyState />
+        <CoachEmptyState sectionLabel={pageContext.section} />
       ) : (
         <div className="space-y-3 rounded-lg border border-white/10 bg-black/20 p-3">
           {messages.map((message) => (
@@ -77,8 +82,11 @@ export function CoachChat() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-2">
-        <label htmlFor="coach-question" className="text-muted-foreground text-xs">
-          Ask about your last 7 days
+        <label
+          htmlFor="coach-question"
+          className="text-muted-foreground text-xs"
+        >
+          Ask about {pageContext.section.toLowerCase()}
         </label>
         <div className="flex items-center gap-2">
           <input
@@ -98,6 +106,24 @@ export function CoachChat() {
           </Button>
         </div>
       </form>
+
+      {messages.length === 0 && pageContext.suggestedQuestions.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-muted-foreground text-xs">Try asking:</p>
+          <div className="flex flex-wrap gap-1.5">
+            {pageContext.suggestedQuestions.map((prompt) => (
+              <button
+                key={prompt}
+                type="button"
+                onClick={() => setQuestion(prompt)}
+                className="rounded-full border border-white/15 bg-white/5 px-2 py-1 text-xs"
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <p className="text-muted-foreground text-[11px]">
         Coach uses your Stochi account data and provides guidance, not medical

@@ -16,6 +16,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { NavLink, MobileNavLink } from "~/components/nav-links";
 import { AutoLogTrigger } from "~/components/auto-log-trigger";
+import { CoachShell } from "~/components/coach/coach-shell";
 import { headers } from "next/headers";
 
 export default async function DashboardLayout({
@@ -54,9 +55,6 @@ export default async function DashboardLayout({
             </NavLink>
             <NavLink href="/dashboard/log" iconName="log">
               Log
-            </NavLink>
-            <NavLink href="/dashboard/coach" iconName="coach">
-              Coach
             </NavLink>
           </nav>
 
@@ -126,12 +124,12 @@ export default async function DashboardLayout({
       </header>
 
       {/* Main content - safe area padding for mobile PWA */}
-      <main className="relative z-10 flex-1 overflow-x-hidden pt-safe pb-nav-safe md:pt-0 md:pb-0">
+      <main className="pt-safe pb-nav-safe relative z-10 flex-1 overflow-x-hidden md:pt-0 md:pb-0">
         <div className="mx-auto max-w-[1400px] px-4 py-6">{children}</div>
       </main>
 
       {/* Mobile bottom navigation with safe area for home indicator */}
-      <nav className="fixed right-0 bottom-0 left-0 z-50 border-t border-white/10 bg-black/80 pb-safe backdrop-blur-xl md:hidden">
+      <nav className="pb-safe fixed right-0 bottom-0 left-0 z-50 border-t border-white/10 bg-black/80 backdrop-blur-xl md:hidden">
         <div className="flex items-center justify-around py-2">
           <MobileNavLink href="/dashboard" iconName="dashboard" label="Home" />
           <MobileNavLink
@@ -146,17 +144,14 @@ export default async function DashboardLayout({
           />
           <MobileNavLink href="/dashboard/log" iconName="log" label="Log" />
           <MobileNavLink
-            href="/dashboard/coach"
-            iconName="coach"
-            label="Coach"
-          />
-          <MobileNavLink
             href="/dashboard/settings"
             iconName="settings"
             label="Settings"
           />
         </div>
       </nav>
+
+      <CoachShell />
     </div>
   );
 }
