@@ -25,9 +25,13 @@ type CoachChatProps = {
 export function CoachChat({ pageContext, isOpen }: CoachChatProps) {
   const [messages, setMessages] = useState<CoachChatMessage[]>([]);
   const [question, setQuestion] = useState("");
+  const [streamingMessageId, setStreamingMessageId] = useState<string | null>(
+    null,
+  );
   const [isPending, startTransition] = useTransition();
   const [isProactiveLoading, setIsProactiveLoading] = useState(false);
   const hydratedRoutesRef = useRef<Set<string>>(new Set());
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const canSend = useMemo(() => question.trim().length >= 3, [question]);
   const routeKey = useMemo(
@@ -53,15 +57,17 @@ export function CoachChat({ pageContext, isOpen }: CoachChatProps) {
 
     void askCoachQuestion(proactivePrompt, pageContext)
       .then((result) => {
+        const assistantProactiveId = `assistant-proactive-${Date.now()}`;
         setMessages((currentMessages) => [
           ...currentMessages,
           {
-            id: `assistant-proactive-${Date.now()}`,
+            id: assistantProactiveId,
             role: "assistant",
             content: result.answer,
             highlights: result.highlights,
           },
         ]);
+        setStreamingMessageId(assistantProactiveId);
       })
       .finally(() => {
         setIsProactiveLoading(false);
@@ -99,12 +105,33 @@ export function CoachChat({ pageContext, isOpen }: CoachChatProps) {
       };
 
       setMessages((currentMessages) => [...currentMessages, assistantMessage]);
+      setStreamingMessageId(assistantMessage.id);
     });
   }
 
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+    });
+  }, [isOpen, messages, isPending, isProactiveLoading]);
+
   return (
-    <div className="space-y-4">
-      <div className="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-b from-white/5 to-black/20 p-3">
+    <div className="flex h-full flex-col gap-3">
+      <div className="flex flex-wrap gap-1.5">
+        <span className="rounded-full border border-cyan-400/20 bg-cyan-500/10 px-2 py-0.5 text-[10px] tracking-wide text-cyan-200 uppercase">
+          {pageContext.section}
+        </span>
+        <span className="rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[10px] tracking-wide uppercase">
+          7-day model
+        </span>
+      </div>
+
+      <div className="relative min-h-0 flex-1 overflow-x-hidden overflow-y-auto rounded-xl border border-white/10 bg-gradient-to-b from-white/5 to-black/20 p-3">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_2%,rgba(0,240,255,0.18),transparent_44%),radial-gradient(circle_at_82%_100%,rgba(57,255,20,0.1),transparent_35%)]" />
 
         {messages.length === 0 && !isProactiveLoading && (
@@ -126,6 +153,12 @@ export function CoachChat({ pageContext, isOpen }: CoachChatProps) {
                   role={message.role}
                   content={message.content}
                   highlights={message.highlights}
+                  stream={message.id === streamingMessageId}
+                  onStreamComplete={() => {
+                    setStreamingMessageId((currentId) =>
+                      currentId === message.id ? null : currentId,
+                    );
+                  }}
                 />
               </motion.div>
             ))}
@@ -143,6 +176,8 @@ export function CoachChat({ pageContext, isOpen }: CoachChatProps) {
                 : "Coach is analyzing your account data..."}
             </motion.div>
           )}
+
+          <div ref={messagesEndRef} />
         </div>
       </div>
 

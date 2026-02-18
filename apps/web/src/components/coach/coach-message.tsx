@@ -1,15 +1,83 @@
+import { useEffect, useMemo, useState } from "react";
 import { Bot, User, Lightbulb } from "lucide-react";
 
 import { cn } from "~/lib/utils";
+import { buildStreamingFrames } from "~/lib/ai/coach-streaming";
 
 type CoachMessageProps = {
   role: "user" | "assistant";
   content: string;
   highlights?: string[];
+  stream?: boolean;
+  onStreamComplete?: () => void;
 };
 
-export function CoachMessage({ role, content, highlights }: CoachMessageProps) {
+export function CoachMessage({
+  role,
+  content,
+  highlights,
+  stream = false,
+  onStreamComplete,
+}: CoachMessageProps) {
   const isAssistant = role === "assistant";
+  const [frameIndex, setFrameIndex] = useState(0);
+
+  const frames = useMemo(() => buildStreamingFrames(content, 3), [content]);
+
+  useEffect(() => {
+    if (!stream || !isAssistant || frames.length <= 1) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setFrameIndex((currentIndex) => {
+        const nextIndex = currentIndex + 1;
+        if (nextIndex >= frames.length - 1) {
+          clearInterval(interval);
+          onStreamComplete?.();
+          return frames.length - 1;
+        }
+        return nextIndex;
+      });
+    }, 38);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [frames.length, isAssistant, onStreamComplete, stream]);
+
+  const renderedContent =
+    stream && isAssistant ? (frames[frameIndex] ?? content) : content;
+
+  const sections = useMemo(() => {
+    if (!isAssistant) {
+      return null;
+    }
+
+    const meaningMarker = "WHAT THIS MEANS";
+    const nextMarker = "WHAT TO DO NEXT";
+    const meaningIndex = renderedContent.indexOf(meaningMarker);
+    const nextIndex = renderedContent.indexOf(nextMarker);
+
+    if (meaningIndex === -1 || nextIndex === -1) {
+      return null;
+    }
+
+    const meaning = renderedContent
+      .slice(meaningIndex + meaningMarker.length, nextIndex)
+      .trim();
+    const nextRaw = renderedContent.slice(nextIndex + nextMarker.length).trim();
+    const nextItems = nextRaw
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
+      .map((line) => line.replace(/^[-*]\s*/, ""));
+
+    return {
+      meaning,
+      nextItems,
+    };
+  }, [isAssistant, renderedContent]);
 
   return (
     <div className={cn("flex gap-2", !isAssistant && "justify-end")}>
@@ -27,7 +95,31 @@ export function CoachMessage({ role, content, highlights }: CoachMessageProps) {
             : "border-cyan-500/30 bg-cyan-500/10 shadow-[0_0_18px_rgba(0,240,255,0.08)]",
         )}
       >
-        <p>{content}</p>
+        {sections ? (
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <p className="text-[10px] tracking-[0.12em] text-cyan-300/90 uppercase">
+                What This Means
+              </p>
+              <p>{sections.meaning}</p>
+            </div>
+
+            {sections.nextItems.length > 0 && (
+              <div className="space-y-1.5 rounded-md border border-cyan-400/20 bg-cyan-500/5 p-2">
+                <p className="text-[10px] tracking-[0.12em] text-cyan-300/90 uppercase">
+                  What To Do Next
+                </p>
+                {sections.nextItems.map((item) => (
+                  <p key={item} className="text-xs leading-relaxed">
+                    - {item}
+                  </p>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <p>{renderedContent}</p>
+        )}
 
         {isAssistant && highlights && highlights.length > 0 && (
           <div className="mt-3 space-y-1 rounded-md border border-white/10 bg-black/20 p-2">

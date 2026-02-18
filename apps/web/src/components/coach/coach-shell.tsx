@@ -1,18 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
-import { MessageCircle, Sparkles } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { MessageCircle, Minimize2, Sparkles } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 import { Button } from "~/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "~/components/ui/sheet";
 import { CoachChat } from "~/components/coach/coach-chat";
 import { buildCoachPageContext } from "~/lib/ai/coach-page-context";
 
@@ -40,7 +33,7 @@ export function CoachShell() {
 
         <Button
           type="button"
-          onClick={() => setIsOpen(true)}
+          onClick={() => setIsOpen((open) => !open)}
           className="relative h-12 rounded-full border border-cyan-400/35 bg-black/80 px-4 text-cyan-100 shadow-[0_0_30px_rgba(0,240,255,0.12)] backdrop-blur"
         >
           <motion.span
@@ -53,27 +46,46 @@ export function CoachShell() {
         </Button>
       </motion.div>
 
-      <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetContent
-          side="right"
-          className="w-full border-l border-cyan-500/20 bg-[#0d1117]/95 sm:max-w-md"
-        >
-          <SheetHeader className="pb-2">
-            <SheetTitle className="flex items-center gap-2 font-mono">
-              <MessageCircle className="h-4 w-4 text-cyan-300" />
-              Stochi Coach
-            </SheetTitle>
-            <SheetDescription>
-              Context-aware guidance for {pageContext.section.toLowerCase()}{" "}
-              using your current page and last 7 days.
-            </SheetDescription>
-          </SheetHeader>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 22, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 16, scale: 0.98 }}
+            transition={{ duration: 0.22, ease: "easeOut" }}
+            className="fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+9rem)] z-50 w-[calc(100vw-2rem)] max-w-[430px] overflow-hidden rounded-2xl border border-cyan-500/20 bg-[#0d1117]/95 shadow-[0_24px_80px_rgba(0,0,0,0.5)] backdrop-blur md:bottom-22"
+          >
+            <div className="relative border-b border-cyan-500/20 px-4 pt-3 pb-3">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_0%,rgba(0,240,255,0.12),transparent_45%)]" />
+              <div className="relative z-10 flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <p className="flex items-center gap-2 font-mono text-sm">
+                    <MessageCircle className="h-4 w-4 text-cyan-300" />
+                    Stochi Coach
+                  </p>
+                  <p className="text-muted-foreground text-xs leading-relaxed">
+                    Live coaching for {pageContext.section.toLowerCase()} using
+                    current-page context and your last 7 days.
+                  </p>
+                </div>
 
-          <div className="pb-safe px-4">
-            <CoachChat pageContext={pageContext} isOpen={isOpen} />
-          </div>
-        </SheetContent>
-      </Sheet>
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  className="text-muted-foreground hover:text-foreground rounded-md border border-white/10 bg-white/5 p-1.5 transition-colors"
+                  aria-label="Minimize coach"
+                >
+                  <Minimize2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="pb-safe h-[min(68vh,620px)] px-4 pt-3">
+              <CoachChat pageContext={pageContext} isOpen={isOpen} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
