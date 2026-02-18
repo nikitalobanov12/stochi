@@ -5,6 +5,7 @@ import { db } from "~/server/db";
 import { stack } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
 import { checkInteractions } from "~/server/actions/interactions";
+import { parseStackIntentParam } from "~/lib/ai/coach-deeplinks";
 import {
   StackItemsProvider,
   type StackItemEntry,
@@ -13,10 +14,14 @@ import { StackDetailClient } from "~/components/stacks/stack-detail-client";
 
 export default async function StackDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ intent?: string | string[] }>;
 }) {
   const { id } = await params;
+  const resolvedSearchParams = await searchParams;
+  const initialIntent = parseStackIntentParam(resolvedSearchParams.intent);
   const session = await getSession();
   if (!session) return null;
 
@@ -77,6 +82,7 @@ export default async function StackDetailPage({
         supplements={allSupplements}
         interactions={interactions}
         ratioWarnings={ratioWarnings}
+        initialIntent={initialIntent}
       />
     </StackItemsProvider>
   );

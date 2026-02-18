@@ -21,6 +21,15 @@ import { getCoachContext } from "~/server/services/coach-context";
 export type CoachChatResult = {
   answer: string;
   highlights: string[];
+  metrics: {
+    adherence: number;
+    critical: number;
+    medium: number;
+    ratioWarnings: number;
+    activeDays: number;
+  };
+  focusSupplement: string | null;
+  suggestedCommand: string | null;
   usedWindowDays: 7;
   error?: string;
 };
@@ -33,9 +42,14 @@ type CoachCacheEntry = {
 const COACH_CACHE_TTL_MS = 30 * 60 * 1000;
 const coachCache = new Map<string, CoachCacheEntry>();
 
-function getCacheKey(userId: string, question: string): string {
+function getCacheKey(
+  userId: string,
+  question: string,
+  pageContext?: CoachPageContext,
+): string {
   const normalized = question.toLowerCase().trim().slice(0, 200);
-  return `${userId}:${normalized}`;
+  const pageKey = `${pageContext?.route ?? "unknown"}:${pageContext?.entityId ?? "none"}`;
+  return `${userId}:${pageKey}:${normalized}`;
 }
 
 function getCachedResult(cacheKey: string): CoachChatResult | null {
@@ -151,6 +165,15 @@ export async function askCoachQuestion(
     return {
       answer: "Please ask a longer question so I can help.",
       highlights: [],
+      metrics: {
+        adherence: 0,
+        critical: 0,
+        medium: 0,
+        ratioWarnings: 0,
+        activeDays: 0,
+      },
+      focusSupplement: null,
+      suggestedCommand: null,
       usedWindowDays: 7,
       error: "Question is too short.",
     };
@@ -161,12 +184,21 @@ export async function askCoachQuestion(
     return {
       answer: "Please sign in to use Coach.",
       highlights: [],
+      metrics: {
+        adherence: 0,
+        critical: 0,
+        medium: 0,
+        ratioWarnings: 0,
+        activeDays: 0,
+      },
+      focusSupplement: null,
+      suggestedCommand: null,
       usedWindowDays: 7,
       error: "Not authenticated.",
     };
   }
 
-  const cacheKey = getCacheKey(session.user.id, trimmedQuestion);
+  const cacheKey = getCacheKey(session.user.id, trimmedQuestion, pageContext);
   const cached = getCachedResult(cacheKey);
   if (cached) {
     return cached;
@@ -241,9 +273,42 @@ export async function askCoachQuestion(
   const result: CoachChatResult = {
     answer,
     highlights: extractHighlights(answer),
+    metrics: {
+      adherence: context.adherence.averageEstimatedRate,
+      critical: context.warningSummary.critical,
+      medium: context.warningSummary.medium,
+      ratioWarnings: context.warningSummary.ratioWarnings,
+      activeDays: context.logSummary.activeDays,
+    },
+    focusSupplement: context.logSummary.topSupplements[0]?.name ?? null,
+    suggestedCommand: buildSuggestedCommand(
+      extractHighlights(answer),
+      context.logSummary.topSupplements[0]?.name ?? null,
+    ),
     usedWindowDays: 7,
   };
 
   setCachedResult(cacheKey, result);
   return result;
+}
+
+function buildSuggestedCommand(
+  highlights: string[],
+  focusSupplement: string | null,
+): string | null {
+  if (focusSupplement) {
+    return focusSupplement;
+  }
+
+  const firstHighlight = highlights[0]?.trim();
+  if (!firstHighlight) {
+    return null;
+  }
+
+  const lower = firstHighlight.toLowerCase();
+  if (lower.includes("log") || lower.includes("timing")) {
+    return firstHighlight.slice(0, 60);
+  }
+
+  return null;
 }

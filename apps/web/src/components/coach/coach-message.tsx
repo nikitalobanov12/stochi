@@ -2,12 +2,21 @@ import { useEffect, useMemo, useState } from "react";
 import { Bot, User, Lightbulb } from "lucide-react";
 
 import { cn } from "~/lib/utils";
-import { buildStreamingFrames } from "~/lib/ai/coach-streaming";
+import { getTypingStepDelayMs } from "~/lib/ai/coach-typing";
 
 type CoachMessageProps = {
   role: "user" | "assistant";
   content: string;
   highlights?: string[];
+  metricSnapshot?: {
+    adherence: number;
+    critical: number;
+    medium: number;
+    ratioWarnings: number;
+    activeDays: number;
+  };
+  quickActions?: Array<{ label: string; href: string }>;
+  onQuickAction?: (href: string) => void;
   stream?: boolean;
   onStreamComplete?: () => void;
 };
@@ -16,38 +25,50 @@ export function CoachMessage({
   role,
   content,
   highlights,
+  metricSnapshot,
+  quickActions,
+  onQuickAction,
   stream = false,
   onStreamComplete,
 }: CoachMessageProps) {
   const isAssistant = role === "assistant";
-  const [frameIndex, setFrameIndex] = useState(0);
-
-  const frames = useMemo(() => buildStreamingFrames(content, 3), [content]);
+  const [typedCharacterCount, setTypedCharacterCount] = useState(0);
 
   useEffect(() => {
-    if (!stream || !isAssistant || frames.length <= 1) {
+    if (!stream || !isAssistant) {
       return;
     }
 
-    const interval = setInterval(() => {
-      setFrameIndex((currentIndex) => {
-        const nextIndex = currentIndex + 1;
-        if (nextIndex >= frames.length - 1) {
-          clearInterval(interval);
-          onStreamComplete?.();
-          return frames.length - 1;
-        }
-        return nextIndex;
-      });
-    }, 38);
+    let timeoutHandle: ReturnType<typeof setTimeout> | null = null;
+
+    timeoutHandle = setTimeout(() => {
+      setTypedCharacterCount(0);
+    }, 0);
+
+    const step = (currentIndex: number) => {
+      if (currentIndex >= content.length) {
+        onStreamComplete?.();
+        return;
+      }
+
+      const nextIndex = currentIndex + 1;
+      setTypedCharacterCount(nextIndex);
+      const currentCharacter = content[nextIndex - 1] ?? "";
+      const delayMs = getTypingStepDelayMs(currentCharacter);
+      timeoutHandle = setTimeout(() => step(nextIndex), delayMs);
+    };
+
+    timeoutHandle = setTimeout(() => step(0), 30);
 
     return () => {
-      clearInterval(interval);
+      if (timeoutHandle) {
+        clearTimeout(timeoutHandle);
+      }
     };
-  }, [frames.length, isAssistant, onStreamComplete, stream]);
+  }, [content, isAssistant, onStreamComplete, stream]);
 
   const renderedContent =
-    stream && isAssistant ? (frames[frameIndex] ?? content) : content;
+    stream && isAssistant ? content.slice(0, typedCharacterCount) : content;
 
   const sections = useMemo(() => {
     if (!isAssistant) {
@@ -97,6 +118,38 @@ export function CoachMessage({
       >
         {sections ? (
           <div className="space-y-3">
+            {metricSnapshot && (
+              <div className="flex flex-wrap gap-1.5">
+                <MetricChip
+                  label={`adherence ${metricSnapshot.adherence}%`}
+                  value={metricSnapshot.adherence}
+                  tone="cyan"
+                />
+                <MetricChip
+                  label={`active days ${metricSnapshot.activeDays}`}
+                  value={Math.round((metricSnapshot.activeDays / 7) * 100)}
+                  tone="slate"
+                />
+                <MetricChip
+                  label={`critical ${metricSnapshot.critical}`}
+                  value={Math.min(metricSnapshot.critical * 25, 100)}
+                  tone="amber"
+                />
+                <MetricChip
+                  label={`medium ${metricSnapshot.medium}`}
+                  value={Math.min(metricSnapshot.medium * 20, 100)}
+                  tone="yellow"
+                />
+                {metricSnapshot.ratioWarnings > 0 && (
+                  <MetricChip
+                    label={`ratio ${metricSnapshot.ratioWarnings}`}
+                    value={Math.min(metricSnapshot.ratioWarnings * 20, 100)}
+                    tone="fuchsia"
+                  />
+                )}
+              </div>
+            )}
+
             <div className="space-y-1">
               <p className="text-[10px] tracking-[0.12em] text-cyan-300/90 uppercase">
                 What This Means
@@ -134,6 +187,21 @@ export function CoachMessage({
             ))}
           </div>
         )}
+
+        {isAssistant && quickActions && quickActions.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {quickActions.map((action) => (
+              <button
+                key={action.href}
+                type="button"
+                onClick={() => onQuickAction?.(action.href)}
+                className="rounded-full border border-cyan-400/20 bg-cyan-500/10 px-2.5 py-1 text-[11px] transition-colors hover:bg-cyan-500/20"
+              >
+                {action.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {!isAssistant && (
@@ -142,5 +210,40 @@ export function CoachMessage({
         </div>
       )}
     </div>
+  );
+}
+
+function MetricChip({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone: "cyan" | "slate" | "amber" | "yellow" | "fuchsia";
+}) {
+  const clampedValue = Math.max(0, Math.min(100, value));
+
+  const toneClasses: Record<typeof tone, string> = {
+    cyan: "border-cyan-400/25 bg-cyan-500/10",
+    slate: "border-white/15 bg-white/5",
+    amber: "border-amber-400/25 bg-amber-500/10",
+    yellow: "border-yellow-400/25 bg-yellow-500/10",
+    fuchsia: "border-fuchsia-400/25 bg-fuchsia-500/10",
+  };
+
+  return (
+    <span
+      className={cn(
+        "relative overflow-hidden rounded-full border px-2 py-0.5 text-[10px] uppercase",
+        toneClasses[tone],
+      )}
+    >
+      <span
+        className="absolute inset-y-0 left-0 bg-white/10"
+        style={{ width: `${clampedValue}%` }}
+      />
+      <span className="relative z-10">{label}</span>
+    </span>
   );
 }

@@ -3,11 +3,16 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Loader2, Send, WandSparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import { Button } from "~/components/ui/button";
 import { askCoachQuestion } from "~/server/actions/coach-chat";
 import { CoachEmptyState } from "~/components/coach/coach-empty-state";
 import { CoachMessage } from "~/components/coach/coach-message";
+import {
+  buildLogCommandHref,
+  buildStackIntentHref,
+} from "~/lib/ai/coach-deeplinks";
 import { type CoachPageContext } from "~/lib/ai/coach-page-context";
 
 type CoachChatMessage = {
@@ -15,14 +20,29 @@ type CoachChatMessage = {
   role: "user" | "assistant";
   content: string;
   highlights?: string[];
+  metricSnapshot?: {
+    adherence: number;
+    critical: number;
+    medium: number;
+    ratioWarnings: number;
+    activeDays: number;
+  };
+  focusSupplement?: string | null;
+  suggestedCommand?: string | null;
 };
 
 type CoachChatProps = {
   pageContext: CoachPageContext;
   isOpen: boolean;
+  onNavigateFromQuickAction?: () => void;
 };
 
-export function CoachChat({ pageContext, isOpen }: CoachChatProps) {
+export function CoachChat({
+  pageContext,
+  isOpen,
+  onNavigateFromQuickAction,
+}: CoachChatProps) {
+  const router = useRouter();
   const [messages, setMessages] = useState<CoachChatMessage[]>([]);
   const [question, setQuestion] = useState("");
   const [streamingMessageId, setStreamingMessageId] = useState<string | null>(
@@ -38,7 +58,6 @@ export function CoachChat({ pageContext, isOpen }: CoachChatProps) {
     () => `${pageContext.route}:${pageContext.entityId ?? "none"}`,
     [pageContext.route, pageContext.entityId],
   );
-
   useEffect(() => {
     if (!isOpen) {
       return;
@@ -53,7 +72,7 @@ export function CoachChat({ pageContext, isOpen }: CoachChatProps) {
       setIsProactiveLoading(true);
     }, 0);
 
-    const proactivePrompt = `Give me a proactive check-in for the ${pageContext.section} view. Explain one likely bottleneck and one concrete next action I can take in Stochi right now.`;
+    const proactivePrompt = `Give me a proactive check-in for the ${pageContext.section} view using ${pageContext.voiceStyle} style. Explain one likely bottleneck and one concrete next action I can take in Stochi right now.`;
 
     void askCoachQuestion(proactivePrompt, pageContext)
       .then((result) => {
@@ -65,6 +84,9 @@ export function CoachChat({ pageContext, isOpen }: CoachChatProps) {
             role: "assistant",
             content: result.answer,
             highlights: result.highlights,
+            metricSnapshot: result.metrics,
+            focusSupplement: result.focusSupplement,
+            suggestedCommand: result.suggestedCommand,
           },
         ]);
         setStreamingMessageId(assistantProactiveId);
@@ -102,6 +124,9 @@ export function CoachChat({ pageContext, isOpen }: CoachChatProps) {
         role: "assistant",
         content: result.answer,
         highlights: result.highlights,
+        metricSnapshot: result.metrics,
+        focusSupplement: result.focusSupplement,
+        suggestedCommand: result.suggestedCommand,
       };
 
       setMessages((currentMessages) => [...currentMessages, assistantMessage]);
@@ -125,6 +150,9 @@ export function CoachChat({ pageContext, isOpen }: CoachChatProps) {
       <div className="flex flex-wrap gap-1.5">
         <span className="rounded-full border border-cyan-400/20 bg-cyan-500/10 px-2 py-0.5 text-[10px] tracking-wide text-cyan-200 uppercase">
           {pageContext.section}
+        </span>
+        <span className="rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[10px] tracking-wide uppercase">
+          {pageContext.voiceStyle}
         </span>
         <span className="rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[10px] tracking-wide uppercase">
           7-day model
@@ -153,6 +181,21 @@ export function CoachChat({ pageContext, isOpen }: CoachChatProps) {
                   role={message.role}
                   content={message.content}
                   highlights={message.highlights}
+                  metricSnapshot={message.metricSnapshot}
+                  quickActions={
+                    message.role === "assistant"
+                      ? buildQuickActions(
+                          pageContext,
+                          message.focusSupplement,
+                          message.suggestedCommand,
+                          message.metricSnapshot,
+                        )
+                      : undefined
+                  }
+                  onQuickAction={(href) => {
+                    router.push(href);
+                    onNavigateFromQuickAction?.();
+                  }}
                   stream={message.id === streamingMessageId}
                   onStreamComplete={() => {
                     setStreamingMessageId((currentId) =>
@@ -170,7 +213,24 @@ export function CoachChat({ pageContext, isOpen }: CoachChatProps) {
               animate={{ opacity: 1 }}
               className="text-muted-foreground flex items-center gap-2 text-xs"
             >
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              <div className="flex items-center gap-1">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <motion.div
+                  className="h-3 w-8 overflow-hidden"
+                  initial={false}
+                  animate={{ opacity: 1 }}
+                >
+                  <motion.div
+                    className="h-full w-full bg-[linear-gradient(90deg,transparent_0%,rgba(0,240,255,0.45)_50%,transparent_100%)]"
+                    animate={{ x: ["-120%", "140%"] }}
+                    transition={{
+                      duration: 1.1,
+                      ease: "linear",
+                      repeat: Infinity,
+                    }}
+                  />
+                </motion.div>
+              </div>
               {isProactiveLoading
                 ? "Coach is scanning this page and your recent patterns..."
                 : "Coach is analyzing your account data..."}
@@ -238,4 +298,80 @@ export function CoachChat({ pageContext, isOpen }: CoachChatProps) {
       </p>
     </div>
   );
+}
+
+function buildQuickActions(
+  pageContext: CoachPageContext,
+  focusSupplement?: string | null,
+  suggestedCommand?: string | null,
+  metricSnapshot?: {
+    adherence: number;
+    critical: number;
+    medium: number;
+    ratioWarnings: number;
+    activeDays: number;
+  },
+): Array<{ label: string; href: string }> {
+  const commandSeed = suggestedCommand ?? focusSupplement ?? "magnesium";
+
+  if (pageContext.route === "log") {
+    const commandLink = buildLogCommandHref(commandSeed);
+
+    return [
+      { label: "Prefill Quick Log", href: commandLink },
+      { label: "Review Stacks", href: "/dashboard/stacks" },
+    ];
+  }
+
+  if (pageContext.route === "stack-detail") {
+    const stackPrimaryIntent =
+      metricSnapshot && metricSnapshot.critical > 0
+        ? "interactions"
+        : "compounds";
+
+    return [
+      {
+        label:
+          stackPrimaryIntent === "interactions"
+            ? "Jump To Warnings"
+            : "Jump To Compounds",
+        href: pageContext.entityId
+          ? buildStackIntentHref(pageContext.entityId, stackPrimaryIntent)
+          : "/dashboard/stacks",
+      },
+      {
+        label: "Prep Stack Log",
+        href: buildLogCommandHref(commandSeed),
+      },
+    ];
+  }
+
+  if (pageContext.route === "learn") {
+    return [
+      { label: "Open Dashboard", href: "/dashboard" },
+      {
+        label: "Prep Learn Follow-up",
+        href: buildLogCommandHref(commandSeed),
+      },
+    ];
+  }
+
+  if (pageContext.route === "protocol") {
+    return [
+      { label: "Open Protocol", href: "/dashboard/protocol" },
+      {
+        label: "Prep Protocol Log",
+        href: buildLogCommandHref(commandSeed),
+      },
+    ];
+  }
+
+  return [
+    { label: "Open Dashboard", href: "/dashboard" },
+    { label: "Open Stacks", href: "/dashboard/stacks" },
+    {
+      label: "Prep Quick Log",
+      href: buildLogCommandHref(commandSeed),
+    },
+  ];
 }

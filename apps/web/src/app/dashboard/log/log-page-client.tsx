@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { Trash2, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Trash2, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
@@ -42,6 +43,7 @@ type LogPageClientProps = {
   interactions: InteractionWarning[];
   ratioWarnings: RatioWarning[];
   timingWarnings: TimingWarning[];
+  initialCommand: string | null;
 };
 
 export function LogPageClient({
@@ -52,6 +54,7 @@ export function LogPageClient({
   interactions,
   ratioWarnings,
   timingWarnings,
+  initialCommand,
 }: LogPageClientProps) {
   return (
     <LogProvider initialLogs={todayLogs}>
@@ -62,6 +65,7 @@ export function LogPageClient({
         interactions={interactions}
         ratioWarnings={ratioWarnings}
         timingWarnings={timingWarnings}
+        initialCommand={initialCommand}
       />
     </LogProvider>
   );
@@ -74,13 +78,37 @@ function LogPageContent({
   interactions,
   ratioWarnings,
   timingWarnings,
+  initialCommand,
 }: Omit<LogPageClientProps, "todayLogs">) {
-  const { logs: todayLogs, deleteLogOptimistic, logStackOptimistic } = useLogContext();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const {
+    logs: todayLogs,
+    deleteLogOptimistic,
+    logStackOptimistic,
+  } = useLogContext();
   const [loggingStackId, setLoggingStackId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!initialCommand) {
+      return;
+    }
+
+    const currentParams = new URLSearchParams(searchParams.toString());
+    if (!currentParams.has("coachCommand")) {
+      return;
+    }
+
+    currentParams.delete("coachCommand");
+    const nextQuery = currentParams.toString();
+    const nextUrl = nextQuery ? `${pathname}?${nextQuery}` : pathname;
+    router.replace(nextUrl, { scroll: false });
+  }, [initialCommand, pathname, router, searchParams]);
 
   async function handleLogStack(stack: UserStack) {
     if (stack.items.length === 0) return;
-    
+
     setLoggingStackId(stack.id);
     try {
       const result = await logStackOptimistic(stack.id, stack.items);
@@ -115,7 +143,23 @@ function LogPageContent({
 
       {/* Command Bar */}
       <div className="glass-card p-3">
-        <SafeCommandBar supplements={allSupplements} />
+        {initialCommand && (
+          <div className="mb-2 rounded-md border border-cyan-400/25 bg-cyan-500/10 px-3 py-2">
+            <p className="flex items-center gap-1.5 font-mono text-[10px] tracking-wider text-cyan-200 uppercase">
+              <Sparkles className="h-3 w-3" />
+              Coach prep loaded
+            </p>
+            <p className="text-muted-foreground mt-1 font-mono text-xs">
+              Command prefilled:{" "}
+              <span className="text-foreground">{initialCommand}</span>
+            </p>
+          </div>
+        )}
+        <SafeCommandBar
+          supplements={allSupplements}
+          initialInput={initialCommand ?? undefined}
+          isCoachPrimed={!!initialCommand}
+        />
       </div>
 
       {/* Quick Log Stacks */}
@@ -133,11 +177,13 @@ function LogPageContent({
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="border-white/10 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.04] font-mono text-xs"
+                  className="border-white/10 bg-white/[0.02] font-mono text-xs hover:border-white/20 hover:bg-white/[0.04]"
                   disabled={s.items.length === 0 || isLogging}
                   onClick={() => handleLogStack(s)}
                 >
-                  {isLogging && <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />}
+                  {isLogging && (
+                    <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
+                  )}
                   {s.name}
                   <Badge
                     variant="secondary"

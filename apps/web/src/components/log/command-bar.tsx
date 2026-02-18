@@ -63,6 +63,8 @@ export type LogOptions = {
 type CommandBarProps = {
   supplements: Supplement[];
   onLog: (options: LogOptions) => Promise<void>;
+  initialInput?: string;
+  isCoachPrimed?: boolean;
 };
 
 const UNITS = ["mg", "mcg", "g", "IU", "ml"] as const;
@@ -82,7 +84,12 @@ function parseDosageInput(text: string): ParsedDosage | null {
   return { value, unit };
 }
 
-export function CommandBar({ supplements, onLog }: CommandBarProps) {
+export function CommandBar({
+  supplements,
+  onLog,
+  initialInput,
+  isCoachPrimed = false,
+}: CommandBarProps) {
   const [input, setInput] = useState("");
   const [selectedSupplement, setSelectedSupplement] =
     useState<Supplement | null>(null);
@@ -100,6 +107,8 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
   const [aiSuggestions, setAiSuggestions] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const initialInputAppliedRef = useRef(false);
+  const [showCoachPulse, setShowCoachPulse] = useState(isCoachPrimed);
 
   // Parse the full input for natural language commands
   const parsedCommand = useMemo(() => parseCommand(input), [input]);
@@ -238,6 +247,33 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
       suggestions.length > 0
     );
   }, [selectedSupplement, parsedCommand, suggestions]);
+
+  useEffect(() => {
+    if (!initialInput || initialInputAppliedRef.current) {
+      return;
+    }
+
+    initialInputAppliedRef.current = true;
+    setInput(initialInput);
+    setOpen(true);
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 60);
+  }, [initialInput]);
+
+  useEffect(() => {
+    if (!isCoachPrimed) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setShowCoachPulse(false);
+    }, 3600);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [isCoachPrimed]);
 
   useEffect(() => {
     if (feedback) {
@@ -416,7 +452,11 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
       <Command shouldFilter={false} className="overflow-visible bg-transparent">
         <div className="relative">
           <Terminal className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-          <div className="bg-background flex items-center gap-1 rounded-md border pr-3 pl-10">
+          <div
+            className={`bg-background flex items-center gap-1 rounded-md border pr-3 pl-10 transition-all ${
+              showCoachPulse ? "border-cyan-400/45 ring-2 ring-cyan-400/25" : ""
+            }`}
+          >
             {selectedSupplement && (
               <Badge
                 variant="secondary"
@@ -507,6 +547,15 @@ export function CommandBar({ supplements, onLog }: CommandBarProps) {
       )}
 
       {/* One-shot log hint */}
+      {showCoachPulse && (
+        <div className="flex items-center gap-2 rounded-md border border-cyan-400/25 bg-cyan-500/10 px-3 py-2">
+          <Sparkles className="h-3 w-3 text-cyan-300" />
+          <span className="text-muted-foreground text-xs">
+            Coach primed this command bar. Adjust dosage and press Enter to log.
+          </span>
+        </div>
+      )}
+
       {canOneShotLog && suggestions.length > 0 && open && (
         <div className="bg-primary/10 flex items-center gap-2 rounded-md px-3 py-2">
           <Sparkles className="text-primary h-3 w-3" />

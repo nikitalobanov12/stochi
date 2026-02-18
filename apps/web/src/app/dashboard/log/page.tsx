@@ -10,12 +10,22 @@ import {
 } from "~/server/actions/interactions";
 import { getUserPreferences } from "~/server/actions/preferences";
 import { getStartOfDayInTimezone } from "~/lib/utils";
+import { parseCoachCommandParam } from "~/lib/ai/coach-deeplinks";
 import { LogPageClient } from "./log-page-client";
 import type { LogEntry, StackItem } from "~/components/log/log-context";
 
-export default async function LogPage() {
+type LogPageProps = {
+  searchParams: Promise<{ coachCommand?: string | string[] }>;
+};
+
+export default async function LogPage({ searchParams }: LogPageProps) {
   const session = await getSession();
   if (!session) return null;
+
+  const resolvedSearchParams = await searchParams;
+  const initialCommand = parseCoachCommandParam(
+    resolvedSearchParams.coachCommand,
+  );
 
   // Fetch user preferences for timezone-aware "today" calculation
   const preferences = await getUserPreferences();
@@ -135,18 +145,20 @@ export default async function LogPage() {
   const userStacksWithItems = userStacks.map((s) => ({
     id: s.id,
     name: s.name,
-    items: s.items.map((item): StackItem => ({
-      supplementId: item.supplementId,
-      dosage: item.dosage,
-      unit: item.unit,
-      supplement: {
-        id: item.supplement.id,
-        name: item.supplement.name,
-        isResearchChemical: item.supplement.isResearchChemical ?? false,
-        route: item.supplement.route,
-        form: item.supplement.form,
-      },
-    })),
+    items: s.items.map(
+      (item): StackItem => ({
+        supplementId: item.supplementId,
+        dosage: item.dosage,
+        unit: item.unit,
+        supplement: {
+          id: item.supplement.id,
+          name: item.supplement.name,
+          isResearchChemical: item.supplement.isResearchChemical ?? false,
+          route: item.supplement.route,
+          form: item.supplement.form,
+        },
+      }),
+    ),
   }));
 
   return (
@@ -158,6 +170,7 @@ export default async function LogPage() {
       interactions={interactions}
       ratioWarnings={ratioWarnings}
       timingWarnings={timingWarnings}
+      initialCommand={initialCommand}
     />
   );
 }

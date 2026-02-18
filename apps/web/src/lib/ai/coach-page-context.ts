@@ -2,6 +2,13 @@ export type CoachPageContext = {
   route: string;
   section: string;
   entityId: string | null;
+  voiceStyle:
+    | "tactical"
+    | "optimization"
+    | "translator"
+    | "planning"
+    | "operations"
+    | "executive";
   summary: string;
   suggestedQuestions: string[];
 };
@@ -19,6 +26,7 @@ export function buildCoachPageContext(pathname: string): CoachPageContext {
       route,
       section: "Log",
       entityId: null,
+      voiceStyle: "tactical",
       summary:
         "User is reviewing recent supplement logs and timing behavior on the log page.",
       suggestedQuestions: [
@@ -33,6 +41,7 @@ export function buildCoachPageContext(pathname: string): CoachPageContext {
       route: "stack-detail",
       section: "Stack Detail",
       entityId: routeSegments[1] ?? null,
+      voiceStyle: "optimization",
       summary:
         "User is looking at a specific stack and likely deciding dosage/timing adjustments.",
       suggestedQuestions: [
@@ -47,6 +56,7 @@ export function buildCoachPageContext(pathname: string): CoachPageContext {
       route,
       section: "Stacks",
       entityId: null,
+      voiceStyle: "planning",
       summary:
         "User is viewing their stack library and may need prioritization across multiple stacks.",
       suggestedQuestions: [
@@ -61,6 +71,7 @@ export function buildCoachPageContext(pathname: string): CoachPageContext {
       route,
       section: "Learn",
       entityId: routeSegments[1] ?? null,
+      voiceStyle: "translator",
       summary:
         "User is reading supplement research and may want practical translation into actions.",
       suggestedQuestions: [
@@ -75,6 +86,7 @@ export function buildCoachPageContext(pathname: string): CoachPageContext {
       route,
       section: "Protocol",
       entityId: null,
+      voiceStyle: "optimization",
       summary:
         "User is evaluating protocol structure and sequencing decisions.",
       suggestedQuestions: [
@@ -89,6 +101,7 @@ export function buildCoachPageContext(pathname: string): CoachPageContext {
       route,
       section: "Settings",
       entityId: null,
+      voiceStyle: "operations",
       summary:
         "User is in settings and may want data hygiene, tracking quality, or export guidance.",
       suggestedQuestions: [
@@ -102,6 +115,7 @@ export function buildCoachPageContext(pathname: string): CoachPageContext {
     route: "home",
     section: "Dashboard",
     entityId: null,
+    voiceStyle: "executive",
     summary:
       "User is on dashboard home and wants a high-level interpretation of recent biomarker and supplement patterns.",
     suggestedQuestions: [

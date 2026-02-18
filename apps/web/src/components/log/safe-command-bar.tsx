@@ -20,11 +20,17 @@ type Supplement = {
 
 type SafeCommandBarProps = {
   supplements: Supplement[];
+  initialInput?: string;
+  isCoachPrimed?: boolean;
 };
 
 type PendingLog = LogOptions;
 
-export function SafeCommandBar({ supplements }: SafeCommandBarProps) {
+export function SafeCommandBar({
+  supplements,
+  initialInput,
+  isCoachPrimed = false,
+}: SafeCommandBarProps) {
   const [isPending, startTransition] = useTransition();
   const [pendingLog, setPendingLog] = useState<PendingLog | null>(null);
   const [safetyCheck, setSafetyCheck] = useState<SafetyCheckResult | null>(
@@ -92,7 +98,12 @@ export function SafeCommandBar({ supplements }: SafeCommandBarProps) {
 
   return (
     <>
-      <CommandBar supplements={supplements} onLog={handleLog} />
+      <CommandBar
+        supplements={supplements}
+        onLog={handleLog}
+        initialInput={initialInput}
+        isCoachPrimed={isCoachPrimed}
+      />
       <ToxicityWarningDialog
         open={showWarning}
         onOpenChange={setShowWarning}

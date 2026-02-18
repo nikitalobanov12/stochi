@@ -1,7 +1,7 @@
 "use client";
 
-import { useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useTransition } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   Play,
@@ -27,6 +27,8 @@ import {
   type StackItemEntry,
 } from "~/components/stacks/stack-items-context";
 import { logStack, updateStack, deleteStack } from "~/server/actions/stacks";
+import { type StackIntent } from "~/lib/ai/coach-deeplinks";
+import { cn } from "~/lib/utils";
 import type {
   InteractionWarning,
   RatioWarning,
@@ -49,6 +51,7 @@ type StackDetailClientProps = {
   supplements: Supplement[];
   interactions: InteractionWarning[];
   ratioWarnings: RatioWarning[];
+  initialIntent: StackIntent | null;
 };
 
 export function StackDetailClient({
@@ -56,8 +59,11 @@ export function StackDetailClient({
   supplements,
   interactions,
   ratioWarnings,
+  initialIntent,
 }: StackDetailClientProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { items, removeItemOptimistic, isPending } = useStackItemsContext();
 
   // Loading states for different actions
@@ -65,9 +71,57 @@ export function StackDetailClient({
   const [isLoggingAll, startLogTransition] = useTransition();
   const [isRenaming, startRenameTransition] = useTransition();
   const [isDeleting, startDeleteTransition] = useTransition();
+  const [highlightedSection, setHighlightedSection] =
+    useState<StackIntent | null>(null);
 
   const warnings = interactions.filter((i) => i.type !== "synergy");
   const synergies = interactions.filter((i) => i.type === "synergy");
+
+  useEffect(() => {
+    if (!initialIntent) {
+      return;
+    }
+
+    const sectionId = `stack-section-${initialIntent}`;
+    const highlightTimer = setTimeout(() => {
+      setHighlightedSection(initialIntent);
+    }, 0);
+
+    const scrollTimer = setTimeout(() => {
+      document.getElementById(sectionId)?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 120);
+
+    const clearTimer = setTimeout(() => {
+      setHighlightedSection((currentSection) =>
+        currentSection === initialIntent ? null : currentSection,
+      );
+    }, 2600);
+
+    return () => {
+      clearTimeout(highlightTimer);
+      clearTimeout(scrollTimer);
+      clearTimeout(clearTimer);
+    };
+  }, [initialIntent]);
+
+  useEffect(() => {
+    if (!initialIntent) {
+      return;
+    }
+
+    const currentParams = new URLSearchParams(searchParams.toString());
+    if (!currentParams.has("intent")) {
+      return;
+    }
+
+    currentParams.delete("intent");
+    const nextQuery = currentParams.toString();
+    const nextUrl = nextQuery ? `${pathname}?${nextQuery}` : pathname;
+    router.replace(nextUrl, { scroll: false });
+  }, [initialIntent, pathname, router, searchParams]);
 
   function handleBack(e: React.MouseEvent) {
     e.preventDefault();
@@ -137,15 +191,19 @@ export function StackDetailClient({
       </div>
 
       {/* Supplements Section */}
-      <section className="space-y-3">
+      <section
+        id="stack-section-compounds"
+        className={cn(
+          "space-y-3 rounded-lg border border-transparent p-2 transition-all duration-500",
+          highlightedSection === "compounds" &&
+            "border-cyan-400/35 bg-cyan-500/5 shadow-[0_0_0_1px_rgba(0,240,255,0.2)_inset]",
+        )}
+      >
         <div className="flex items-center justify-between">
           <p className="text-muted-foreground text-[10px] tracking-wider uppercase">
             Compounds ({items.length})
           </p>
-          <AddSupplementsDialog
-            stackId={stack.id}
-            supplements={supplements}
-          />
+          <AddSupplementsDialog stackId={stack.id} supplements={supplements} />
         </div>
 
         <div className="glass-card">
@@ -214,10 +272,18 @@ export function StackDetailClient({
         warnings={warnings}
         synergies={synergies}
         ratioWarnings={ratioWarnings}
+        highlighted={highlightedSection === "interactions"}
       />
 
       {/* Settings Section */}
-      <section className="space-y-3">
+      <section
+        id="stack-section-settings"
+        className={cn(
+          "space-y-3 rounded-lg border border-transparent p-2 transition-all duration-500",
+          highlightedSection === "settings" &&
+            "border-cyan-400/35 bg-cyan-500/5 shadow-[0_0_0_1px_rgba(0,240,255,0.2)_inset]",
+        )}
+      >
         <p className="text-muted-foreground text-[10px] tracking-wider uppercase">
           Settings
         </p>
@@ -286,10 +352,12 @@ function InteractionsPanel({
   warnings,
   synergies,
   ratioWarnings,
+  highlighted,
 }: {
   warnings: InteractionWarning[];
   synergies: InteractionWarning[];
   ratioWarnings: RatioWarning[];
+  highlighted: boolean;
 }) {
   const hasInteractions =
     warnings.length > 0 || synergies.length > 0 || ratioWarnings.length > 0;
@@ -302,7 +370,14 @@ function InteractionsPanel({
 
   if (!hasInteractions) {
     return (
-      <section className="space-y-3">
+      <section
+        id="stack-section-interactions"
+        className={cn(
+          "space-y-3 rounded-lg border border-transparent p-2 transition-all duration-500",
+          highlighted &&
+            "border-cyan-400/35 bg-cyan-500/5 shadow-[0_0_0_1px_rgba(0,240,255,0.2)_inset]",
+        )}
+      >
         <p className="text-muted-foreground text-[10px] tracking-wider uppercase">
           Interactions
         </p>
@@ -326,7 +401,14 @@ function InteractionsPanel({
         : "border-white/10";
 
   return (
-    <section className="space-y-3">
+    <section
+      id="stack-section-interactions"
+      className={cn(
+        "space-y-3 rounded-lg border border-transparent p-2 transition-all duration-500",
+        highlighted &&
+          "border-cyan-400/35 bg-cyan-500/5 shadow-[0_0_0_1px_rgba(0,240,255,0.2)_inset]",
+      )}
+    >
       <div className="flex items-center gap-2">
         <p className="text-muted-foreground text-[10px] tracking-wider uppercase">
           Interactions
