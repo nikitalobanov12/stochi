@@ -55,6 +55,9 @@ export default async function DashboardLayout({
             <NavLink href="/dashboard/log" iconName="log">
               Log
             </NavLink>
+            <NavLink href="/dashboard/coach" iconName="coach">
+              Coach
+            </NavLink>
           </nav>
 
           <div className="flex items-center gap-4">
@@ -142,6 +145,11 @@ export default async function DashboardLayout({
             label="Stacks"
           />
           <MobileNavLink href="/dashboard/log" iconName="log" label="Log" />
+          <MobileNavLink
+            href="/dashboard/coach"
+            iconName="coach"
+            label="Coach"
+          />
           <MobileNavLink
             href="/dashboard/settings"
             iconName="settings"

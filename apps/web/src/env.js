@@ -18,6 +18,10 @@ export const env = createEnv({
     HUGGINGFACE_API_KEY: z.string().optional(),
     // OpenAI API key (optional - enables RAG embeddings for Learn section)
     OPENAI_API_KEY: z.string().optional(),
+    // Gemini API key (optional - enables Gemini for Coach chat)
+    GEMINI_API_KEY: z.string().optional(),
+    // Gemini model override (optional)
+    GEMINI_MODEL: z.string().optional(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -40,6 +44,8 @@ export const env = createEnv({
     ENGINE_INTERNAL_KEY: process.env.ENGINE_INTERNAL_KEY,
     HUGGINGFACE_API_KEY: process.env.HUGGINGFACE_API_KEY,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+    GEMINI_MODEL: process.env.GEMINI_MODEL,
     NODE_ENV: process.env.NODE_ENV,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,

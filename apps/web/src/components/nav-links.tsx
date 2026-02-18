@@ -9,6 +9,7 @@ import {
   Settings,
   Loader2,
   Calendar,
+  MessageSquare,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "~/lib/utils";
@@ -20,6 +21,7 @@ const iconMap: Record<string, LucideIcon> = {
   log: PlusCircle,
   settings: Settings,
   protocol: Calendar,
+  coach: MessageSquare,
 };
 
 type NavLinkProps = {

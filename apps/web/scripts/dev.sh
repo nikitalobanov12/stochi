@@ -39,12 +39,38 @@ fi
 start_db() {
   if [ "$(docker ps -q -f name="$DB_CONTAINER_NAME")" ]; then
     echo "Database '$DB_CONTAINER_NAME' already running"
+    if ! docker port "$DB_CONTAINER_NAME" 5432/tcp | grep -q ":$DB_PORT$"; then
+      echo "Warning: '$DB_CONTAINER_NAME' is missing host port mapping for $DB_PORT."
+      echo "Recreating container with proper port mapping..."
+      docker stop "$DB_CONTAINER_NAME" > /dev/null 2>&1 || true
+      docker rm "$DB_CONTAINER_NAME" > /dev/null 2>&1 || true
+      docker run -d \
+        --name "$DB_CONTAINER_NAME" \
+        -e POSTGRES_USER="postgres" \
+        -e POSTGRES_PASSWORD="$DB_PASSWORD" \
+        -e POSTGRES_DB="$DB_NAME" \
+        -p "$DB_PORT":5432 \
+        postgres > /dev/null
+      wait_for_db
+    fi
     return 0
   fi
 
   if [ "$(docker ps -q -a -f name="$DB_CONTAINER_NAME")" ]; then
     echo "Starting database container '$DB_CONTAINER_NAME'..."
     docker start "$DB_CONTAINER_NAME" > /dev/null
+    if ! docker port "$DB_CONTAINER_NAME" 5432/tcp | grep -q ":$DB_PORT$"; then
+      echo "Warning: '$DB_CONTAINER_NAME' is missing host port mapping for $DB_PORT."
+      echo "Recreating container with proper port mapping..."
+      docker rm -f "$DB_CONTAINER_NAME" > /dev/null 2>&1 || true
+      docker run -d \
+        --name "$DB_CONTAINER_NAME" \
+        -e POSTGRES_USER="postgres" \
+        -e POSTGRES_PASSWORD="$DB_PASSWORD" \
+        -e POSTGRES_DB="$DB_NAME" \
+        -p "$DB_PORT":5432 \
+        postgres > /dev/null
+    fi
     wait_for_db
     return 0
   fi
@@ -63,7 +89,8 @@ start_db() {
 wait_for_db() {
   echo "Waiting for database to be ready..."
   for _ in {1..30}; do
-    if docker exec "$DB_CONTAINER_NAME" pg_isready -U postgres > /dev/null 2>&1; then
+    if docker exec "$DB_CONTAINER_NAME" pg_isready -U postgres > /dev/null 2>&1 && \
+       (echo > "/dev/tcp/127.0.0.1/$DB_PORT") > /dev/null 2>&1; then
       echo "Database ready"
       return 0
     fi
@@ -98,9 +125,15 @@ start_engine() {
   go run ./cmd/server &
   ENGINE_PID=$!
   cd "$PROJECT_DIR"
-  
-  # Wait a moment for the engine to start
+
+  # Wait briefly and verify the process is still alive
   sleep 2
+  if ! kill -0 "$ENGINE_PID" 2>/dev/null; then
+    echo "Warning: Go engine exited during startup. Continuing without local engine."
+    ENGINE_PID=""
+    return 0
+  fi
+
   echo "Go engine started (PID: $ENGINE_PID)"
 }
 
