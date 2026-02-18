@@ -14,7 +14,7 @@ export function CoachMessage({ role, content, highlights }: CoachMessageProps) {
   return (
     <div className={cn("flex gap-2", !isAssistant && "justify-end")}>
       {isAssistant && (
-        <div className="mt-0.5 rounded-full border border-white/10 bg-amber-500/10 p-1.5">
+        <div className="mt-0.5 rounded-full border border-cyan-400/25 bg-cyan-500/10 p-1.5 shadow-[0_0_16px_rgba(0,240,255,0.15)]">
           <Bot className="h-3.5 w-3.5 text-amber-400" />
         </div>
       )}
@@ -23,8 +23,8 @@ export function CoachMessage({ role, content, highlights }: CoachMessageProps) {
         className={cn(
           "max-w-[90%] rounded-lg border px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap sm:max-w-[80%]",
           isAssistant
-            ? "border-white/10 bg-white/5"
-            : "border-cyan-500/30 bg-cyan-500/10",
+            ? "border-cyan-500/25 bg-[linear-gradient(165deg,rgba(255,255,255,0.05),rgba(8,20,26,0.55))]"
+            : "border-cyan-500/30 bg-cyan-500/10 shadow-[0_0_18px_rgba(0,240,255,0.08)]",
         )}
       >
         <p>{content}</p>

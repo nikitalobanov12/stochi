@@ -15,7 +15,8 @@ export function CoachEmptyState({ sectionLabel }: CoachEmptyStateProps) {
       <p className="text-muted-foreground text-sm leading-relaxed">
         I review your current {sectionLabel.toLowerCase()} context plus the last
         7 days of logs, interactions, and stack consistency to explain what your
-        pattern means and what to adjust next.
+        pattern means and what to adjust next. I start with a proactive check-in
+        as soon as you open me.
       </p>
 
       <div className="grid gap-2 text-xs sm:grid-cols-2">
