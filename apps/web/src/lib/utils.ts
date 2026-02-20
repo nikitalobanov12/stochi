@@ -31,7 +31,9 @@ export function formatTime(date: Date): string {
  * // If it's Dec 26 10:00 AM Pacific (6:00 PM UTC)
  * // Returns Dec 26 00:00 Pacific = Dec 26 08:00 UTC
  */
-export function getStartOfDayInTimezone(timezone: string | null | undefined): Date {
+export function getStartOfDayInTimezone(
+  timezone: string | null | undefined,
+): Date {
   const now = new Date();
 
   if (!timezone) {
@@ -51,7 +53,11 @@ export function getStartOfDayInTimezone(timezone: string | null | undefined): Da
 
   // This gives us the date as the user sees it (e.g., "2024-12-26")
   const dateStr = formatter.format(now);
-  const [year, month, day] = dateStr.split("-").map(Number) as [number, number, number];
+  const [year, month, day] = dateStr.split("-").map(Number) as [
+    number,
+    number,
+    number,
+  ];
 
   // Now we need to find the UTC timestamp for midnight in user's timezone
   // Strategy: Create a date at midnight UTC for that calendar date,

@@ -2,7 +2,12 @@
 
 ## In Progress
 
-(empty)
+- [ ] **Refined Clinical Editorial redesign (dark-first)**
+  - Semantic token foundation in `globals.css` (surface/text/accent/motion/elevation)
+  - Editorial typography system (Manrope + Cormorant Garamond + JetBrains Mono)
+  - Token-driven UI primitives (button/card/input/badge/dialog)
+  - Dashboard shell/nav active-state polish with `aria-current`
+  - Ongoing: dashboard + landing full surface migration and visual QA pass
 
 ## Up Next
 

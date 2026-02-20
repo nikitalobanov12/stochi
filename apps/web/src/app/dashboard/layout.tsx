@@ -41,7 +41,7 @@ export default async function DashboardLayout({
       <div className="hud-noise" />
 
       {/* Desktop header - hidden on mobile */}
-      <header className="sticky top-0 z-50 hidden border-b border-white/10 bg-black/80 backdrop-blur-xl md:block">
+      <header className="border-border/80 bg-background/85 sticky top-0 z-50 hidden border-b backdrop-blur-xl md:block">
         <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between px-4">
           <nav className="flex items-center gap-4">
             <NavLink href="/dashboard" iconName="dashboard">
@@ -129,7 +129,7 @@ export default async function DashboardLayout({
       </main>
 
       {/* Mobile bottom navigation with safe area for home indicator */}
-      <nav className="pb-safe fixed right-0 bottom-0 left-0 z-50 border-t border-white/10 bg-black/80 backdrop-blur-xl md:hidden">
+      <nav className="border-border/80 bg-background/85 pb-safe fixed right-0 bottom-0 left-0 z-50 border-t backdrop-blur-xl md:hidden">
         <div className="flex items-center justify-around py-2">
           <MobileNavLink href="/dashboard" iconName="dashboard" label="Home" />
           <MobileNavLink

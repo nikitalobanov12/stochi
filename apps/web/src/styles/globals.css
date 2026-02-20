@@ -3,11 +3,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@theme {
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-}
-
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -44,7 +39,10 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --font-sans: Inter, ui-sans-serif, sans-serif, system-ui;
+  --font-sans: var(--font-body), "IBM Plex Sans", ui-sans-serif, system-ui,
+    sans-serif;
+  --font-display: var(--font-heading), "Iowan Old Style", "Palatino Linotype",
+    Palatino, serif;
   --font-mono: JetBrains Mono, ui-monospace, monospace;
   --font-serif: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
   --radius: 0.5rem;
@@ -74,40 +72,62 @@
 }
 
 :root {
+  /* Refined Clinical Editorial semantic tokens */
+  --surface-0: oklch(0.9940 0 0);
+  --surface-1: oklch(1.0000 0 0);
+  --surface-2: oklch(0.9670 0.0029 264.5419);
+  --surface-3: oklch(0.9276 0.0058 264.5313);
+  --text-primary: oklch(0.2178 0 0);
+  --text-secondary: oklch(0.5510 0.0234 264.3637);
+  --text-tertiary: oklch(0.6300 0.0170 263.0);
+  --accent-data: oklch(0.6900 0.1270 176.0);
+  --accent-info: oklch(0.7400 0.1420 231.0);
+  --accent-warning: oklch(0.7800 0.1490 84.0);
+  --accent-danger: oklch(0.6368 0.2078 25.3313);
+  --focus-ring: var(--accent-data);
+  --elevation-1: 0px 4px 10px 0px hsl(0 0 0 / 0.10);
+  --elevation-2: 0px 8px 20px 0px hsl(0 0 0 / 0.16);
+  --motion-fast: 120ms;
+  --motion-base: 220ms;
+  --motion-slow: 360ms;
+
   --radius: 0.5rem;
-  --background: oklch(0.9940 0 0);
-  --foreground: oklch(0.2178 0 0);
-  --card: oklch(1.0000 0 0);
-  --card-foreground: oklch(0.2178 0 0);
-  --popover: oklch(1.0000 0 0);
-  --popover-foreground: oklch(0.2178 0 0);
-  --primary: oklch(0.6231 0.1880 259.8145);
+  --background: var(--surface-0);
+  --foreground: var(--text-primary);
+  --card: var(--surface-1);
+  --card-foreground: var(--text-primary);
+  --popover: var(--surface-1);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--accent-data);
   --primary-foreground: oklch(1.0000 0 0);
-  --secondary: oklch(0.9276 0.0058 264.5313);
-  --secondary-foreground: oklch(0.2178 0 0);
-  --muted: oklch(0.9670 0.0029 264.5419);
-  --muted-foreground: oklch(0.5510 0.0234 264.3637);
-  --accent: oklch(0.9670 0.0029 264.5419);
-  --accent-foreground: oklch(0.2178 0 0);
-  --destructive: oklch(0.6368 0.2078 25.3313);
-  --border: oklch(0.9276 0.0058 264.5313);
-  --input: oklch(0.9940 0 0);
-  --ring: oklch(0.6231 0.1880 259.8145);
-  --chart-1: oklch(0.7137 0.1434 254.6240);
-  --chart-2: oklch(0.7729 0.1535 163.2231);
-  --chart-3: oklch(0.8369 0.1644 84.4286);
-  --chart-4: oklch(0.6559 0.2118 354.3084);
+  --secondary: var(--surface-3);
+  --secondary-foreground: var(--text-primary);
+  --muted: var(--surface-2);
+  --muted-foreground: var(--text-secondary);
+  --accent: var(--surface-2);
+  --accent-foreground: var(--text-primary);
+  --destructive: var(--accent-danger);
+  --border: var(--surface-3);
+  --input: var(--surface-0);
+  --ring: var(--focus-ring);
+  --chart-1: var(--accent-data);
+  --chart-2: var(--accent-info);
+  --chart-3: var(--accent-warning);
+  --chart-4: var(--accent-danger);
   --chart-5: oklch(0.6801 0.1583 276.9349);
-  --sidebar: oklch(1.0000 0 0);
-  --sidebar-foreground: oklch(0.2178 0 0);
-  --sidebar-primary: oklch(0.6231 0.1880 259.8145);
+  --sidebar: var(--surface-1);
+  --sidebar-foreground: var(--text-primary);
+  --sidebar-primary: var(--accent-data);
   --sidebar-primary-foreground: oklch(1.0000 0 0);
-  --sidebar-accent: oklch(0.9670 0.0029 264.5419);
-  --sidebar-accent-foreground: oklch(0.2178 0 0);
-  --sidebar-border: oklch(0.9276 0.0058 264.5313);
-  --sidebar-ring: oklch(0.6231 0.1880 259.8145);
+  --sidebar-accent: var(--surface-2);
+  --sidebar-accent-foreground: var(--text-primary);
+  --sidebar-border: var(--surface-3);
+  --sidebar-ring: var(--focus-ring);
   --destructive-foreground: oklch(1.0000 0 0);
-  --font-sans: Inter, ui-sans-serif, sans-serif, system-ui;
+  --font-sans: var(--font-body), "IBM Plex Sans", ui-sans-serif, system-ui,
+    sans-serif;
+  --font-display: var(--font-heading), "Iowan Old Style", "Palatino Linotype",
+    Palatino, serif;
   --font-serif: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
   --font-mono: JetBrains Mono, ui-monospace, monospace;
   --shadow-color: 0 0 0;
@@ -130,40 +150,62 @@
 }
 
 .dark {
-  --background: #000000; /* True Black - Surgical Precision */
-  --foreground: #FFFFFF; /* Pure White for maximum contrast */
-  --card: #0A0A0A; /* Elevated Black for cards */
-  --card-foreground: #FFFFFF;
-  --popover: #0A0A0A;
-  --popover-foreground: #FFFFFF;
-  --primary: #10B981; /* Emerald-500 - per design spec */
+  /* Refined Clinical Editorial semantic tokens */
+  --surface-0: #050607;
+  --surface-1: #0b0e10;
+  --surface-2: #11161a;
+  --surface-3: #1a2128;
+  --text-primary: #f4f7fa;
+  --text-secondary: #b4bec8;
+  --text-tertiary: #7f8c98;
+  --accent-data: #34d399;
+  --accent-info: #38bdf8;
+  --accent-warning: #f59e0b;
+  --accent-danger: #f87171;
+  --focus-ring: var(--accent-data);
+  --elevation-1: 0px 8px 20px 0px hsl(220 30% 2% / 0.55);
+  --elevation-2: 0px 14px 40px 0px hsl(220 30% 2% / 0.75);
+  --motion-fast: 120ms;
+  --motion-base: 220ms;
+  --motion-slow: 360ms;
+
+  --background: var(--surface-0);
+  --foreground: var(--text-primary);
+  --card: var(--surface-1);
+  --card-foreground: var(--text-primary);
+  --popover: var(--surface-1);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--accent-data);
   --primary-foreground: #000000;
-  --secondary: #0A0A0A;
-  --secondary-foreground: #F2F2F2;
-  --muted: #0A0A0A;
-  --muted-foreground: #737373; /* 45% gray for labels */
-  --accent: #0A0A0A;
-  --accent-foreground: #F2F2F2;
-  --destructive: #EF4444; /* Red per design spec */
-  --border: rgba(255, 255, 255, 0.1); /* High-luminance stroke */
-  --input: rgba(255, 255, 255, 0.1);
-  --ring: #10B981;
-  --chart-1: #10B981; /* Emerald - Optimal state */
-  --chart-2: #06B6D4; /* Cyan - Informational */
-  --chart-3: #F59E0B; /* Amber - Conflicts/Warnings */
-  --chart-4: #EF4444; /* Red - Critical */
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--text-primary);
+  --muted: var(--surface-2);
+  --muted-foreground: var(--text-tertiary);
+  --accent: var(--surface-2);
+  --accent-foreground: var(--text-primary);
+  --destructive: var(--accent-danger);
+  --border: color-mix(in oklab, var(--text-secondary) 18%, transparent);
+  --input: color-mix(in oklab, var(--surface-3) 80%, transparent);
+  --ring: var(--focus-ring);
+  --chart-1: var(--accent-data);
+  --chart-2: var(--accent-info);
+  --chart-3: var(--accent-warning);
+  --chart-4: var(--accent-danger);
   --chart-5: #A855F7;
-  --sidebar: #000000;
-  --sidebar-foreground: #FFFFFF;
-  --sidebar-primary: #10B981;
+  --sidebar: var(--surface-0);
+  --sidebar-foreground: var(--text-primary);
+  --sidebar-primary: var(--accent-data);
   --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #0A0A0A;
-  --sidebar-accent-foreground: #F2F2F2;
-  --sidebar-border: rgba(255, 255, 255, 0.1);
-  --sidebar-ring: #10B981;
+  --sidebar-accent: var(--surface-2);
+  --sidebar-accent-foreground: var(--text-primary);
+  --sidebar-border: color-mix(in oklab, var(--text-secondary) 18%, transparent);
+  --sidebar-ring: var(--focus-ring);
   --destructive-foreground: #000000;
   --radius: 0.5rem;
-  --font-sans: Inter, ui-sans-serif, sans-serif, system-ui;
+  --font-sans: var(--font-body), "IBM Plex Sans", ui-sans-serif, system-ui,
+    sans-serif;
+  --font-display: var(--font-heading), "Iowan Old Style", "Palatino Linotype",
+    Palatino, serif;
   --font-serif: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
   --font-mono: JetBrains Mono, ui-monospace, monospace;
   --shadow-color: 0 0 0;
@@ -191,6 +233,15 @@
   body {
     @apply bg-background text-foreground;
     letter-spacing: var(--tracking-normal);
+  }
+
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .text-editorial-kicker {
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
   }
   
   /* Ensure pointer cursor on all clickable elements */

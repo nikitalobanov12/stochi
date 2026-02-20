@@ -578,9 +578,13 @@ export const userPreference = pgTable("user_preference", {
   // User's experience level with supplements (controls which supplements are suggested)
   experienceLevel: experienceLevelEnum("experience_level").default("beginner"),
   // Synergy quality threshold (controls which synergies are shown)
-  suggestionFilterLevel: suggestionFilterLevelEnum("suggestion_filter_level").default("strong"),
+  suggestionFilterLevel: suggestionFilterLevelEnum(
+    "suggestion_filter_level",
+  ).default("strong"),
   // Show supplements that require specific conditions (deficiency, etc.)
-  showConditionalSupplements: boolean("show_conditional_supplements").default(false).notNull(),
+  showConditionalSupplements: boolean("show_conditional_supplements")
+    .default(false)
+    .notNull(),
   createdAt: timestamp("created_at")
     .$defaultFn(() => new Date())
     .notNull(),

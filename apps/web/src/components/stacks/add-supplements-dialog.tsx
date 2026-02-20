@@ -53,14 +53,20 @@ export function AddSupplementsDialog({
   supplements,
   children,
 }: AddSupplementsDialogProps) {
-  const { addItemsOptimistic, isPending, items: existingItems } = useStackItemsContext();
+  const {
+    addItemsOptimistic,
+    isPending,
+    items: existingItems,
+  } = useStackItemsContext();
   const [open, setOpen] = useState(false);
 
   // Form state
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   // Track dosage state per supplement (keyed by supplement id)
-  const [dosageStates, setDosageStates] = useState<Record<string, SupplementDosageState>>({});
+  const [dosageStates, setDosageStates] = useState<
+    Record<string, SupplementDosageState>
+  >({});
 
   // Filter out supplements already in stack
   const availableSupplements = useMemo(() => {
@@ -73,7 +79,10 @@ export function AddSupplementsDialog({
     if (!searchQuery.trim()) {
       return availableSupplements.slice(0, 8);
     }
-    return fuzzySearchSupplements(availableSupplements, searchQuery).slice(0, 8);
+    return fuzzySearchSupplements(availableSupplements, searchQuery).slice(
+      0,
+      8,
+    );
   }, [availableSupplements, searchQuery]);
 
   // Get or initialize dosage state for a supplement
@@ -215,11 +224,11 @@ export function AddSupplementsDialog({
                   return (
                     <div
                       key={supplement.id}
-                      className="flex items-center gap-2 rounded-lg border bg-card p-3"
+                      className="bg-card flex items-center gap-2 rounded-lg border p-3"
                     >
                       {/* Supplement info */}
                       <div className="min-w-0 flex-1">
-                        <div className="truncate font-medium text-sm">
+                        <div className="truncate text-sm font-medium">
                           {supplement.name}
                         </div>
                         {supplement.form && (

@@ -1,7 +1,7 @@
 import "~/styles/globals.css";
 
 import type { Metadata, Viewport } from "next";
-import { JetBrains_Mono, Inter } from "next/font/google";
+import { Cormorant_Garamond, JetBrains_Mono, Manrope } from "next/font/google";
 
 import { Providers } from "~/components/providers";
 import { Toaster } from "~/components/ui/sonner";
@@ -11,9 +11,15 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
 });
 
-const inter = Inter({
+const manrope = Manrope({
   subsets: ["latin"],
-  variable: "--font-sans",
+  variable: "--font-body",
+});
+
+const cormorantGaramond = Cormorant_Garamond({
+  subsets: ["latin"],
+  variable: "--font-heading",
+  weight: ["500", "600", "700"],
 });
 
 const APP_NAME = "Stochi";
@@ -144,7 +150,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${jetbrainsMono.variable} ${inter.variable} dark`}
+      className={`${jetbrainsMono.variable} ${manrope.variable} ${cormorantGaramond.variable} dark`}
     >
       <body className="bg-background min-h-screen font-sans antialiased">
         {/* Global dot grid background */}

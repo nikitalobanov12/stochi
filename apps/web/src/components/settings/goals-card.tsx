@@ -26,56 +26,62 @@ export function GoalsCard({ initialGoals }: GoalsCardProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [optimisticGoals, setOptimisticGoals] = useOptimistic(initialGoals);
-  
+
   // Track the latest goals to save (for debouncing)
   const pendingGoalsRef = useRef<GoalKey[] | null>(null);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const saveGoals = useCallback((goalsToSave: GoalKey[]) => {
-    startTransition(async () => {
-      const result = await retryWithBackoff(() => setUserGoals(goalsToSave));
+  const saveGoals = useCallback(
+    (goalsToSave: GoalKey[]) => {
+      startTransition(async () => {
+        const result = await retryWithBackoff(() => setUserGoals(goalsToSave));
 
-      if (!result.success) {
-        toast.error("Failed to save goals. Please try again.");
-        // Sync with server to restore original state
-        router.refresh();
-      }
-    });
-  }, [router]);
-
-  const toggleGoal = useCallback((key: GoalKey) => {
-    // Use functional update to avoid stale closure
-    setOptimisticGoals((currentGoals) => {
-      let newGoals: GoalKey[];
-
-      if (currentGoals.includes(key)) {
-        // Remove
-        newGoals = currentGoals.filter((g) => g !== key);
-      } else if (currentGoals.length < 3) {
-        // Add (max 3)
-        newGoals = [...currentGoals, key];
-      } else {
-        // At max, replace last
-        newGoals = [...currentGoals.slice(0, 2), key];
-      }
-
-      // Store latest goals and debounce the save
-      pendingGoalsRef.current = newGoals;
-      
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-      
-      debounceTimerRef.current = setTimeout(() => {
-        if (pendingGoalsRef.current) {
-          saveGoals(pendingGoalsRef.current);
-          pendingGoalsRef.current = null;
+        if (!result.success) {
+          toast.error("Failed to save goals. Please try again.");
+          // Sync with server to restore original state
+          router.refresh();
         }
-      }, DEBOUNCE_MS);
+      });
+    },
+    [router],
+  );
 
-      return newGoals;
-    });
-  }, [saveGoals, setOptimisticGoals]);
+  const toggleGoal = useCallback(
+    (key: GoalKey) => {
+      // Use functional update to avoid stale closure
+      setOptimisticGoals((currentGoals) => {
+        let newGoals: GoalKey[];
+
+        if (currentGoals.includes(key)) {
+          // Remove
+          newGoals = currentGoals.filter((g) => g !== key);
+        } else if (currentGoals.length < 3) {
+          // Add (max 3)
+          newGoals = [...currentGoals, key];
+        } else {
+          // At max, replace last
+          newGoals = [...currentGoals.slice(0, 2), key];
+        }
+
+        // Store latest goals and debounce the save
+        pendingGoalsRef.current = newGoals;
+
+        if (debounceTimerRef.current) {
+          clearTimeout(debounceTimerRef.current);
+        }
+
+        debounceTimerRef.current = setTimeout(() => {
+          if (pendingGoalsRef.current) {
+            saveGoals(pendingGoalsRef.current);
+            pendingGoalsRef.current = null;
+          }
+        }, DEBOUNCE_MS);
+
+        return newGoals;
+      });
+    },
+    [saveGoals, setOptimisticGoals],
+  );
 
   return (
     <Card className="overflow-hidden">

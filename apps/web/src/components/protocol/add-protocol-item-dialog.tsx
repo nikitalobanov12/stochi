@@ -79,9 +79,8 @@ export function AddProtocolItemDialog({
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedSupplement, setSelectedSupplement] = useState<Supplement | null>(
-    null
-  );
+  const [selectedSupplement, setSelectedSupplement] =
+    useState<Supplement | null>(null);
 
   // Form state
   const [dosage, setDosage] = useState("");
@@ -104,7 +103,10 @@ export function AddProtocolItemDialog({
     if (!searchQuery.trim()) {
       return availableSupplements.slice(0, 8);
     }
-    return fuzzySearchSupplements(availableSupplements, searchQuery).slice(0, 8);
+    return fuzzySearchSupplements(availableSupplements, searchQuery).slice(
+      0,
+      8,
+    );
   }, [availableSupplements, searchQuery]);
 
   function handleSelectSupplement(supplement: Supplement) {
@@ -172,7 +174,7 @@ export function AddProtocolItemDialog({
 
   function toggleDay(day: string) {
     setDaysOfWeek((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
     );
   }
 
@@ -359,7 +361,7 @@ export function AddProtocolItemDialog({
                           "rounded-md px-2.5 py-1.5 font-mono text-xs transition-colors",
                           daysOfWeek.includes(key)
                             ? "bg-primary text-primary-foreground"
-                            : "bg-muted text-muted-foreground hover:bg-muted/80"
+                            : "bg-muted text-muted-foreground hover:bg-muted/80",
                         )}
                       >
                         {label}

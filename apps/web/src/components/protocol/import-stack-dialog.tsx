@@ -66,7 +66,9 @@ export function ImportStackDialog({
       const result = await addStackToProtocol(stackId, timeSlot);
 
       if (result.added === 0) {
-        toast.info("All supplements from this stack are already in your protocol");
+        toast.info(
+          "All supplements from this stack are already in your protocol",
+        );
       } else {
         const skippedMsg =
           result.skipped > 0 ? ` (${result.skipped} already in protocol)` : "";
@@ -151,7 +153,10 @@ export function ImportStackDialog({
                       <span className="truncate font-mono text-sm font-medium">
                         {stack.name}
                       </span>
-                      <Badge variant="secondary" className="shrink-0 font-mono text-xs">
+                      <Badge
+                        variant="secondary"
+                        className="shrink-0 font-mono text-xs"
+                      >
                         {stack.items.length}
                       </Badge>
                     </div>
@@ -160,7 +165,8 @@ export function ImportStackDialog({
                         .slice(0, 3)
                         .map((i) => i.supplement.name)
                         .join(", ")}
-                      {stack.items.length > 3 && ` +${stack.items.length - 3} more`}
+                      {stack.items.length > 3 &&
+                        ` +${stack.items.length - 3} more`}
                     </p>
                     {stack.skippedCount > 0 && (
                       <p className="text-muted-foreground/70 mt-0.5 font-mono text-xs">

@@ -40,7 +40,7 @@ export function DemoBanner() {
             </Button>
             <button
               onClick={() => setIsDismissed(true)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-amber-400/50 transition-colors hover:bg-amber-500/10 hover:text-amber-400 sm:right-4"
+              className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-1 text-amber-400/50 transition-colors hover:bg-amber-500/10 hover:text-amber-400 sm:right-4"
               aria-label="Dismiss banner"
             >
               <X className="h-4 w-4" />

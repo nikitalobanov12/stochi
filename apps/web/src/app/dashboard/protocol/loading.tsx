@@ -35,7 +35,10 @@ export default function ProtocolLoading() {
           <div className="space-y-2">
             {slot <= 2 &&
               [1, 2].map((item) => (
-                <div key={item} className="glass-card flex items-center gap-3 px-4 py-3">
+                <div
+                  key={item}
+                  className="glass-card flex items-center gap-3 px-4 py-3"
+                >
                   <Skeleton className="h-4 w-4" />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">

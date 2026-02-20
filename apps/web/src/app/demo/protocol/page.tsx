@@ -69,7 +69,9 @@ export default function DemoProtocolPage() {
               <p className="text-muted-foreground text-xs">{slot.time}</p>
             </div>
           </div>
-          <span className="text-muted-foreground text-xs">No stack assigned</span>
+          <span className="text-muted-foreground text-xs">
+            No stack assigned
+          </span>
         </div>
       ))}
 
@@ -95,7 +97,15 @@ function DemoProtocolSlot({
   isComplete,
 }: {
   slot: (typeof TIME_SLOTS)[number];
-  stack?: { id: string; name: string; items: Array<{ supplement: { name: string }; dosage: number; unit: string }> };
+  stack?: {
+    id: string;
+    name: string;
+    items: Array<{
+      supplement: { name: string };
+      dosage: number;
+      unit: string;
+    }>;
+  };
   isComplete: boolean;
 }) {
   const demo = useDemoContext();

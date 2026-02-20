@@ -49,9 +49,11 @@ export async function getUserPreferences(): Promise<UserPreferences> {
   return {
     showAddSuggestions: existing.showAddSuggestions,
     timezone: existing.timezone,
-    experienceLevel: existing.experienceLevel ?? DEFAULT_PREFERENCES.experienceLevel,
+    experienceLevel:
+      existing.experienceLevel ?? DEFAULT_PREFERENCES.experienceLevel,
     suggestionFilterLevel:
-      existing.suggestionFilterLevel ?? DEFAULT_PREFERENCES.suggestionFilterLevel,
+      existing.suggestionFilterLevel ??
+      DEFAULT_PREFERENCES.suggestionFilterLevel,
     showConditionalSupplements:
       existing.showConditionalSupplements ??
       DEFAULT_PREFERENCES.showConditionalSupplements,

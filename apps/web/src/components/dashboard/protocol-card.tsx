@@ -48,7 +48,8 @@ function generateTimePresets(): Array<{ label: string; getTime: () => Date }> {
   currentRounded.setMinutes(roundedMinutes, 0, 0);
 
   // If we're not close to the rounded time, add it as an option
-  const minutesSinceRounded = (now.getTime() - currentRounded.getTime()) / 60000;
+  const minutesSinceRounded =
+    (now.getTime() - currentRounded.getTime()) / 60000;
   if (minutesSinceRounded > 5) {
     const capturedTime = new Date(currentRounded);
     presets.push({
@@ -171,7 +172,7 @@ export function ProtocolCard({ stack, stackItems }: ProtocolCardProps) {
           {/* Status Indicator */}
           <div className="relative flex h-5 w-5 shrink-0 items-center justify-center">
             {isNavigating ? (
-              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              <Loader2 className="text-muted-foreground h-5 w-5 animate-spin" />
             ) : isComplete ? (
               <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500">
                 <Check className="h-3 w-3 text-white" strokeWidth={3} />
@@ -289,7 +290,10 @@ export function ProtocolCard({ stack, stackItems }: ProtocolCardProps) {
                 )}
               </Button>
 
-              <DropdownMenu open={isTimeMenuOpen} onOpenChange={setIsTimeMenuOpen}>
+              <DropdownMenu
+                open={isTimeMenuOpen}
+                onOpenChange={setIsTimeMenuOpen}
+              >
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="outline"
@@ -319,7 +323,10 @@ export function ProtocolCard({ stack, stackItems }: ProtocolCardProps) {
                       key={index}
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleExecute(e as unknown as React.MouseEvent, preset.getTime());
+                        handleExecute(
+                          e as unknown as React.MouseEvent,
+                          preset.getTime(),
+                        );
                       }}
                       className="font-mono text-xs"
                     >
@@ -352,9 +359,7 @@ export function ProtocolCard({ stack, stackItems }: ProtocolCardProps) {
                 ) : (
                   <Circle className="h-2.5 w-2.5" />
                 )}
-                <span>
-                  {item.supplementName}
-                </span>
+                <span>{item.supplementName}</span>
                 <span className="text-muted-foreground/60 tabular-nums">
                   {item.expectedDosage}
                   {item.expectedUnit}

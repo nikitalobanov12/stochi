@@ -60,7 +60,15 @@ function DemoStackCard({
   stack,
   isComplete,
 }: {
-  stack: { id: string; name: string; items: Array<{ supplement: { name: string }; dosage: number; unit: string }> };
+  stack: {
+    id: string;
+    name: string;
+    items: Array<{
+      supplement: { name: string };
+      dosage: number;
+      unit: string;
+    }>;
+  };
   isComplete: boolean;
 }) {
   const demo = useDemoContext();

@@ -108,7 +108,7 @@ export default function DemoStackDetailPage({
 
       {/* Stack Items */}
       <div>
-        <h2 className="text-muted-foreground mb-3 font-mono text-[10px] uppercase tracking-wider">
+        <h2 className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
           Supplements
         </h2>
         <div className="glass-card divide-y divide-white/5">
@@ -142,7 +142,7 @@ export default function DemoStackDetailPage({
         synergies.length > 0 ||
         relevantRatioWarnings.length > 0) && (
         <div className="space-y-4">
-          <h2 className="text-muted-foreground font-mono text-[10px] uppercase tracking-wider">
+          <h2 className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
             Interaction Analysis
           </h2>
 
@@ -167,7 +167,7 @@ export default function DemoStackDetailPage({
                     >
                       {warning.severity}
                     </span>
-                    <span className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[10px] uppercase text-white/40">
+                    <span className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-white/40 uppercase">
                       {warning.type}
                     </span>
                   </div>
@@ -199,7 +199,7 @@ export default function DemoStackDetailPage({
                 >
                   <div className="mb-1 flex items-center gap-2">
                     <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
-                    <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[10px] uppercase text-emerald-400">
+                    <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[10px] text-emerald-400 uppercase">
                       synergy
                     </span>
                   </div>
@@ -241,7 +241,7 @@ export default function DemoStackDetailPage({
                     >
                       {rw.severity}
                     </span>
-                    <span className="rounded bg-violet-500/10 px-1.5 py-0.5 font-mono text-[10px] uppercase text-violet-400">
+                    <span className="rounded bg-violet-500/10 px-1.5 py-0.5 font-mono text-[10px] text-violet-400 uppercase">
                       ratio
                     </span>
                   </div>

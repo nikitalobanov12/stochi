@@ -162,7 +162,7 @@ export function EditProtocolItemDialog({
 
   function toggleDay(day: string) {
     setDaysOfWeek((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
     );
   }
 
@@ -312,7 +312,7 @@ export function EditProtocolItemDialog({
                       "rounded-md px-2.5 py-1.5 font-mono text-xs transition-colors",
                       daysOfWeek.includes(key)
                         ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80",
                     )}
                   >
                     {label}

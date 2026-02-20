@@ -152,7 +152,7 @@ function BioSyncModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md border-white/10 bg-[#0A0A0A]">
+      <DialogContent className="bg-card border-border max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 font-sans text-base font-medium">
             <BellRing className="status-info h-5 w-5" />
@@ -165,7 +165,7 @@ function BioSyncModal({
 
         <div className="space-y-5 pt-2">
           {/* Value proposition */}
-          <div className="rounded-lg border border-white/5 bg-white/[0.02] p-4">
+          <div className="bg-secondary/50 border-border/40 rounded-lg border p-4">
             <div className="text-foreground font-sans text-sm">
               Your next window for{" "}
               <span className="status-info">{targetSupplementName}</span> opens
@@ -788,7 +788,7 @@ export function OptimizationHUD({
 
   if (!hasContent && !allCategoriesHidden) {
     return (
-      <div className="glass-card p-4 text-center">
+      <div className="bg-card border-border rounded-xl border p-4 text-center shadow-[var(--elevation-1)]">
         <div className="text-muted-foreground font-mono text-xs">
           No active optimizations
         </div>
@@ -866,7 +866,7 @@ export function OptimizationHUD({
 
         {/* Empty state when all categories are hidden */}
         {allCategoriesHidden && (
-          <div className="glass-card p-4 text-center">
+          <div className="bg-card border-border rounded-xl border p-4 text-center shadow-[var(--elevation-1)]">
             <div className="text-muted-foreground font-mono text-xs">
               All suggestion categories are hidden
             </div>

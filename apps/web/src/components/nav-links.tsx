@@ -52,9 +52,12 @@ export function NavLink({ href, children, iconName }: NavLinkProps) {
     <a
       href={href}
       onClick={handleClick}
+      aria-current={isActive ? "page" : undefined}
       className={cn(
-        "hover:text-foreground flex items-center gap-2 text-sm font-medium transition-colors",
-        isActive ? "text-foreground" : "text-muted-foreground",
+        "flex items-center gap-2 rounded-md border border-transparent px-3 py-1.5 text-sm font-medium tracking-[0.01em] transition-[background-color,color,border-color] duration-[var(--motion-fast)]",
+        isActive
+          ? "border-border/80 bg-secondary/70 text-foreground"
+          : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground",
         isPending && "pointer-events-none",
       )}
     >
@@ -98,9 +101,12 @@ export function MobileNavLink({ href, iconName, label }: MobileNavLinkProps) {
     <a
       href={href}
       onClick={handleClick}
+      aria-current={isActive ? "page" : undefined}
       className={cn(
-        "hover:text-foreground flex min-h-[44px] flex-col items-center justify-center gap-1 px-3 text-xs transition-colors",
-        isActive ? "text-foreground" : "text-muted-foreground",
+        "flex min-h-[44px] flex-col items-center justify-center gap-1 rounded-lg border border-transparent px-3 text-xs transition-[background-color,color,border-color] duration-[var(--motion-fast)]",
+        isActive
+          ? "border-border/80 bg-secondary/70 text-foreground"
+          : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground",
         isPending && "pointer-events-none",
       )}
     >

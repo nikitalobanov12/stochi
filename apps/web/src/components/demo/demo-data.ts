@@ -31,20 +31,104 @@ export type DemoSupplement = {
 };
 
 export const DEMO_SUPPLEMENTS: DemoSupplement[] = [
-  { id: "supp-1", name: "Vitamin D3", form: "softgel", defaultUnit: "IU", category: "vitamin" },
-  { id: "supp-2", name: "Magnesium Glycinate", form: "capsule", defaultUnit: "mg", category: "mineral" },
-  { id: "supp-3", name: "Zinc Picolinate", form: "capsule", defaultUnit: "mg", category: "mineral" },
-  { id: "supp-4", name: "Omega-3 Fish Oil", form: "softgel", defaultUnit: "mg", category: "omega" },
-  { id: "supp-5", name: "Vitamin K2 (MK-7)", form: "capsule", defaultUnit: "mcg", category: "vitamin" },
-  { id: "supp-6", name: "Copper Bisglycinate", form: "capsule", defaultUnit: "mg", category: "mineral" },
-  { id: "supp-7", name: "L-Theanine", form: "capsule", defaultUnit: "mg", category: "amino-acid" },
-  { id: "supp-8", name: "Ashwagandha KSM-66", form: "capsule", defaultUnit: "mg", category: "adaptogen" },
-  { id: "supp-9", name: "Melatonin", form: "tablet", defaultUnit: "mg", category: "other" },
-  { id: "supp-10", name: "Caffeine", form: "tablet", defaultUnit: "mg", category: "nootropic" },
-  { id: "supp-11", name: "Iron Bisglycinate", form: "capsule", defaultUnit: "mg", category: "mineral" },
-  { id: "supp-12", name: "Vitamin B12", form: "sublingual", defaultUnit: "mcg", category: "vitamin" },
-  { id: "supp-13", name: "L-Tyrosine", form: "capsule", defaultUnit: "mg", category: "amino-acid" },
-  { id: "supp-14", name: "5-HTP", form: "capsule", defaultUnit: "mg", category: "amino-acid" },
+  {
+    id: "supp-1",
+    name: "Vitamin D3",
+    form: "softgel",
+    defaultUnit: "IU",
+    category: "vitamin",
+  },
+  {
+    id: "supp-2",
+    name: "Magnesium Glycinate",
+    form: "capsule",
+    defaultUnit: "mg",
+    category: "mineral",
+  },
+  {
+    id: "supp-3",
+    name: "Zinc Picolinate",
+    form: "capsule",
+    defaultUnit: "mg",
+    category: "mineral",
+  },
+  {
+    id: "supp-4",
+    name: "Omega-3 Fish Oil",
+    form: "softgel",
+    defaultUnit: "mg",
+    category: "omega",
+  },
+  {
+    id: "supp-5",
+    name: "Vitamin K2 (MK-7)",
+    form: "capsule",
+    defaultUnit: "mcg",
+    category: "vitamin",
+  },
+  {
+    id: "supp-6",
+    name: "Copper Bisglycinate",
+    form: "capsule",
+    defaultUnit: "mg",
+    category: "mineral",
+  },
+  {
+    id: "supp-7",
+    name: "L-Theanine",
+    form: "capsule",
+    defaultUnit: "mg",
+    category: "amino-acid",
+  },
+  {
+    id: "supp-8",
+    name: "Ashwagandha KSM-66",
+    form: "capsule",
+    defaultUnit: "mg",
+    category: "adaptogen",
+  },
+  {
+    id: "supp-9",
+    name: "Melatonin",
+    form: "tablet",
+    defaultUnit: "mg",
+    category: "other",
+  },
+  {
+    id: "supp-10",
+    name: "Caffeine",
+    form: "tablet",
+    defaultUnit: "mg",
+    category: "nootropic",
+  },
+  {
+    id: "supp-11",
+    name: "Iron Bisglycinate",
+    form: "capsule",
+    defaultUnit: "mg",
+    category: "mineral",
+  },
+  {
+    id: "supp-12",
+    name: "Vitamin B12",
+    form: "sublingual",
+    defaultUnit: "mcg",
+    category: "vitamin",
+  },
+  {
+    id: "supp-13",
+    name: "L-Tyrosine",
+    form: "capsule",
+    defaultUnit: "mg",
+    category: "amino-acid",
+  },
+  {
+    id: "supp-14",
+    name: "5-HTP",
+    form: "capsule",
+    defaultUnit: "mg",
+    category: "amino-acid",
+  },
 ];
 
 // ============================================================================
@@ -309,9 +393,11 @@ export const DEMO_INTERACTIONS: InteractionWarning[] = [
     id: "int-5",
     type: "competition",
     severity: "critical",
-    mechanism: "L-Tyrosine and 5-HTP compete for LNAAT transporter; concurrent use may reduce serotonin/dopamine synthesis",
+    mechanism:
+      "L-Tyrosine and 5-HTP compete for LNAAT transporter; concurrent use may reduce serotonin/dopamine synthesis",
     researchUrl: null,
-    suggestion: "Never take simultaneously — space by 4+ hours or use on alternating days",
+    suggestion:
+      "Never take simultaneously — space by 4+ hours or use on alternating days",
     source: { id: "supp-13", name: "L-Tyrosine", form: "capsule" },
     target: { id: "supp-14", name: "5-HTP", form: "capsule" },
   },
@@ -321,14 +407,20 @@ export const DEMO_RATIO_WARNINGS: RatioWarning[] = [
   {
     id: "ratio-1",
     source: { id: "supp-3", name: "Zinc Picolinate", dosage: 30, unit: "mg" },
-    target: { id: "supp-6", name: "Copper Bisglycinate", dosage: 2, unit: "mg" },
+    target: {
+      id: "supp-6",
+      name: "Copper Bisglycinate",
+      dosage: 2,
+      unit: "mg",
+    },
     currentRatio: 15,
     minRatio: 8,
     maxRatio: 15,
     optimalRatio: 10,
     severity: "medium",
     researchUrl: null,
-    message: "Zn:Cu ratio at upper limit. Consider reducing zinc or adding copper.",
+    message:
+      "Zn:Cu ratio at upper limit. Consider reducing zinc or adding copper.",
   },
 ];
 
@@ -336,11 +428,16 @@ export const DEMO_TIMING_WARNINGS: TimingWarning[] = [
   {
     id: "timing-1",
     severity: "medium",
-    reason: "Caffeine increases renal magnesium excretion — space by 2h minimum",
+    reason:
+      "Caffeine increases renal magnesium excretion — space by 2h minimum",
     minHoursApart: 2,
     actualHoursApart: 0.5,
     source: { id: "supp-10", name: "Caffeine", loggedAt: getRelativeTime(0.5) },
-    target: { id: "supp-2", name: "Magnesium Glycinate", loggedAt: getRelativeTime(1) },
+    target: {
+      id: "supp-2",
+      name: "Magnesium Glycinate",
+      loggedAt: getRelativeTime(1),
+    },
   },
   {
     id: "timing-2",
@@ -348,8 +445,16 @@ export const DEMO_TIMING_WARNINGS: TimingWarning[] = [
     reason: "Iron and Zinc compete for DMT1 transporter — space by 2h minimum",
     minHoursApart: 2,
     actualHoursApart: 0,
-    source: { id: "supp-11", name: "Iron Bisglycinate", loggedAt: getRelativeTime(1) },
-    target: { id: "supp-3", name: "Zinc Picolinate", loggedAt: getRelativeTime(1) },
+    source: {
+      id: "supp-11",
+      name: "Iron Bisglycinate",
+      loggedAt: getRelativeTime(1),
+    },
+    target: {
+      id: "supp-3",
+      name: "Zinc Picolinate",
+      loggedAt: getRelativeTime(1),
+    },
   },
 ];
 
@@ -434,7 +539,8 @@ export function generateDemoBiologicalState(): BiologicalState {
         category: "timing",
         supplementIds: ["supp-3", "supp-11"],
         title: "Space Zinc & Iron",
-        description: "DMT1 transporter competition — take 2+ hours apart for optimal absorption",
+        description:
+          "DMT1 transporter competition — take 2+ hours apart for optimal absorption",
         priority: 2,
         suggestionKey: "spacing:supp-3:supp-11",
       },
@@ -448,23 +554,23 @@ export function generateDemoTimelineData(): TimelineDataPoint[] {
 
   // Generate 24 hours of timeline data (in minutes from window start)
   // Window starts 12 hours ago
-  
+
   for (let i = -12; i <= 12; i++) {
     const time = new Date(now);
     time.setHours(time.getHours() + i);
-    
+
     // Simulate compound levels
     let caffeineLevel = 0;
     let theanineLevel = 0;
-    
+
     if (i >= -0.5) {
       // Caffeine decay over time
       caffeineLevel = Math.max(0, 100 * Math.exp(-0.15 * (i + 0.5)));
       theanineLevel = Math.max(0, 100 * Math.exp(-0.2 * (i + 0.5)));
     }
-    
+
     const minutesFromStart = (i + 12) * 60; // Convert hours to minutes from start
-    
+
     data.push({
       minutesFromStart,
       timestamp: time.toISOString(),
@@ -474,7 +580,7 @@ export function generateDemoTimelineData(): TimelineDataPoint[] {
       },
     });
   }
-  
+
   return data;
 }
 
@@ -491,11 +597,41 @@ export function generateDemoStackCompletion(): StackCompletionStatus[] {
       loggedItems: 5,
       isComplete: true,
       items: [
-        { supplementId: "supp-1", supplementName: "Vitamin D3", expectedDosage: 5000, expectedUnit: "IU", logged: true },
-        { supplementId: "supp-5", supplementName: "Vitamin K2 (MK-7)", expectedDosage: 200, expectedUnit: "mcg", logged: true },
-        { supplementId: "supp-4", supplementName: "Omega-3 Fish Oil", expectedDosage: 2000, expectedUnit: "mg", logged: true },
-        { supplementId: "supp-10", supplementName: "Caffeine", expectedDosage: 100, expectedUnit: "mg", logged: true },
-        { supplementId: "supp-7", supplementName: "L-Theanine", expectedDosage: 200, expectedUnit: "mg", logged: true },
+        {
+          supplementId: "supp-1",
+          supplementName: "Vitamin D3",
+          expectedDosage: 5000,
+          expectedUnit: "IU",
+          logged: true,
+        },
+        {
+          supplementId: "supp-5",
+          supplementName: "Vitamin K2 (MK-7)",
+          expectedDosage: 200,
+          expectedUnit: "mcg",
+          logged: true,
+        },
+        {
+          supplementId: "supp-4",
+          supplementName: "Omega-3 Fish Oil",
+          expectedDosage: 2000,
+          expectedUnit: "mg",
+          logged: true,
+        },
+        {
+          supplementId: "supp-10",
+          supplementName: "Caffeine",
+          expectedDosage: 100,
+          expectedUnit: "mg",
+          logged: true,
+        },
+        {
+          supplementId: "supp-7",
+          supplementName: "L-Theanine",
+          expectedDosage: 200,
+          expectedUnit: "mg",
+          logged: true,
+        },
       ],
     },
     {
@@ -505,10 +641,34 @@ export function generateDemoStackCompletion(): StackCompletionStatus[] {
       loggedItems: 0,
       isComplete: false,
       items: [
-        { supplementId: "supp-2", supplementName: "Magnesium Glycinate", expectedDosage: 400, expectedUnit: "mg", logged: false },
-        { supplementId: "supp-3", supplementName: "Zinc Picolinate", expectedDosage: 30, expectedUnit: "mg", logged: false },
-        { supplementId: "supp-6", supplementName: "Copper Bisglycinate", expectedDosage: 2, expectedUnit: "mg", logged: false },
-        { supplementId: "supp-8", supplementName: "Ashwagandha KSM-66", expectedDosage: 600, expectedUnit: "mg", logged: false },
+        {
+          supplementId: "supp-2",
+          supplementName: "Magnesium Glycinate",
+          expectedDosage: 400,
+          expectedUnit: "mg",
+          logged: false,
+        },
+        {
+          supplementId: "supp-3",
+          supplementName: "Zinc Picolinate",
+          expectedDosage: 30,
+          expectedUnit: "mg",
+          logged: false,
+        },
+        {
+          supplementId: "supp-6",
+          supplementName: "Copper Bisglycinate",
+          expectedDosage: 2,
+          expectedUnit: "mg",
+          logged: false,
+        },
+        {
+          supplementId: "supp-8",
+          supplementName: "Ashwagandha KSM-66",
+          expectedDosage: 600,
+          expectedUnit: "mg",
+          logged: false,
+        },
       ],
     },
   ];

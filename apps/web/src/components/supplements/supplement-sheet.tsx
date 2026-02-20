@@ -181,7 +181,7 @@ function OverviewContent({ supplement }: { supplement: SupplementData }) {
           {summaryResult?.isAIGenerated && (
             <Badge
               variant="outline"
-              className="border-violet-500/30 bg-violet-500/10 text-violet-400 text-[9px] px-1.5 py-0"
+              className="border-violet-500/30 bg-violet-500/10 px-1.5 py-0 text-[9px] text-violet-400"
             >
               <Sparkles className="mr-1 h-2.5 w-2.5" />
               AI
@@ -190,8 +190,8 @@ function OverviewContent({ supplement }: { supplement: SupplementData }) {
         </div>
         {isLoadingSummary ? (
           <div className="flex items-center gap-2 py-4">
-            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">
+            <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />
+            <span className="text-muted-foreground text-sm">
               Generating summary...
             </span>
           </div>
@@ -206,10 +206,12 @@ function OverviewContent({ supplement }: { supplement: SupplementData }) {
               <p className="text-sm leading-relaxed">{supplement.mechanism}</p>
             )}
             {supplement.description && (
-              <p className="text-sm leading-relaxed">{supplement.description}</p>
+              <p className="text-sm leading-relaxed">
+                {supplement.description}
+              </p>
             )}
             {!supplement.mechanism && !supplement.description && (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 No research summary available for this supplement.
               </p>
             )}

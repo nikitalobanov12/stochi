@@ -19,7 +19,11 @@ import {
 } from "~/server/services/biological-state";
 import { getStartOfDayInTimezone } from "~/lib/utils";
 
-import { DashboardClient, type LogEntry, type StackItem } from "./dashboard-client";
+import {
+  DashboardClient,
+  type LogEntry,
+  type StackItem,
+} from "./dashboard-client";
 
 export default async function DashboardPage() {
   const session = await getSession();

@@ -386,7 +386,10 @@ export async function getOrGenerateResearchSummary(
   }
 
   // Check if we have a fresh cached summary
-  if (supplementData.researchSummary && supplementData.researchSummaryGeneratedAt) {
+  if (
+    supplementData.researchSummary &&
+    supplementData.researchSummaryGeneratedAt
+  ) {
     const ageInDays =
       (Date.now() - supplementData.researchSummaryGeneratedAt.getTime()) /
       (1000 * 60 * 60 * 24);
@@ -437,7 +440,13 @@ export async function getOrGenerateResearchSummary(
   const knowledgeByType = await getSupplementKnowledgeByType(supplementId);
 
   // Build context prioritizing overview, mechanism, benefits
-  const priorityTypes = ["overview", "mechanism", "benefits", "dosing", "timing"];
+  const priorityTypes = [
+    "overview",
+    "mechanism",
+    "benefits",
+    "dosing",
+    "timing",
+  ];
   const contextChunks: string[] = [];
 
   for (const type of priorityTypes) {

@@ -108,12 +108,12 @@ export default function DemoLayout({
         </header>
 
         {/* Main content - safe area padding for mobile PWA */}
-        <main className="relative z-10 flex-1 overflow-x-hidden pt-safe pb-nav-safe md:pt-0 md:pb-0">
+        <main className="pt-safe pb-nav-safe relative z-10 flex-1 overflow-x-hidden md:pt-0 md:pb-0">
           <div className="mx-auto max-w-[1400px] px-4 py-6">{children}</div>
         </main>
 
         {/* Mobile bottom navigation with safe area for home indicator */}
-        <nav className="fixed right-0 bottom-0 left-0 z-50 border-t border-white/10 bg-black/80 pb-safe backdrop-blur-xl md:hidden">
+        <nav className="pb-safe fixed right-0 bottom-0 left-0 z-50 border-t border-white/10 bg-black/80 backdrop-blur-xl md:hidden">
           <div className="flex items-center justify-around py-2">
             <DemoMobileNavLink href="/demo" label="Home" />
             <DemoMobileNavLink href="/demo/protocol" label="Protocol" />

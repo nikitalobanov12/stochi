@@ -175,7 +175,7 @@ function BreakdownModal({
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="max-w-sm border-white/10 bg-[#0A0A0A]">
+      <DialogContent className="bg-card border-border max-w-sm">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 font-sans text-sm font-medium">
             <Activity className="h-4 w-4" />
@@ -185,7 +185,7 @@ function BreakdownModal({
 
         <div className="space-y-4">
           {/* Score summary */}
-          <div className="flex items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] p-4">
+          <div className="bg-secondary/50 border-border/40 flex items-center justify-between rounded-xl border p-4">
             <div>
               <div className="text-muted-foreground font-sans text-xs">
                 Current Score
@@ -303,7 +303,7 @@ export function BioScoreCard({
         Bio-Score
       </h2>
 
-      <div className="glass-card p-4">
+      <div className="bg-card border-border rounded-xl border p-4 shadow-[var(--elevation-1)]">
         {/* Gauge + Label Row */}
         <div className="flex items-center gap-4">
           <ScoreGauge score={score} size={64} />
@@ -322,7 +322,7 @@ export function BioScoreCard({
         </div>
 
         {/* Stats Row */}
-        <div className="mt-3 flex items-center justify-between border-t border-white/5 pt-3">
+        <div className="border-border/40 mt-3 flex items-center justify-between border-t pt-3">
           {/* Conflicts */}
           <div className="flex items-center gap-1.5">
             {conflicts > 0 ? (
@@ -364,7 +364,7 @@ export function BioScoreCard({
         >
           <button
             type="button"
-            className="mt-3 flex w-full items-center justify-center gap-1 rounded-lg border border-white/10 bg-white/[0.02] py-1.5 font-mono text-[10px] text-white/60 transition-colors hover:bg-white/[0.05] hover:text-white/80"
+            className="bg-secondary/50 border-border/60 text-muted-foreground hover:bg-secondary hover:text-foreground mt-3 flex w-full items-center justify-center gap-1 rounded-lg border py-1.5 font-mono text-[10px] transition-colors"
           >
             VIEW BREAKDOWN
             <ChevronRight className="h-3 w-3" />

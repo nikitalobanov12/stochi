@@ -115,7 +115,7 @@ function IssueCard({ issue }: { issue: ProtocolIssue }) {
       className={cn(
         "rounded-lg border p-3",
         getSeverityBgColor(issue.severity),
-        "border-border/50"
+        "border-border/50",
       )}
     >
       <div className="flex items-start gap-3">
@@ -127,7 +127,10 @@ function IssueCard({ issue }: { issue: ProtocolIssue }) {
             <span className="font-mono text-sm font-medium">{issue.title}</span>
             <Badge
               variant="secondary"
-              className={cn("font-mono text-xs", getSeverityColor(issue.severity))}
+              className={cn(
+                "font-mono text-xs",
+                getSeverityColor(issue.severity),
+              )}
             >
               {typeLabel}
             </Badge>
@@ -181,7 +184,7 @@ function IssueSection({
       <CollapsibleTrigger asChild>
         <Button
           variant="ghost"
-          className="w-full justify-between px-3 py-2 h-auto"
+          className="h-auto w-full justify-between px-3 py-2"
         >
           <div className="flex items-center gap-2">
             <Icon className="h-4 w-4" />
@@ -241,15 +244,22 @@ export function ProtocolHealthScore({ analysis }: ProtocolHealthScoreProps) {
       <div
         className={cn(
           "glass-card flex items-center gap-4 p-4",
-          getScoreBgColor(score)
+          getScoreBgColor(score),
         )}
       >
         <div className="flex-1">
           <div className="flex items-baseline gap-2">
-            <span className={cn("font-mono text-3xl font-bold", getScoreColor(score))}>
+            <span
+              className={cn(
+                "font-mono text-3xl font-bold",
+                getScoreColor(score),
+              )}
+            >
               {score}
             </span>
-            <span className="text-muted-foreground font-mono text-sm">/100</span>
+            <span className="text-muted-foreground font-mono text-sm">
+              /100
+            </span>
           </div>
           <p className={cn("font-mono text-sm", getScoreColor(score))}>
             {getScoreLabel(score)}
@@ -269,16 +279,25 @@ export function ProtocolHealthScore({ analysis }: ProtocolHealthScoreProps) {
         <div className="grid grid-cols-3 gap-2">
           <div className="glass-card p-3 text-center">
             <p className="text-muted-foreground font-mono text-xs">Items</p>
-            <p className="font-mono text-lg font-medium">{summary.totalItems}</p>
+            <p className="font-mono text-lg font-medium">
+              {summary.totalItems}
+            </p>
           </div>
           <div className="glass-card p-3 text-center">
             <p className="text-muted-foreground font-mono text-xs">Issues</p>
-            <p className={cn("font-mono text-lg font-medium", issues.length > 0 && "text-yellow-600 dark:text-yellow-400")}>
+            <p
+              className={cn(
+                "font-mono text-lg font-medium",
+                issues.length > 0 && "text-yellow-600 dark:text-yellow-400",
+              )}
+            >
               {issues.length}
             </p>
           </div>
           <div className="glass-card p-3 text-center">
-            <p className="text-muted-foreground font-mono text-xs">Opportunities</p>
+            <p className="text-muted-foreground font-mono text-xs">
+              Opportunities
+            </p>
             <p className="font-mono text-lg font-medium text-blue-600 dark:text-blue-400">
               {synergies.length}
             </p>
@@ -323,7 +342,9 @@ export function ProtocolHealthScore({ analysis }: ProtocolHealthScoreProps) {
       {/* Synergy Opportunities */}
       {hasSynergies && (
         <div className="space-y-2">
-          <h3 className="font-mono text-sm font-medium">Synergy Opportunities</h3>
+          <h3 className="font-mono text-sm font-medium">
+            Synergy Opportunities
+          </h3>
           <IssueSection
             title="Consider Adding"
             issues={synergies}
@@ -338,7 +359,9 @@ export function ProtocolHealthScore({ analysis }: ProtocolHealthScoreProps) {
         <div className="glass-card flex items-center gap-3 border-green-500/30 bg-green-500/5 p-4">
           <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
           <div>
-            <p className="font-mono text-sm font-medium">Protocol looks great!</p>
+            <p className="font-mono text-sm font-medium">
+              Protocol looks great!
+            </p>
             <p className="text-muted-foreground font-mono text-xs">
               No conflicts, timing issues, or imbalances detected.
             </p>

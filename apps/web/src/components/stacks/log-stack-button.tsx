@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Play, Check, Loader2, AlertCircle, ChevronDown, Clock } from "lucide-react";
+import {
+  Play,
+  Check,
+  Loader2,
+  AlertCircle,
+  ChevronDown,
+  Clock,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -43,7 +50,8 @@ function generateTimePresets(): Array<{ label: string; getTime: () => Date }> {
   currentRounded.setMinutes(roundedMinutes, 0, 0);
 
   // If we're not close to the rounded time, add it as an option
-  const minutesSinceRounded = (now.getTime() - currentRounded.getTime()) / 60000;
+  const minutesSinceRounded =
+    (now.getTime() - currentRounded.getTime()) / 60000;
   if (minutesSinceRounded > 5) {
     const capturedTime = new Date(currentRounded);
     presets.push({
@@ -247,7 +255,7 @@ export function SimpleLogStackButton({
         const timeLabel = loggedAt ? ` at ${formatTime(loggedAt)}` : "";
         toast.success(`Logged ${stackName}${timeLabel}`);
         router.refresh();
-        
+
         // Revert to idle after 2s success animation
         setTimeout(() => {
           setLogState("idle");
@@ -255,7 +263,7 @@ export function SimpleLogStackButton({
       } catch {
         setLogState("error");
         toast.error("Failed to log stack");
-        
+
         // Revert to idle after 3s
         setTimeout(() => {
           setLogState("idle");

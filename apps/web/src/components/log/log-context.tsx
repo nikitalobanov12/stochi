@@ -10,7 +10,12 @@ import {
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import { deleteLog, createLog, type CreateLogOptions, type CreateLogResult } from "~/server/actions/logs";
+import {
+  deleteLog,
+  createLog,
+  type CreateLogOptions,
+  type CreateLogResult,
+} from "~/server/actions/logs";
 import { logStack } from "~/server/actions/stacks";
 import { retryWithBackoff } from "~/lib/retry";
 import type { SafetyCheckResult } from "~/server/services/safety";
@@ -193,7 +198,9 @@ export function LogProvider({ children, initialLogs }: LogProviderProps) {
     });
   };
 
-  const deleteLogOptimistic: LogContextValue["deleteLogOptimistic"] = (entry) => {
+  const deleteLogOptimistic: LogContextValue["deleteLogOptimistic"] = (
+    entry,
+  ) => {
     startTransition(async () => {
       // Optimistic update - remove immediately (must be inside startTransition)
       dispatchOptimistic({ type: "remove", id: entry.id });

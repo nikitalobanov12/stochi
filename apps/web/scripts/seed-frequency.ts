@@ -392,7 +392,9 @@ async function seedFrequencyData() {
     updated++;
   }
 
-  console.log(`\n✅ Done! Updated ${updated} supplements, ${notFound} not found.`);
+  console.log(
+    `\n✅ Done! Updated ${updated} supplements, ${notFound} not found.`,
+  );
 }
 
 seedFrequencyData()

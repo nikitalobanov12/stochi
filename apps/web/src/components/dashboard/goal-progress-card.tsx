@@ -65,7 +65,7 @@ export function GoalProgressCard({ progress }: GoalProgressCardProps) {
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <div className="space-y-4 border-t border-white/5 px-4 pb-4 pt-2">
+          <div className="space-y-4 border-t border-white/5 px-4 pt-2 pb-4">
             {progress.map((p) => (
               <GoalProgressItem key={p.goal.key} progress={p} />
             ))}

@@ -22,10 +22,7 @@ import { Badge } from "~/components/ui/badge";
 import { AddProtocolItemDialog } from "~/components/protocol/add-protocol-item-dialog";
 import { EditProtocolItemDialog } from "~/components/protocol/edit-protocol-item-dialog";
 import { ImportStackDialog } from "~/components/protocol/import-stack-dialog";
-import {
-  removeProtocolItem,
-  logProtocolSlot,
-} from "~/server/actions/protocol";
+import { removeProtocolItem, logProtocolSlot } from "~/server/actions/protocol";
 import { cn } from "~/lib/utils";
 import {
   type timeSlotEnum,
@@ -138,7 +135,11 @@ function formatTime(time: string): string {
   return `${displayHour}:${minutes} ${ampm}`;
 }
 
-export function ProtocolBuilder({ protocol, supplements, stacks }: ProtocolBuilderProps) {
+export function ProtocolBuilder({
+  protocol,
+  supplements,
+  stacks,
+}: ProtocolBuilderProps) {
   const router = useRouter();
   const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
   const [loggingSlot, setLoggingSlot] = useState<TimeSlot | null>(null);
@@ -176,7 +177,7 @@ export function ProtocolBuilder({ protocol, supplements, stacks }: ProtocolBuild
   // Get existing supplement IDs
   const existingSupplementIds = useMemo(
     () => new Set(protocol.items.map((item) => item.supplementId)),
-    [protocol.items]
+    [protocol.items],
   );
 
   async function handleDeleteItem(itemId: string) {
@@ -196,11 +197,15 @@ export function ProtocolBuilder({ protocol, supplements, stacks }: ProtocolBuild
     setLoggingSlot(slot);
     try {
       const result = await logProtocolSlot(slot);
-      toast.success(`Logged ${result.logged} supplement${result.logged !== 1 ? "s" : ""}`);
+      toast.success(
+        `Logged ${result.logged} supplement${result.logged !== 1 ? "s" : ""}`,
+      );
       router.refresh();
     } catch (error) {
       console.error("Failed to log slot:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to log supplements");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to log supplements",
+      );
     } finally {
       setLoggingSlot(null);
     }
@@ -254,7 +259,11 @@ export function ProtocolBuilder({ protocol, supplements, stacks }: ProtocolBuild
                     stacks={stacks}
                     existingSupplementIds={existingSupplementIds}
                   >
-                    <Button variant="ghost" size="sm" className="font-mono text-xs">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="font-mono text-xs"
+                    >
                       <Layers className="mr-1 h-3 w-3" />
                       Import
                     </Button>
@@ -266,7 +275,11 @@ export function ProtocolBuilder({ protocol, supplements, stacks }: ProtocolBuild
                   supplements={supplements}
                   existingSupplementIds={existingSupplementIds}
                 >
-                  <Button variant="ghost" size="sm" className="font-mono text-xs">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="font-mono text-xs"
+                  >
                     <Plus className="mr-1 h-3 w-3" />
                     Add
                   </Button>
@@ -361,7 +374,8 @@ function ProtocolItemCard({
               variant="secondary"
               className={cn(
                 "font-mono text-xs",
-                item.frequency === "as_needed" && "bg-amber-500/10 text-amber-600"
+                item.frequency === "as_needed" &&
+                  "bg-amber-500/10 text-amber-600",
               )}
             >
               {item.frequency === "specific_days"

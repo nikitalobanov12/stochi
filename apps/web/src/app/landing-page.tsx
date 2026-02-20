@@ -154,7 +154,7 @@ const INTERACTION_DATABASE: Record<
 
 export function LandingPage() {
   return (
-    <main className="relative min-h-screen bg-black pt-safe pb-safe font-sans text-white/90">
+    <main className="bg-background text-foreground pt-safe pb-safe relative min-h-screen font-sans">
       {/* Grid overlay for background texture */}
       <div className="lab-grid" aria-hidden="true" />
 
@@ -171,7 +171,7 @@ export function LandingPage() {
         {/* Navigation - scrollable */}
         <nav
           aria-label="Main navigation"
-          className="sticky top-0 z-40 border-b border-white/10 bg-black/80 backdrop-blur-xl"
+          className="border-border/70 bg-background/85 sticky top-0 z-40 border-b backdrop-blur-xl"
         >
           <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
             <Link href="/" className="flex items-center gap-2">
@@ -262,36 +262,36 @@ export function LandingPage() {
 
                 {/* Primary CTA - Attio-style clean button */}
                 <motion.div
-                    className="mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{
-                      duration: 0.8,
-                      ease: [0.25, 0.46, 0.45, 0.94],
-                      delay: 0.4,
-                    }}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Button
-                        asChild
-                        size="lg"
-                        className="rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 px-8 text-sm font-medium text-white shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/30 hover:brightness-110"
-                      >
-                        <Link href="/auth/sign-up">Run Your Stack Audit</Link>
-                      </Button>
-                      <Button
-                        asChild
-                        size="lg"
-                        variant="outline"
-                        className="rounded-full border-white/20 px-6 text-sm font-medium text-white/80 transition-all duration-300 hover:border-white/40 hover:bg-white/5 hover:text-white"
-                      >
-                        <Link href="/demo">Try Demo</Link>
-                      </Button>
-                    </div>
-                    <span className="text-xs tracking-wide text-white/30">
-                      Free forever • No credit card required
-                    </span>
-                  </motion.div>
+                  className="mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.8,
+                    ease: [0.25, 0.46, 0.45, 0.94],
+                    delay: 0.4,
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <Button
+                      asChild
+                      size="lg"
+                      className="rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 px-8 text-sm font-medium text-white shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/30 hover:brightness-110"
+                    >
+                      <Link href="/auth/sign-up">Run Your Stack Audit</Link>
+                    </Button>
+                    <Button
+                      asChild
+                      size="lg"
+                      variant="outline"
+                      className="rounded-full border-white/20 px-6 text-sm font-medium text-white/80 transition-all duration-300 hover:border-white/40 hover:bg-white/5 hover:text-white"
+                    >
+                      <Link href="/demo">Try Demo</Link>
+                    </Button>
+                  </div>
+                  <span className="text-xs tracking-wide text-white/30">
+                    Free forever • No credit card required
+                  </span>
+                </motion.div>
               </div>
 
               {/* Right: Hero Visual (5 columns = ~42%) */}
@@ -361,8 +361,20 @@ export function LandingPage() {
                       className="text-white/70 transition-colors group-hover:text-white/90"
                     />
                     {/* Corner accents */}
-                    <circle cx="28" cy="35" r="3" fill="currentColor" className="text-blue-400/50 transition-colors group-hover:text-blue-400/70" />
-                    <circle cx="72" cy="35" r="3" fill="currentColor" className="text-blue-400/50 transition-colors group-hover:text-blue-400/70" />
+                    <circle
+                      cx="28"
+                      cy="35"
+                      r="3"
+                      fill="currentColor"
+                      className="text-blue-400/50 transition-colors group-hover:text-blue-400/70"
+                    />
+                    <circle
+                      cx="72"
+                      cy="35"
+                      r="3"
+                      fill="currentColor"
+                      className="text-blue-400/50 transition-colors group-hover:text-blue-400/70"
+                    />
                   </svg>
                 </div>
                 <div className="text-center">
@@ -407,10 +419,46 @@ export function LandingPage() {
                       className="text-blue-500/40 transition-colors group-hover:text-blue-500/60"
                     />
                     {/* Text lines representing citations */}
-                    <line x1="44" y1="28" x2="74" y2="28" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-white/60 transition-colors group-hover:text-white/80" />
-                    <line x1="44" y1="40" x2="74" y2="40" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-white/60 transition-colors group-hover:text-white/80" />
-                    <line x1="44" y1="52" x2="74" y2="52" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-white/40 transition-colors group-hover:text-white/60" />
-                    <line x1="44" y1="64" x2="62" y2="64" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-white/40 transition-colors group-hover:text-white/60" />
+                    <line
+                      x1="44"
+                      y1="28"
+                      x2="74"
+                      y2="28"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      className="text-white/60 transition-colors group-hover:text-white/80"
+                    />
+                    <line
+                      x1="44"
+                      y1="40"
+                      x2="74"
+                      y2="40"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      className="text-white/60 transition-colors group-hover:text-white/80"
+                    />
+                    <line
+                      x1="44"
+                      y1="52"
+                      x2="74"
+                      y2="52"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      className="text-white/40 transition-colors group-hover:text-white/60"
+                    />
+                    <line
+                      x1="44"
+                      y1="64"
+                      x2="62"
+                      y2="64"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      className="text-white/40 transition-colors group-hover:text-white/60"
+                    />
                     {/* DNA helix accent */}
                     <path
                       d="M26 32 Q30 28 26 24 Q22 20 26 16 M26 48 Q30 44 26 40 Q22 36 26 32 M26 64 Q30 60 26 56 Q22 52 26 48 M26 80 Q30 76 26 72 Q22 68 26 64"
@@ -452,18 +500,54 @@ export function LandingPage() {
                     />
                     {/* Stars arranged in EU flag pattern - 12 stars */}
                     <g className="text-yellow-400/70 transition-colors group-hover:text-yellow-400">
-                      <polygon points="50,14 52,20 58,20 53,24 55,30 50,26 45,30 47,24 42,20 48,20" fill="currentColor" />
-                      <polygon points="72,22 74,28 80,28 75,32 77,38 72,34 67,38 69,32 64,28 70,28" fill="currentColor" />
-                      <polygon points="86,38 88,44 94,44 89,48 91,54 86,50 81,54 83,48 78,44 84,44" fill="currentColor" />
-                      <polygon points="86,62 88,68 94,68 89,72 91,78 86,74 81,78 83,72 78,68 84,68" fill="currentColor" />
-                      <polygon points="72,78 74,84 80,84 75,88 77,94 72,90 67,94 69,88 64,84 70,84" fill="currentColor" />
-                      <polygon points="50,86 52,92 58,92 53,96 55,102 50,98 45,102 47,96 42,92 48,92" fill="currentColor" />
-                      <polygon points="28,78 30,84 36,84 31,88 33,94 28,90 23,94 25,88 20,84 26,84" fill="currentColor" />
-                      <polygon points="14,62 16,68 22,68 17,72 19,78 14,74 9,78 11,72 6,68 12,68" fill="currentColor" />
-                      <polygon points="14,38 16,44 22,44 17,48 19,54 14,50 9,54 11,48 6,44 12,44" fill="currentColor" />
-                      <polygon points="28,22 30,28 36,28 31,32 33,38 28,34 23,38 25,32 20,28 26,28" fill="currentColor" />
-                      <polygon points="50,38 51,41 54,41 52,43 53,46 50,44 47,46 48,43 46,41 49,41" fill="currentColor" />
-                      <polygon points="50,54 51,57 54,57 52,59 53,62 50,60 47,62 48,59 46,57 49,57" fill="currentColor" />
+                      <polygon
+                        points="50,14 52,20 58,20 53,24 55,30 50,26 45,30 47,24 42,20 48,20"
+                        fill="currentColor"
+                      />
+                      <polygon
+                        points="72,22 74,28 80,28 75,32 77,38 72,34 67,38 69,32 64,28 70,28"
+                        fill="currentColor"
+                      />
+                      <polygon
+                        points="86,38 88,44 94,44 89,48 91,54 86,50 81,54 83,48 78,44 84,44"
+                        fill="currentColor"
+                      />
+                      <polygon
+                        points="86,62 88,68 94,68 89,72 91,78 86,74 81,78 83,72 78,68 84,68"
+                        fill="currentColor"
+                      />
+                      <polygon
+                        points="72,78 74,84 80,84 75,88 77,94 72,90 67,94 69,88 64,84 70,84"
+                        fill="currentColor"
+                      />
+                      <polygon
+                        points="50,86 52,92 58,92 53,96 55,102 50,98 45,102 47,96 42,92 48,92"
+                        fill="currentColor"
+                      />
+                      <polygon
+                        points="28,78 30,84 36,84 31,88 33,94 28,90 23,94 25,88 20,84 26,84"
+                        fill="currentColor"
+                      />
+                      <polygon
+                        points="14,62 16,68 22,68 17,72 19,78 14,74 9,78 11,72 6,68 12,68"
+                        fill="currentColor"
+                      />
+                      <polygon
+                        points="14,38 16,44 22,44 17,48 19,54 14,50 9,54 11,48 6,44 12,44"
+                        fill="currentColor"
+                      />
+                      <polygon
+                        points="28,22 30,28 36,28 31,32 33,38 28,34 23,38 25,32 20,28 26,28"
+                        fill="currentColor"
+                      />
+                      <polygon
+                        points="50,38 51,41 54,41 52,43 53,46 50,44 47,46 48,43 46,41 49,41"
+                        fill="currentColor"
+                      />
+                      <polygon
+                        points="50,54 51,57 54,57 52,59 53,62 50,60 47,62 48,59 46,57 49,57"
+                        fill="currentColor"
+                      />
                     </g>
                     {/* Center plate with fork/knife */}
                     <circle
@@ -528,10 +612,34 @@ export function LandingPage() {
                       className="text-white/70 transition-colors group-hover:text-white"
                     />
                     {/* Data points representing research */}
-                    <circle cx="45" cy="20" r="2" fill="currentColor" className="text-emerald-500/50 transition-colors group-hover:text-emerald-500/70" />
-                    <circle cx="70" cy="45" r="2" fill="currentColor" className="text-emerald-500/50 transition-colors group-hover:text-emerald-500/70" />
-                    <circle cx="45" cy="70" r="2" fill="currentColor" className="text-emerald-500/50 transition-colors group-hover:text-emerald-500/70" />
-                    <circle cx="20" cy="45" r="2" fill="currentColor" className="text-emerald-500/50 transition-colors group-hover:text-emerald-500/70" />
+                    <circle
+                      cx="45"
+                      cy="20"
+                      r="2"
+                      fill="currentColor"
+                      className="text-emerald-500/50 transition-colors group-hover:text-emerald-500/70"
+                    />
+                    <circle
+                      cx="70"
+                      cy="45"
+                      r="2"
+                      fill="currentColor"
+                      className="text-emerald-500/50 transition-colors group-hover:text-emerald-500/70"
+                    />
+                    <circle
+                      cx="45"
+                      cy="70"
+                      r="2"
+                      fill="currentColor"
+                      className="text-emerald-500/50 transition-colors group-hover:text-emerald-500/70"
+                    />
+                    <circle
+                      cx="20"
+                      cy="45"
+                      r="2"
+                      fill="currentColor"
+                      className="text-emerald-500/50 transition-colors group-hover:text-emerald-500/70"
+                    />
                   </svg>
                 </div>
                 <div className="text-center">

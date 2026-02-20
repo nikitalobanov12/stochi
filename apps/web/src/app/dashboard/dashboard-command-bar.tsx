@@ -159,7 +159,7 @@ export function DashboardCommandBar({ supplements }: DashboardCommandBarProps) {
           </div>
 
           {/* Keyboard hint */}
-          <div className="absolute right-4 top-1/2 -translate-y-1/2">
+          <div className="absolute top-1/2 right-4 -translate-y-1/2">
             <kbd className="hidden rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-white/40 sm:inline-block">
               /
             </kbd>
@@ -186,7 +186,7 @@ export function DashboardCommandBar({ supplements }: DashboardCommandBarProps) {
         <button
           type="button"
           onClick={() => setIsExpanded(false)}
-          className="absolute right-2 top-2 rounded p-1 text-white/40 hover:bg-white/5 hover:text-white/60"
+          className="absolute top-2 right-2 rounded p-1 text-white/40 hover:bg-white/5 hover:text-white/60"
         >
           <kbd className="rounded border border-white/10 bg-white/5 px-1 py-0.5 font-mono text-[10px]">
             ESC

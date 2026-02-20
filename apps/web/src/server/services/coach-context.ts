@@ -132,7 +132,9 @@ export async function getCoachContext(
     }
   }
 
-  const uniqueSupplementIds = [...new Set(windowLogs.map((entry) => entry.supplementId))];
+  const uniqueSupplementIds = [
+    ...new Set(windowLogs.map((entry) => entry.supplementId)),
+  ];
   const dosages = Array.from(dosageBySupplementId.values());
 
   const { interactions, ratioWarnings } = await checkInteractions(
@@ -150,7 +152,8 @@ export async function getCoachContext(
   const supplementDayMap = new Map<string, Set<string>>();
   for (const entry of windowLogs) {
     const dayKey = getDayKey(entry.loggedAt, timezone);
-    const current = supplementDayMap.get(entry.supplementId) ?? new Set<string>();
+    const current =
+      supplementDayMap.get(entry.supplementId) ?? new Set<string>();
     current.add(dayKey);
     supplementDayMap.set(entry.supplementId, current);
   }
@@ -163,7 +166,8 @@ export async function getCoachContext(
         return daysLogged / 7;
       });
 
-      const averageRate = rates.reduce((sum, value) => sum + value, 0) / rates.length;
+      const averageRate =
+        rates.reduce((sum, value) => sum + value, 0) / rates.length;
 
       return {
         stackName: userStack.name,
@@ -200,8 +204,9 @@ export async function getCoachContext(
     },
     warningSummary: {
       ...severitySummary,
-      synergies: interactions.filter((interaction) => interaction.type === "synergy")
-        .length,
+      synergies: interactions.filter(
+        (interaction) => interaction.type === "synergy",
+      ).length,
       ratioWarnings: ratioWarnings.length,
     },
     keyFacts: [],
@@ -237,7 +242,9 @@ export function buildCoachFacts(context: CoachContext): string[] {
 
   if (context.adherence.lowestStacks.length > 0) {
     const lowest = context.adherence.lowestStacks
-      .map((stackRate) => `${stackRate.stackName} (${stackRate.estimatedRate}%)`)
+      .map(
+        (stackRate) => `${stackRate.stackName} (${stackRate.estimatedRate}%)`,
+      )
       .join(", ");
     facts.push(`Lowest consistency stacks: ${lowest}.`);
   }

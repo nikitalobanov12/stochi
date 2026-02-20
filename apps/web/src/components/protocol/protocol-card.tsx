@@ -157,7 +157,7 @@ export function ProtocolCard({ protocol }: ProtocolCardProps) {
   const totalItems = protocol.items.length;
   const todayTotal = Object.values(todayBySlot).reduce(
     (sum, items) => sum + items.length,
-    0
+    0,
   );
 
   function handleNavigate() {
@@ -172,13 +172,13 @@ export function ProtocolCard({ protocol }: ProtocolCardProps) {
     try {
       const result = await logProtocolSlot(slot);
       toast.success(
-        `Logged ${result.logged} supplement${result.logged !== 1 ? "s" : ""}`
+        `Logged ${result.logged} supplement${result.logged !== 1 ? "s" : ""}`,
       );
       router.refresh();
     } catch (error) {
       console.error("Failed to log slot:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to log supplements"
+        error instanceof Error ? error.message : "Failed to log supplements",
       );
     } finally {
       setLoggingSlot(null);
@@ -192,7 +192,7 @@ export function ProtocolCard({ protocol }: ProtocolCardProps) {
         type="button"
         onClick={handleNavigate}
         disabled={isNavigating}
-        className="flex w-full items-center justify-between p-4 text-left hover:bg-white/5 transition-colors"
+        className="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-white/5"
       >
         <div className="flex items-center gap-3">
           <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
@@ -221,7 +221,7 @@ export function ProtocolCard({ protocol }: ProtocolCardProps) {
 
       {/* Time Slot Grid */}
       {totalItems > 0 && (
-        <div className="grid grid-cols-2 gap-px bg-border/20 border-t border-border/20 sm:grid-cols-4">
+        <div className="bg-border/20 border-border/20 grid grid-cols-2 gap-px border-t sm:grid-cols-4">
           {(["morning", "afternoon", "evening", "bedtime"] as TimeSlot[]).map(
             (slot) => {
               const config = TIME_SLOT_CONFIG[slot];
@@ -235,28 +235,28 @@ export function ProtocolCard({ protocol }: ProtocolCardProps) {
                   key={slot}
                   className={cn(
                     "relative p-3 transition-colors",
-                    hasItems ? "bg-white/5" : "bg-transparent"
+                    hasItems ? "bg-white/5" : "bg-transparent",
                   )}
                 >
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="mb-2 flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
-                      <Icon className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span className="font-mono text-xs text-muted-foreground">
+                      <Icon className="text-muted-foreground h-3.5 w-3.5" />
+                      <span className="text-muted-foreground font-mono text-xs">
                         {config.label}
                       </span>
                     </div>
-                    <span className="font-mono text-xs text-muted-foreground">
+                    <span className="text-muted-foreground font-mono text-xs">
                       {formatTime(getSlotTime(protocol, slot))}
                     </span>
                   </div>
 
                   {hasItems ? (
                     <>
-                      <div className="space-y-1 mb-2">
+                      <div className="mb-2 space-y-1">
                         {items.slice(0, 3).map((item) => (
                           <div
                             key={item.id}
-                            className="font-mono text-xs truncate"
+                            className="truncate font-mono text-xs"
                           >
                             {item.supplement.name}
                           </div>
@@ -270,7 +270,7 @@ export function ProtocolCard({ protocol }: ProtocolCardProps) {
                       <Button
                         variant="secondary"
                         size="sm"
-                        className="w-full h-7 font-mono text-xs"
+                        className="h-7 w-full font-mono text-xs"
                         onClick={(e) => handleLogSlot(e, slot)}
                         disabled={isLogging}
                       >
@@ -291,14 +291,14 @@ export function ProtocolCard({ protocol }: ProtocolCardProps) {
                   )}
                 </div>
               );
-            }
+            },
           )}
         </div>
       )}
 
       {/* Empty state */}
       {totalItems === 0 && (
-        <div className="border-t border-border/20 p-4">
+        <div className="border-border/20 border-t p-4">
           <Button
             variant="outline"
             size="sm"

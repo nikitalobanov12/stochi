@@ -20,7 +20,10 @@ import { OptimizationHUD } from "~/components/dashboard/optimization-hud";
 
 // Additional Components
 import { BioScoreCard } from "~/components/dashboard/bio-score-card";
-import { MicroKPIRow, type SafetyHeadroom } from "~/components/dashboard/micro-kpi-row";
+import {
+  MicroKPIRow,
+  type SafetyHeadroom,
+} from "~/components/dashboard/micro-kpi-row";
 import { LiveConsoleFeed } from "~/components/dashboard/live-console-feed";
 
 import type { LogEntry, StackItem } from "~/components/log/log-context";
@@ -98,12 +101,15 @@ export function DemoDashboardClient({
 
       <DemoHint id="command-bar">
         Try the command bar — type a supplement name like{" "}
-        <kbd className="rounded border border-cyan-500/30 bg-cyan-500/10 px-1">mag 400mg</kbd>{" "}
+        <kbd className="rounded border border-cyan-500/30 bg-cyan-500/10 px-1">
+          mag 400mg
+        </kbd>{" "}
         to log with natural language parsing
       </DemoHint>
 
       <DemoHint id="protocol-tap">
-        Tap <strong className="text-cyan-300">Log Stack</strong> to execute an entire supplement protocol in one click
+        Tap <strong className="text-cyan-300">Log Stack</strong> to execute an
+        entire supplement protocol in one click
       </DemoHint>
 
       {/* Protocols Section */}
@@ -117,7 +123,8 @@ export function DemoDashboardClient({
           {/* Left Column */}
           <div className="space-y-4 lg:col-span-8">
             <DemoHint id="bio-timeline">
-              Pharmacokinetic curves modeled with Michaelis-Menten kinetics — each compound shows real absorption and elimination phases
+              Pharmacokinetic curves modeled with Michaelis-Menten kinetics —
+              each compound shows real absorption and elimination phases
             </DemoHint>
 
             {timelineData.length > 0 && (
@@ -155,7 +162,8 @@ export function DemoDashboardClient({
           {/* Right Column */}
           <div className="space-y-4 lg:col-span-4">
             <DemoHint id="bio-score">
-              Bio-Score factors in exclusion zones, timing conflicts, and stoichiometric ratios — not just a count
+              Bio-Score factors in exclusion zones, timing conflicts, and
+              stoichiometric ratios — not just a count
             </DemoHint>
 
             <BioScoreCard
@@ -236,11 +244,7 @@ export function DemoDashboardClient({
 }
 
 // Demo-specific Mission Control that uses demo context for logging
-function DemoMissionControl({
-  stacks,
-}: {
-  stacks: StackCompletionStatus[];
-}) {
+function DemoMissionControl({ stacks }: { stacks: StackCompletionStatus[] }) {
   const demo = useDemoContext();
   const [isPending, startTransition] = useTransition();
 
@@ -257,37 +261,37 @@ function DemoMissionControl({
       </h2>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {stacks.map((stack) => (
-            <div
-              key={stack.stackId}
-              className="glass-card flex items-center justify-between p-4"
-            >
-              <div>
-                <p className="font-medium">{stack.stackName}</p>
-                <p className="text-muted-foreground text-xs">
-                  {stack.loggedItems}/{stack.totalItems} logged
-                </p>
-              </div>
-              <Button
-                size="sm"
-                variant={stack.isComplete ? "outline" : "default"}
-                disabled={isPending || stack.isComplete}
-                onClick={() => handleLogStack(stack.stackId)}
-                className={
-                  stack.isComplete
-                    ? "border-emerald-500/30 text-emerald-400"
-                    : "bg-gradient-to-r from-emerald-500 to-cyan-500"
-                }
-              >
-                {isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : stack.isComplete ? (
-                  "Complete"
-                ) : (
-                  "Log Stack"
-                )}
-              </Button>
+          <div
+            key={stack.stackId}
+            className="glass-card flex items-center justify-between p-4"
+          >
+            <div>
+              <p className="font-medium">{stack.stackName}</p>
+              <p className="text-muted-foreground text-xs">
+                {stack.loggedItems}/{stack.totalItems} logged
+              </p>
             </div>
-          ))}
+            <Button
+              size="sm"
+              variant={stack.isComplete ? "outline" : "default"}
+              disabled={isPending || stack.isComplete}
+              onClick={() => handleLogStack(stack.stackId)}
+              className={
+                stack.isComplete
+                  ? "border-emerald-500/30 text-emerald-400"
+                  : "bg-gradient-to-r from-emerald-500 to-cyan-500"
+              }
+            >
+              {isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : stack.isComplete ? (
+                "Complete"
+              ) : (
+                "Log Stack"
+              )}
+            </Button>
+          </div>
+        ))}
       </div>
     </div>
   );

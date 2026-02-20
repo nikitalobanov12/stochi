@@ -49,7 +49,9 @@ export function StackRow({ stack }: StackRowProps) {
           className="min-w-0 flex-1 text-left disabled:opacity-70"
         >
           <div className="flex items-center gap-3">
-            <span className="font-mono text-base font-medium">{stack.name}</span>
+            <span className="font-mono text-base font-medium">
+              {stack.name}
+            </span>
             <Badge
               variant="secondary"
               className="bg-muted/50 font-mono text-xs tabular-nums"

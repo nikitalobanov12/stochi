@@ -17,12 +17,7 @@ export function BackToDashboardButton() {
   }
 
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={handleBack}
-      disabled={isPending}
-    >
+    <Button variant="ghost" size="sm" onClick={handleBack} disabled={isPending}>
       {isPending ? (
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
       ) : (

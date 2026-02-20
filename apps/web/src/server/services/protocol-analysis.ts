@@ -446,11 +446,9 @@ async function checkRatioIssues(
 
     // Apply elemental weight if available
     const sourceElemental =
-      sourceDosage *
-      ((rule.sourceSupplement.elementalWeight ?? 100) / 100);
+      sourceDosage * ((rule.sourceSupplement.elementalWeight ?? 100) / 100);
     const targetElemental =
-      targetDosage *
-      ((rule.targetSupplement.elementalWeight ?? 100) / 100);
+      targetDosage * ((rule.targetSupplement.elementalWeight ?? 100) / 100);
 
     const ratio = sourceElemental / targetElemental;
 
@@ -482,10 +480,9 @@ async function checkRatioIssues(
               : ""
         }`,
         affectedItems: affectedItemIds,
-        suggestion:
-          isBelowMin
-            ? `Consider increasing ${rule.sourceSupplement.name} or reducing ${rule.targetSupplement.name}.`
-            : `Consider reducing ${rule.sourceSupplement.name} or increasing ${rule.targetSupplement.name}.`,
+        suggestion: isBelowMin
+          ? `Consider increasing ${rule.sourceSupplement.name} or reducing ${rule.targetSupplement.name}.`
+          : `Consider reducing ${rule.sourceSupplement.name} or increasing ${rule.targetSupplement.name}.`,
         researchUrl: rule.researchUrl,
       });
     }

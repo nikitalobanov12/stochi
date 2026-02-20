@@ -6,7 +6,11 @@ import { ChevronRight, Clock, Layers, Loader2 } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
 import { TodayLogList } from "~/components/log/today-log-list";
-import { LogProvider, type LogEntry, type StackItem } from "~/components/log/log-context";
+import {
+  LogProvider,
+  type LogEntry,
+  type StackItem,
+} from "~/components/log/log-context";
 
 // Dashboard Components
 import { SystemStatus } from "~/components/dashboard/system-status";
@@ -23,7 +27,10 @@ import { OptimizationHUD } from "~/components/dashboard/optimization-hud";
 
 // Additional Components
 import { BioScoreCard } from "~/components/dashboard/bio-score-card";
-import { MicroKPIRow, type SafetyHeadroom } from "~/components/dashboard/micro-kpi-row";
+import {
+  MicroKPIRow,
+  type SafetyHeadroom,
+} from "~/components/dashboard/micro-kpi-row";
 import { LiveConsoleFeed } from "~/components/dashboard/live-console-feed";
 
 import type { StackCompletionStatus } from "~/server/services/analytics";

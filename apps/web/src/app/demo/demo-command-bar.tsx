@@ -37,14 +37,14 @@ export function DemoCommandBar({ supplements }: DemoCommandBarProps) {
     const parts = q.trim().split(/\s+/);
     const lastPart = parts[parts.length - 1];
     const dosageMatch = lastPart?.match(/^(\d+)(mg|mcg|iu|g|ml)?$/i);
-    
+
     if (dosageMatch) {
       return {
         name: parts.slice(0, -1).join(" "),
         dosage: parseInt(dosageMatch[1]!, 10),
       };
     }
-    
+
     return { name: q, dosage: null };
   }
 

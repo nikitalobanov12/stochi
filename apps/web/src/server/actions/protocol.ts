@@ -20,7 +20,12 @@ type TimeSlot = (typeof timeSlotEnum.enumValues)[number];
 type Frequency = (typeof frequencyEnum.enumValues)[number];
 type DosageUnit = (typeof dosageUnitEnum.enumValues)[number];
 
-const VALID_TIME_SLOTS: TimeSlot[] = ["morning", "afternoon", "evening", "bedtime"];
+const VALID_TIME_SLOTS: TimeSlot[] = [
+  "morning",
+  "afternoon",
+  "evening",
+  "bedtime",
+];
 const VALID_FREQUENCIES: Frequency[] = ["daily", "specific_days", "as_needed"];
 const VALID_UNITS: DosageUnit[] = ["mg", "mcg", "g", "IU", "ml"];
 const VALID_DAYS = [
@@ -37,11 +42,15 @@ type DayOfWeek = (typeof VALID_DAYS)[number];
 
 // Validation helpers
 function isValidTimeSlot(slot: unknown): slot is TimeSlot {
-  return typeof slot === "string" && VALID_TIME_SLOTS.includes(slot as TimeSlot);
+  return (
+    typeof slot === "string" && VALID_TIME_SLOTS.includes(slot as TimeSlot)
+  );
 }
 
 function isValidFrequency(freq: unknown): freq is Frequency {
-  return typeof freq === "string" && VALID_FREQUENCIES.includes(freq as Frequency);
+  return (
+    typeof freq === "string" && VALID_FREQUENCIES.includes(freq as Frequency)
+  );
 }
 
 function isValidUnit(unit: unknown): unit is DosageUnit {
@@ -50,7 +59,9 @@ function isValidUnit(unit: unknown): unit is DosageUnit {
 
 function isValidDaysArray(days: unknown): days is DayOfWeek[] {
   if (!Array.isArray(days)) return false;
-  return days.every((d) => typeof d === "string" && VALID_DAYS.includes(d as DayOfWeek));
+  return days.every(
+    (d) => typeof d === "string" && VALID_DAYS.includes(d as DayOfWeek),
+  );
 }
 
 function isValidTimeFormat(time: string): boolean {
@@ -64,7 +75,8 @@ function isValidTimeFormat(time: string): boolean {
 // ============================================================================
 
 export type ProtocolWithItems = Awaited<ReturnType<typeof getProtocol>>;
-export type ProtocolItemWithSupplement = NonNullable<ProtocolWithItems>["items"][number];
+export type ProtocolItemWithSupplement =
+  NonNullable<ProtocolWithItems>["items"][number];
 
 /**
  * Get or create the user's protocol.
@@ -83,7 +95,10 @@ export async function getProtocol() {
         with: {
           supplement: true,
         },
-        orderBy: (items, { asc }) => [asc(items.timeSlot), asc(items.sortOrder)],
+        orderBy: (items, { asc }) => [
+          asc(items.timeSlot),
+          asc(items.sortOrder),
+        ],
       },
     },
   });
@@ -148,7 +163,10 @@ export async function getOrCreateProtocol() {
         with: {
           supplement: true,
         },
-        orderBy: (items, { asc }) => [asc(items.timeSlot), asc(items.sortOrder)],
+        orderBy: (items, { asc }) => [
+          asc(items.timeSlot),
+          asc(items.sortOrder),
+        ],
       },
     },
   });
@@ -191,10 +209,17 @@ export async function updateProtocol(settings: {
   }
 
   // Validate time formats
-  const timeFields = ["morningTime", "afternoonTime", "eveningTime", "bedtimeTime"] as const;
+  const timeFields = [
+    "morningTime",
+    "afternoonTime",
+    "eveningTime",
+    "bedtimeTime",
+  ] as const;
   for (const field of timeFields) {
     if (settings[field] !== undefined && !isValidTimeFormat(settings[field]!)) {
-      throw new Error(`Invalid time format for ${field}. Use HH:MM (24-hour format).`);
+      throw new Error(
+        `Invalid time format for ${field}. Use HH:MM (24-hour format).`,
+      );
     }
   }
 
@@ -277,14 +302,14 @@ export async function addProtocolItem(input: AddProtocolItemInput) {
   const existingItems = await db.query.protocolItem.findMany({
     where: and(
       eq(protocolItem.protocolId, userProtocol.id),
-      eq(protocolItem.timeSlot, input.timeSlot as TimeSlot)
+      eq(protocolItem.timeSlot, input.timeSlot as TimeSlot),
     ),
     columns: { sortOrder: true },
   });
 
   const maxSortOrder = existingItems.reduce(
     (max, item) => Math.max(max, item.sortOrder),
-    -1
+    -1,
   );
 
   await db.insert(protocolItem).values({
@@ -417,7 +442,7 @@ export async function updateProtocolItem(
     daysOfWeek?: string[];
     groupName?: string | null;
     sortOrder?: number;
-  }
+  },
 ) {
   const session = await getSession();
   if (!session) {
@@ -434,10 +459,16 @@ export async function updateProtocolItem(
   if (updates.frequency !== undefined && !isValidFrequency(updates.frequency)) {
     throw new Error(`Invalid frequency: ${updates.frequency}`);
   }
-  if (updates.dosage !== undefined && (!Number.isFinite(updates.dosage) || updates.dosage <= 0)) {
+  if (
+    updates.dosage !== undefined &&
+    (!Number.isFinite(updates.dosage) || updates.dosage <= 0)
+  ) {
     throw new Error("Dosage must be a positive number");
   }
-  if (updates.daysOfWeek !== undefined && !isValidDaysArray(updates.daysOfWeek)) {
+  if (
+    updates.daysOfWeek !== undefined &&
+    !isValidDaysArray(updates.daysOfWeek)
+  ) {
     throw new Error("Invalid days of week");
   }
 
@@ -462,15 +493,18 @@ export async function updateProtocolItem(
 
   if (updates.dosage !== undefined) updateData.dosage = updates.dosage;
   if (updates.unit !== undefined) updateData.unit = updates.unit as DosageUnit;
-  if (updates.timeSlot !== undefined) updateData.timeSlot = updates.timeSlot as TimeSlot;
-  if (updates.frequency !== undefined) updateData.frequency = updates.frequency as Frequency;
+  if (updates.timeSlot !== undefined)
+    updateData.timeSlot = updates.timeSlot as TimeSlot;
+  if (updates.frequency !== undefined)
+    updateData.frequency = updates.frequency as Frequency;
   if (updates.sortOrder !== undefined) updateData.sortOrder = updates.sortOrder;
   if (updates.groupName !== undefined) updateData.groupName = updates.groupName;
-  
+
   // Handle daysOfWeek - only set if frequency is specific_days
   if (updates.daysOfWeek !== undefined) {
     const freq = updates.frequency ?? item.frequency;
-    updateData.daysOfWeek = freq === "specific_days" ? updates.daysOfWeek : null;
+    updateData.daysOfWeek =
+      freq === "specific_days" ? updates.daysOfWeek : null;
   }
 
   await db
@@ -597,7 +631,7 @@ export async function logProtocolSlot(timeSlot: TimeSlot, loggedAt?: Date) {
       dosage: item.dosage,
       unit: item.unit,
       loggedAt: logTime,
-    }))
+    })),
   );
 
   revalidatePath("/dashboard");
@@ -714,7 +748,7 @@ export async function logEntireProtocol(loggedAt?: Date) {
       dosage: item.dosage,
       unit: item.unit,
       loggedAt: logTime,
-    }))
+    })),
   );
 
   revalidatePath("/dashboard");
@@ -753,8 +787,8 @@ export async function renameProtocolGroup(oldName: string, newName: string) {
     .where(
       and(
         eq(protocolItem.protocolId, userProtocol.id),
-        eq(protocolItem.groupName, oldName)
-      )
+        eq(protocolItem.groupName, oldName),
+      ),
     );
 
   await db
@@ -790,8 +824,8 @@ export async function ungroupProtocolItems(groupName: string) {
     .where(
       and(
         eq(protocolItem.protocolId, userProtocol.id),
-        eq(protocolItem.groupName, groupName)
-      )
+        eq(protocolItem.groupName, groupName),
+      ),
     );
 
   await db

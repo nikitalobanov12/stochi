@@ -48,7 +48,11 @@ type ExperienceStepProps = {
   onBack: () => void;
 };
 
-export function ExperienceStep({ onNext, onSkip, onBack }: ExperienceStepProps) {
+export function ExperienceStep({
+  onNext,
+  onSkip,
+  onBack,
+}: ExperienceStepProps) {
   const [selected, setSelected] = useState<ExperienceLevel | null>(null);
 
   return (

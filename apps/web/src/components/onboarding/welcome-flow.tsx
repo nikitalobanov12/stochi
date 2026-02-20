@@ -9,10 +9,7 @@ import { Button } from "~/components/ui/button";
 import { StepIndicator } from "./step-indicator";
 import { WelcomeStep } from "./steps/welcome-step";
 import { GoalStep } from "./steps/goal-step";
-import {
-  ExperienceStep,
-  type ExperienceLevel,
-} from "./steps/experience-step";
+import { ExperienceStep, type ExperienceLevel } from "./steps/experience-step";
 import {
   BuildStackStep,
   type SelectedSupplement,
@@ -65,14 +62,13 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(0);
   const [selectedGoals, setSelectedGoals] = useState<GoalKey[]>([]);
-  const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel | null>(
-    null,
-  );
+  const [experienceLevel, setExperienceLevel] =
+    useState<ExperienceLevel | null>(null);
   const [selectedSupplements, setSelectedSupplements] = useState<
     SelectedSupplement[]
   >([]);
   const [stackName, setStackName] = useState("Morning Stack");
-  
+
   // Defer rendering until after hydration to avoid Radix ID mismatches
   const isClient = useIsClient();
 

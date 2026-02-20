@@ -297,13 +297,13 @@ export async function logStack(
 
   // Validate loggedAt if provided
   const logTime = loggedAt ?? new Date();
-  
+
   // Don't allow future dates more than 1 minute ahead (account for clock skew)
   const maxFutureTime = new Date(Date.now() + 60 * 1000);
   if (logTime > maxFutureTime) {
     throw new Error("Cannot log supplements in the future");
   }
-  
+
   // Don't allow dates more than 7 days in the past
   const minPastTime = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   if (logTime < minPastTime) {
@@ -405,13 +405,13 @@ export async function logStackWithSafetyCheck(
 
   // Validate loggedAt if provided
   const logTime = loggedAt ?? new Date();
-  
+
   // Don't allow future dates more than 1 minute ahead (account for clock skew)
   const maxFutureTime = new Date(Date.now() + 60 * 1000);
   if (logTime > maxFutureTime) {
     throw new Error("Cannot log supplements in the future");
   }
-  
+
   // Don't allow dates more than 7 days in the past
   const minPastTime = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   if (logTime < minPastTime) {

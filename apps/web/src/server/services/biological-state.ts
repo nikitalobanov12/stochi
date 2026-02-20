@@ -994,7 +994,8 @@ async function calculateOptimizations(
   const timezone = filterOptions?.timezone;
   // New smart filtering options
   const experienceLevel = filterOptions?.experienceLevel ?? "beginner";
-  const suggestionFilterLevel = filterOptions?.suggestionFilterLevel ?? "strong";
+  const suggestionFilterLevel =
+    filterOptions?.suggestionFilterLevel ?? "strong";
   const showConditionalSupplements =
     filterOptions?.showConditionalSupplements ?? false;
 

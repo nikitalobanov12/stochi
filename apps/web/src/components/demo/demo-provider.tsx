@@ -57,7 +57,7 @@ type DemoContextValue = {
   ) => void;
   removeLog: (logId: string) => void;
   logStack: (stackId: string) => void;
-  
+
   // State
   isPending: boolean;
   isDemo: true;
@@ -96,12 +96,14 @@ type DemoProviderProps = {
 export function DemoProvider({ children }: DemoProviderProps) {
   // Initialize with demo data
   const initialData = generateDemoData();
-  
+
   const [logs, setLogs] = useState<LogEntry[]>(initialData.logs);
-  const [stackCompletion, setStackCompletion] = useState<StackCompletionStatus[]>(
-    initialData.stackCompletion,
+  const [stackCompletion, setStackCompletion] = useState<
+    StackCompletionStatus[]
+  >(initialData.stackCompletion);
+  const [lastLogAt, setLastLogAt] = useState<Date | null>(
+    initialData.lastLogAt,
   );
-  const [lastLogAt, setLastLogAt] = useState<Date | null>(initialData.lastLogAt);
   const [streak] = useState(initialData.streak);
   const [isPending, setIsPending] = useState(false);
 
@@ -113,7 +115,7 @@ export function DemoProvider({ children }: DemoProviderProps) {
       supplementData: { name: string; category?: string | null },
     ) => {
       setIsPending(true);
-      
+
       // Simulate a brief delay for realism
       setTimeout(() => {
         const newLog: LogEntry = {
@@ -143,7 +145,7 @@ export function DemoProvider({ children }: DemoProviderProps) {
 
   const removeLog = useCallback((logId: string) => {
     setIsPending(true);
-    
+
     setTimeout(() => {
       setLogs((prev) => {
         const log = prev.find((l) => l.id === logId);
@@ -160,7 +162,7 @@ export function DemoProvider({ children }: DemoProviderProps) {
 
   const logStack = useCallback((stackId: string) => {
     setIsPending(true);
-    
+
     const stack = DEMO_STACKS.find((s) => s.id === stackId);
     if (!stack) {
       setIsPending(false);
@@ -169,7 +171,7 @@ export function DemoProvider({ children }: DemoProviderProps) {
 
     setTimeout(() => {
       const now = new Date();
-      
+
       // Add logs for each item in the stack
       const newLogs: LogEntry[] = stack.items.map((item, index) => ({
         id: `demo-log-${Date.now()}-${index}`,
@@ -209,8 +211,6 @@ export function DemoProvider({ children }: DemoProviderProps) {
     }, 300);
   }, []);
 
-
-
   const value: DemoContextValue = {
     // Static data
     supplements: DEMO_SUPPLEMENTS,
@@ -221,7 +221,7 @@ export function DemoProvider({ children }: DemoProviderProps) {
     biologicalState: initialData.biologicalState,
     timelineData: initialData.timelineData,
     safetyHeadroom: initialData.safetyHeadroom,
-    
+
     // Dynamic data
     logs,
     stackCompletion,

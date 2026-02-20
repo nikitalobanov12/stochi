@@ -26,7 +26,7 @@ export function SignOutButton() {
   return (
     <Button
       variant="outline"
-      className="w-full justify-start gap-2 border-white/10 text-muted-foreground hover:text-foreground"
+      className="text-muted-foreground hover:text-foreground w-full justify-start gap-2 border-white/10"
       onClick={handleSignOut}
       disabled={isLoading}
     >

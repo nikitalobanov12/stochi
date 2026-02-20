@@ -41,7 +41,11 @@ export async function retryWithBackoff<T>(
   fn: () => Promise<T>,
   options?: RetryOptions,
 ): Promise<RetryResult<T>> {
-  const { maxAttempts = 3, baseDelayMs = 1000, timeoutMs = 15000 } = options ?? {};
+  const {
+    maxAttempts = 3,
+    baseDelayMs = 1000,
+    timeoutMs = 15000,
+  } = options ?? {};
   const startTime = Date.now();
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {

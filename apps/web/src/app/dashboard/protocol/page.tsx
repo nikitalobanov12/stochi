@@ -109,7 +109,11 @@ export default async function ProtocolPage() {
       <ProtocolHealthScore analysis={analysis} />
 
       {/* Protocol Builder */}
-      <ProtocolBuilder protocol={protocol} supplements={supplements} stacks={userStacks} />
+      <ProtocolBuilder
+        protocol={protocol}
+        supplements={supplements}
+        stacks={userStacks}
+      />
     </div>
   );
 }
