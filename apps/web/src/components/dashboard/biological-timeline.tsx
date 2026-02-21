@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback, memo } from "react";
+import { useMemo, useState, useCallback, memo, useSyncExternalStore } from "react";
 import {
   AreaChart,
   Area,
@@ -225,6 +225,14 @@ export function BiologicalTimeline({
   currentTime,
   defaultVisibleCount = 100, // Show all by default
 }: BiologicalTimelineProps) {
+  const isClient = useSyncExternalStore(
+    () => () => {
+      // no-op subscription: we only need hydration-safe client detection
+    },
+    () => true,
+    () => false,
+  );
+
   // Track whether to show all compounds or just top N
   const [showAll, setShowAll] = useState(true); // Default to showing all
   // Track manually hidden compounds (for fine-grained control)
@@ -351,6 +359,14 @@ export function BiologicalTimeline({
         >
           SHOW ALL COMPOUNDS
         </button>
+      </div>
+    );
+  }
+
+  if (!isClient) {
+    return (
+      <div className="w-full">
+        <div className="bg-muted/20 h-[280px] w-full animate-pulse rounded-md" />
       </div>
     );
   }

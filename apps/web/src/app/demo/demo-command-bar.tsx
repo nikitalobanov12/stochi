@@ -113,7 +113,7 @@ export function DemoCommandBar({ supplements }: DemoCommandBarProps) {
 
   return (
     <div ref={containerRef} className="relative">
-      <div className="glass-card flex items-center gap-3 px-4 py-3">
+      <div className="bg-card border-border focus-within:ring-ring/40 flex items-center gap-3 rounded-xl border px-4 py-3 shadow-[var(--elevation-1)] transition-shadow focus-within:ring-2">
         {isLogging ? (
           <Loader2 className="h-4 w-4 animate-spin text-emerald-400" />
         ) : (
@@ -134,11 +134,11 @@ export function DemoCommandBar({ supplements }: DemoCommandBarProps) {
           onKeyDown={handleKeyDown}
           onFocus={() => query.trim() && setIsOpen(true)}
           placeholder="Log supplement... (e.g., 'mag 400mg')"
-          className="flex-1 bg-transparent font-mono text-sm outline-none placeholder:text-white/30"
+          className="text-foreground placeholder:text-muted-foreground/70 flex-1 bg-transparent text-sm outline-none"
           disabled={isLogging}
         />
         {query && (
-          <span className="text-muted-foreground text-xs">
+          <span className="text-muted-foreground hidden text-xs sm:inline">
             Press Enter to log
           </span>
         )}
@@ -146,7 +146,7 @@ export function DemoCommandBar({ supplements }: DemoCommandBarProps) {
 
       {/* Dropdown */}
       {isOpen && filteredSupplements.length > 0 && (
-        <div className="absolute top-full right-0 left-0 z-50 mt-2 max-h-64 overflow-y-auto rounded-xl border border-white/10 bg-[#0A0A0A] shadow-xl">
+        <div className="bg-popover border-border absolute top-full right-0 left-0 z-50 mt-2 max-h-64 overflow-y-auto rounded-xl border shadow-[var(--elevation-2)]">
           {filteredSupplements.slice(0, 8).map((supplement, index) => (
             <button
               key={supplement.id}
@@ -154,8 +154,8 @@ export function DemoCommandBar({ supplements }: DemoCommandBarProps) {
               onClick={() => handleSelect(supplement)}
               className={`flex w-full items-center justify-between px-4 py-2.5 text-left transition-colors ${
                 index === selectedIndex
-                  ? "bg-white/10 text-white"
-                  : "text-white/70 hover:bg-white/5"
+                  ? "bg-secondary text-foreground"
+                  : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
               }`}
             >
               <div>
@@ -176,7 +176,7 @@ export function DemoCommandBar({ supplements }: DemoCommandBarProps) {
 
       {/* No results */}
       {isOpen && query.trim() && filteredSupplements.length === 0 && (
-        <div className="absolute top-full right-0 left-0 z-50 mt-2 rounded-xl border border-white/10 bg-[#0A0A0A] px-4 py-3 text-center text-sm text-white/50">
+        <div className="bg-popover text-muted-foreground border-border absolute top-full right-0 left-0 z-50 mt-2 rounded-xl border px-4 py-3 text-center text-sm">
           No supplements found
         </div>
       )}

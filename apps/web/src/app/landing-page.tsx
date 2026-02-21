@@ -153,6 +153,8 @@ const INTERACTION_DATABASE: Record<
 // ============================================================================
 
 export function LandingPage() {
+  const showExtendedContent = true;
+
   return (
     <main className="bg-background text-foreground pt-safe pb-safe relative min-h-screen font-sans">
       {/* Grid overlay for background texture */}
@@ -186,12 +188,12 @@ export function LandingPage() {
                 stochi<span className="text-emerald-400">_</span>
               </span>
             </Link>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Button
                 asChild
                 variant="ghost"
                 size="sm"
-                className="text-xs text-white/50 hover:text-white/90"
+                className="text-muted-foreground hover:text-foreground text-xs"
               >
                 <Link href="/demo">Try Demo</Link>
               </Button>
@@ -199,7 +201,7 @@ export function LandingPage() {
                 asChild
                 variant="ghost"
                 size="sm"
-                className="text-xs text-white/50 hover:text-white/90"
+                className="text-muted-foreground hover:text-foreground text-xs"
               >
                 <Link href="/auth/sign-in">Sign in</Link>
               </Button>
@@ -322,14 +324,14 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* Trust Badges - Authority Anchors */}
-        <motion.section
-          aria-label="Data sources and research partnerships"
-          className="mt-16 border-y border-white/10 bg-[#0A0A0A] py-12 md:mt-24 md:py-16"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 2.0 }}
-        >
+        {showExtendedContent && (
+          <motion.section
+            aria-label="Data sources and research partnerships"
+            className="border-border/60 bg-card mt-16 border-y py-12 md:mt-24 md:py-16"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 2.0 }}
+          >
           <div className="mx-auto max-w-5xl px-4">
             <p className="mb-8 text-center text-sm font-medium tracking-wide text-white/50 md:mb-12">
               Powered by peer-reviewed research from
@@ -653,21 +655,22 @@ export function LandingPage() {
               </a>
             </div>
           </div>
-        </motion.section>
+          </motion.section>
+        )}
 
-        {/* Bento Grid - Feature Showcase */}
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
-          variants={staggerContainer}
-        >
-          <BentoSection
-            number="01"
-            label="Real-time Analysis"
-            title="See Your Stack in Motion"
-            description="Pharmacokinetic modeling, interaction detection, and biological state optimization—all running continuously."
+        {showExtendedContent && (
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={staggerContainer}
           >
+            <BentoSection
+              number="01"
+              label="Real-time Analysis"
+              title="See Your Stack in Motion"
+              description="Pharmacokinetic modeling, interaction detection, and biological state optimization-all running continuously."
+            >
             {/* Row 1: Timeline (2/3) + Bio Score (1/3) */}
             <BentoCard span="two-thirds" aspect="timeline" showGlow>
               <div className="p-4 lg:p-6">
@@ -696,8 +699,9 @@ export function LandingPage() {
                 <RiskCardCompact limit={3} />
               </div>
             </BentoCard>
-          </BentoSection>
-        </motion.div>
+            </BentoSection>
+          </motion.div>
+        )}
 
         {/* Interactive Terminal Section - MOVED TO SECTION 2 (Freemium Hook) */}
         <motion.section
@@ -723,15 +727,15 @@ export function LandingPage() {
           </div>
         </motion.section>
 
-        {/* Beyond Vitamins Section */}
-        <motion.section
-          aria-labelledby="beyond-vitamins-heading"
-          className="px-4 py-24"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={staggerContainer}
-        >
+        {showExtendedContent && (
+          <motion.section
+            aria-labelledby="beyond-vitamins-heading"
+            className="px-4 py-24"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
+          >
           <div className="mx-auto max-w-4xl">
             <motion.h2
               id="beyond-vitamins-heading"
@@ -767,17 +771,18 @@ export function LandingPage() {
               <CapabilityTable />
             </motion.div>
           </div>
-        </motion.section>
+          </motion.section>
+        )}
 
-        {/* Protocol Engine Section */}
-        <motion.section
-          aria-labelledby="protocol-heading"
-          className="px-4 py-24"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={staggerContainer}
-        >
+        {showExtendedContent && (
+          <motion.section
+            aria-labelledby="protocol-heading"
+            className="px-4 py-24"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
+          >
           <div className="mx-auto max-w-4xl">
             <div className="grid gap-12 md:grid-cols-2 md:items-center">
               {/* Text */}
@@ -820,17 +825,18 @@ export function LandingPage() {
               </motion.div>
             </div>
           </div>
-        </motion.section>
+          </motion.section>
+        )}
 
-        {/* Manual Tracking Failed Section */}
-        <motion.section
-          aria-labelledby="tracking-failed-heading"
-          className="px-4 py-24"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={staggerContainer}
-        >
+        {showExtendedContent && (
+          <motion.section
+            aria-labelledby="tracking-failed-heading"
+            className="px-4 py-24"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
+          >
           <div className="mx-auto max-w-4xl">
             <motion.h2
               id="tracking-failed-heading"
@@ -951,17 +957,18 @@ export function LandingPage() {
               </motion.div>
             </motion.div>
           </div>
-        </motion.section>
+          </motion.section>
+        )}
 
-        {/* Pharmacological Vectors Section - Renamed for Loss Aversion */}
-        <motion.section
-          aria-labelledby="failure-modes-heading"
-          className="px-4 py-24"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={staggerContainer}
-        >
+        {showExtendedContent && (
+          <motion.section
+            aria-labelledby="failure-modes-heading"
+            className="px-4 py-24"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
+          >
           <div className="mx-auto max-w-4xl">
             <motion.h2
               id="failure-modes-heading"
@@ -1032,17 +1039,18 @@ export function LandingPage() {
               </motion.div>
             </motion.div>
           </div>
-        </motion.section>
+          </motion.section>
+        )}
 
-        {/* Case Study Section */}
-        <motion.section
-          aria-labelledby="case-study-heading"
-          className="px-4 py-24"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={fadeInUp}
-        >
+        {showExtendedContent && (
+          <motion.section
+            aria-labelledby="case-study-heading"
+            className="px-4 py-24"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeInUp}
+          >
           <div className="mx-auto max-w-4xl">
             <h2
               id="case-study-heading"
@@ -1164,7 +1172,8 @@ export function LandingPage() {
               </div>
             </div>
           </div>
-        </motion.section>
+          </motion.section>
+        )}
 
         {/* Final CTA */}
         <motion.section

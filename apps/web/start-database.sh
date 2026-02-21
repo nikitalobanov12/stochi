@@ -16,7 +16,7 @@ set -a
 source .env
 
 DB_PASSWORD=$(echo "$DATABASE_URL" | awk -F':' '{print $3}' | awk -F'@' '{print $1}')
-DB_PORT=$(echo "$DATABASE_URL" | awk -F':' '{print $4}' | awk -F'\/' '{print $1}')
+DB_PORT=$(echo "$DATABASE_URL" | awk -F':' '{print $4}' | awk -F'/' '{print $1}')
 DB_NAME=$(echo "$DATABASE_URL" | awk -F'/' '{print $4}')
 DB_CONTAINER_NAME="$DB_NAME-postgres"
 
@@ -52,11 +52,27 @@ else
 fi
 
 if [ "$($DOCKER_CMD ps -q -f name=$DB_CONTAINER_NAME)" ]; then
+  CURRENT_IMAGE=$($DOCKER_CMD inspect -f '{{.Config.Image}}' "$DB_CONTAINER_NAME" 2>/dev/null || true)
+  if [[ "$CURRENT_IMAGE" != *"pgvector/pgvector"* ]]; then
+    echo "Database container '$DB_CONTAINER_NAME' uses image '$CURRENT_IMAGE' which does not include pgvector."
+    echo "To fix migrations requiring the vector extension, recreate it with the pgvector image:"
+    echo "  $DOCKER_CMD rm -f $DB_CONTAINER_NAME"
+    echo "  ./start-database.sh"
+    exit 1
+  fi
   echo "Database container '$DB_CONTAINER_NAME' already running"
   exit 0
 fi
 
 if [ "$($DOCKER_CMD ps -q -a -f name=$DB_CONTAINER_NAME)" ]; then
+  CURRENT_IMAGE=$($DOCKER_CMD inspect -f '{{.Config.Image}}' "$DB_CONTAINER_NAME" 2>/dev/null || true)
+  if [[ "$CURRENT_IMAGE" != *"pgvector/pgvector"* ]]; then
+    echo "Database container '$DB_CONTAINER_NAME' uses image '$CURRENT_IMAGE' which does not include pgvector."
+    echo "To fix migrations requiring the vector extension, recreate it with the pgvector image:"
+    echo "  $DOCKER_CMD rm -f $DB_CONTAINER_NAME"
+    echo "  ./start-database.sh"
+    exit 1
+  fi
   $DOCKER_CMD start "$DB_CONTAINER_NAME"
   echo "Existing database container '$DB_CONTAINER_NAME' started"
   exit 0

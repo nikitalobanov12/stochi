@@ -23,12 +23,12 @@ export function DemoBanner() {
             <Sparkles className="h-4 w-4 shrink-0 text-amber-400" />
             <span className="text-amber-200/90">
               <span className="font-medium">Demo Mode</span>
-              <span className="text-amber-200/60"> — </span>
+              <span className="text-amber-200/60"> - </span>
               <span className="hidden text-amber-200/70 sm:inline">
-                Explore freely. Changes reset on refresh.
+                Real engine behavior with resettable data for fast evaluation.
               </span>
               <span className="text-amber-200/70 sm:hidden">
-                Data resets on refresh
+                Real engine behavior, resettable data
               </span>
             </span>
             <Button

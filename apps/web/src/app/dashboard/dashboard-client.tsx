@@ -14,7 +14,6 @@ import {
 
 // Dashboard Components
 import { SystemStatus } from "~/components/dashboard/system-status";
-import { InteractionHeadsUp } from "~/components/dashboard/interaction-heads-up";
 import { MissionControl } from "~/components/dashboard/protocol-card";
 import { DashboardCommandBar } from "./dashboard-command-bar";
 
@@ -141,27 +140,20 @@ function DashboardContent({
   // We use initialLogCount for server-side conditions since optimistic updates
   // shouldn't change what sections are shown (e.g., empty states)
 
+  const activeCompounds = biologicalState.activeCompounds.filter(
+    (c) => c.phase !== "cleared",
+  );
+
   return (
-    <div className="space-y-6">
-      {/* ================================================================
-       * Header Row (Full Width): System Status Bar
-       * Shows: Streak, Last Log, Today's log count
-       * ================================================================ */}
+    <div className="space-y-5">
       <SystemStatus
         streak={streak}
         todayLogCount={initialLogCount}
         lastLogAt={lastLogAt}
       />
 
-      {/* ================================================================
-       * Command Bar - Primary Input (Full Width)
-       * ================================================================ */}
       <DashboardCommandBar supplements={allSupplements} />
 
-      {/* ================================================================
-       * Protocols Section (Full Width) - Primary Action
-       * Moved to top as the first thing users want to do
-       * ================================================================ */}
       {stackCompletion.length > 0 && (
         <MissionControl
           stacks={stackCompletion}
@@ -169,22 +161,15 @@ function DashboardContent({
         />
       )}
 
-      {/* ================================================================
-       * Main Content: 12-Column Bento Grid Layout
-       * Left (8 cols): Timeline, Optimization HUD, Live Console
-       * Right (4 cols): Bio-Score Card, Micro-KPIs, Active Compounds
-       * ================================================================ */}
       {initialLogCount > 0 && (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-          {/* Left Column: Timeline + HUD + Console (8 cols) */}
-          <div className="space-y-4 lg:col-span-8">
-            {/* Biological Timeline */}
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
+          <div className="space-y-5 lg:col-span-8">
             {timelineData.length > 0 && (
               <div>
-                <h2 className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
+                <h2 className="text-muted-foreground mb-2 font-mono text-[10px] tracking-wider uppercase">
                   Biological Timeline
                 </h2>
-                <div className="glass-card p-4">
+                <div className="bg-card border-border rounded-xl border p-4 shadow-[var(--elevation-1)]">
                   <BiologicalTimeline
                     timelineData={timelineData}
                     activeCompounds={biologicalState.activeCompounds}
@@ -194,10 +179,9 @@ function DashboardContent({
               </div>
             )}
 
-            {/* Optimization HUD */}
             <div>
-              <h2 className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
-                Optimization HUD
+              <h2 className="text-muted-foreground mb-2 font-mono text-[10px] tracking-wider uppercase">
+                Next Actions
               </h2>
               <OptimizationHUD
                 exclusionZones={biologicalState.exclusionZones}
@@ -205,29 +189,32 @@ function DashboardContent({
               />
             </div>
 
-            {/* Live Console Feed */}
-            <LiveConsoleFeed
-              interactions={interactions}
-              ratioWarnings={ratioWarnings}
-              timingWarnings={timingWarnings}
-            />
+            <details className="bg-card border-border group rounded-xl border p-4 shadow-[var(--elevation-1)]">
+              <summary className="text-muted-foreground hover:text-foreground cursor-pointer list-none font-mono text-[10px] tracking-wider uppercase">
+                System Feed
+              </summary>
+              <div className="mt-3">
+                <LiveConsoleFeed
+                  interactions={interactions}
+                  ratioWarnings={ratioWarnings}
+                  timingWarnings={timingWarnings}
+                />
+              </div>
+            </details>
           </div>
 
-          {/* Right Column: Bio-Score + KPIs + Compounds (4 cols) */}
-          <div className="space-y-4 lg:col-span-4">
-            {/* Bio-Score Card */}
+          <div className="space-y-5 lg:col-span-4">
             <BioScoreCard
               score={biologicalState.bioScore}
               exclusionZones={biologicalState.exclusionZones}
               optimizations={biologicalState.optimizations}
             />
 
-            {/* Micro-KPI Row */}
             <div>
-              <h2 className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
+              <h2 className="text-muted-foreground mb-2 font-mono text-[10px] tracking-wider uppercase">
                 Key Metrics
               </h2>
-              <div className="glass-card p-4">
+              <div className="bg-card border-border rounded-xl border p-4 shadow-[var(--elevation-1)]">
                 <MicroKPIRow
                   ratioWarnings={ratioWarnings}
                   safetyHeadroom={safetyHeadroom}
@@ -236,52 +223,37 @@ function DashboardContent({
               </div>
             </div>
 
-            {/* Active Compounds List */}
-            {biologicalState.activeCompounds.filter(
-              (c) => c.phase !== "cleared",
-            ).length > 0 && (
-              <div>
-                <h2 className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
-                  Active Compounds
-                </h2>
-                <div className="glass-card p-4">
-                  <ActiveCompoundsList
-                    compounds={biologicalState.activeCompounds.filter(
-                      (c) => c.phase !== "cleared",
-                    )}
-                  />
+            {activeCompounds.length > 0 && (
+              <details className="bg-card border-border group rounded-xl border p-4 shadow-[var(--elevation-1)]">
+                <summary className="text-muted-foreground hover:text-foreground cursor-pointer list-none font-mono text-[10px] tracking-wider uppercase">
+                  Active Compounds ({activeCompounds.length})
+                </summary>
+                <div className="mt-3">
+                  <ActiveCompoundsList compounds={activeCompounds} />
                 </div>
-              </div>
+              </details>
             )}
           </div>
         </div>
       )}
 
-      {/* Legacy Interaction HUD (show if no timeline data but has logs) */}
-      {initialLogCount > 0 && timelineData.length === 0 && (
-        <InteractionHeadsUp
-          interactions={interactions}
-          ratioWarnings={ratioWarnings}
-          timingWarnings={timingWarnings}
-        />
-      )}
-
-      {/* Today's Activity Log - Compact */}
       {initialLogCount > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
-              Activity Log
-            </h2>
-            <ViewAllLink />
+        <details className="bg-card border-border group rounded-xl border p-4 shadow-[var(--elevation-1)]">
+          <summary className="text-muted-foreground hover:text-foreground cursor-pointer list-none font-mono text-[10px] tracking-wider uppercase">
+            Recent Activity
+          </summary>
+          <div className="mt-3 space-y-3">
+            <div className="flex items-center justify-end">
+              <ViewAllLink />
+            </div>
+            <TodayLogList maxVisible={5} />
           </div>
-          <TodayLogList maxVisible={5} />
-        </div>
+        </details>
       )}
 
       {/* Empty State - No logs today but has stacks */}
       {initialLogCount === 0 && hasStacks && (
-        <div className="glass-card border-dashed py-12 text-center">
+        <div className="bg-card border-border rounded-xl border border-dashed py-12 text-center shadow-[var(--elevation-1)]">
           <Clock className="text-muted-foreground/30 mx-auto mb-3 h-6 w-6" />
           <p className="text-muted-foreground font-mono text-xs">
             No activity logged today
@@ -294,7 +266,7 @@ function DashboardContent({
 
       {/* Empty State - No stacks configured (not during onboarding) */}
       {!hasStacks && stackCompletion.length === 0 && !needsOnboarding && (
-        <div className="glass-card border-dashed py-12 text-center">
+        <div className="bg-card border-border rounded-xl border border-dashed py-12 text-center shadow-[var(--elevation-1)]">
           <Layers className="text-muted-foreground/30 mx-auto mb-3 h-6 w-6" />
           <p className="text-muted-foreground font-mono text-xs">
             No protocols configured

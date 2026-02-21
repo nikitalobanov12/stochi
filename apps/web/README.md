@@ -1,89 +1,68 @@
-# Stochi Web App
+# Stochi Web App (`apps/web`)
 
-The main web application for Stochi - a supplement tracking PWA.
+Main product application and public demo for Stochi.
 
-## Development
+## What This App Demonstrates
 
-### Prerequisites
+- High-density product UX for protocol tracking and safety analysis
+- Real-time interaction/timing/ratio insights from server logic
+- Public demo that highlights meaningful flows quickly for reviewers
 
-- [Bun](https://bun.sh/)
-- Docker
-
-### Quick Start
+## Run Locally
 
 ```bash
-# Install dependencies
 bun install
-
-# Copy environment file
 cp .env.example .env
-
-# Start dev server (auto-starts database)
 bun dev
+```
 
-# Push schema and seed data
-bun db:push
+## Database Workflow (Important)
+
+Use migrations, not `db:push`, for schema changes.
+
+```bash
+bun db:generate
+bun db:migrate
 bun db:seed
 ```
 
-### Commands
+If you see `extension "vector" is not available`, recreate local DB with pgvector image via `./start-database.sh`.
+
+## Commands
 
 ```bash
-bun dev              # Start dev server with database
-bun check            # Lint + typecheck
-bun run format:write # Format code
-bun db:push          # Push schema to database
-bun db:seed          # Seed supplements and interactions
+bun dev                    # Start Next.js + local DB helper
+bun check                  # Lint + typecheck
+bun run format:write       # Format code
+bun db:generate            # Generate migration from schema edits
+bun db:migrate             # Apply migrations
+bun db:seed                # Seed demo/reference data
+bun db:studio              # Open Drizzle Studio
 ```
 
-## Project Structure
+## Structure
 
-```
+```text
 src/
-├── app/                    # Next.js App Router
-│   ├── (auth)/             # Auth routes (sign-in, sign-up)
-│   ├── api/                # API routes
-│   └── dashboard/          # Main app pages
-│       ├── log/            # Supplement logging
-│       ├── stacks/         # Stack management
-│       └── settings/       # User settings
-├── components/
-│   ├── ui/                 # shadcn/ui components
-│   ├── onboarding/         # Onboarding flow
-│   ├── stacks/             # Stack components
-│   └── log/                # Log components
-├── server/
-│   ├── actions/            # Server actions
-│   ├── db/                 # Drizzle schema & queries
-│   ├── better-auth/        # Auth configuration
-│   └── data/               # Static data (templates)
-└── styles/                 # Global CSS
+  app/
+    dashboard/             Authenticated product surfaces
+    demo/                  Public showcase mode
+    (auth)/                Sign-in/up routes
+  components/
+    dashboard/             Timeline, bio-score, HUD, feeds
+    demo/                  Demo data/provider/banner
+    ui/                    Shared primitives
+  server/
+    actions/               Server actions (interactions/logs/stacks)
+    services/              Biological-state and analytics services
+    db/                    Drizzle schema, migrate runner, seed
+  styles/                  Global token and utility styles
 ```
 
-## Key Features
+## Quality Gate
 
-### Onboarding Flow
-New users see a "Select Config" modal with starter templates:
-- Focus Protocol (Caffeine + L-Theanine + L-Tyrosine)
-- Mineral Balance (Magnesium + Zinc + Iron)  
-- Daily Essentials (Vitamin D3 + K2 + Magnesium)
+Run before commit:
 
-Templates create a stack with items and logs to demonstrate the interaction engine.
-
-### Interaction Detection
-The app detects supplement interactions:
-- **Synergies** - beneficial combinations (e.g., Vitamin D3 + K2)
-- **Conflicts** - potentially harmful combinations with severity levels
-
-### Stack Templates
-Users can create stacks from templates or start empty. Templates pre-populate supplements with recommended dosages.
-
-## Tech Stack
-
-- **Next.js 15** - App Router, Server Actions
-- **Bun** - Runtime & package manager
-- **PostgreSQL** - Database
-- **Drizzle ORM** - Type-safe database queries
-- **BetterAuth** - Authentication
-- **Tailwind CSS** - Styling
-- **shadcn/ui** - UI components
+```bash
+bun run check
+```

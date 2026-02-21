@@ -20,10 +20,10 @@ function DemoNavLink({
   return (
     <Link
       href={href}
-      className={`flex items-center gap-2 rounded-lg px-3 py-2 font-mono text-sm transition-colors ${
+      className={`flex items-center gap-2 rounded-md border border-transparent px-3 py-1.5 text-sm font-medium transition-[background-color,color,border-color] duration-[var(--motion-fast)] ${
         isActive
-          ? "bg-white/10 text-white"
-          : "text-white/50 hover:bg-white/5 hover:text-white/80"
+          ? "border-border/80 bg-secondary/70 text-foreground"
+          : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
       }`}
     >
       {children}
@@ -43,11 +43,13 @@ function DemoMobileNavLink({
   return (
     <Link
       href={href}
-      className={`flex flex-col items-center gap-1 px-3 py-1 ${
-        isActive ? "text-white" : "text-white/50"
+      className={`flex min-h-[44px] flex-col items-center justify-center gap-1 rounded-lg border border-transparent px-3 py-1 transition-[background-color,color,border-color] duration-[var(--motion-fast)] ${
+        isActive
+          ? "border-border/80 bg-secondary/70 text-foreground"
+          : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
       }`}
     >
-      <span className="text-[10px]">{label}</span>
+      <span className="text-[11px] font-medium">{label}</span>
     </Link>
   );
 }
@@ -67,7 +69,7 @@ export default function DemoLayout({
         <DemoBanner />
 
         {/* Desktop header - hidden on mobile */}
-        <header className="sticky top-0 z-50 hidden border-b border-white/10 bg-black/80 backdrop-blur-xl md:block">
+        <header className="border-border/80 bg-background/85 sticky top-0 z-50 hidden border-b backdrop-blur-xl md:block">
           <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between px-4">
             {/* Logo */}
             <Link href="/" className="mr-6 flex items-center gap-2">
@@ -78,7 +80,7 @@ export default function DemoLayout({
                 height={24}
                 className="h-6 w-6"
               />
-              <span className="text-sm font-medium tracking-tight text-white/90">
+              <span className="text-foreground text-sm font-medium tracking-tight">
                 stochi<span className="text-emerald-400">_</span>
               </span>
             </Link>
@@ -94,7 +96,7 @@ export default function DemoLayout({
               <Button
                 asChild
                 size="sm"
-                className="rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-xs font-medium text-white transition-all hover:brightness-110"
+                className="text-primary-foreground rounded-full bg-primary text-xs font-medium"
               >
                 <Link href="/auth/sign-up">Sign Up</Link>
               </Button>
@@ -113,7 +115,7 @@ export default function DemoLayout({
         </main>
 
         {/* Mobile bottom navigation with safe area for home indicator */}
-        <nav className="pb-safe fixed right-0 bottom-0 left-0 z-50 border-t border-white/10 bg-black/80 backdrop-blur-xl md:hidden">
+        <nav className="border-border/80 bg-background/85 pb-safe fixed right-0 bottom-0 left-0 z-50 border-t backdrop-blur-xl md:hidden">
           <div className="flex items-center justify-around py-2">
             <DemoMobileNavLink href="/demo" label="Home" />
             <DemoMobileNavLink href="/demo/protocol" label="Protocol" />
@@ -121,7 +123,7 @@ export default function DemoLayout({
             <DemoMobileNavLink href="/demo/log" label="Log" />
             <Link
               href="/auth/sign-up"
-              className="flex flex-col items-center gap-1 px-3 py-1 text-emerald-400"
+              className="text-primary flex min-h-[44px] flex-col items-center justify-center gap-1 px-3 py-1"
             >
               <span className="text-[10px]">Sign Up</span>
             </Link>

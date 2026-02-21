@@ -1,137 +1,123 @@
 # stochi_
 
-> Stoichiometric engine for bio-optimization. Track supplements, detect molecular interactions, model pharmacokinetics — all in real time.
+Stoichiometric intelligence for supplement protocols.
 
-**[Live Demo](https://stochi.vercel.app/demo)** (no account required) | **[GitHub](https://github.com/nikitalobanov12/stochi)**
+Stochi is a production-grade web app that helps users understand how compounds interact over time, not just what they logged.
+
+**Live demo:** https://stochi.vercel.app/demo  
+**App:** https://stochi.vercel.app  
+**Repo:** https://github.com/nikitalobanov12/stochi
 
 ---
 
-## What Makes This Interesting
+## Recruiter Quick Scan
 
-- **Dual-Engine Architecture**: Go microservice handles graph traversal and PK modeling with an 8-second timeout. If unavailable, the app seamlessly falls back to a TypeScript implementation — zero downtime, same results.
+If you only read one section, read this:
 
-- **Real Pharmacokinetic Modeling**: First-order and Michaelis-Menten kinetics using the Lambert W0 function. Models absorption, peak, and elimination phases per compound to compute real-time biological state.
+- **Real modeling, not UI theater:** timeline and warnings are driven by pharmacokinetic + interaction logic.
+- **Resilient architecture:** Go engine with TypeScript fallback keeps the app usable if the engine is down.
+- **Full-stack ownership:** product UX, data model, server actions, analytics, and docs are all in one codebase.
+- **Shipping discipline:** typed boundaries, migrations, lint/typecheck gates, and reproducible dev workflow.
 
-- **pgvector RAG Pipeline**: Semantic search over a supplement knowledge base using OpenAI embeddings (text-embedding-3-small, 1536 dimensions). Falls back to client-side Transformers.js web worker when no API key is available.
+## Core Differentiators
 
-- **Stoichiometric Ratio Engine**: Monitors mineral ratios (e.g., Zn:Cu 8-15:1) with elemental weight adjustments. Warns when ratios deviate from therapeutic ranges based on actual pharmacological data.
+### Product-facing
 
-## Features
+- Compound interaction analysis (synergy, competition, inhibition)
+- Timing and stoichiometric ratio warnings (example: Zn:Cu balance)
+- Biological timeline and active-compound state projection
+- Fast command-style logging and protocol execution
 
-### Core
-- Supplement logging with dosage, timing, and form
-- Stack management for reusable supplement bundles
-- Command bar with natural language parsing
-- PWA with offline support and service worker caching
+### Engineering-facing
 
-### Analysis
-- Bio-Score composite metric (PK state + exclusion zones + optimization opportunities)
-- Biological timeline with concentration curves
-- Active compounds HUD with real-time decay modeling
-- Stoichiometric ratio monitoring
+- Hybrid compute path:
+  - `apps/engine` (Go service) for heavy analysis
+  - `apps/web` TypeScript fallback when engine is unavailable
+- PostgreSQL + Drizzle migrations with typed server actions
+- Next.js App Router + Bun + Turborepo monorepo workflow
+- Public demo mode with realistic seeded interactions and scenario flow
 
-### Intelligence
-- Three interaction types: synergy/competition/inhibition, ratio rules, timing rules
-- Severity classification: low, medium, critical
-- Real pharmacological basis: DMT1 transporter, LNAAT competition, CYP450 pathways
-- RAG-powered Q&A in the "Learn" section
+## Demo Walkthrough (2 minutes)
+
+In `/demo`, do this sequence:
+
+1. Log `mag 400mg` in the command bar.
+2. Execute a protocol with one click.
+3. Open `System Feed` and inspect interaction/ratio/timing outputs.
+4. Review timeline + bio-score changes.
+
+That flow demonstrates both product clarity and backend logic depth quickly.
 
 ## Architecture
 
-```
+```text
 stochi/
-├── apps/
-│   ├── web/          # Next.js 15 frontend + API
-│   │   ├── src/
-│   │   │   ├── app/
-│   │   │   │   ├── dashboard/     # Protected routes
-│   │   │   │   ├── demo/          # Public demo (no auth)
-│   │   │   │   └── api/           # API routes + auth
-│   │   │   ├── components/
-│   │   │   │   ├── dashboard/     # Bio-score, timeline, HUD
-│   │   │   │   ├── demo/          # Demo provider + data
-│   │   │   │   ├── interactions/  # Warning cards
-│   │   │   │   ├── log/           # Command bar, log list
-│   │   │   │   ├── onboarding/    # Multi-step flow
-│   │   │   │   └── stacks/        # Stack management
-│   │   │   ├── lib/
-│   │   │   │   └── engine/        # Go engine HTTP client
-│   │   │   ├── server/
-│   │   │   │   ├── actions/       # Server actions
-│   │   │   │   ├── services/      # PK modeling, RAG, analytics
-│   │   │   │   └── db/            # Drizzle schema + migrations
-│   │   │   └── workers/           # Transformers.js web worker
-│   │   └── drizzle/               # Migration files
-│   └── engine/       # Go microservice
-│       ├── cmd/server/            # Entry point
-│       └── internal/
-│           ├── handlers/          # HTTP handlers
-│           ├── kinetics/          # PK math (Lambert W, MM)
-│           └── models/            # Request/response types
-└── packages/                      # Shared configs
+  apps/
+    web/      Next.js app (UI, auth, server actions, data layer)
+    engine/   Go service (analysis + compute-heavy paths)
 ```
 
-### Go Engine Fallback Pattern
+### Key pattern: Compute fallback
 
-The Go engine (`apps/engine/`) provides high-performance graph traversal and pharmacokinetic calculations. The Next.js app calls it via HTTP with an 8-second timeout. If the engine is unavailable or times out, the app transparently switches to an equivalent TypeScript implementation — ensuring the application remains fully functional regardless of engine availability.
+- The web app attempts the Go engine path first.
+- If unavailable/timeouts occur, it uses an equivalent TypeScript path.
+- Outcome: graceful degradation instead of total feature failure.
 
-## Tech Stack
+## Code Map
 
-| Category | Technology |
-|----------|------------|
-| Framework | Next.js 15 (App Router, Turbopack) |
-| Engine | Go microservice |
-| Runtime | Bun |
-| Database | PostgreSQL + pgvector (Neon) |
-| ORM | Drizzle ORM |
-| Auth | BetterAuth (Google, GitHub OAuth) |
-| Styling | Tailwind CSS + shadcn/ui |
-| Animations | Framer Motion |
-| Monorepo | Turborepo |
+- `apps/web/src/app/demo/` public demo surfaces
+- `apps/web/src/app/dashboard/` authenticated product surfaces
+- `apps/web/src/components/dashboard/` timeline, score, HUD, feeds
+- `apps/web/src/server/actions/` interaction/timing/ratio server logic
+- `apps/web/src/server/services/` biological state + analytics services
+- `apps/web/src/server/db/` schema + migration runner
+- `apps/engine/` Go handlers + modeling internals
 
-## Getting Started
+## Local Development
 
 ### Prerequisites
 
-- [Bun](https://bun.sh/)
-- Docker (for local PostgreSQL)
+- Bun
+- Docker
 
 ### Setup
 
 ```bash
-# Clone
 git clone https://github.com/nikitalobanov12/stochi.git
 cd stochi
-
-# Install dependencies
 bun install
-
-# Configure environment
 cp apps/web/.env.example apps/web/.env
-
-# Start development server (includes database)
 bun dev
-
-# Run migrations and seed data
-cd apps/web && bun db:migrate && bun db:seed
 ```
 
-### Commands
+### Database
 
-| Command | Description |
-|---------|-------------|
-| `bun dev` | Start dev server (Turbo) |
-| `bun check` | Lint + typecheck |
-| `bun run format:write` | Format with Prettier |
-| `bun db:generate` | Generate migration from schema |
-| `bun db:migrate` | Apply pending migrations |
-| `bun db:seed` | Seed supplements and interactions |
-| `bun db:studio` | Open Drizzle Studio GUI |
+```bash
+cd apps/web
+bun db:migrate
+bun db:seed
+```
+
+Note: local DB must run the pgvector image for vector extension migrations.
+
+## Quality Gates
+
+Before commit:
+
+```bash
+cd apps/web
+bun run check
+```
+
+This enforces lint + typecheck consistency.
+
+## Additional Docs
+
+- `docs/technical_design_doc.md`
+- `docs/design-language/refined-clinical-editorial.md`
+- `docs/showcase-for-employers.md`
 
 ## Author
 
-**Nikita Lobanov** — [GitHub](https://github.com/nikitalobanov12)
-
-## License
-
-MIT
+Nikita Lobanov  
+https://github.com/nikitalobanov12

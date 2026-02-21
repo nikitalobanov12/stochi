@@ -9,7 +9,6 @@ import { useDemoContext } from "~/components/demo/demo-provider";
 
 // Dashboard Components
 import { SystemStatus } from "~/components/dashboard/system-status";
-import { InteractionHeadsUp } from "~/components/dashboard/interaction-heads-up";
 
 // Biological State Engine Components
 import {
@@ -40,7 +39,6 @@ import type {
 
 import { DemoCommandBar } from "./demo-command-bar";
 import { DemoLogList } from "./demo-log-list";
-import { DemoHint } from "~/components/demo/demo-hint";
 
 type DemoSupplement = {
   id: string;
@@ -86,53 +84,40 @@ export function DemoDashboardClient({
 }: DemoDashboardClientProps) {
   const demo = useDemoContext();
   const logCount = demo.logs.length;
+  const activeCompounds = biologicalState.activeCompounds.filter(
+    (c) => c.phase !== "cleared",
+  );
 
   return (
-    <div className="space-y-6">
-      {/* Header Row: System Status Bar */}
+    <div className="space-y-4">
       <SystemStatus
         streak={streak}
         todayLogCount={logCount}
         lastLogAt={lastLogAt}
       />
 
-      {/* Command Bar */}
-      <DemoCommandBar supplements={allSupplements} />
+      <DemoShowcasePanel />
 
-      <DemoHint id="command-bar">
-        Try the command bar — type a supplement name like{" "}
-        <kbd className="rounded border border-cyan-500/30 bg-cyan-500/10 px-1">
-          mag 400mg
-        </kbd>{" "}
-        to log with natural language parsing
-      </DemoHint>
+      <section id="demo-command-bar" className="space-y-1.5">
+        <p className="text-muted-foreground text-xs font-medium tracking-[0.12em] uppercase">
+          Command Bar
+        </p>
+        <DemoCommandBar supplements={allSupplements} />
+      </section>
 
-      <DemoHint id="protocol-tap">
-        Tap <strong className="text-cyan-300">Log Stack</strong> to execute an
-        entire supplement protocol in one click
-      </DemoHint>
-
-      {/* Protocols Section */}
       {stackCompletion.length > 0 && (
         <DemoMissionControl stacks={stackCompletion} />
       )}
 
-      {/* Main Content: Bento Grid */}
       {logCount > 0 && (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-          {/* Left Column */}
           <div className="space-y-4 lg:col-span-8">
-            <DemoHint id="bio-timeline">
-              Pharmacokinetic curves modeled with Michaelis-Menten kinetics —
-              each compound shows real absorption and elimination phases
-            </DemoHint>
-
             {timelineData.length > 0 && (
               <div>
-                <h2 className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
+                <h2 className="text-muted-foreground mb-2 text-xs font-medium tracking-[0.12em] uppercase">
                   Biological Timeline
                 </h2>
-                <div className="glass-card p-4">
+                <div className="bg-card border-border rounded-xl border p-4 shadow-[var(--elevation-1)]">
                   <BiologicalTimeline
                     timelineData={timelineData}
                     activeCompounds={biologicalState.activeCompounds}
@@ -143,8 +128,8 @@ export function DemoDashboardClient({
             )}
 
             <div>
-              <h2 className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
-                Optimization HUD
+              <h2 className="text-muted-foreground mb-2 text-xs font-medium tracking-[0.12em] uppercase">
+                Next Actions
               </h2>
               <OptimizationHUD
                 exclusionZones={biologicalState.exclusionZones}
@@ -152,20 +137,21 @@ export function DemoDashboardClient({
               />
             </div>
 
-            <LiveConsoleFeed
-              interactions={interactions}
-              ratioWarnings={ratioWarnings}
-              timingWarnings={timingWarnings}
-            />
+            <details className="bg-card border-border group rounded-xl border p-3.5 shadow-[var(--elevation-1)]">
+              <summary className="text-muted-foreground hover:text-foreground cursor-pointer list-none text-xs font-medium tracking-[0.12em] uppercase">
+                System Feed
+              </summary>
+              <div className="mt-3">
+                <LiveConsoleFeed
+                  interactions={interactions}
+                  ratioWarnings={ratioWarnings}
+                  timingWarnings={timingWarnings}
+                />
+              </div>
+            </details>
           </div>
 
-          {/* Right Column */}
           <div className="space-y-4 lg:col-span-4">
-            <DemoHint id="bio-score">
-              Bio-Score factors in exclusion zones, timing conflicts, and
-              stoichiometric ratios — not just a count
-            </DemoHint>
-
             <BioScoreCard
               score={biologicalState.bioScore}
               exclusionZones={biologicalState.exclusionZones}
@@ -173,10 +159,10 @@ export function DemoDashboardClient({
             />
 
             <div>
-              <h2 className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
+              <h2 className="text-muted-foreground mb-2 text-xs font-medium tracking-[0.12em] uppercase">
                 Key Metrics
               </h2>
-              <div className="glass-card p-4">
+              <div className="bg-card border-border rounded-xl border p-3.5 shadow-[var(--elevation-1)]">
                 <MicroKPIRow
                   ratioWarnings={ratioWarnings}
                   safetyHeadroom={safetyHeadroom}
@@ -185,61 +171,86 @@ export function DemoDashboardClient({
               </div>
             </div>
 
-            {biologicalState.activeCompounds.filter(
-              (c) => c.phase !== "cleared",
-            ).length > 0 && (
-              <div>
-                <h2 className="text-muted-foreground mb-3 font-mono text-[10px] tracking-wider uppercase">
-                  Active Compounds
-                </h2>
-                <div className="glass-card p-4">
-                  <ActiveCompoundsList
-                    compounds={biologicalState.activeCompounds.filter(
-                      (c) => c.phase !== "cleared",
-                    )}
-                  />
+            {activeCompounds.length > 0 && (
+              <details className="bg-card border-border group rounded-xl border p-3.5 shadow-[var(--elevation-1)]">
+                <summary className="text-muted-foreground hover:text-foreground cursor-pointer list-none text-xs font-medium tracking-[0.12em] uppercase">
+                  Active Compounds ({activeCompounds.length})
+                </summary>
+                <div className="mt-3">
+                  <ActiveCompoundsList compounds={activeCompounds} />
                 </div>
-              </div>
+              </details>
             )}
           </div>
         </div>
       )}
 
-      {/* Legacy Interaction HUD */}
-      {logCount > 0 && timelineData.length === 0 && (
-        <InteractionHeadsUp
-          interactions={interactions}
-          ratioWarnings={ratioWarnings}
-          timingWarnings={timingWarnings}
-        />
-      )}
-
-      {/* Today's Activity Log */}
       {logCount > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
-              Activity Log
-            </h2>
-            <DemoViewAllLink />
+        <details className="bg-card border-border group rounded-xl border p-3.5 shadow-[var(--elevation-1)]">
+          <summary className="text-muted-foreground hover:text-foreground cursor-pointer list-none text-xs font-medium tracking-[0.12em] uppercase">
+            Recent Activity
+          </summary>
+          <div className="mt-2.5 space-y-2.5">
+            <div className="flex items-center justify-end">
+              <DemoViewAllLink />
+            </div>
+            <DemoLogList maxVisible={5} />
           </div>
-          <DemoLogList maxVisible={5} />
-        </div>
+        </details>
       )}
 
-      {/* Empty State - No logs today */}
       {logCount === 0 && hasStacks && (
-        <div className="glass-card border-dashed py-12 text-center">
+        <div className="bg-card border-border rounded-xl border border-dashed py-12 text-center shadow-[var(--elevation-1)]">
           <Clock className="text-muted-foreground/30 mx-auto mb-3 h-6 w-6" />
-          <p className="text-muted-foreground font-mono text-xs">
+          <p className="text-muted-foreground text-sm font-medium">
             No activity logged today
           </p>
-          <p className="text-muted-foreground/60 mt-1 font-mono text-[10px]">
+          <p className="text-muted-foreground/70 mt-1 text-xs">
             Use command bar or tap a protocol
           </p>
         </div>
       )}
     </div>
+  );
+}
+
+function DemoShowcasePanel() {
+  return (
+    <section className="bg-card border-border rounded-xl border p-4 shadow-[var(--elevation-1)] sm:p-5">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:items-center">
+        <div>
+          <p className="text-muted-foreground text-xs font-medium tracking-[0.12em] uppercase">
+            Start here
+          </p>
+          <h2 className="text-foreground mt-2 text-2xl leading-tight font-semibold sm:text-[2rem]">
+            See the engine react in one simple flow.
+          </h2>
+          <p className="text-muted-foreground mt-1.5 text-base leading-relaxed">
+            Log one entry, run one protocol, then watch timeline and safety signals update.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button asChild size="sm" className="rounded-full">
+              <a href="#demo-command-bar">Start in Command Bar</a>
+            </Button>
+            <Button asChild size="sm" variant="outline" className="rounded-full">
+              <a href="#demo-protocols">Go to Protocols</a>
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid gap-1.5">
+          <div className="bg-secondary/45 border-border/70 rounded-lg border px-3.5 py-2.5 text-left">
+            <p className="text-muted-foreground text-xs">1. Log one supplement in the command bar</p>
+          </div>
+          <div className="bg-secondary/45 border-border/70 rounded-lg border px-3.5 py-2.5 text-left">
+            <p className="text-muted-foreground text-xs">2. Then run one protocol</p>
+          </div>
+          <div className="bg-secondary/45 border-border/70 rounded-lg border px-3.5 py-2.5 text-left">
+            <p className="text-muted-foreground text-xs">3. Watch the timeline + alerts update</p>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -255,15 +266,15 @@ function DemoMissionControl({ stacks }: { stacks: StackCompletionStatus[] }) {
   }
 
   return (
-    <div className="space-y-3">
-      <h2 className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
+    <section id="demo-protocols" className="space-y-2">
+      <h2 className="text-muted-foreground text-xs font-medium tracking-[0.12em] uppercase">
         Protocols
       </h2>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
         {stacks.map((stack) => (
           <div
             key={stack.stackId}
-            className="glass-card flex items-center justify-between p-4"
+            className="bg-card border-border flex items-center justify-between rounded-xl border p-3.5 shadow-[var(--elevation-1)]"
           >
             <div>
               <p className="font-medium">{stack.stackName}</p>
@@ -279,7 +290,7 @@ function DemoMissionControl({ stacks }: { stacks: StackCompletionStatus[] }) {
               className={
                 stack.isComplete
                   ? "border-emerald-500/30 text-emerald-400"
-                  : "bg-gradient-to-r from-emerald-500 to-cyan-500"
+                  : "bg-primary text-primary-foreground"
               }
             >
               {isPending ? (
@@ -293,7 +304,7 @@ function DemoMissionControl({ stacks }: { stacks: StackCompletionStatus[] }) {
           </div>
         ))}
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -303,7 +314,7 @@ function DemoViewAllLink() {
       variant="ghost"
       size="sm"
       asChild
-      className="text-muted-foreground hover:text-foreground h-auto py-1 font-mono text-[10px]"
+      className="text-muted-foreground hover:text-foreground h-auto py-1 text-xs"
     >
       <Link href="/demo/log">
         VIEW ALL
