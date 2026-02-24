@@ -1,118 +1,109 @@
-# Stochi Engine
+# Stochi Engine (`apps/engine`)
 
-Go-based interaction analysis engine for Stochi.
+This is the Go service that runs compute-heavy interaction analysis.
 
 ## Development
 
 ```bash
-# Install dependencies
 go mod download
-
-# Run locally
 make run
+```
 
-# Run with live reload (requires air)
+Live reload (requires `air`):
+
+```bash
 make dev
+```
 
-# Run tests
+Tests:
+
+```bash
 make test
 ```
 
-## Environment Variables
+## Environment variables
 
-- `PORT` - Server port (default: 8080)
-- `DATABASE_URL` - PostgreSQL connection string (Neon)
+- `PORT` - server port (default: 8080)
+- `DATABASE_URL` - PostgreSQL connection string
 
-## API Endpoints
+## API endpoints
 
-### Health Check
-```
+Health:
+
+```text
 GET /health
 ```
 
-Returns server health status.
+Analyze interactions (protected):
 
-### Analyze Interactions (Protected)
-```
+```text
 POST /api/analyze
 Authorization: Bearer <session_token>
 
 {
-  "supplementIds": ["uuid1", "uuid2", ...],
+  "supplementIds": ["uuid1", "uuid2"],
   "includeTiming": true
 }
 ```
 
-Returns interaction analysis with traffic light status.
-
 ## Deployment (Fly.io)
 
-### Prerequisites
+Prereqs:
 
 1. Install Fly CLI: https://fly.io/docs/flyctl/install/
-2. Login: `fly auth login`
+2. `fly auth login`
 
-### First-time Setup (via Terraform)
+First-time setup (Terraform):
 
 ```bash
 cd infra
 
-# Get a deploy token
 fly tokens create deploy -x 999999h
-export FLY_API_TOKEN="your-token"
+export FLY_API_TOKEN="<fly_api_token>"
 
-# Create the app
 terraform init
 terraform apply
 
-# Set the database secret
 cd ../apps/engine
-fly secrets set DATABASE_URL="postgresql://..."
-
-# Deploy
+fly secrets set DATABASE_URL="<database_url>"
 fly deploy
 ```
 
-### Subsequent Deploys
+Deploy after that:
 
 ```bash
 cd apps/engine
 fly deploy
 ```
 
-### Manual Setup (without Terraform)
+Manual setup (no Terraform):
 
 ```bash
 cd apps/engine
 
-# Create app
 fly launch --no-deploy
-
-# Set secret
-fly secrets set DATABASE_URL="postgresql://..."
-
-# Deploy
+fly secrets set DATABASE_URL="<database_url>"
 fly deploy
 ```
 
-### Verify Deployment
+Verify:
 
 ```bash
 curl https://stochi-engine.fly.dev/health
 ```
 
-## Architecture
+## Layout
 
-```
+```text
 apps/engine/
-├── cmd/server/          # Entry point
-│   └── main.go
-├── internal/
-│   ├── auth/           # Session validation
-│   ├── config/         # Environment config
-│   ├── db/             # Database connection
-│   ├── handlers/       # HTTP handlers
-│   └── models/         # Type definitions
-├── Dockerfile          # Multi-stage build
-└── fly.toml           # Fly.io config
+|-- cmd/server/           Entry point
+|   `-- main.go
+|-- internal/
+|   |-- auth/             Session validation
+|   |-- config/           Environment config
+|   |-- db/               Database connection
+|   |-- handlers/         HTTP handlers
+|   `-- models/           Type definitions
+|-- Dockerfile            Multi-stage build
+`-- fly.toml              Fly.io config
 ```

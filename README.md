@@ -1,86 +1,64 @@
-# stochi_
+# stochi
 
-Stoichiometric intelligence for supplement protocols.
+Stochi is a web app for building supplement protocols and seeing how compounds overlap over time (timing, interactions, and ratio warnings), not just a static log.
 
-Stochi is a production-grade web app that helps users understand how compounds interact over time, not just what they logged.
-
-**Live demo:** https://stochi.vercel.app/demo  
-**App:** https://stochi.vercel.app  
-**Repo:** https://github.com/nikitalobanov12/stochi
+Live demo: <https://stochi.vercel.app/demo>
+App: <https://stochi.vercel.app>
+Repo: <https://github.com/nikitalobanov12/stochi>
 
 ---
 
-## Recruiter Quick Scan
+## What it does
 
-If you only read one section, read this:
+- Analyzes compound interactions (synergy, competition, inhibition)
+- Flags timing issues and ratio rules (example: Zn:Cu balance)
+- Projects an "active compounds" timeline and related score/state changes
+- Supports fast command-style logging and one-click protocol execution
 
-- **Real modeling, not UI theater:** timeline and warnings are driven by pharmacokinetic + interaction logic.
-- **Resilient architecture:** Go engine with TypeScript fallback keeps the app usable if the engine is down.
-- **Full-stack ownership:** product UX, data model, server actions, analytics, and docs are all in one codebase.
-- **Shipping discipline:** typed boundaries, migrations, lint/typecheck gates, and reproducible dev workflow.
+## Try the demo (2 minutes)
 
-## Core Differentiators
-
-### Product-facing
-
-- Compound interaction analysis (synergy, competition, inhibition)
-- Timing and stoichiometric ratio warnings (example: Zn:Cu balance)
-- Biological timeline and active-compound state projection
-- Fast command-style logging and protocol execution
-
-### Engineering-facing
-
-- Hybrid compute path:
-  - `apps/engine` (Go service) for heavy analysis
-  - `apps/web` TypeScript fallback when engine is unavailable
-- PostgreSQL + Drizzle migrations with typed server actions
-- Next.js App Router + Bun + Turborepo monorepo workflow
-- Public demo mode with realistic seeded interactions and scenario flow
-
-## Demo Walkthrough (2 minutes)
-
-In `/demo`, do this sequence:
+In `/demo`:
 
 1. Log `mag 400mg` in the command bar.
-2. Execute a protocol with one click.
-3. Open `System Feed` and inspect interaction/ratio/timing outputs.
-4. Review timeline + bio-score changes.
+2. Execute a protocol.
+3. Open `System Feed` to see interaction/ratio/timing output.
+4. Check the timeline and score changes.
 
-That flow demonstrates both product clarity and backend logic depth quickly.
+## How it's built
 
-## Architecture
+The repo is a monorepo with two apps:
 
 ```text
 stochi/
   apps/
     web/      Next.js app (UI, auth, server actions, data layer)
-    engine/   Go service (analysis + compute-heavy paths)
+    engine/   Go service (compute-heavy analysis)
 ```
 
-### Key pattern: Compute fallback
+Compute fallback:
 
-- The web app attempts the Go engine path first.
-- If unavailable/timeouts occur, it uses an equivalent TypeScript path.
-- Outcome: graceful degradation instead of total feature failure.
+- The web app tries the Go engine first for analysis.
+- If the engine is unavailable or times out, it falls back to an equivalent TypeScript path.
+- Result: the app degrades gracefully instead of hard failing.
 
-## Code Map
+## Code map
 
-- `apps/web/src/app/demo/` public demo surfaces
-- `apps/web/src/app/dashboard/` authenticated product surfaces
+- `apps/web/src/app/demo/` public demo pages
+- `apps/web/src/app/dashboard/` authenticated app pages
 - `apps/web/src/components/dashboard/` timeline, score, HUD, feeds
-- `apps/web/src/server/actions/` interaction/timing/ratio server logic
+- `apps/web/src/server/actions/` server actions (interaction/timing/ratio logic)
 - `apps/web/src/server/services/` biological state + analytics services
-- `apps/web/src/server/db/` schema + migration runner
+- `apps/web/src/server/db/` schema + migrations runner
 - `apps/engine/` Go handlers + modeling internals
 
-## Local Development
+## Local development
 
-### Prerequisites
+Prereqs:
 
 - Bun
 - Docker
 
-### Setup
+Setup:
 
 ```bash
 git clone https://github.com/nikitalobanov12/stochi.git
@@ -90,7 +68,7 @@ cp apps/web/.env.example apps/web/.env
 bun dev
 ```
 
-### Database
+Database:
 
 ```bash
 cd apps/web
@@ -98,20 +76,18 @@ bun db:migrate
 bun db:seed
 ```
 
-Note: local DB must run the pgvector image for vector extension migrations.
+Note: your local DB needs pgvector available for vector-related migrations.
 
-## Quality Gates
+## Checks
 
-Before commit:
+Before committing:
 
 ```bash
 cd apps/web
 bun run check
 ```
 
-This enforces lint + typecheck consistency.
-
-## Additional Docs
+## More docs
 
 - `docs/technical_design_doc.md`
 - `docs/design-language/refined-clinical-editorial.md`
@@ -119,5 +95,5 @@ This enforces lint + typecheck consistency.
 
 ## Author
 
-Nikita Lobanov  
-https://github.com/nikitalobanov12
+Nikita Lobanov
+<https://github.com/nikitalobanov12>
