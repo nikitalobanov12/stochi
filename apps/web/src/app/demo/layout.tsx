@@ -96,7 +96,7 @@ export default function DemoLayout({
               <Button
                 asChild
                 size="sm"
-                className="text-primary-foreground rounded-full bg-primary text-xs font-medium"
+                className="text-primary-foreground bg-primary rounded-md text-xs font-medium"
               >
                 <Link href="/auth/sign-up">Sign Up</Link>
               </Button>

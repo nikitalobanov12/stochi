@@ -16,6 +16,7 @@ import {
   type DemoSupplement,
   type DemoStack,
 } from "./demo-data";
+import { computeDemoWarnings } from "./demo-warnings";
 import type { LogEntry } from "~/components/log/log-context";
 import type {
   InteractionWarning,
@@ -97,7 +98,18 @@ export function DemoProvider({ children }: DemoProviderProps) {
   // Initialize with demo data
   const initialData = generateDemoData();
 
+  const initialWarnings = computeDemoWarnings({ logs: initialData.logs });
+
   const [logs, setLogs] = useState<LogEntry[]>(initialData.logs);
+  const [interactions, setInteractions] = useState<InteractionWarning[]>(
+    initialWarnings.interactions,
+  );
+  const [ratioWarnings, setRatioWarnings] = useState<RatioWarning[]>(
+    initialWarnings.ratioWarnings,
+  );
+  const [timingWarnings, setTimingWarnings] = useState<TimingWarning[]>(
+    initialWarnings.timingWarnings,
+  );
   const [stackCompletion, setStackCompletion] = useState<
     StackCompletionStatus[]
   >(initialData.stackCompletion);
@@ -106,6 +118,13 @@ export function DemoProvider({ children }: DemoProviderProps) {
   );
   const [streak] = useState(initialData.streak);
   const [isPending, setIsPending] = useState(false);
+
+  const syncWarnings = useCallback((nextLogs: LogEntry[]) => {
+    const next = computeDemoWarnings({ logs: nextLogs });
+    setInteractions(next.interactions);
+    setRatioWarnings(next.ratioWarnings);
+    setTimingWarnings(next.timingWarnings);
+  }, []);
 
   const addLog = useCallback(
     (
@@ -132,7 +151,11 @@ export function DemoProvider({ children }: DemoProviderProps) {
           },
         };
 
-        setLogs((prev) => [newLog, ...prev]);
+        setLogs((prev) => {
+          const nextLogs = [newLog, ...prev];
+          syncWarnings(nextLogs);
+          return nextLogs;
+        });
         setLastLogAt(new Date());
         setIsPending(false);
         toast.success(`Logged ${supplementData.name}`, {
@@ -140,84 +163,96 @@ export function DemoProvider({ children }: DemoProviderProps) {
         });
       }, 150);
     },
-    [],
+    [syncWarnings],
   );
 
-  const removeLog = useCallback((logId: string) => {
-    setIsPending(true);
+  const removeLog = useCallback(
+    (logId: string) => {
+      setIsPending(true);
 
-    setTimeout(() => {
-      setLogs((prev) => {
-        const log = prev.find((l) => l.id === logId);
-        if (log) {
-          toast.success(`Removed ${log.supplement.name}`, {
-            description: "Demo mode - data not saved",
-          });
-        }
-        return prev.filter((l) => l.id !== logId);
-      });
-      setIsPending(false);
-    }, 100);
-  }, []);
+      setTimeout(() => {
+        setLogs((prev) => {
+          const log = prev.find((l) => l.id === logId);
+          if (log) {
+            toast.success(`Removed ${log.supplement.name}`, {
+              description: "Demo mode - data not saved",
+            });
+          }
+          const nextLogs = prev.filter((l) => l.id !== logId);
+          syncWarnings(nextLogs);
+          return nextLogs;
+        });
+        setIsPending(false);
+      }, 100);
+    },
+    [syncWarnings],
+  );
 
-  const logStack = useCallback((stackId: string) => {
-    setIsPending(true);
+  const logStack = useCallback(
+    (stackId: string) => {
+      setIsPending(true);
 
-    const stack = DEMO_STACKS.find((s) => s.id === stackId);
-    if (!stack) {
-      setIsPending(false);
-      return;
-    }
+      const stack = DEMO_STACKS.find((s) => s.id === stackId);
+      if (!stack) {
+        setIsPending(false);
+        return;
+      }
 
-    setTimeout(() => {
-      const now = new Date();
+      setTimeout(() => {
+        const now = new Date();
 
-      // Add logs for each item in the stack
-      const newLogs: LogEntry[] = stack.items.map((item, index) => ({
-        id: `demo-log-${Date.now()}-${index}`,
-        loggedAt: now,
-        dosage: item.dosage,
-        unit: item.unit,
-        supplement: {
-          id: item.supplement.id,
-          name: item.supplement.name,
-          isResearchChemical: item.supplement.isResearchChemical,
-          route: item.supplement.route,
-          category: null,
-        },
-      }));
+        // Add logs for each item in the stack
+        const newLogs: LogEntry[] = stack.items.map((item, index) => ({
+          id: `demo-log-${Date.now()}-${index}`,
+          loggedAt: now,
+          dosage: item.dosage,
+          unit: item.unit,
+          supplement: {
+            id: item.supplement.id,
+            name: item.supplement.name,
+            isResearchChemical: item.supplement.isResearchChemical,
+            route: item.supplement.route,
+            category: null,
+          },
+        }));
 
-      setLogs((prev) => [...newLogs, ...prev]);
-      setLastLogAt(now);
+        setLogs((prev) => {
+          const nextLogs = [...newLogs, ...prev];
+          syncWarnings(nextLogs);
+          return nextLogs;
+        });
+        setLastLogAt(now);
 
-      // Update stack completion
-      setStackCompletion((prev) =>
-        prev.map((sc) =>
-          sc.stackId === stackId
-            ? {
-                ...sc,
-                loggedItems: sc.totalItems,
-                isComplete: true,
-                items: sc.items.map((item) => ({ ...item, logged: true })),
-              }
-            : sc,
-        ),
-      );
+        // Update stack completion
+        setStackCompletion((prev) =>
+          prev.map((sc) =>
+            sc.stackId === stackId
+              ? {
+                  ...sc,
+                  loggedItems: sc.totalItems,
+                  isComplete: true,
+                  items: sc.items.map((item) => ({ ...item, logged: true })),
+                }
+              : sc,
+          ),
+        );
 
-      setIsPending(false);
-      toast.success(`Logged ${stack.name}`, {
-        description: `${stack.items.length} supplements • Demo mode`,
-      });
-    }, 300);
-  }, []);
+        setIsPending(false);
+        toast.success(`Logged ${stack.name}`, {
+          description: `${stack.items.length} supplements • Demo mode`,
+        });
+      }, 300);
+    },
+    [syncWarnings],
+  );
 
   const value: DemoContextValue = {
     // Static data
     supplements: DEMO_SUPPLEMENTS,
     stacks: DEMO_STACKS,
-    interactions: initialData.interactions,
-    ratioWarnings: initialData.ratioWarnings,
-    timingWarnings: initialData.timingWarnings,
+    interactions,
+    ratioWarnings,
+    timingWarnings,
     biologicalState: initialData.biologicalState,
     timelineData: initialData.timelineData,
     safetyHeadroom: initialData.safetyHeadroom,

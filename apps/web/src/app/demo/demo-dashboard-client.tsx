@@ -226,13 +226,14 @@ function DemoShowcasePanel() {
             See the engine react in one simple flow.
           </h2>
           <p className="text-muted-foreground mt-1.5 text-base leading-relaxed">
-            Log one entry, run one protocol, then watch timeline and safety signals update.
+            Log one entry, run one protocol, then watch timeline and safety
+            signals update.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
-            <Button asChild size="sm" className="rounded-full">
+            <Button asChild size="sm" className="rounded-md">
               <a href="#demo-command-bar">Start in Command Bar</a>
             </Button>
-            <Button asChild size="sm" variant="outline" className="rounded-full">
+            <Button asChild size="sm" variant="outline" className="rounded-md">
               <a href="#demo-protocols">Go to Protocols</a>
             </Button>
           </div>
@@ -240,13 +241,19 @@ function DemoShowcasePanel() {
 
         <div className="grid gap-1.5">
           <div className="bg-secondary/45 border-border/70 rounded-lg border px-3.5 py-2.5 text-left">
-            <p className="text-muted-foreground text-xs">1. Log one supplement in the command bar</p>
+            <p className="text-muted-foreground text-xs">
+              1. Log one supplement in the command bar
+            </p>
           </div>
           <div className="bg-secondary/45 border-border/70 rounded-lg border px-3.5 py-2.5 text-left">
-            <p className="text-muted-foreground text-xs">2. Then run one protocol</p>
+            <p className="text-muted-foreground text-xs">
+              2. Then run one protocol
+            </p>
           </div>
           <div className="bg-secondary/45 border-border/70 rounded-lg border px-3.5 py-2.5 text-left">
-            <p className="text-muted-foreground text-xs">3. Watch the timeline + alerts update</p>
+            <p className="text-muted-foreground text-xs">
+              3. Watch the timeline + alerts update
+            </p>
           </div>
         </div>
       </div>
