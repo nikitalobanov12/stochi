@@ -25,22 +25,22 @@ export function DemoBanner() {
               <span className="font-medium">Demo Mode</span>
               <span className="text-amber-200/60"> - </span>
               <span className="hidden text-amber-200/70 sm:inline">
-                Real engine behavior with resettable data for fast evaluation.
+                Reactive demo dataset with resettable data for fast evaluation.
               </span>
               <span className="text-amber-200/70 sm:hidden">
-                Real engine behavior, resettable data
+                Reactive demo, resettable data
               </span>
             </span>
             <Button
               asChild
               size="sm"
-              className="ml-2 h-6 rounded-full bg-amber-500/20 px-3 text-[10px] font-medium text-amber-300 hover:bg-amber-500/30 hover:text-amber-200"
+              className="ml-2 h-6 rounded-md bg-amber-500/20 px-3 text-[10px] font-medium text-amber-300 hover:bg-amber-500/30 hover:text-amber-200"
             >
               <Link href="/auth/sign-up">Sign up to save</Link>
             </Button>
             <button
               onClick={() => setIsDismissed(true)}
-              className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-1 text-amber-400/50 transition-colors hover:bg-amber-500/10 hover:text-amber-400 sm:right-4"
+              className="absolute top-1/2 right-2 -translate-y-1/2 rounded-md p-1 text-amber-400/50 transition-colors hover:bg-amber-500/10 hover:text-amber-400 sm:right-4"
               aria-label="Dismiss banner"
             >
               <X className="h-4 w-4" />

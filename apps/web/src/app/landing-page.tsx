@@ -208,7 +208,7 @@ export function LandingPage() {
               <Button
                 asChild
                 size="sm"
-                className="rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-xs font-medium text-white transition-all hover:brightness-110"
+                className="rounded-md bg-gradient-to-r from-emerald-500 to-cyan-500 text-xs font-medium text-white transition-all hover:brightness-110"
               >
                 <Link href="/auth/sign-up">Get Started</Link>
               </Button>
@@ -277,7 +277,7 @@ export function LandingPage() {
                     <Button
                       asChild
                       size="lg"
-                      className="rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 px-8 text-sm font-medium text-white shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/30 hover:brightness-110"
+                      className="rounded-md bg-gradient-to-r from-emerald-500 to-cyan-500 px-8 text-sm font-medium text-white shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/30 hover:brightness-110"
                     >
                       <Link href="/auth/sign-up">Run Your Stack Audit</Link>
                     </Button>
@@ -285,7 +285,7 @@ export function LandingPage() {
                       asChild
                       size="lg"
                       variant="outline"
-                      className="rounded-full border-white/20 px-6 text-sm font-medium text-white/80 transition-all duration-300 hover:border-white/40 hover:bg-white/5 hover:text-white"
+                      className="rounded-md border-white/20 px-6 text-sm font-medium text-white/80 transition-all duration-300 hover:border-white/40 hover:bg-white/5 hover:text-white"
                     >
                       <Link href="/demo">Try Demo</Link>
                     </Button>
@@ -332,329 +332,329 @@ export function LandingPage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 2.0 }}
           >
-          <div className="mx-auto max-w-5xl px-4">
-            <p className="mb-8 text-center text-sm font-medium tracking-wide text-white/50 md:mb-12">
-              Powered by peer-reviewed research from
-            </p>
-            <div className="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-8">
-              {/* NIH */}
-              <a
-                href="https://www.nih.gov"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex flex-col items-center gap-4 rounded-xl border border-white/10 bg-white/[0.02] p-6 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.04]"
-              >
-                <div className="flex h-16 w-16 items-center justify-center">
-                  <svg viewBox="0 0 100 100" className="h-14 w-14">
-                    {/* Shield/crest shape representing government health authority */}
-                    <path
-                      d="M50 8 L85 20 L85 45 C85 68 50 92 50 92 C50 92 15 68 15 45 L15 20 Z"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      className="text-blue-500/60 transition-colors group-hover:text-blue-500/80"
-                    />
-                    {/* Medical cross inside */}
-                    <path
-                      d="M50 28 L50 72 M28 50 L72 50"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      strokeLinecap="round"
-                      className="text-white/70 transition-colors group-hover:text-white/90"
-                    />
-                    {/* Corner accents */}
-                    <circle
-                      cx="28"
-                      cy="35"
-                      r="3"
-                      fill="currentColor"
-                      className="text-blue-400/50 transition-colors group-hover:text-blue-400/70"
-                    />
-                    <circle
-                      cx="72"
-                      cy="35"
-                      r="3"
-                      fill="currentColor"
-                      className="text-blue-400/50 transition-colors group-hover:text-blue-400/70"
-                    />
-                  </svg>
-                </div>
-                <div className="text-center">
-                  <p className="text-sm font-medium text-white/80 transition-colors group-hover:text-white">
-                    National Institutes of Health
-                  </p>
-                  <p className="mt-1 text-xs text-white/40">
-                    U.S. Department of Health
-                  </p>
-                </div>
-              </a>
+            <div className="mx-auto max-w-5xl px-4">
+              <p className="mb-8 text-center text-sm font-medium tracking-wide text-white/50 md:mb-12">
+                Powered by peer-reviewed research from
+              </p>
+              <div className="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-8">
+                {/* NIH */}
+                <a
+                  href="https://www.nih.gov"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex flex-col items-center gap-4 rounded-xl border border-white/10 bg-white/[0.02] p-6 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.04]"
+                >
+                  <div className="flex h-16 w-16 items-center justify-center">
+                    <svg viewBox="0 0 100 100" className="h-14 w-14">
+                      {/* Shield/crest shape representing government health authority */}
+                      <path
+                        d="M50 8 L85 20 L85 45 C85 68 50 92 50 92 C50 92 15 68 15 45 L15 20 Z"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        className="text-blue-500/60 transition-colors group-hover:text-blue-500/80"
+                      />
+                      {/* Medical cross inside */}
+                      <path
+                        d="M50 28 L50 72 M28 50 L72 50"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                        className="text-white/70 transition-colors group-hover:text-white/90"
+                      />
+                      {/* Corner accents */}
+                      <circle
+                        cx="28"
+                        cy="35"
+                        r="3"
+                        fill="currentColor"
+                        className="text-blue-400/50 transition-colors group-hover:text-blue-400/70"
+                      />
+                      <circle
+                        cx="72"
+                        cy="35"
+                        r="3"
+                        fill="currentColor"
+                        className="text-blue-400/50 transition-colors group-hover:text-blue-400/70"
+                      />
+                    </svg>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-white/80 transition-colors group-hover:text-white">
+                      National Institutes of Health
+                    </p>
+                    <p className="mt-1 text-xs text-white/40">
+                      U.S. Department of Health
+                    </p>
+                  </div>
+                </a>
 
-              {/* PubMed */}
-              <a
-                href="https://pubmed.ncbi.nlm.nih.gov"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex flex-col items-center gap-4 rounded-xl border border-white/10 bg-white/[0.02] p-6 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.04]"
-              >
-                <div className="flex h-16 w-16 items-center justify-center">
-                  <svg viewBox="0 0 100 100" className="h-14 w-14">
-                    {/* Document/book shape */}
-                    <rect
-                      x="18"
-                      y="12"
-                      width="64"
-                      height="76"
-                      rx="4"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      className="text-blue-500/60 transition-colors group-hover:text-blue-500/80"
-                    />
-                    {/* Book spine */}
-                    <line
-                      x1="35"
-                      y1="12"
-                      x2="35"
-                      y2="88"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      className="text-blue-500/40 transition-colors group-hover:text-blue-500/60"
-                    />
-                    {/* Text lines representing citations */}
-                    <line
-                      x1="44"
-                      y1="28"
-                      x2="74"
-                      y2="28"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      className="text-white/60 transition-colors group-hover:text-white/80"
-                    />
-                    <line
-                      x1="44"
-                      y1="40"
-                      x2="74"
-                      y2="40"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      className="text-white/60 transition-colors group-hover:text-white/80"
-                    />
-                    <line
-                      x1="44"
-                      y1="52"
-                      x2="74"
-                      y2="52"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      className="text-white/40 transition-colors group-hover:text-white/60"
-                    />
-                    <line
-                      x1="44"
-                      y1="64"
-                      x2="62"
-                      y2="64"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      className="text-white/40 transition-colors group-hover:text-white/60"
-                    />
-                    {/* DNA helix accent */}
-                    <path
-                      d="M26 32 Q30 28 26 24 Q22 20 26 16 M26 48 Q30 44 26 40 Q22 36 26 32 M26 64 Q30 60 26 56 Q22 52 26 48 M26 80 Q30 76 26 72 Q22 68 26 64"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      className="text-blue-400/50 transition-colors group-hover:text-blue-400/70"
-                    />
-                  </svg>
-                </div>
-                <div className="text-center">
-                  <p className="text-sm font-medium text-white/80 transition-colors group-hover:text-white">
-                    PubMed Database
-                  </p>
-                  <p className="mt-1 text-xs text-white/40">
-                    36M+ biomedical citations
-                  </p>
-                </div>
-              </a>
+                {/* PubMed */}
+                <a
+                  href="https://pubmed.ncbi.nlm.nih.gov"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex flex-col items-center gap-4 rounded-xl border border-white/10 bg-white/[0.02] p-6 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.04]"
+                >
+                  <div className="flex h-16 w-16 items-center justify-center">
+                    <svg viewBox="0 0 100 100" className="h-14 w-14">
+                      {/* Document/book shape */}
+                      <rect
+                        x="18"
+                        y="12"
+                        width="64"
+                        height="76"
+                        rx="4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        className="text-blue-500/60 transition-colors group-hover:text-blue-500/80"
+                      />
+                      {/* Book spine */}
+                      <line
+                        x1="35"
+                        y1="12"
+                        x2="35"
+                        y2="88"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        className="text-blue-500/40 transition-colors group-hover:text-blue-500/60"
+                      />
+                      {/* Text lines representing citations */}
+                      <line
+                        x1="44"
+                        y1="28"
+                        x2="74"
+                        y2="28"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        className="text-white/60 transition-colors group-hover:text-white/80"
+                      />
+                      <line
+                        x1="44"
+                        y1="40"
+                        x2="74"
+                        y2="40"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        className="text-white/60 transition-colors group-hover:text-white/80"
+                      />
+                      <line
+                        x1="44"
+                        y1="52"
+                        x2="74"
+                        y2="52"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        className="text-white/40 transition-colors group-hover:text-white/60"
+                      />
+                      <line
+                        x1="44"
+                        y1="64"
+                        x2="62"
+                        y2="64"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        className="text-white/40 transition-colors group-hover:text-white/60"
+                      />
+                      {/* DNA helix accent */}
+                      <path
+                        d="M26 32 Q30 28 26 24 Q22 20 26 16 M26 48 Q30 44 26 40 Q22 36 26 32 M26 64 Q30 60 26 56 Q22 52 26 48 M26 80 Q30 76 26 72 Q22 68 26 64"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        className="text-blue-400/50 transition-colors group-hover:text-blue-400/70"
+                      />
+                    </svg>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-white/80 transition-colors group-hover:text-white">
+                      PubMed Database
+                    </p>
+                    <p className="mt-1 text-xs text-white/40">
+                      36M+ biomedical citations
+                    </p>
+                  </div>
+                </a>
 
-              {/* EFSA */}
-              <a
-                href="https://www.efsa.europa.eu"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex flex-col items-center gap-4 rounded-xl border border-white/10 bg-white/[0.02] p-6 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.04]"
-              >
-                <div className="flex h-16 w-16 items-center justify-center">
-                  <svg viewBox="0 0 100 100" className="h-14 w-14">
-                    {/* Outer ring - EU circle */}
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="40"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      className="text-blue-600/50 transition-colors group-hover:text-blue-600/70"
-                    />
-                    {/* Stars arranged in EU flag pattern - 12 stars */}
-                    <g className="text-yellow-400/70 transition-colors group-hover:text-yellow-400">
-                      <polygon
-                        points="50,14 52,20 58,20 53,24 55,30 50,26 45,30 47,24 42,20 48,20"
-                        fill="currentColor"
+                {/* EFSA */}
+                <a
+                  href="https://www.efsa.europa.eu"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex flex-col items-center gap-4 rounded-xl border border-white/10 bg-white/[0.02] p-6 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.04]"
+                >
+                  <div className="flex h-16 w-16 items-center justify-center">
+                    <svg viewBox="0 0 100 100" className="h-14 w-14">
+                      {/* Outer ring - EU circle */}
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="40"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        className="text-blue-600/50 transition-colors group-hover:text-blue-600/70"
                       />
-                      <polygon
-                        points="72,22 74,28 80,28 75,32 77,38 72,34 67,38 69,32 64,28 70,28"
-                        fill="currentColor"
+                      {/* Stars arranged in EU flag pattern - 12 stars */}
+                      <g className="text-yellow-400/70 transition-colors group-hover:text-yellow-400">
+                        <polygon
+                          points="50,14 52,20 58,20 53,24 55,30 50,26 45,30 47,24 42,20 48,20"
+                          fill="currentColor"
+                        />
+                        <polygon
+                          points="72,22 74,28 80,28 75,32 77,38 72,34 67,38 69,32 64,28 70,28"
+                          fill="currentColor"
+                        />
+                        <polygon
+                          points="86,38 88,44 94,44 89,48 91,54 86,50 81,54 83,48 78,44 84,44"
+                          fill="currentColor"
+                        />
+                        <polygon
+                          points="86,62 88,68 94,68 89,72 91,78 86,74 81,78 83,72 78,68 84,68"
+                          fill="currentColor"
+                        />
+                        <polygon
+                          points="72,78 74,84 80,84 75,88 77,94 72,90 67,94 69,88 64,84 70,84"
+                          fill="currentColor"
+                        />
+                        <polygon
+                          points="50,86 52,92 58,92 53,96 55,102 50,98 45,102 47,96 42,92 48,92"
+                          fill="currentColor"
+                        />
+                        <polygon
+                          points="28,78 30,84 36,84 31,88 33,94 28,90 23,94 25,88 20,84 26,84"
+                          fill="currentColor"
+                        />
+                        <polygon
+                          points="14,62 16,68 22,68 17,72 19,78 14,74 9,78 11,72 6,68 12,68"
+                          fill="currentColor"
+                        />
+                        <polygon
+                          points="14,38 16,44 22,44 17,48 19,54 14,50 9,54 11,48 6,44 12,44"
+                          fill="currentColor"
+                        />
+                        <polygon
+                          points="28,22 30,28 36,28 31,32 33,38 28,34 23,38 25,32 20,28 26,28"
+                          fill="currentColor"
+                        />
+                        <polygon
+                          points="50,38 51,41 54,41 52,43 53,46 50,44 47,46 48,43 46,41 49,41"
+                          fill="currentColor"
+                        />
+                        <polygon
+                          points="50,54 51,57 54,57 52,59 53,62 50,60 47,62 48,59 46,57 49,57"
+                          fill="currentColor"
+                        />
+                      </g>
+                      {/* Center plate with fork/knife */}
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="16"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        className="text-white/30 transition-colors group-hover:text-white/50"
                       />
-                      <polygon
-                        points="86,38 88,44 94,44 89,48 91,54 86,50 81,54 83,48 78,44 84,44"
-                        fill="currentColor"
-                      />
-                      <polygon
-                        points="86,62 88,68 94,68 89,72 91,78 86,74 81,78 83,72 78,68 84,68"
-                        fill="currentColor"
-                      />
-                      <polygon
-                        points="72,78 74,84 80,84 75,88 77,94 72,90 67,94 69,88 64,84 70,84"
-                        fill="currentColor"
-                      />
-                      <polygon
-                        points="50,86 52,92 58,92 53,96 55,102 50,98 45,102 47,96 42,92 48,92"
-                        fill="currentColor"
-                      />
-                      <polygon
-                        points="28,78 30,84 36,84 31,88 33,94 28,90 23,94 25,88 20,84 26,84"
-                        fill="currentColor"
-                      />
-                      <polygon
-                        points="14,62 16,68 22,68 17,72 19,78 14,74 9,78 11,72 6,68 12,68"
-                        fill="currentColor"
-                      />
-                      <polygon
-                        points="14,38 16,44 22,44 17,48 19,54 14,50 9,54 11,48 6,44 12,44"
-                        fill="currentColor"
-                      />
-                      <polygon
-                        points="28,22 30,28 36,28 31,32 33,38 28,34 23,38 25,32 20,28 26,28"
-                        fill="currentColor"
-                      />
-                      <polygon
-                        points="50,38 51,41 54,41 52,43 53,46 50,44 47,46 48,43 46,41 49,41"
-                        fill="currentColor"
-                      />
-                      <polygon
-                        points="50,54 51,57 54,57 52,59 53,62 50,60 47,62 48,59 46,57 49,57"
-                        fill="currentColor"
-                      />
-                    </g>
-                    {/* Center plate with fork/knife */}
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="16"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      className="text-white/30 transition-colors group-hover:text-white/50"
-                    />
-                  </svg>
-                </div>
-                <div className="text-center">
-                  <p className="text-sm font-medium text-white/80 transition-colors group-hover:text-white">
-                    EFSA
-                  </p>
-                  <p className="mt-1 text-xs text-white/40">
-                    European Food Safety Authority
-                  </p>
-                </div>
-              </a>
+                    </svg>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-white/80 transition-colors group-hover:text-white">
+                      EFSA
+                    </p>
+                    <p className="mt-1 text-xs text-white/40">
+                      European Food Safety Authority
+                    </p>
+                  </div>
+                </a>
 
-              {/* Examine.com */}
-              <a
-                href="https://examine.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex flex-col items-center gap-4 rounded-xl border border-white/10 bg-white/[0.02] p-6 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.04]"
-              >
-                <div className="flex h-16 w-16 items-center justify-center">
-                  <svg viewBox="0 0 100 100" className="h-14 w-14">
-                    {/* Magnifying glass representing "examine" */}
-                    <circle
-                      cx="45"
-                      cy="45"
-                      r="28"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="3"
-                      className="text-emerald-400/60 transition-colors group-hover:text-emerald-400/80"
-                    />
-                    {/* Handle */}
-                    <line
-                      x1="66"
-                      y1="66"
-                      x2="85"
-                      y2="85"
-                      stroke="currentColor"
-                      strokeWidth="5"
-                      strokeLinecap="round"
-                      className="text-emerald-400/70 transition-colors group-hover:text-emerald-400"
-                    />
-                    {/* Checkmark inside - evidence verified */}
-                    <path
-                      d="M32 45 L42 55 L58 35"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      fill="none"
-                      className="text-white/70 transition-colors group-hover:text-white"
-                    />
-                    {/* Data points representing research */}
-                    <circle
-                      cx="45"
-                      cy="20"
-                      r="2"
-                      fill="currentColor"
-                      className="text-emerald-500/50 transition-colors group-hover:text-emerald-500/70"
-                    />
-                    <circle
-                      cx="70"
-                      cy="45"
-                      r="2"
-                      fill="currentColor"
-                      className="text-emerald-500/50 transition-colors group-hover:text-emerald-500/70"
-                    />
-                    <circle
-                      cx="45"
-                      cy="70"
-                      r="2"
-                      fill="currentColor"
-                      className="text-emerald-500/50 transition-colors group-hover:text-emerald-500/70"
-                    />
-                    <circle
-                      cx="20"
-                      cy="45"
-                      r="2"
-                      fill="currentColor"
-                      className="text-emerald-500/50 transition-colors group-hover:text-emerald-500/70"
-                    />
-                  </svg>
-                </div>
-                <div className="text-center">
-                  <p className="text-sm font-medium text-white/80 transition-colors group-hover:text-white">
-                    Examine.com
-                  </p>
-                  <p className="mt-1 text-xs text-white/40">
-                    Evidence-based nutrition
-                  </p>
-                </div>
-              </a>
+                {/* Examine.com */}
+                <a
+                  href="https://examine.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex flex-col items-center gap-4 rounded-xl border border-white/10 bg-white/[0.02] p-6 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.04]"
+                >
+                  <div className="flex h-16 w-16 items-center justify-center">
+                    <svg viewBox="0 0 100 100" className="h-14 w-14">
+                      {/* Magnifying glass representing "examine" */}
+                      <circle
+                        cx="45"
+                        cy="45"
+                        r="28"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                        className="text-emerald-400/60 transition-colors group-hover:text-emerald-400/80"
+                      />
+                      {/* Handle */}
+                      <line
+                        x1="66"
+                        y1="66"
+                        x2="85"
+                        y2="85"
+                        stroke="currentColor"
+                        strokeWidth="5"
+                        strokeLinecap="round"
+                        className="text-emerald-400/70 transition-colors group-hover:text-emerald-400"
+                      />
+                      {/* Checkmark inside - evidence verified */}
+                      <path
+                        d="M32 45 L42 55 L58 35"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        fill="none"
+                        className="text-white/70 transition-colors group-hover:text-white"
+                      />
+                      {/* Data points representing research */}
+                      <circle
+                        cx="45"
+                        cy="20"
+                        r="2"
+                        fill="currentColor"
+                        className="text-emerald-500/50 transition-colors group-hover:text-emerald-500/70"
+                      />
+                      <circle
+                        cx="70"
+                        cy="45"
+                        r="2"
+                        fill="currentColor"
+                        className="text-emerald-500/50 transition-colors group-hover:text-emerald-500/70"
+                      />
+                      <circle
+                        cx="45"
+                        cy="70"
+                        r="2"
+                        fill="currentColor"
+                        className="text-emerald-500/50 transition-colors group-hover:text-emerald-500/70"
+                      />
+                      <circle
+                        cx="20"
+                        cy="45"
+                        r="2"
+                        fill="currentColor"
+                        className="text-emerald-500/50 transition-colors group-hover:text-emerald-500/70"
+                      />
+                    </svg>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-white/80 transition-colors group-hover:text-white">
+                      Examine.com
+                    </p>
+                    <p className="mt-1 text-xs text-white/40">
+                      Evidence-based nutrition
+                    </p>
+                  </div>
+                </a>
+              </div>
             </div>
-          </div>
           </motion.section>
         )}
 
@@ -671,34 +671,34 @@ export function LandingPage() {
               title="See Your Stack in Motion"
               description="Pharmacokinetic modeling, interaction detection, and biological state optimization-all running continuously."
             >
-            {/* Row 1: Timeline (2/3) + Bio Score (1/3) */}
-            <BentoCard span="two-thirds" aspect="timeline" showGlow>
-              <div className="p-4 lg:p-6">
-                <LandingTimeline />
-              </div>
-            </BentoCard>
-            <BentoCard span="one-third" aspect="score">
-              <div className="p-4 lg:p-6">
-                <LandingBioScore />
-              </div>
-            </BentoCard>
+              {/* Row 1: Timeline (2/3) + Bio Score (1/3) */}
+              <BentoCard span="two-thirds" aspect="timeline" showGlow>
+                <div className="p-4 lg:p-6">
+                  <LandingTimeline />
+                </div>
+              </BentoCard>
+              <BentoCard span="one-third" aspect="score">
+                <div className="p-4 lg:p-6">
+                  <LandingBioScore />
+                </div>
+              </BentoCard>
 
-            {/* Row 2: Feed (1/3) + Expert Stacks (1/3) + Risk Detection (1/3) */}
-            <BentoCard span="one-third" aspect="feed">
-              <div className="p-4 lg:p-5">
-                <MechanisticFeed />
-              </div>
-            </BentoCard>
-            <BentoCard span="one-third" aspect="stack">
-              <div className="p-4 lg:p-5">
-                <ExpertStacks limit={3} />
-              </div>
-            </BentoCard>
-            <BentoCard span="one-third" aspect="stack">
-              <div className="p-4 lg:p-5">
-                <RiskCardCompact limit={3} />
-              </div>
-            </BentoCard>
+              {/* Row 2: Feed (1/3) + Expert Stacks (1/3) + Risk Detection (1/3) */}
+              <BentoCard span="one-third" aspect="feed">
+                <div className="p-4 lg:p-5">
+                  <MechanisticFeed />
+                </div>
+              </BentoCard>
+              <BentoCard span="one-third" aspect="stack">
+                <div className="p-4 lg:p-5">
+                  <ExpertStacks limit={3} />
+                </div>
+              </BentoCard>
+              <BentoCard span="one-third" aspect="stack">
+                <div className="p-4 lg:p-5">
+                  <RiskCardCompact limit={3} />
+                </div>
+              </BentoCard>
             </BentoSection>
           </motion.div>
         )}
@@ -736,41 +736,41 @@ export function LandingPage() {
             viewport={{ once: true, margin: "-100px" }}
             variants={staggerContainer}
           >
-          <div className="mx-auto max-w-4xl">
-            <motion.h2
-              id="beyond-vitamins-heading"
-              className="mb-4 text-2xl font-semibold text-white/90 sm:text-3xl"
-              variants={fadeInUp}
-            >
-              Beyond vitamins.
-            </motion.h2>
-            <motion.p
-              className="mb-8 max-w-2xl text-base leading-relaxed text-white/50"
-              variants={fadeInUp}
-            >
-              First-class support for compounds others ignore. Track research
-              chemicals, peptides, and nootropics with specific routes of
-              administration and experimental safety protocols.
-            </motion.p>
+            <div className="mx-auto max-w-4xl">
+              <motion.h2
+                id="beyond-vitamins-heading"
+                className="mb-4 text-2xl font-semibold text-white/90 sm:text-3xl"
+                variants={fadeInUp}
+              >
+                Beyond vitamins.
+              </motion.h2>
+              <motion.p
+                className="mb-8 max-w-2xl text-base leading-relaxed text-white/50"
+                variants={fadeInUp}
+              >
+                First-class support for compounds others ignore. Track research
+                chemicals, peptides, and nootropics with specific routes of
+                administration and experimental safety protocols.
+              </motion.p>
 
-            {/* Compound Ticker */}
-            <motion.div variants={fadeIn}>
-              <CompoundTicker />
-            </motion.div>
+              {/* Compound Ticker */}
+              <motion.div variants={fadeIn}>
+                <CompoundTicker />
+              </motion.div>
 
-            {/* Compound Category Grid */}
-            <motion.div className="mt-8" variants={fadeIn}>
-              <CompoundBadgeGrid />
-            </motion.div>
+              {/* Compound Category Grid */}
+              <motion.div className="mt-8" variants={fadeIn}>
+                <CompoundBadgeGrid />
+              </motion.div>
 
-            {/* Capability Comparison Table */}
-            <motion.div className="mt-12" variants={fadeInUp}>
-              <h3 className="mb-4 text-sm font-semibold text-white/90">
-                Why Stochi vs. alternatives
-              </h3>
-              <CapabilityTable />
-            </motion.div>
-          </div>
+              {/* Capability Comparison Table */}
+              <motion.div className="mt-12" variants={fadeInUp}>
+                <h3 className="mb-4 text-sm font-semibold text-white/90">
+                  Why Stochi vs. alternatives
+                </h3>
+                <CapabilityTable />
+              </motion.div>
+            </div>
           </motion.section>
         )}
 
@@ -783,48 +783,48 @@ export function LandingPage() {
             viewport={{ once: true, margin: "-100px" }}
             variants={staggerContainer}
           >
-          <div className="mx-auto max-w-4xl">
-            <div className="grid gap-12 md:grid-cols-2 md:items-center">
-              {/* Text */}
-              <motion.div variants={fadeInUp}>
-                <h2
-                  id="protocol-heading"
-                  className="mb-4 text-2xl font-semibold text-white/90 sm:text-3xl"
-                >
-                  Execute. Don&apos;t log.
-                </h2>
-                <p className="mb-6 text-base leading-relaxed text-white/50">
-                  Batch your intake into Protocols. Log your entire morning
-                  stack in 300ms. Frictionless compliance.
-                </p>
-                <ul className="space-y-3 text-base text-white/60" role="list">
-                  <li className="flex items-center gap-2">
-                    <span className="text-emerald-400" aria-hidden="true">
-                      +
-                    </span>
-                    One-tap logging for entire stacks
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-emerald-400" aria-hidden="true">
-                      +
-                    </span>
-                    Progress tracking with visual indicators
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-emerald-400" aria-hidden="true">
-                      +
-                    </span>
-                    Morning, evening, and custom protocols
-                  </li>
-                </ul>
-              </motion.div>
+            <div className="mx-auto max-w-4xl">
+              <div className="grid gap-12 md:grid-cols-2 md:items-center">
+                {/* Text */}
+                <motion.div variants={fadeInUp}>
+                  <h2
+                    id="protocol-heading"
+                    className="mb-4 text-2xl font-semibold text-white/90 sm:text-3xl"
+                  >
+                    Execute. Don&apos;t log.
+                  </h2>
+                  <p className="mb-6 text-base leading-relaxed text-white/50">
+                    Batch your intake into Protocols. Log your entire morning
+                    stack in 300ms. Frictionless compliance.
+                  </p>
+                  <ul className="space-y-3 text-base text-white/60" role="list">
+                    <li className="flex items-center gap-2">
+                      <span className="text-emerald-400" aria-hidden="true">
+                        +
+                      </span>
+                      One-tap logging for entire stacks
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-emerald-400" aria-hidden="true">
+                        +
+                      </span>
+                      Progress tracking with visual indicators
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-emerald-400" aria-hidden="true">
+                        +
+                      </span>
+                      Morning, evening, and custom protocols
+                    </li>
+                  </ul>
+                </motion.div>
 
-              {/* Animated Protocol Demo */}
-              <motion.div variants={fadeInUp}>
-                <ProtocolDemo />
-              </motion.div>
+                {/* Animated Protocol Demo */}
+                <motion.div variants={fadeInUp}>
+                  <ProtocolDemo />
+                </motion.div>
+              </div>
             </div>
-          </div>
           </motion.section>
         )}
 
@@ -837,126 +837,134 @@ export function LandingPage() {
             viewport={{ once: true, margin: "-100px" }}
             variants={staggerContainer}
           >
-          <div className="mx-auto max-w-4xl">
-            <motion.h2
-              id="tracking-failed-heading"
-              className="mb-4 text-2xl font-semibold text-white/95 sm:text-3xl"
-              variants={fadeInUp}
-            >
-              Manual tracking failed you.
-            </motion.h2>
-            <motion.p
-              className="mb-12 max-w-2xl text-base leading-relaxed text-white/50"
-              variants={fadeInUp}
-            >
-              You tracked the dosage. You missed the pharmacokinetics. Your
-              spreadsheet doesn&apos;t know that Magnesium competes with Zinc
-              for the same transporter. We do.
-            </motion.p>
-
-            <motion.div
-              className="grid gap-6 md:grid-cols-2"
-              variants={staggerContainer}
-            >
-              {/* What You Tracked */}
-              <motion.div
-                className="rounded-xl border border-white/10 bg-[#0A0A0A] p-6"
-                variants={staggerItem}
+            <div className="mx-auto max-w-4xl">
+              <motion.h2
+                id="tracking-failed-heading"
+                className="mb-4 text-2xl font-semibold text-white/95 sm:text-3xl"
+                variants={fadeInUp}
               >
-                <div className="mb-4 flex items-center justify-between">
-                  <span className="text-[10px] font-medium tracking-widest text-white/40 uppercase">
-                    What You Tracked
-                  </span>
-                  <span className="text-[10px] font-medium text-white/30">
-                    INCOMPLETE
-                  </span>
-                </div>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between border-b border-white/10 pb-2">
-                    <span className="text-white/80">Zinc Picolinate</span>
-                    <span className="font-mono text-white/50 tabular-nums">
-                      50mg
-                    </span>
-                  </div>
-                  <div className="flex justify-between border-b border-white/10 pb-2">
-                    <span className="text-white/80">Magnesium Glycinate</span>
-                    <span className="font-mono text-white/50 tabular-nums">
-                      400mg
-                    </span>
-                  </div>
-                  <div className="flex justify-between border-b border-white/10 pb-2">
-                    <span className="text-white/80">Vitamin D3</span>
-                    <span className="font-mono text-white/50 tabular-nums">
-                      5000IU
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-white/80">Iron</span>
-                    <span className="font-mono text-white/50 tabular-nums">
-                      18mg
-                    </span>
-                  </div>
-                </div>
-                <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.02] p-3 text-center text-xs text-white/40">
-                  No interaction data. No ratio analysis.
-                </div>
-              </motion.div>
-
-              {/* What You Missed */}
-              <motion.div
-                className="rounded-xl border border-red-500/20 bg-red-500/[0.04] p-6"
-                role="list"
-                aria-label="What you missed: 3 errors"
-                variants={staggerItem}
+                Manual tracking failed you.
+              </motion.h2>
+              <motion.p
+                className="mb-12 max-w-2xl text-base leading-relaxed text-white/50"
+                variants={fadeInUp}
               >
-                <div className="mb-4 flex items-center justify-between">
-                  <span className="text-[10px] font-medium tracking-widest text-red-400 uppercase">
-                    What You Missed
-                  </span>
-                  <span className="text-[10px] font-medium text-red-400">
-                    3 ERRORS
-                  </span>
-                </div>
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-start gap-2" role="listitem">
-                    <span className="mt-0.5 text-red-400" aria-hidden="true">
-                      ×
+                You tracked the dosage. You missed the pharmacokinetics. Your
+                spreadsheet doesn&apos;t know that Magnesium competes with Zinc
+                for the same transporter. We do.
+              </motion.p>
+
+              <motion.div
+                className="grid gap-6 md:grid-cols-2"
+                variants={staggerContainer}
+              >
+                {/* What You Tracked */}
+                <motion.div
+                  className="rounded-xl border border-white/10 bg-[#0A0A0A] p-6"
+                  variants={staggerItem}
+                >
+                  <div className="mb-4 flex items-center justify-between">
+                    <span className="text-[10px] font-medium tracking-widest text-white/40 uppercase">
+                      What You Tracked
                     </span>
-                    <div>
-                      <span className="text-white/80">
-                        Zn:Cu ratio <span className="font-mono">50:1</span>
+                    <span className="text-[10px] font-medium text-white/30">
+                      INCOMPLETE
+                    </span>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between border-b border-white/10 pb-2">
+                      <span className="text-white/80">Zinc Picolinate</span>
+                      <span className="font-mono text-white/50 tabular-nums">
+                        50mg
                       </span>
-                      <p className="mt-0.5 text-white/50">
-                        No copper to balance zinc intake
-                      </p>
+                    </div>
+                    <div className="flex justify-between border-b border-white/10 pb-2">
+                      <span className="text-white/80">Magnesium Glycinate</span>
+                      <span className="font-mono text-white/50 tabular-nums">
+                        400mg
+                      </span>
+                    </div>
+                    <div className="flex justify-between border-b border-white/10 pb-2">
+                      <span className="text-white/80">Vitamin D3</span>
+                      <span className="font-mono text-white/50 tabular-nums">
+                        5000IU
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-white/80">Iron</span>
+                      <span className="font-mono text-white/50 tabular-nums">
+                        18mg
+                      </span>
                     </div>
                   </div>
-                  <div className="flex items-start gap-2" role="listitem">
-                    <span className="mt-0.5 text-amber-400" aria-hidden="true">
-                      !
+                  <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.02] p-3 text-center text-xs text-white/40">
+                    No interaction data. No ratio analysis.
+                  </div>
+                </motion.div>
+
+                {/* What You Missed */}
+                <motion.div
+                  className="rounded-xl border border-red-500/20 bg-red-500/[0.04] p-6"
+                  role="list"
+                  aria-label="What you missed: 3 errors"
+                  variants={staggerItem}
+                >
+                  <div className="mb-4 flex items-center justify-between">
+                    <span className="text-[10px] font-medium tracking-widest text-red-400 uppercase">
+                      What You Missed
                     </span>
-                    <div>
-                      <span className="text-white/80">Mg + Zn competition</span>
-                      <p className="mt-0.5 text-white/50">
-                        Same transporter, reduced absorption
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2" role="listitem">
-                    <span className="mt-0.5 text-amber-400" aria-hidden="true">
-                      !
+                    <span className="text-[10px] font-medium text-red-400">
+                      3 ERRORS
                     </span>
-                    <div>
-                      <span className="text-white/80">D3 timing unknown</span>
-                      <p className="mt-0.5 text-white/50">
-                        Fat-soluble, requires meal context
-                      </p>
+                  </div>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex items-start gap-2" role="listitem">
+                      <span className="mt-0.5 text-red-400" aria-hidden="true">
+                        ×
+                      </span>
+                      <div>
+                        <span className="text-white/80">
+                          Zn:Cu ratio <span className="font-mono">50:1</span>
+                        </span>
+                        <p className="mt-0.5 text-white/50">
+                          No copper to balance zinc intake
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2" role="listitem">
+                      <span
+                        className="mt-0.5 text-amber-400"
+                        aria-hidden="true"
+                      >
+                        !
+                      </span>
+                      <div>
+                        <span className="text-white/80">
+                          Mg + Zn competition
+                        </span>
+                        <p className="mt-0.5 text-white/50">
+                          Same transporter, reduced absorption
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2" role="listitem">
+                      <span
+                        className="mt-0.5 text-amber-400"
+                        aria-hidden="true"
+                      >
+                        !
+                      </span>
+                      <div>
+                        <span className="text-white/80">D3 timing unknown</span>
+                        <p className="mt-0.5 text-white/50">
+                          Fat-soluble, requires meal context
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               </motion.div>
-            </motion.div>
-          </div>
+            </div>
           </motion.section>
         )}
 
@@ -969,76 +977,76 @@ export function LandingPage() {
             viewport={{ once: true, margin: "-100px" }}
             variants={staggerContainer}
           >
-          <div className="mx-auto max-w-4xl">
-            <motion.h2
-              id="failure-modes-heading"
-              className="mb-4 text-2xl font-bold text-white/90 sm:text-3xl"
-              variants={fadeInUp}
-            >
-              Your Spreadsheet is Missing These Lethal Errors.
-            </motion.h2>
-            <motion.p
-              className="mb-12 max-w-2xl text-base text-white/50"
-              variants={fadeInUp}
-            >
-              These pharmacokinetic patterns exist in most stacks. Your
-              spreadsheet cannot detect them. Stochi scans for all of them in
-              real-time.
-            </motion.p>
+            <div className="mx-auto max-w-4xl">
+              <motion.h2
+                id="failure-modes-heading"
+                className="mb-4 text-2xl font-bold text-white/90 sm:text-3xl"
+                variants={fadeInUp}
+              >
+                Your Spreadsheet is Missing These Lethal Errors.
+              </motion.h2>
+              <motion.p
+                className="mb-12 max-w-2xl text-base text-white/50"
+                variants={fadeInUp}
+              >
+                These pharmacokinetic patterns exist in most stacks. Your
+                spreadsheet cannot detect them. Stochi scans for all of them in
+                real-time.
+              </motion.p>
 
-            <motion.div
-              className="grid gap-4 md:grid-cols-2"
-              variants={staggerContainer}
-            >
-              <motion.div variants={staggerItem}>
-                <RiskCard
-                  type="danger"
-                  label="The Absorption Block"
-                  title="Zinc depleting Copper stores"
-                  description="High-dose Zinc (30mg+) without Copper causes gradual depletion. Symptoms appear after months: fatigue, anemia, neurological issues."
-                  detection="Zn:Cu ratio exceeds 15:1"
-                  recommendation="Add 2mg Copper per 30mg Zinc"
-                  citation={CITATIONS.zincCopper}
-                />
-              </motion.div>
+              <motion.div
+                className="grid gap-4 md:grid-cols-2"
+                variants={staggerContainer}
+              >
+                <motion.div variants={staggerItem}>
+                  <RiskCard
+                    type="danger"
+                    label="The Absorption Block"
+                    title="Zinc depleting Copper stores"
+                    description="High-dose Zinc (30mg+) without Copper causes gradual depletion. Symptoms appear after months: fatigue, anemia, neurological issues."
+                    detection="Zn:Cu ratio exceeds 15:1"
+                    recommendation="Add 2mg Copper per 30mg Zinc"
+                    citation={CITATIONS.zincCopper}
+                  />
+                </motion.div>
 
-              <motion.div variants={staggerItem}>
-                <RiskCard
-                  type="danger"
-                  label="The Toxicity Threshold"
-                  title="Cumulative Upper Limit breach"
-                  description="Vitamin A and Selenium from multiple sources can silently reach the Upper Limit (UL). Liver toxicity and selenosis develop without warning."
-                  detection="Combined sources exceed UL"
-                  recommendation="Audit all Vitamin A / Selenium sources"
-                  citation={CITATIONS.vitaminD}
-                />
-              </motion.div>
+                <motion.div variants={staggerItem}>
+                  <RiskCard
+                    type="danger"
+                    label="The Toxicity Threshold"
+                    title="Cumulative Upper Limit breach"
+                    description="Vitamin A and Selenium from multiple sources can silently reach the Upper Limit (UL). Liver toxicity and selenosis develop without warning."
+                    detection="Combined sources exceed UL"
+                    recommendation="Audit all Vitamin A / Selenium sources"
+                    citation={CITATIONS.vitaminD}
+                  />
+                </motion.div>
 
-              <motion.div variants={staggerItem}>
-                <RiskCard
-                  type="warning"
-                  label="The Half-Life Conflict"
-                  title="Fat-soluble vitamin without fat"
-                  description="Vitamin D, K, E, A require dietary fat for absorption. Taking on empty stomach reduces bioavailability by up to 50%."
-                  detection="D3/K2 logged without meal flag"
-                  recommendation="Take with fatty meal"
-                  citation={CITATIONS.calciumIron}
-                />
-              </motion.div>
+                <motion.div variants={staggerItem}>
+                  <RiskCard
+                    type="warning"
+                    label="The Half-Life Conflict"
+                    title="Fat-soluble vitamin without fat"
+                    description="Vitamin D, K, E, A require dietary fat for absorption. Taking on empty stomach reduces bioavailability by up to 50%."
+                    detection="D3/K2 logged without meal flag"
+                    recommendation="Take with fatty meal"
+                    citation={CITATIONS.calciumIron}
+                  />
+                </motion.div>
 
-              <motion.div variants={staggerItem}>
-                <RiskCard
-                  type="danger"
-                  label="Pharmacodynamic Risk"
-                  title="Serotonergic compound stacking"
-                  description="Ashwagandha, 5-HTP, St. John's Wort enhance serotonin. Combined with SSRIs, risk of serotonin syndrome increases."
-                  detection="Multiple serotonergic agents"
-                  recommendation="Physician review required"
-                  citation={CITATIONS.ashwagandha}
-                />
+                <motion.div variants={staggerItem}>
+                  <RiskCard
+                    type="danger"
+                    label="Pharmacodynamic Risk"
+                    title="Serotonergic compound stacking"
+                    description="Ashwagandha, 5-HTP, St. John's Wort enhance serotonin. Combined with SSRIs, risk of serotonin syndrome increases."
+                    detection="Multiple serotonergic agents"
+                    recommendation="Physician review required"
+                    citation={CITATIONS.ashwagandha}
+                  />
+                </motion.div>
               </motion.div>
-            </motion.div>
-          </div>
+            </div>
           </motion.section>
         )}
 
@@ -1051,127 +1059,129 @@ export function LandingPage() {
             viewport={{ once: true, margin: "-100px" }}
             variants={fadeInUp}
           >
-          <div className="mx-auto max-w-4xl">
-            <h2
-              id="case-study-heading"
-              className="mb-12 text-2xl font-semibold text-white/90 sm:text-3xl"
-            >
-              Field report.
-            </h2>
+            <div className="mx-auto max-w-4xl">
+              <h2
+                id="case-study-heading"
+                className="mb-12 text-2xl font-semibold text-white/90 sm:text-3xl"
+              >
+                Field report.
+              </h2>
 
-            <div className="overflow-hidden rounded-xl border border-white/10 bg-[#0A0A0A]">
-              {/* Case header */}
-              <div className="border-b border-white/10 bg-white/[0.02] px-6 py-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/[0.06] font-mono text-sm text-white/90">
-                      492
+              <div className="overflow-hidden rounded-xl border border-white/10 bg-[#0A0A0A]">
+                {/* Case header */}
+                <div className="border-b border-white/10 bg-white/[0.02] px-6 py-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/[0.06] font-mono text-sm text-white/90">
+                        492
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-white/90">
+                          Subject 492
+                        </div>
+                        <div className="text-xs text-white/50">
+                          The &quot;Optimized&quot; Stack
+                        </div>
+                      </div>
                     </div>
+                    <div className="rounded-full bg-red-500/10 px-3 py-1 text-xs font-medium text-red-400">
+                      3 Critical Errors
+                    </div>
+                  </div>
+                </div>
+
+                {/* Case body */}
+                <div className="p-6">
+                  <div className="grid gap-6 md:grid-cols-2">
+                    {/* Profile */}
                     <div>
-                      <div className="text-sm font-medium text-white/90">
-                        Subject 492
+                      <div className="mb-3 text-xs font-medium tracking-wide text-white/40 uppercase">
+                        Profile
                       </div>
-                      <div className="text-xs text-white/50">
-                        The &quot;Optimized&quot; Stack
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-white/50">Tracking method</span>
+                          <span className="text-white/90">
+                            Excel spreadsheet
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-white/50">Duration</span>
+                          <span className="font-mono text-white/90 tabular-nums">
+                            4 years
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-white/50">Daily compounds</span>
+                          <span className="font-mono text-white/90 tabular-nums">
+                            12+
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-white/50">Self-assessment</span>
+                          <span className="text-white/90">
+                            &quot;Plateaued, fatigued&quot;
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Findings */}
+                    <div>
+                      <div className="mb-3 text-xs font-medium tracking-wide text-red-400 uppercase">
+                        Stochi Findings
+                      </div>
+                      <div className="space-y-2 text-sm">
+                        <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-2">
+                          <span className="font-medium text-red-400">
+                            CRITICAL:
+                          </span>{" "}
+                          <span className="text-white/80">
+                            <span className="font-mono">50mg</span> Zinc daily,{" "}
+                            <span className="font-mono">0mg</span> Copper
+                          </span>
+                        </div>
+                        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-2">
+                          <span className="font-medium text-amber-400">
+                            WARNING:
+                          </span>{" "}
+                          <span className="text-white/80">
+                            D3 taken at <span className="font-mono">10pm</span>{" "}
+                            (no meal)
+                          </span>
+                        </div>
+                        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-2">
+                          <span className="font-medium text-amber-400">
+                            WARNING:
+                          </span>{" "}
+                          <span className="text-white/80">
+                            Ca + Mg + Zn simultaneous
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <div className="rounded-full bg-red-500/10 px-3 py-1 text-xs font-medium text-red-400">
-                    3 Critical Errors
-                  </div>
-                </div>
-              </div>
 
-              {/* Case body */}
-              <div className="p-6">
-                <div className="grid gap-6 md:grid-cols-2">
-                  {/* Profile */}
-                  <div>
+                  {/* Outcome */}
+                  <div className="mt-6 border-t border-white/10 pt-6">
                     <div className="mb-3 text-xs font-medium tracking-wide text-white/40 uppercase">
-                      Profile
+                      Outcome
                     </div>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-white/50">Tracking method</span>
-                        <span className="text-white/90">Excel spreadsheet</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-white/50">Duration</span>
-                        <span className="font-mono text-white/90 tabular-nums">
-                          4 years
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-white/50">Daily compounds</span>
-                        <span className="font-mono text-white/90 tabular-nums">
-                          12+
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-white/50">Self-assessment</span>
-                        <span className="text-white/90">
-                          &quot;Plateaued, fatigued&quot;
-                        </span>
-                      </div>
-                    </div>
+                    <p className="text-base leading-relaxed text-white/60">
+                      &quot;I thought the fatigue was just aging. Stochi found
+                      the Zinc/Copper imbalance on day one. Added{" "}
+                      <span className="font-mono">5mg</span> Copper, split my
+                      mineral timing.{" "}
+                      <span className="font-medium text-emerald-400">
+                        Energy returned within 3 weeks.
+                      </span>{" "}
+                      Four years of spreadsheets missed what Stochi caught
+                      instantly.&quot;
+                    </p>
                   </div>
-
-                  {/* Findings */}
-                  <div>
-                    <div className="mb-3 text-xs font-medium tracking-wide text-red-400 uppercase">
-                      Stochi Findings
-                    </div>
-                    <div className="space-y-2 text-sm">
-                      <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-2">
-                        <span className="font-medium text-red-400">
-                          CRITICAL:
-                        </span>{" "}
-                        <span className="text-white/80">
-                          <span className="font-mono">50mg</span> Zinc daily,{" "}
-                          <span className="font-mono">0mg</span> Copper
-                        </span>
-                      </div>
-                      <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-2">
-                        <span className="font-medium text-amber-400">
-                          WARNING:
-                        </span>{" "}
-                        <span className="text-white/80">
-                          D3 taken at <span className="font-mono">10pm</span>{" "}
-                          (no meal)
-                        </span>
-                      </div>
-                      <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-2">
-                        <span className="font-medium text-amber-400">
-                          WARNING:
-                        </span>{" "}
-                        <span className="text-white/80">
-                          Ca + Mg + Zn simultaneous
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Outcome */}
-                <div className="mt-6 border-t border-white/10 pt-6">
-                  <div className="mb-3 text-xs font-medium tracking-wide text-white/40 uppercase">
-                    Outcome
-                  </div>
-                  <p className="text-base leading-relaxed text-white/60">
-                    &quot;I thought the fatigue was just aging. Stochi found the
-                    Zinc/Copper imbalance on day one. Added{" "}
-                    <span className="font-mono">5mg</span> Copper, split my
-                    mineral timing.{" "}
-                    <span className="font-medium text-emerald-400">
-                      Energy returned within 3 weeks.
-                    </span>{" "}
-                    Four years of spreadsheets missed what Stochi caught
-                    instantly.&quot;
-                  </p>
                 </div>
               </div>
             </div>
-          </div>
           </motion.section>
         )}
 
@@ -1256,6 +1266,27 @@ export function LandingPage() {
 
               {/* Links */}
               <div className="flex items-center gap-4 text-xs text-white/40">
+                <Link
+                  href="/privacy"
+                  className="transition-colors hover:text-white/70"
+                >
+                  Privacy
+                </Link>
+                <span className="text-white/20">•</span>
+                <Link
+                  href="/terms"
+                  className="transition-colors hover:text-white/70"
+                >
+                  Terms
+                </Link>
+                <span className="text-white/20">•</span>
+                <a
+                  href="mailto:support@stochi.app?subject=Stochi%20feedback"
+                  className="transition-colors hover:text-white/70"
+                >
+                  Feedback
+                </a>
+                <span className="text-white/20">•</span>
                 <Link
                   href="/auth/sign-in"
                   className="transition-colors hover:text-white/70"

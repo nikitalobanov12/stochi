@@ -28,7 +28,15 @@ const APP_TITLE_TEMPLATE = "%s | stochi_";
 const APP_DESCRIPTION =
   "The stoichiometric engine for bio-optimization. Track supplements, detect interactions, and optimize your stack.";
 
+const metadataBase = new URL(
+  process.env.NEXT_PUBLIC_SITE_URL ??
+    (process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "http://localhost:3000"),
+);
+
 export const metadata: Metadata = {
+  metadataBase,
   applicationName: APP_NAME,
   title: {
     default: APP_DEFAULT_TITLE,
@@ -120,14 +128,23 @@ export const metadata: Metadata = {
       template: APP_TITLE_TEMPLATE,
     },
     description: APP_DESCRIPTION,
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "stochi_ | Balance your chemistry",
+      },
+    ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: {
       default: APP_DEFAULT_TITLE,
       template: APP_TITLE_TEMPLATE,
     },
     description: APP_DESCRIPTION,
+    images: ["/twitter-image"],
   },
   icons: [
     { rel: "icon", url: "/logo.svg", type: "image/svg+xml" },
