@@ -11,6 +11,7 @@ import { ProtocolSettingsDialog } from "~/components/protocol/protocol-settings-
 import { ProtocolHealthScore } from "~/components/protocol/protocol-health-score";
 import { Button } from "~/components/ui/button";
 import { analyzeProtocol } from "~/server/services/protocol-analysis";
+import { isProtocolHealthScoreEnabled } from "~/lib/feature-flags";
 
 export default async function ProtocolPage() {
   const session = await getSession();
@@ -81,7 +82,10 @@ export default async function ProtocolPage() {
   };
 
   // Analyze the protocol for issues
-  const analysis = await analyzeProtocol(protocolForAnalysis);
+  const protocolHealthScoreEnabled = isProtocolHealthScoreEnabled();
+  const analysis = protocolHealthScoreEnabled
+    ? await analyzeProtocol(protocolForAnalysis)
+    : null;
 
   return (
     <div className="space-y-6">
@@ -106,7 +110,7 @@ export default async function ProtocolPage() {
       </div>
 
       {/* Protocol Health Score */}
-      <ProtocolHealthScore analysis={analysis} />
+      {analysis ? <ProtocolHealthScore analysis={analysis} /> : null}
 
       {/* Protocol Builder */}
       <ProtocolBuilder

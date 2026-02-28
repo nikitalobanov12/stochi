@@ -22,6 +22,9 @@ export const env = createEnv({
     GEMINI_API_KEY: z.string().optional(),
     // Gemini model override (optional)
     GEMINI_MODEL: z.string().optional(),
+    // Feature flags
+    FEATURE_COACH_OVERLAY: z.enum(["true", "false"]).optional(),
+    FEATURE_PROTOCOL_HEALTH_SCORE: z.enum(["true", "false"]).optional(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -46,6 +49,8 @@ export const env = createEnv({
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
     GEMINI_MODEL: process.env.GEMINI_MODEL,
+    FEATURE_COACH_OVERLAY: process.env.FEATURE_COACH_OVERLAY,
+    FEATURE_PROTOCOL_HEALTH_SCORE: process.env.FEATURE_PROTOCOL_HEALTH_SCORE,
     NODE_ENV: process.env.NODE_ENV,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,

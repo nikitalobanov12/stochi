@@ -18,6 +18,7 @@ import { NavLink, MobileNavLink } from "~/components/nav-links";
 import { AutoLogTrigger } from "~/components/auto-log-trigger";
 import { CoachShell } from "~/components/coach/coach-shell";
 import { headers } from "next/headers";
+import { isCoachOverlayEnabled } from "~/lib/feature-flags";
 
 export default async function DashboardLayout({
   children,
@@ -31,6 +32,7 @@ export default async function DashboardLayout({
   }
 
   const user = session.user;
+  const coachOverlayEnabled = isCoachOverlayEnabled();
 
   return (
     <div className="relative flex min-h-screen flex-col">
@@ -151,7 +153,7 @@ export default async function DashboardLayout({
         </div>
       </nav>
 
-      <CoachShell />
+      {coachOverlayEnabled ? <CoachShell /> : null}
     </div>
   );
 }

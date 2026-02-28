@@ -92,6 +92,7 @@ bun run check
 - `docs/technical_design_doc.md`
 - `docs/design-language/refined-clinical-editorial.md`
 - `docs/showcase-for-employers.md`
+- `docs/core-loop-release-checklist.md`
 
 ## Author
 

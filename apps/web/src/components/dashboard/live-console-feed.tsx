@@ -8,6 +8,7 @@ import {
   type TimingWarning,
 } from "~/server/actions/interactions";
 import { type SafetyCheckResult } from "~/server/services/safety";
+import { buildSafetyActionBuckets } from "~/components/dashboard/safety-actions";
 
 export type ConsoleEntry = {
   timestamp: Date;
@@ -190,6 +191,11 @@ export function LiveConsoleFeed({
     timingWarnings,
     safetyChecks,
   );
+  const actionBuckets = buildSafetyActionBuckets({
+    interactions,
+    ratioWarnings,
+    timingWarnings,
+  });
 
   // Count warnings/errors for badge
   const errorCount = entries.filter((e) => e.status === "FAIL").length;
@@ -246,31 +252,63 @@ export function LiveConsoleFeed({
 
       {/* Console body - collapsible */}
       {!isCollapsed && (
-        <div
-          ref={containerRef}
-          className="bg-card/50 h-40 overflow-y-auto border-t border-white/10 p-2.5 font-mono text-xs leading-6"
-        >
-          {entries.map((entry, index) => (
-            <div key={index} className="flex gap-2">
-              <span className="text-muted-foreground/80 shrink-0">
-                [{formatTime(entry.timestamp)}]
-              </span>
-              <span className={`shrink-0 ${getModuleColor(entry.module)}`}>
-                {entry.module}:
-              </span>
-              <span className="text-foreground/80">{entry.message}</span>
-              <span className={`shrink-0 ${getStatusColor(entry.status)}`}>
-                [{entry.status}]
-              </span>
+        <>
+          <div className="bg-card/65 border-t border-white/10 px-3 py-2.5">
+            <div className="grid grid-cols-1 gap-2 text-xs md:grid-cols-3">
+              <div className="rounded border border-emerald-500/30 bg-emerald-500/10 p-2">
+                <p className="font-mono text-[11px] tracking-wider uppercase text-emerald-300">
+                  Do now ({actionBuckets.doNow.length})
+                </p>
+                <p className="text-foreground/80 mt-1">
+                  {actionBuckets.doNow[0] ?? "No immediate positive actions."}
+                </p>
+              </div>
+              <div className="rounded border border-red-500/30 bg-red-500/10 p-2">
+                <p className="font-mono text-[11px] tracking-wider uppercase text-red-300">
+                  Avoid now ({actionBuckets.avoidNow.length})
+                </p>
+                <p className="text-foreground/80 mt-1">
+                  {actionBuckets.avoidNow[0] ?? "No critical avoid actions."}
+                </p>
+              </div>
+              <div className="rounded border border-amber-500/30 bg-amber-500/10 p-2">
+                <p className="font-mono text-[11px] tracking-wider uppercase text-amber-300">
+                  Optimize later ({actionBuckets.optimizeLater.length})
+                </p>
+                <p className="text-foreground/80 mt-1">
+                  {actionBuckets.optimizeLater[0] ??
+                    "No follow-up optimization actions."}
+                </p>
+              </div>
             </div>
-          ))}
-
-          {/* Blinking cursor effect */}
-          <div className="mt-1 flex items-center gap-1">
-            <span className="text-muted-foreground/80">&gt;</span>
-            <span className="h-3 w-2 animate-pulse bg-emerald-500/70" />
           </div>
-        </div>
+
+          <div
+            ref={containerRef}
+            className="bg-card/50 h-40 overflow-y-auto border-t border-white/10 p-2.5 font-mono text-xs leading-6"
+          >
+            {entries.map((entry, index) => (
+              <div key={index} className="flex gap-2">
+                <span className="text-muted-foreground/80 shrink-0">
+                  [{formatTime(entry.timestamp)}]
+                </span>
+                <span className={`shrink-0 ${getModuleColor(entry.module)}`}>
+                  {entry.module}:
+                </span>
+                <span className="text-foreground/80">{entry.message}</span>
+                <span className={`shrink-0 ${getStatusColor(entry.status)}`}>
+                  [{entry.status}]
+                </span>
+              </div>
+            ))}
+
+            {/* Blinking cursor effect */}
+            <div className="mt-1 flex items-center gap-1">
+              <span className="text-muted-foreground/80">&gt;</span>
+              <span className="h-3 w-2 animate-pulse bg-emerald-500/70" />
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
