@@ -55,6 +55,11 @@ export type AnalyzeResponse = {
   synergies: InteractionWarning[];
   timingWarnings?: TimingWarning[];
   ratioWarnings?: RatioWarning[];
+  ratioEvaluationGaps?: Array<{
+    sourceSupplementId: string;
+    targetSupplementId: string;
+    reason: "missing_dosage" | "missing_supplement_data" | "normalization_failed";
+  }>;
 };
 
 /**
@@ -188,6 +193,8 @@ export type EngineTimingWarning = {
   minHoursApart: number;
   actualHoursApart: number;
   reason: string;
+  sourceLoggedAt?: string;
+  targetLoggedAt?: string;
   source: {
     id: string;
     name: string;

@@ -167,12 +167,17 @@ func (h *Handler) analyzeInteractions(ctx context.Context, userID string, req mo
 
 	// Check ratio warnings if dosages are provided
 	if len(req.Dosages) > 0 {
-		ratioWarnings, err := h.checkRatioWarnings(ctx, req.Dosages, supplements)
-		if err == nil && len(ratioWarnings) > 0 {
-			response.RatioWarnings = ratioWarnings
-			// Update status based on ratio warnings
-			status = h.calculateStatusWithRatios(status, ratioWarnings)
-			response.Status = status
+		ratioWarnings, ratioGaps, err := h.checkRatioWarnings(ctx, req.Dosages, supplements)
+		if err == nil {
+			if len(ratioWarnings) > 0 {
+				response.RatioWarnings = ratioWarnings
+				// Update status based on ratio warnings
+				status = h.calculateStatusWithRatios(status, ratioWarnings)
+				response.Status = status
+			}
+			if len(ratioGaps) > 0 {
+				response.RatioEvaluationGaps = ratioGaps
+			}
 		}
 	}
 
@@ -349,6 +354,12 @@ func (h *Handler) checkTimingForSupplement(ctx context.Context, userID string, s
 			hoursApart := float32(abs(loggedAt.Sub(l.LoggedAt).Hours()))
 			if hoursApart < rule.MinHoursApart {
 				isSource := rule.SourceSupplementID == supplementID
+				sourceLoggedAt := loggedAt
+				targetLoggedAt := l.LoggedAt
+				if !isSource {
+					sourceLoggedAt = l.LoggedAt
+					targetLoggedAt = loggedAt
+				}
 
 				warning := models.TimingWarning{
 					ID:               rule.ID,
@@ -356,6 +367,8 @@ func (h *Handler) checkTimingForSupplement(ctx context.Context, userID string, s
 					MinHoursApart:    rule.MinHoursApart,
 					ActualHoursApart: float32(int(hoursApart*10)) / 10, // Round to 1 decimal
 					Reason:           rule.Reason,
+					SourceLoggedAt:   &sourceLoggedAt,
+					TargetLoggedAt:   &targetLoggedAt,
 				}
 
 				if isSource {
@@ -472,12 +485,16 @@ func (h *Handler) checkTimingWarnings(ctx context.Context, userID string, supple
 			for _, targetTime := range targetLogs {
 				hoursApart := float32(abs(targetTime.Sub(sourceTime).Hours()))
 				if hoursApart < rule.MinHoursApart {
+					sourceLoggedAt := sourceTime
+					targetLoggedAt := targetTime
 					warnings = append(warnings, models.TimingWarning{
 						ID:               rule.ID,
 						Severity:         rule.Severity,
 						MinHoursApart:    rule.MinHoursApart,
 						ActualHoursApart: hoursApart,
 						Reason:           rule.Reason,
+						SourceLoggedAt:   &sourceLoggedAt,
+						TargetLoggedAt:   &targetLoggedAt,
 						Source: models.SupplementInfo{
 							ID:   rule.SourceSupplementID,
 							Name: rule.SourceName,
@@ -532,7 +549,7 @@ func abs(x float64) float64 {
 	return x
 }
 
-func (h *Handler) checkRatioWarnings(ctx context.Context, dosages []models.DosageInput, supplements map[string]models.Supplement) ([]models.RatioWarning, error) {
+func (h *Handler) checkRatioWarnings(ctx context.Context, dosages []models.DosageInput, supplements map[string]models.Supplement) ([]models.RatioWarning, []models.RatioEvaluationGap, error) {
 	// Build a map of supplement ID to dosage for quick lookup
 	dosageMap := make(map[string]models.DosageInput)
 	for _, d := range dosages {
@@ -561,11 +578,12 @@ func (h *Handler) checkRatioWarnings(ctx context.Context, dosages []models.Dosag
 
 	rows, err := h.pool.Query(ctx, rulesQuery, supplementIDs)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	defer rows.Close()
 
 	var warnings []models.RatioWarning
+	var gaps []models.RatioEvaluationGap
 
 	for rows.Next() {
 		var rule struct {
@@ -590,7 +608,7 @@ func (h *Handler) checkRatioWarnings(ctx context.Context, dosages []models.Dosag
 			&rule.SourceName, &rule.SourceForm,
 			&rule.TargetName, &rule.TargetForm,
 		); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		// Get dosages for source and target
@@ -598,7 +616,11 @@ func (h *Handler) checkRatioWarnings(ctx context.Context, dosages []models.Dosag
 		targetDosage, hasTarget := dosageMap[rule.TargetSupplementID]
 
 		if !hasSource || !hasTarget {
-			// Can't calculate ratio without both dosages
+			gaps = append(gaps, buildRatioEvaluationGap(
+				rule.SourceSupplementID,
+				rule.TargetSupplementID,
+				models.RatioGapMissingDosage,
+			))
 			continue
 		}
 
@@ -607,6 +629,11 @@ func (h *Handler) checkRatioWarnings(ctx context.Context, dosages []models.Dosag
 		targetSupp, hasTargetSupp := supplements[rule.TargetSupplementID]
 
 		if !hasSourceSupp || !hasTargetSupp {
+			gaps = append(gaps, buildRatioEvaluationGap(
+				rule.SourceSupplementID,
+				rule.TargetSupplementID,
+				models.RatioGapMissingSupplementData,
+			))
 			continue
 		}
 
@@ -626,15 +653,19 @@ func (h *Handler) checkRatioWarnings(ctx context.Context, dosages []models.Dosag
 
 		ratio, err := CalculateRatio(sourceInput, targetInput)
 		if err != nil {
-			// Skip this rule if we can't calculate the ratio
+			gaps = append(gaps, buildRatioEvaluationGap(
+				rule.SourceSupplementID,
+				rule.TargetSupplementID,
+				models.RatioGapNormalizationFailed,
+			))
 			continue
 		}
 
 		// Check if ratio is outside acceptable range
-		modelRule := models.RatioRule{
+		modelRule := applyRatioTolerance(models.RatioRule{
 			MinRatio: rule.MinRatio,
 			MaxRatio: rule.MaxRatio,
-		}
+		}, 0.15)
 
 		isCompliant, _ := CheckRatioCompliance(ratio, modelRule)
 		if !isCompliant {
@@ -660,7 +691,33 @@ func (h *Handler) checkRatioWarnings(ctx context.Context, dosages []models.Dosag
 		}
 	}
 
-	return warnings, rows.Err()
+	return warnings, gaps, rows.Err()
+}
+
+func applyRatioTolerance(rule models.RatioRule, toleranceFactor float32) models.RatioRule {
+	if toleranceFactor <= 0 {
+		return rule
+	}
+
+	adjusted := rule
+	if rule.MinRatio != nil {
+		adjustedMin := *rule.MinRatio * (1 - toleranceFactor)
+		adjusted.MinRatio = &adjustedMin
+	}
+	if rule.MaxRatio != nil {
+		adjustedMax := *rule.MaxRatio * (1 + toleranceFactor)
+		adjusted.MaxRatio = &adjustedMax
+	}
+
+	return adjusted
+}
+
+func buildRatioEvaluationGap(sourceID string, targetID string, reason models.RatioGapReason) models.RatioEvaluationGap {
+	return models.RatioEvaluationGap{
+		SourceSupplementID: sourceID,
+		TargetSupplementID: targetID,
+		Reason:             reason,
+	}
 }
 
 func getElementalWeight(s models.Supplement) float32 {

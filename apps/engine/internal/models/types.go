@@ -113,11 +113,12 @@ type TimingCheckResponse struct {
 
 // AnalyzeResponse is the response from the analyze endpoint
 type AnalyzeResponse struct {
-	Status         TrafficLightStatus   `json:"status"`
-	Warnings       []InteractionWarning `json:"warnings"`
-	Synergies      []InteractionWarning `json:"synergies"`
-	TimingWarnings []TimingWarning      `json:"timingWarnings,omitempty"`
-	RatioWarnings  []RatioWarning       `json:"ratioWarnings,omitempty"`
+	Status              TrafficLightStatus   `json:"status"`
+	Warnings            []InteractionWarning `json:"warnings"`
+	Synergies           []InteractionWarning `json:"synergies"`
+	TimingWarnings      []TimingWarning      `json:"timingWarnings,omitempty"`
+	RatioWarnings       []RatioWarning       `json:"ratioWarnings,omitempty"`
+	RatioEvaluationGaps []RatioEvaluationGap `json:"ratioEvaluationGaps,omitempty"`
 }
 
 // TrafficLightStatus represents the overall safety status
@@ -146,6 +147,8 @@ type TimingWarning struct {
 	MinHoursApart    float32        `json:"minHoursApart"`
 	ActualHoursApart float32        `json:"actualHoursApart"`
 	Reason           string         `json:"reason"`
+	SourceLoggedAt   *time.Time     `json:"sourceLoggedAt,omitempty"`
+	TargetLoggedAt   *time.Time     `json:"targetLoggedAt,omitempty"`
 	Source           SupplementInfo `json:"source"`
 	Target           SupplementInfo `json:"target"`
 }
@@ -161,6 +164,20 @@ type RatioWarning struct {
 	WarningMessage string         `json:"warningMessage"`
 	Source         SupplementInfo `json:"source"`
 	Target         SupplementInfo `json:"target"`
+}
+
+type RatioGapReason string
+
+const (
+	RatioGapMissingDosage         RatioGapReason = "missing_dosage"
+	RatioGapMissingSupplementData RatioGapReason = "missing_supplement_data"
+	RatioGapNormalizationFailed   RatioGapReason = "normalization_failed"
+)
+
+type RatioEvaluationGap struct {
+	SourceSupplementID string         `json:"sourceSupplementId"`
+	TargetSupplementID string         `json:"targetSupplementId"`
+	Reason             RatioGapReason `json:"reason"`
 }
 
 // SupplementInfo contains basic supplement info for responses

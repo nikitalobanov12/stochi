@@ -6,9 +6,13 @@ import { interaction, ratioRule, timingRule, log } from "~/server/db/schema";
 import { env } from "~/env";
 import { logger } from "~/lib/logger";
 import {
+  classifyEngineRequestError,
+  resolveEngineFallbackReason,
+} from "~/lib/engine/telemetry";
+import { mapEngineTimingWarnings } from "~/lib/engine/timing";
+import {
   checkTimingViaEngine,
   isEngineConfigured,
-  type EngineTimingWarning,
 } from "~/lib/engine/client";
 import { getSession } from "~/server/better-auth/server";
 import { getStartOfDayInTimezone } from "~/lib/utils";
@@ -116,6 +120,11 @@ type EngineAnalyzeResponse = {
   warnings: InteractionWarning[];
   synergies: InteractionWarning[];
   ratioWarnings?: EngineRatioWarning[];
+  ratioEvaluationGaps?: Array<{
+    sourceSupplementId: string;
+    targetSupplementId: string;
+    reason: "missing_dosage" | "missing_supplement_data" | "normalization_failed";
+  }>;
 };
 
 /**
@@ -129,10 +138,17 @@ async function checkInteractionsViaEngine(
 ): Promise<{
   interactions: InteractionWarning[];
   ratioWarnings: RatioWarning[];
+  ratioEvaluationGaps: Array<{
+    sourceSupplementId: string;
+    targetSupplementId: string;
+    reason: "missing_dosage" | "missing_supplement_data" | "normalization_failed";
+  }>;
 } | null> {
   if (!isEngineConfigured()) {
     return null;
   }
+
+  const startedAt = Date.now();
 
   try {
     const response = await fetch(`${env.ENGINE_URL}/api/analyze`, {
@@ -155,9 +171,21 @@ async function checkInteractionsViaEngine(
     });
 
     if (!response.ok) {
-      logger.error(
-        `Engine returned ${response.status}: ${await response.text()}`,
-      );
+      const responseBody = await response.text();
+      logger.error("Engine analyze request failed with non-2xx response", {
+        context: "engine.analyze",
+        data: {
+          endpoint: "/api/analyze",
+          statusCode: response.status,
+          fallbackReason: resolveEngineFallbackReason({
+            engineConfigured: true,
+            hasSession: true,
+            statusCode: response.status,
+          }),
+          durationMs: Date.now() - startedAt,
+          responseBody,
+        },
+      });
       return null;
     }
 
@@ -203,12 +231,33 @@ async function checkInteractionsViaEngine(
     // Note: Go returns null instead of [] for empty arrays
     const warnings = data.warnings ?? [];
     const synergies = data.synergies ?? [];
+    const ratioEvaluationGaps = data.ratioEvaluationGaps ?? [];
+    logger.debug("Engine analyze request succeeded", {
+      context: "engine.analyze",
+      data: {
+        endpoint: "/api/analyze",
+        durationMs: Date.now() - startedAt,
+        warningCount: warnings.length,
+        synergyCount: synergies.length,
+        ratioWarningCount: ratioWarnings.length,
+        ratioGapCount: ratioEvaluationGaps.length,
+      },
+    });
     return {
       interactions: [...warnings, ...synergies],
       ratioWarnings,
+      ratioEvaluationGaps,
     };
   } catch (err) {
-    logger.error("Engine request failed, falling back to TS", { data: err });
+    logger.error("Engine analyze request failed, falling back to TypeScript", {
+      context: "engine.analyze",
+      data: {
+        endpoint: "/api/analyze",
+        fallbackReason: classifyEngineRequestError(err),
+        durationMs: Date.now() - startedAt,
+        error: err,
+      },
+    });
     return null;
   }
 }
@@ -231,10 +280,17 @@ export async function checkInteractions(
 ): Promise<{
   interactions: InteractionWarning[];
   ratioWarnings: RatioWarning[];
+  ratioEvaluationGaps: Array<{
+    sourceSupplementId: string;
+    targetSupplementId: string;
+    reason: "missing_dosage" | "missing_supplement_data" | "normalization_failed";
+  }>;
 }> {
   if (supplementIds.length < 2) {
-    return { interactions: [], ratioWarnings: [] };
+    return { interactions: [], ratioWarnings: [], ratioEvaluationGaps: [] };
   }
+
+  const startedAt = Date.now();
 
   // Convert dosages to engine format
   const engineDosages = dosages?.map((d) => ({
@@ -245,20 +301,49 @@ export async function checkInteractions(
 
   // Try Go engine first (only if we have a valid session)
   const session = await getSession();
-  if (session?.user?.id) {
+  const sessionUserId = session?.user?.id;
+  const hasSession = !!sessionUserId;
+  const engineConfigured = isEngineConfigured();
+
+  if (sessionUserId) {
     const engineResult = await checkInteractionsViaEngine(
-      session.user.id,
+      sessionUserId,
       supplementIds,
       engineDosages,
     );
     if (engineResult !== null) {
-      logger.debug("Using Go engine for interaction check");
+      logger.debug("Using Go engine for interaction check", {
+        context: "engine.analyze",
+        data: {
+          engineUsed: true,
+          durationMs: Date.now() - startedAt,
+          supplementCount: supplementIds.length,
+        },
+      });
       return engineResult;
     }
   }
 
+  const fallbackReason = resolveEngineFallbackReason({
+    engineConfigured,
+    hasSession,
+  });
+  if (fallbackReason) {
+    logger.debug("Falling back to TypeScript interaction check", {
+      context: "engine.analyze",
+      data: {
+        engineUsed: false,
+        fallbackReason,
+        durationMs: Date.now() - startedAt,
+        supplementCount: supplementIds.length,
+      },
+    });
+  }
+
   // Fall back to TypeScript implementation
-  logger.debug("Using TypeScript fallback for interaction check");
+  logger.debug("Using TypeScript fallback for interaction check", {
+    context: "engine.analyze",
+  });
 
   // Find all interactions where both source and target are in our set
   const interactions = await db.query.interaction.findMany({
@@ -303,7 +388,11 @@ export async function checkInteractions(
     ratioWarnings = await checkRatioWarnings(dosages);
   }
 
-  return { interactions: interactionWarnings, ratioWarnings };
+  return {
+    interactions: interactionWarnings,
+    ratioWarnings,
+    ratioEvaluationGaps: [],
+  };
 }
 
 /**
@@ -396,6 +485,8 @@ export async function checkTimingWarnings(
   supplementId: string,
   loggedAt: Date,
 ): Promise<TimingWarning[]> {
+  const startedAt = Date.now();
+
   // Try Go engine first
   if (isEngineConfigured()) {
     try {
@@ -409,28 +500,38 @@ export async function checkTimingWarnings(
       // Convert engine format to our TimingWarning format
       // Note: Go returns null instead of [] for empty arrays
       const warnings = response.warnings ?? [];
-      return warnings.map((w: EngineTimingWarning) => ({
-        id: w.id,
-        severity: w.severity,
-        reason: w.reason,
-        minHoursApart: w.minHoursApart,
-        actualHoursApart: w.actualHoursApart,
-        source: {
-          id: w.source.id,
-          name: w.source.name,
-          loggedAt, // Engine doesn't return timestamps, use the provided one
+      logger.debug("Engine timing request succeeded", {
+        context: "engine.timing",
+        data: {
+          endpoint: "/api/timing",
+          engineUsed: true,
+          durationMs: Date.now() - startedAt,
+          warningCount: warnings.length,
         },
-        target: {
-          id: w.target.id,
-          name: w.target.name,
-          loggedAt, // Approximate - the actual conflict log time isn't returned
-        },
-      }));
+      });
+      return mapEngineTimingWarnings(loggedAt, warnings);
     } catch (err) {
-      logger.error("Engine timing check failed, falling back to TS", {
-        data: err,
+      logger.error("Engine timing check failed, falling back to TypeScript", {
+        context: "engine.timing",
+        data: {
+          endpoint: "/api/timing",
+          engineUsed: false,
+          fallbackReason: classifyEngineRequestError(err),
+          durationMs: Date.now() - startedAt,
+          error: err,
+        },
       });
     }
+  } else {
+    logger.debug("Engine timing check disabled, using TypeScript fallback", {
+      context: "engine.timing",
+      data: {
+        endpoint: "/api/timing",
+        engineUsed: false,
+        fallbackReason: "not_configured",
+        durationMs: Date.now() - startedAt,
+      },
+    });
   }
 
   // Fall back to TypeScript implementation
