@@ -18,6 +18,7 @@ import { InteractionHeadsUp } from "~/components/dashboard/interaction-heads-up"
 import { formatTime, formatRelativeDate } from "~/lib/utils";
 import type {
   InteractionWarning,
+  RatioEvaluationGap,
   RatioWarning,
   TimingWarning,
 } from "~/server/actions/interactions";
@@ -43,6 +44,7 @@ type LogPageClientProps = {
   interactions: InteractionWarning[];
   ratioWarnings: RatioWarning[];
   timingWarnings: TimingWarning[];
+  ratioEvaluationGaps: RatioEvaluationGap[];
   initialCommand: string | null;
 };
 
@@ -54,6 +56,7 @@ export function LogPageClient({
   interactions,
   ratioWarnings,
   timingWarnings,
+  ratioEvaluationGaps,
   initialCommand,
 }: LogPageClientProps) {
   return (
@@ -65,6 +68,7 @@ export function LogPageClient({
         interactions={interactions}
         ratioWarnings={ratioWarnings}
         timingWarnings={timingWarnings}
+        ratioEvaluationGaps={ratioEvaluationGaps}
         initialCommand={initialCommand}
       />
     </LogProvider>
@@ -78,6 +82,7 @@ function LogPageContent({
   interactions,
   ratioWarnings,
   timingWarnings,
+  ratioEvaluationGaps,
   initialCommand,
 }: Omit<LogPageClientProps, "todayLogs">) {
   const router = useRouter();
@@ -138,6 +143,7 @@ function LogPageContent({
           interactions={interactions}
           ratioWarnings={ratioWarnings}
           timingWarnings={timingWarnings}
+          ratioEvaluationGaps={ratioEvaluationGaps}
         />
       )}
 

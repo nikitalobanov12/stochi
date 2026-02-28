@@ -81,6 +81,12 @@ export type TimingWarning = {
   };
 };
 
+export type RatioEvaluationGap = {
+  sourceSupplementId: string;
+  targetSupplementId: string;
+  reason: "missing_dosage" | "missing_supplement_data" | "normalization_failed";
+};
+
 // ============================================================================
 // Go Engine Integration (Primary)
 // The Go engine at ENGINE_URL handles interaction and ratio checking with
@@ -120,11 +126,7 @@ type EngineAnalyzeResponse = {
   warnings: InteractionWarning[];
   synergies: InteractionWarning[];
   ratioWarnings?: EngineRatioWarning[];
-  ratioEvaluationGaps?: Array<{
-    sourceSupplementId: string;
-    targetSupplementId: string;
-    reason: "missing_dosage" | "missing_supplement_data" | "normalization_failed";
-  }>;
+  ratioEvaluationGaps?: RatioEvaluationGap[];
 };
 
 /**
@@ -138,11 +140,7 @@ async function checkInteractionsViaEngine(
 ): Promise<{
   interactions: InteractionWarning[];
   ratioWarnings: RatioWarning[];
-  ratioEvaluationGaps: Array<{
-    sourceSupplementId: string;
-    targetSupplementId: string;
-    reason: "missing_dosage" | "missing_supplement_data" | "normalization_failed";
-  }>;
+  ratioEvaluationGaps: RatioEvaluationGap[];
 } | null> {
   if (!isEngineConfigured()) {
     return null;
@@ -280,11 +278,7 @@ export async function checkInteractions(
 ): Promise<{
   interactions: InteractionWarning[];
   ratioWarnings: RatioWarning[];
-  ratioEvaluationGaps: Array<{
-    sourceSupplementId: string;
-    targetSupplementId: string;
-    reason: "missing_dosage" | "missing_supplement_data" | "normalization_failed";
-  }>;
+  ratioEvaluationGaps: RatioEvaluationGap[];
 }> {
   if (supplementIds.length < 2) {
     return { interactions: [], ratioWarnings: [], ratioEvaluationGaps: [] };

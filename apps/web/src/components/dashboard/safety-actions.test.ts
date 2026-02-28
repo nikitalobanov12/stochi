@@ -54,9 +54,20 @@ describe("buildSafetyActionBuckets", () => {
           target: { id: "5htp", name: "5-HTP", loggedAt: new Date() },
         },
       ],
+      ratioEvaluationGaps: [
+        {
+          sourceSupplementId: "zn",
+          targetSupplementId: "cu",
+          reason: "missing_dosage",
+        },
+      ],
     });
 
     assert.equal(buckets.optimizeLater.length >= 2, true);
+    assert.equal(
+      buckets.optimizeLater.some((item) => item.toLowerCase().includes("missing dosage")),
+      true,
+    );
   });
 
   it("creates Do now actions from synergies", () => {

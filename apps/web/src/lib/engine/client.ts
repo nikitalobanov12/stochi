@@ -1,6 +1,7 @@
 import { env } from "~/env";
 import {
   type InteractionWarning,
+  type RatioEvaluationGap,
   type TimingWarning,
 } from "~/server/actions/interactions";
 
@@ -55,11 +56,7 @@ export type AnalyzeResponse = {
   synergies: InteractionWarning[];
   timingWarnings?: TimingWarning[];
   ratioWarnings?: RatioWarning[];
-  ratioEvaluationGaps?: Array<{
-    sourceSupplementId: string;
-    targetSupplementId: string;
-    reason: "missing_dosage" | "missing_supplement_data" | "normalization_failed";
-  }>;
+  ratioEvaluationGaps?: RatioEvaluationGap[];
 };
 
 /**

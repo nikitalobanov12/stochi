@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronUp, Terminal } from "lucide-react";
 import {
   type InteractionWarning,
+  type RatioEvaluationGap,
   type RatioWarning,
   type TimingWarning,
 } from "~/server/actions/interactions";
@@ -26,6 +27,7 @@ type LiveConsoleFeedProps = {
   interactions: InteractionWarning[];
   ratioWarnings: RatioWarning[];
   timingWarnings: TimingWarning[];
+  ratioEvaluationGaps?: RatioEvaluationGap[];
   safetyChecks?: SafetyCheckResult[];
   /** Initial collapsed state (default: true) */
   defaultCollapsed?: boolean;
@@ -38,6 +40,7 @@ function generateConsoleEntries(
   interactions: InteractionWarning[],
   ratioWarnings: RatioWarning[],
   timingWarnings: TimingWarning[],
+  ratioEvaluationGaps: RatioEvaluationGap[],
   safetyChecks: SafetyCheckResult[] = [],
 ): ConsoleEntry[] {
   const entries: ConsoleEntry[] = [];
@@ -85,6 +88,16 @@ function generateConsoleEntries(
       module: "RATIO_ENGINE",
       message: `${ratioStr} (${warning.currentRatio}:1) ${optimalStr}`,
       status: warning.severity === "critical" ? "FAIL" : "WARN",
+    });
+  }
+
+  // Ratio evaluation gaps (non-fatal)
+  for (const gap of ratioEvaluationGaps) {
+    entries.push({
+      timestamp: now,
+      module: "RATIO_ENGINE",
+      message: `Ratio pair skipped (${gap.reason}) for ${gap.sourceSupplementId}:${gap.targetSupplementId}`,
+      status: "INFO",
     });
   }
 
@@ -179,6 +192,7 @@ export function LiveConsoleFeed({
   interactions,
   ratioWarnings,
   timingWarnings,
+  ratioEvaluationGaps = [],
   safetyChecks = [],
   defaultCollapsed = true,
 }: LiveConsoleFeedProps) {
@@ -189,12 +203,14 @@ export function LiveConsoleFeed({
     interactions,
     ratioWarnings,
     timingWarnings,
+    ratioEvaluationGaps,
     safetyChecks,
   );
   const actionBuckets = buildSafetyActionBuckets({
     interactions,
     ratioWarnings,
     timingWarnings,
+    ratioEvaluationGaps,
   });
 
   // Count warnings/errors for badge

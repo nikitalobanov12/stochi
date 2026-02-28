@@ -1,8 +1,10 @@
 import {
   type InteractionWarning,
+  type RatioEvaluationGap,
   type RatioWarning,
   type TimingWarning,
 } from "~/server/actions/interactions";
+import { formatRatioGapReason } from "~/lib/engine/ratio-gaps";
 
 export type SafetyActionBuckets = {
   doNow: string[];
@@ -14,6 +16,7 @@ type BuildSafetyActionBucketsInput = {
   interactions: InteractionWarning[];
   ratioWarnings: RatioWarning[];
   timingWarnings: TimingWarning[];
+  ratioEvaluationGaps?: RatioEvaluationGap[];
 };
 
 function pushUnique(list: string[], value: string): void {
@@ -73,6 +76,13 @@ export function buildSafetyActionBuckets(
     }
 
     pushUnique(buckets.optimizeLater, action);
+  }
+
+  for (const gap of input.ratioEvaluationGaps ?? []) {
+    pushUnique(
+      buckets.optimizeLater,
+      `Add missing ratio inputs (${formatRatioGapReason(gap.reason)}).`,
+    );
   }
 
   return buckets;

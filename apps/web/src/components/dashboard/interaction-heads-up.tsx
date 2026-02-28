@@ -8,6 +8,7 @@ import {
   Zap,
   Clock,
   Scale,
+  Info,
 } from "lucide-react";
 import { cn } from "~/lib/utils";
 import {
@@ -24,7 +25,9 @@ import type {
   InteractionWarning,
   TimingWarning,
   RatioWarning,
+  RatioEvaluationGap,
 } from "~/server/actions/interactions";
+import { buildRatioGapMessage } from "~/lib/engine/ratio-gaps";
 
 // ============================================================================
 // Types
@@ -34,6 +37,7 @@ type InteractionHeadsUpProps = {
   interactions: InteractionWarning[];
   ratioWarnings: RatioWarning[];
   timingWarnings: TimingWarning[];
+  ratioEvaluationGaps?: RatioEvaluationGap[];
 };
 
 // ============================================================================
@@ -51,6 +55,7 @@ export function InteractionHeadsUp({
   interactions,
   ratioWarnings,
   timingWarnings,
+  ratioEvaluationGaps = [],
 }: InteractionHeadsUpProps) {
   // Deduplicate: if a timing warning exists for a pair, filter out the general interaction
   // since timing warnings are more specific and actionable
@@ -80,7 +85,8 @@ export function InteractionHeadsUp({
     ratioWarnings.filter((w) => w.severity === "critical").length +
     timingWarnings.filter((w) => w.severity === "critical").length;
 
-  const hasAnyContent = totalWarnings > 0 || synergies.length > 0;
+  const hasAnyContent =
+    totalWarnings > 0 || synergies.length > 0 || ratioEvaluationGaps.length > 0;
 
   // Auto-expand if there are warnings
   const [isOpen, setIsOpen] = useState(totalWarnings > 0);
@@ -175,6 +181,13 @@ export function InteractionHeadsUp({
                       {ratioWarnings.length}
                     </span>
                   )}
+
+                  {ratioEvaluationGaps.length > 0 && (
+                    <span className="flex items-center gap-1 rounded bg-sky-500/10 px-1.5 py-0.5 text-[10px] font-medium text-sky-400">
+                      <Info className="h-2.5 w-2.5" />
+                      {ratioEvaluationGaps.length}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -211,6 +224,22 @@ export function InteractionHeadsUp({
                   }
                 />
               ))}
+
+              {ratioEvaluationGaps.length > 0 && (
+                <div className="space-y-1 rounded-md border border-sky-500/20 bg-sky-500/5 p-2">
+                  <p className="font-mono text-[10px] tracking-wider text-sky-300 uppercase">
+                    Ratio Checks Needing More Data
+                  </p>
+                  {ratioEvaluationGaps.map((gap, index) => (
+                    <p
+                      key={`${gap.sourceSupplementId}-${gap.targetSupplementId}-${index}`}
+                      className="text-muted-foreground font-mono text-[11px]"
+                    >
+                      {buildRatioGapMessage(gap)}
+                    </p>
+                  ))}
+                </div>
+              )}
 
               {/* Interaction Warnings */}
               {warnings.map((warning) => (

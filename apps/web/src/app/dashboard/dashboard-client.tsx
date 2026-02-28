@@ -35,6 +35,7 @@ import { LiveConsoleFeed } from "~/components/dashboard/live-console-feed";
 import type { StackCompletionStatus } from "~/server/services/analytics";
 import type {
   InteractionWarning,
+  RatioEvaluationGap,
   RatioWarning,
   TimingWarning,
 } from "~/server/actions/interactions";
@@ -78,6 +79,7 @@ type DashboardClientProps = {
   // Interactions
   interactions: InteractionWarning[];
   ratioWarnings: RatioWarning[];
+  ratioEvaluationGaps: RatioEvaluationGap[];
   timingWarnings: TimingWarning[];
 };
 
@@ -95,6 +97,7 @@ export function DashboardClient({
   safetyHeadroom,
   interactions,
   ratioWarnings,
+  ratioEvaluationGaps,
   timingWarnings,
 }: DashboardClientProps) {
   return (
@@ -112,6 +115,7 @@ export function DashboardClient({
         safetyHeadroom={safetyHeadroom}
         interactions={interactions}
         ratioWarnings={ratioWarnings}
+        ratioEvaluationGaps={ratioEvaluationGaps}
         timingWarnings={timingWarnings}
         initialLogCount={todayLogs.length}
       />
@@ -133,6 +137,7 @@ function DashboardContent({
   safetyHeadroom,
   interactions,
   ratioWarnings,
+  ratioEvaluationGaps,
   timingWarnings,
   initialLogCount,
 }: Omit<DashboardClientProps, "todayLogs"> & { initialLogCount: number }) {
@@ -197,6 +202,7 @@ function DashboardContent({
                 <LiveConsoleFeed
                   interactions={interactions}
                   ratioWarnings={ratioWarnings}
+                  ratioEvaluationGaps={ratioEvaluationGaps}
                   timingWarnings={timingWarnings}
                 />
               </div>

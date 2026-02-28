@@ -121,7 +121,7 @@ export default async function DashboardPage() {
   }
   const dosages = Array.from(dosageMap.values());
 
-  const { interactions, ratioWarnings } = await checkInteractions(
+  const { interactions, ratioWarnings, ratioEvaluationGaps } = await checkInteractions(
     todaySupplementIds,
     dosages,
   );
@@ -209,6 +209,7 @@ export default async function DashboardPage() {
         safetyHeadroom={safetyHeadroom}
         interactions={interactions}
         ratioWarnings={ratioWarnings}
+        ratioEvaluationGaps={ratioEvaluationGaps}
         timingWarnings={timingWarnings}
       />
     </>

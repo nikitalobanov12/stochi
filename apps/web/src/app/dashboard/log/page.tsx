@@ -82,7 +82,7 @@ export default async function LogPage({ searchParams }: LogPageProps) {
   const todaySupplementIds = [
     ...new Set(todaysLogs.map((l) => l.supplement.id)),
   ];
-  const { interactions, ratioWarnings } = await checkInteractions(
+  const { interactions, ratioWarnings, ratioEvaluationGaps } = await checkInteractions(
     todaySupplementIds,
     dosages,
   );
@@ -170,6 +170,7 @@ export default async function LogPage({ searchParams }: LogPageProps) {
       interactions={interactions}
       ratioWarnings={ratioWarnings}
       timingWarnings={timingWarnings}
+      ratioEvaluationGaps={ratioEvaluationGaps}
       initialCommand={initialCommand}
     />
   );
