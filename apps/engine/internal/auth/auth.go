@@ -2,14 +2,17 @@ package auth
 
 import (
 	"context"
+	"crypto/subtle"
 	"errors"
 	"net/http"
+	"strings"
 )
 
 var (
-	ErrNoAuthHeader = errors.New("no authorization header")
-	ErrInvalidKey   = errors.New("invalid internal key")
-	ErrNoUserID     = errors.New("no user ID provided")
+	ErrNoAuthHeader  = errors.New("no authorization header")
+	ErrInvalidKey    = errors.New("invalid internal key")
+	ErrNoUserID      = errors.New("no user ID provided")
+	ErrInvalidUserID = errors.New("invalid user ID")
 )
 
 // Middleware provides authentication middleware for HTTP handlers
@@ -28,22 +31,47 @@ func NewMiddleware(internalKey string) *Middleware {
 // - X-User-ID header with the authenticated user's ID
 func (m *Middleware) ValidateRequest(r *http.Request) (string, error) {
 	// Validate internal key
-	internalKey := r.Header.Get("X-Internal-Key")
+	internalKey := strings.TrimSpace(r.Header.Get("X-Internal-Key"))
 	if internalKey == "" {
 		return "", ErrNoAuthHeader
 	}
 
-	if m.internalKey == "" || internalKey != m.internalKey {
+	if m.internalKey == "" || !secureEqual(internalKey, m.internalKey) {
 		return "", ErrInvalidKey
 	}
 
 	// Get user ID from header
-	userID := r.Header.Get("X-User-ID")
+	userID := strings.TrimSpace(r.Header.Get("X-User-ID"))
 	if userID == "" {
 		return "", ErrNoUserID
 	}
 
+	if !isValidUserID(userID) {
+		return "", ErrInvalidUserID
+	}
+
 	return userID, nil
+}
+
+func secureEqual(left string, right string) bool {
+	if len(left) != len(right) {
+		return false
+	}
+	return subtle.ConstantTimeCompare([]byte(left), []byte(right)) == 1
+}
+
+func isValidUserID(userID string) bool {
+	if len(userID) > 128 {
+		return false
+	}
+
+	for _, char := range userID {
+		if char < 32 || char == 127 {
+			return false
+		}
+	}
+
+	return true
 }
 
 // Protect wraps an HTTP handler with authentication
