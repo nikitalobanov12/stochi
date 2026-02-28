@@ -8,3 +8,15 @@ export function resolveBooleanFlag(
 
   return value === "true";
 }
+
+export function resolveBooleanFlagWithKillSwitch(
+  value: "true" | "false" | undefined,
+  defaultValue: boolean,
+  killSwitchEnabled: boolean,
+): boolean {
+  if (killSwitchEnabled) {
+    return false;
+  }
+
+  return resolveBooleanFlag(value, defaultValue);
+}

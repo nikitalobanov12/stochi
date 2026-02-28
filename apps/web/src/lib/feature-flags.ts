@@ -1,8 +1,17 @@
 import { env } from "~/env";
-import { resolveBooleanFlag } from "~/lib/feature-flags-utils";
+import {
+  resolveBooleanFlag,
+  resolveBooleanFlagWithKillSwitch,
+} from "~/lib/feature-flags-utils";
+
+const COACH_OVERLAY_HARD_DISABLED = true;
 
 export function isCoachOverlayEnabled(): boolean {
-  return resolveBooleanFlag(env.FEATURE_COACH_OVERLAY, false);
+  return resolveBooleanFlagWithKillSwitch(
+    env.FEATURE_COACH_OVERLAY,
+    false,
+    COACH_OVERLAY_HARD_DISABLED,
+  );
 }
 
 export function isProtocolHealthScoreEnabled(): boolean {
