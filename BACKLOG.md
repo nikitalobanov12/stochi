@@ -2,6 +2,14 @@
 
 ## In Progress
 
+- [ ] **Core loop reliability sprint (engine-first)**
+  - Engine telemetry for engine-vs-fallback path and fallback reasons
+  - Timing response quality improvements (real conflict timestamps)
+  - Timing query performance optimization via batched rule/log evaluation
+  - Engine CORS allowlist + hardened internal auth validation
+  - Scope freeze flags for non-core surfaces (coach overlay, protocol health score)
+  - Action-first safety buckets in System Console (Do now / Avoid now / Optimize later)
+
 - [ ] **Refined Clinical Editorial redesign (dark-first)**
   - Semantic token foundation in `globals.css` (surface/text/accent/motion/elevation)
   - Editorial typography system (Manrope + Cormorant Garamond + JetBrains Mono)
@@ -29,6 +37,11 @@
   - Add notification preferences to Settings (enable/disable, quiet hours)
 
 ## Completed
+
+- [x] **Core loop release checklist + runbook**
+  - Added release gate doc: `docs/core-loop-release-checklist.md`
+  - Includes verification commands, deploy readiness checks, smoke tests, degraded mode steps
+  - Linked in `README.md`
 
 - [x] **Smart suggestion quality filtering**
   - Schema: `synergyStrength` on interaction, `suggestionProfile` JSONB on supplement
