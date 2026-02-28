@@ -21,6 +21,7 @@ import { LandingBioScore } from "~/components/landing/landing-bio-score";
 import { MechanisticFeed } from "~/components/landing/mechanistic-feed";
 import { ExpertStacks } from "~/components/landing/expert-stacks";
 import { RiskCardCompact } from "~/components/landing/risk-card-compact";
+import { ThemeToggle } from "~/components/theme-toggle";
 
 // ============================================================================
 // Animation Variants
@@ -156,7 +157,7 @@ export function LandingPage() {
   const showExtendedContent = true;
 
   return (
-    <main className="bg-background text-foreground pt-safe pb-safe relative min-h-screen font-sans">
+    <main className="landing-theme bg-background text-foreground pt-safe pb-safe relative min-h-screen font-sans">
       {/* Grid overlay for background texture */}
       <div className="lab-grid" aria-hidden="true" />
 
@@ -189,6 +190,7 @@ export function LandingPage() {
               </span>
             </Link>
             <div className="flex items-center gap-2">
+              <ThemeToggle className="text-muted-foreground hover:text-foreground h-8 w-8" />
               <Button
                 asChild
                 variant="ghost"

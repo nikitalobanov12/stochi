@@ -10,6 +10,7 @@ import { getDismissedSuggestionsWithContext } from "~/server/actions/dismissed-s
 import { ExportButton } from "~/components/settings/export-button";
 import { GoalsCard } from "~/components/settings/goals-card";
 import { SuggestionsCard } from "~/components/settings/suggestions-card";
+import { ThemeModeCard } from "~/components/settings/theme-mode-card";
 import { DeleteAccountCard } from "~/components/settings/delete-account-card";
 import { SignOutButton } from "~/components/settings/sign-out-button";
 
@@ -140,6 +141,14 @@ export default async function SettingsPage() {
             preferences.showConditionalSupplements
           }
         />
+      </section>
+
+      {/* Appearance Section */}
+      <section className="space-y-3">
+        <p className="text-muted-foreground text-[10px] tracking-wider uppercase">
+          Appearance
+        </p>
+        <ThemeModeCard />
       </section>
 
       {/* Data Stats */}

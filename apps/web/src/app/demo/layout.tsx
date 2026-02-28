@@ -61,7 +61,7 @@ export default function DemoLayout({
 }) {
   return (
     <DemoProvider>
-      <div className="relative flex min-h-screen flex-col">
+      <div className="demo-theme relative flex min-h-screen flex-col">
         {/* Micro-grain texture for anti-banding */}
         <div className="hud-noise" />
 

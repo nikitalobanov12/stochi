@@ -954,6 +954,85 @@
 }
 
 /* ============================================================================
+ * Light-mode compatibility layer for landing + demo surfaces
+ * ============================================================================ */
+
+.light .landing-theme,
+.light .demo-theme {
+  color: var(--text-primary);
+}
+
+.light
+  .landing-theme
+  :is(
+    [class*="text-white/95"],
+    [class*="text-white/90"],
+    [class*="text-white/80"],
+    [class*="text-white/70"]
+  ),
+.light
+  .demo-theme
+  :is(
+    [class*="text-white/95"],
+    [class*="text-white/90"],
+    [class*="text-white/80"],
+    [class*="text-white/70"]
+  ) {
+  color: var(--text-primary) !important;
+}
+
+.light
+  .landing-theme
+  :is(
+    [class*="text-white/60"],
+    [class*="text-white/50"],
+    [class*="text-white/40"]
+  ),
+.light
+  .demo-theme
+  :is(
+    [class*="text-white/60"],
+    [class*="text-white/50"],
+    [class*="text-white/40"]
+  ) {
+  color: var(--text-secondary) !important;
+}
+
+.light .landing-theme :is([class*="text-white/30"], [class*="text-white/20"]),
+.light .demo-theme :is([class*="text-white/30"], [class*="text-white/20"]) {
+  color: var(--text-tertiary) !important;
+}
+
+.light .landing-theme [class~="text-white"]:not([class*="bg-gradient-to-r"]),
+.light .demo-theme [class~="text-white"]:not([class*="bg-gradient-to-r"]) {
+  color: var(--text-primary) !important;
+}
+
+.light .landing-theme [class~="bg-[#0A0A0A]"],
+.light .demo-theme [class~="bg-[#0A0A0A]"] {
+  background-color: var(--surface-1) !important;
+}
+
+.light .landing-theme :is([class*="bg-white/["], [class*="bg-black/"]),
+.light .demo-theme :is([class*="bg-white/["], [class*="bg-black/"]) {
+  background-color: color-mix(in oklab, var(--surface-2) 70%, white) !important;
+}
+
+.light .landing-theme [class*="border-white/"],
+.light .demo-theme [class*="border-white/"] {
+  border-color: var(--surface-3) !important;
+}
+
+.light
+  .landing-theme
+  [class*="divide-white/"]
+  > :not([hidden])
+  ~ :not([hidden]),
+.light .demo-theme [class*="divide-white/"] > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--surface-3) !important;
+}
+
+/* ============================================================================
  * iOS Safe Area Utilities
  * ============================================================================
  * For PWA standalone mode on notched iPhones (Dynamic Island, home indicator).

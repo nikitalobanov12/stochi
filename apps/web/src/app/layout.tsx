@@ -153,7 +153,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#000000",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#F7FAFC" },
+    { media: "(prefers-color-scheme: dark)", color: "#0B0E10" },
+  ],
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -167,7 +170,8 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${jetbrainsMono.variable} ${manrope.variable} ${cormorantGaramond.variable} dark`}
+      suppressHydrationWarning
+      className={`${jetbrainsMono.variable} ${manrope.variable} ${cormorantGaramond.variable}`}
     >
       <body className="bg-background min-h-screen font-sans antialiased">
         {/* Global dot grid background */}
