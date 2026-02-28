@@ -33,12 +33,15 @@ type Supplement = {
   defaultUnit: "mg" | "mcg" | "g" | "IU" | "ml" | null;
 };
 
+type TimeSlot = "morning" | "afternoon" | "evening" | "bedtime";
+
 export type SelectedSupplement = {
   id: string;
   name: string;
   form: string | null;
   dosage: number;
   unit: "mg" | "mcg" | "g" | "IU" | "ml";
+  timeSlot: TimeSlot;
 };
 
 type BuildStackStepProps = {
@@ -68,6 +71,7 @@ export function BuildStackStep({
   const [pendingUnit, setPendingUnit] = useState<
     "mg" | "mcg" | "g" | "IU" | "ml"
   >("mg");
+  const [pendingTimeSlot, setPendingTimeSlot] = useState<TimeSlot>("morning");
   const [pendingSupplement, setPendingSupplement] = useState<Supplement | null>(
     null,
   );
@@ -163,6 +167,7 @@ export function BuildStackStep({
       form: pendingSupplement.form,
       dosage: parseFloat(pendingDosage),
       unit: pendingUnit,
+      timeSlot: pendingTimeSlot,
     };
 
     onChangeSupplements([...selected, newSupplement]);
@@ -181,6 +186,7 @@ export function BuildStackStep({
       form: pendingSupplement.form,
       dosage,
       unit,
+      timeSlot: pendingTimeSlot,
     };
 
     onChangeSupplements([...selected, newSupplement]);
@@ -198,6 +204,7 @@ export function BuildStackStep({
       form: supplement.form,
       dosage: supplement.recommended.dosage,
       unit: supplement.recommended.unit as "mg" | "mcg" | "g" | "IU" | "ml",
+      timeSlot: "morning",
     };
     onChangeSupplements([...selected, newSupplement]);
   }
@@ -206,11 +213,20 @@ export function BuildStackStep({
     onChangeSupplements(selected.filter((s) => s.id !== id));
   }
 
+  function handleUpdateTimeSlot(id: string, timeSlot: TimeSlot) {
+    onChangeSupplements(
+      selected.map((supp) =>
+        supp.id === id ? { ...supp, timeSlot } : supp,
+      ),
+    );
+  }
+
   function resetForm() {
     setPendingSupplement(null);
     setSearchQuery("");
     setPendingDosage("");
     setPendingUnit("mg");
+    setPendingTimeSlot("morning");
   }
 
   function handleImport() {
@@ -226,6 +242,7 @@ export function BuildStackStep({
         form: supplements.find((s) => s.id === item.supplementId)?.form ?? null,
         dosage: item.resolvedDosage,
         unit: item.resolvedUnit,
+        timeSlot: "morning",
       }));
 
       // Add to existing selection (avoiding duplicates)
@@ -242,10 +259,10 @@ export function BuildStackStep({
     <div className="flex h-full flex-col">
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pb-4">
         <div className="space-y-1">
-          <h2 className="font-mono text-xl font-bold">Build your stack</h2>
+          <h2 className="font-mono text-xl font-bold">Build your daily protocol</h2>
           <p className="text-muted-foreground text-sm">
-            Add supplements you take together. You&apos;ll be able to log them
-            all with one tap.
+            Build your full day protocol and assign when each supplement should
+            be taken.
           </p>
         </div>
 
@@ -255,7 +272,7 @@ export function BuildStackStep({
             htmlFor="stack-name"
             className="text-muted-foreground text-xs font-medium"
           >
-            Stack name
+            Protocol group name
           </label>
           <Input
             id="stack-name"
@@ -412,6 +429,20 @@ export function BuildStackStep({
                     <SelectItem value="ml">ml</SelectItem>
                   </SelectContent>
                 </Select>
+                <Select
+                  value={pendingTimeSlot}
+                  onValueChange={(v) => setPendingTimeSlot(v as TimeSlot)}
+                >
+                  <SelectTrigger className="w-28">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="morning">Morning</SelectItem>
+                    <SelectItem value="afternoon">Afternoon</SelectItem>
+                    <SelectItem value="evening">Evening</SelectItem>
+                    <SelectItem value="bedtime">Bedtime</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Button
                   size="sm"
                   onClick={handleAddSupplement}
@@ -458,7 +489,7 @@ export function BuildStackStep({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground text-xs">
-              Supplements in stack
+              Supplements in protocol
             </span>
             {selected.length > 0 && (
               <Badge variant="secondary" className="font-mono text-xs">
@@ -483,14 +514,35 @@ export function BuildStackStep({
                       {supp.dosage}
                       {supp.unit}
                     </span>
+                    <span className="text-muted-foreground ml-2 font-mono text-xs uppercase">
+                      {supp.timeSlot}
+                    </span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleRemove(supp.id)}
-                    className="text-muted-foreground hover:text-destructive"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <Select
+                      value={supp.timeSlot}
+                      onValueChange={(v) =>
+                        handleUpdateTimeSlot(supp.id, v as TimeSlot)
+                      }
+                    >
+                      <SelectTrigger className="h-8 w-28">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="morning">Morning</SelectItem>
+                        <SelectItem value="afternoon">Afternoon</SelectItem>
+                        <SelectItem value="evening">Evening</SelectItem>
+                        <SelectItem value="bedtime">Bedtime</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <button
+                      type="button"
+                      onClick={() => handleRemove(supp.id)}
+                      className="text-muted-foreground hover:text-destructive"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

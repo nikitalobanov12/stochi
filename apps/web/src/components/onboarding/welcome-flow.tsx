@@ -67,7 +67,7 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
   const [selectedSupplements, setSelectedSupplements] = useState<
     SelectedSupplement[]
   >([]);
-  const [stackName, setStackName] = useState("Morning Stack");
+  const [stackName, setStackName] = useState("Daily Protocol");
 
   // Defer rendering until after hydration to avoid Radix ID mismatches
   const isClient = useIsClient();
@@ -119,6 +119,7 @@ export function WelcomeFlow({ open, supplements }: WelcomeFlowProps) {
         supplementId: s.id,
         dosage: s.dosage,
         unit: s.unit,
+        timeSlot: s.timeSlot,
       })),
       goals: selectedGoals.length > 0 ? selectedGoals : undefined,
       experienceLevel: experienceLevel ?? undefined,

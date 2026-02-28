@@ -28,7 +28,7 @@ type DashboardCommandBarProps = {
 type PendingLog = LogOptions & { supplementName: string };
 
 const PROMPTS = [
-  "Log Stack...",
+  "Log Protocol...",
   "Check Interactions...",
   "Analyze Zinc...",
   "Track D3...",

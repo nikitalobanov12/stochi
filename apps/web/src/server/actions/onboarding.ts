@@ -270,6 +270,7 @@ export async function createStackFromOnboarding(data: {
     supplementId: string;
     dosage: number;
     unit: "mg" | "mcg" | "g" | "IU" | "ml";
+    timeSlot?: "morning" | "afternoon" | "evening" | "bedtime";
   }>;
   goals?: GoalKey[];
   experienceLevel?: "beginner" | "intermediate" | "advanced";
@@ -352,14 +353,14 @@ export async function createStackFromOnboarding(data: {
     }
   }
 
-  // Add supplements to protocol as morning items (grouped by stack name)
+  // Add supplements to protocol using onboarding timing slots
   if (userProtocol) {
     const protocolItems = data.supplements.map((s, index) => ({
       protocolId: userProtocol.id,
       supplementId: s.supplementId,
       dosage: s.dosage,
       unit: s.unit,
-      timeSlot: "morning" as const,
+      timeSlot: s.timeSlot ?? "morning",
       frequency: "daily" as const,
       groupName: data.stackName.trim(),
       sortOrder: index,

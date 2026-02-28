@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronRight, Clock, Layers, Loader2 } from "lucide-react";
+import { ChevronRight, Clock, Loader2 } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
 import { TodayLogList } from "~/components/log/today-log-list";
@@ -14,7 +14,7 @@ import {
 
 // Dashboard Components
 import { SystemStatus } from "~/components/dashboard/system-status";
-import { MissionControl } from "~/components/dashboard/protocol-card";
+import { ProtocolCard as DailyProtocolCard } from "~/components/protocol/protocol-card";
 import { DashboardCommandBar } from "./dashboard-command-bar";
 
 // Biological State Engine Components
@@ -32,7 +32,6 @@ import {
 } from "~/components/dashboard/micro-kpi-row";
 import { LiveConsoleFeed } from "~/components/dashboard/live-console-feed";
 
-import type { StackCompletionStatus } from "~/server/services/analytics";
 import type {
   InteractionWarning,
   RatioEvaluationGap,
@@ -58,18 +57,36 @@ type DashboardClientProps = {
   // Data
   todayLogs: LogEntry[];
   allSupplements: Supplement[];
-  stackCompletion: StackCompletionStatus[];
-  userStacksWithItems: Array<{
+  protocol: {
     id: string;
     name: string;
-    items: StackItem[];
-  }>;
+    autoLogEnabled: boolean;
+    morningTime: string;
+    afternoonTime: string;
+    eveningTime: string;
+    bedtimeTime: string;
+    items: Array<{
+      id: string;
+      supplementId: string;
+      dosage: number;
+      unit: "mg" | "mcg" | "g" | "IU" | "ml";
+      timeSlot: "morning" | "afternoon" | "evening" | "bedtime";
+      frequency: "daily" | "specific_days" | "as_needed";
+      daysOfWeek: string[] | null;
+      groupName: string | null;
+      sortOrder: number;
+      supplement: {
+        id: string;
+        name: string;
+      };
+    }>;
+  } | null;
 
   // UI State
   streak: number;
   lastLogAt: Date | null;
   needsOnboarding: boolean;
-  hasStacks: boolean;
+  hasProtocolItems: boolean;
 
   // Biological State
   biologicalState: BiologicalState;
@@ -86,12 +103,11 @@ type DashboardClientProps = {
 export function DashboardClient({
   todayLogs,
   allSupplements,
-  stackCompletion,
-  userStacksWithItems,
+  protocol,
   streak,
   lastLogAt,
   needsOnboarding,
-  hasStacks,
+  hasProtocolItems,
   biologicalState,
   timelineData,
   safetyHeadroom,
@@ -104,12 +120,11 @@ export function DashboardClient({
     <LogProvider initialLogs={todayLogs}>
       <DashboardContent
         allSupplements={allSupplements}
-        stackCompletion={stackCompletion}
-        userStacksWithItems={userStacksWithItems}
+        protocol={protocol}
         streak={streak}
         lastLogAt={lastLogAt}
         needsOnboarding={needsOnboarding}
-        hasStacks={hasStacks}
+        hasProtocolItems={hasProtocolItems}
         biologicalState={biologicalState}
         timelineData={timelineData}
         safetyHeadroom={safetyHeadroom}
@@ -126,12 +141,11 @@ export function DashboardClient({
 // Inner component that uses the LogContext
 function DashboardContent({
   allSupplements,
-  stackCompletion,
-  userStacksWithItems,
+  protocol,
   streak,
   lastLogAt,
   needsOnboarding,
-  hasStacks,
+  hasProtocolItems,
   biologicalState,
   timelineData,
   safetyHeadroom,
@@ -159,12 +173,7 @@ function DashboardContent({
 
       <DashboardCommandBar supplements={allSupplements} />
 
-      {stackCompletion.length > 0 && (
-        <MissionControl
-          stacks={stackCompletion}
-          userStacksWithItems={userStacksWithItems}
-        />
-      )}
+      {protocol && <DailyProtocolCard protocol={protocol} />}
 
       {initialLogCount > 0 && (
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
@@ -257,23 +266,22 @@ function DashboardContent({
         </details>
       )}
 
-      {/* Empty State - No logs today but has stacks */}
-      {initialLogCount === 0 && hasStacks && (
+      {/* Empty State - No logs today but has protocol items */}
+      {initialLogCount === 0 && hasProtocolItems && (
         <div className="bg-card border-border rounded-xl border border-dashed py-12 text-center shadow-[var(--elevation-1)]">
           <Clock className="text-muted-foreground/30 mx-auto mb-3 h-6 w-6" />
           <p className="text-muted-foreground font-mono text-xs">
             No activity logged today
           </p>
           <p className="text-muted-foreground/60 mt-1 font-mono text-[10px]">
-            Use command bar or tap a protocol
+            Use command bar or log a protocol slot
           </p>
         </div>
       )}
 
-      {/* Empty State - No stacks configured (not during onboarding) */}
-      {!hasStacks && stackCompletion.length === 0 && !needsOnboarding && (
+      {/* Empty State - No protocol configured (not during onboarding) */}
+      {!hasProtocolItems && !needsOnboarding && (
         <div className="bg-card border-border rounded-xl border border-dashed py-12 text-center shadow-[var(--elevation-1)]">
-          <Layers className="text-muted-foreground/30 mx-auto mb-3 h-6 w-6" />
           <p className="text-muted-foreground font-mono text-xs">
             No protocols configured
           </p>
@@ -320,7 +328,7 @@ function CreateProtocolLink() {
 
   function handleClick() {
     startTransition(() => {
-      router.push("/dashboard/stacks");
+      router.push("/dashboard/protocol");
     });
   }
 

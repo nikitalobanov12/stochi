@@ -16,14 +16,16 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
             Welcome to <span className="text-primary">Stochi</span>
           </h2>
           <p className="text-muted-foreground">
-            Track your supplements and discover interactions between them.
+            Build your full-day supplement protocol with clear timing and safety
+            checks.
           </p>
         </div>
 
         <div className="space-y-3 pt-4">
-          <FeatureItem text="Log supplements quickly with one tap" />
+          <FeatureItem text="Plan morning, afternoon, evening, and bedtime slots" />
+          <FeatureItem text="Log your whole protocol or individual time slots" />
           <FeatureItem text="Detect harmful interactions automatically" />
-          <FeatureItem text="Find beneficial synergies in your stack" />
+          <FeatureItem text="Find beneficial synergies across your protocol" />
           <FeatureItem text="Get smart suggestions for optimization" />
         </div>
       </div>

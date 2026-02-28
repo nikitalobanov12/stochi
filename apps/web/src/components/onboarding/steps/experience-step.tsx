@@ -29,7 +29,7 @@ const experienceOptions: ExperienceOption[] = [
     icon: "🧪",
     name: "Intermediate",
     description:
-      "Familiar with common supplements and comfortable with more targeted stacking strategies.",
+      "Familiar with common supplements and comfortable with more targeted protocol strategies.",
     examples: "Lion's Mane, NAC, Alpha-GPC",
   },
   {

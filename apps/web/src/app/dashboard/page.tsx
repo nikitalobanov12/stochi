@@ -1,7 +1,7 @@
-import { eq, desc, and, gte, lt, asc } from "drizzle-orm";
+import { eq, and, gte, lt, asc, desc } from "drizzle-orm";
 
 import { db } from "~/server/db";
-import { stack, log, supplement, userGoal } from "~/server/db/schema";
+import { log, supplement, userGoal, protocol } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
 import {
   checkInteractions,
@@ -11,7 +11,7 @@ import {
 import { getUserPreferences } from "~/server/actions/preferences";
 import { getDismissedSuggestionKeys } from "~/server/actions/dismissed-suggestions";
 import { WelcomeFlow } from "~/components/onboarding/welcome-flow";
-import { getStackCompletionStatus } from "~/server/services/analytics";
+import { checkNeedsOnboarding } from "~/server/actions/onboarding";
 import {
   getBiologicalState,
   getTimelineData,
@@ -22,7 +22,6 @@ import { getStartOfDayInTimezone } from "~/lib/utils";
 import {
   DashboardClient,
   type LogEntry,
-  type StackItem,
 } from "./dashboard-client";
 
 export default async function DashboardPage() {
@@ -47,26 +46,33 @@ export default async function DashboardPage() {
   const userGoalKeys = userGoals.map((g) => g.goal);
 
   const [
-    userStacks,
+    userProtocol,
     todayLogs,
     allSupplements,
-    stackCompletion,
     streak,
     biologicalState,
     timelineData,
     safetyHeadroom,
+    needsOnboarding,
   ] = await Promise.all([
-    db.query.stack.findMany({
-      where: eq(stack.userId, session.user.id),
+    db.query.protocol.findFirst({
+      where: eq(protocol.userId, session.user.id),
       with: {
         items: {
           with: {
-            supplement: true,
+            supplement: {
+              columns: {
+                id: true,
+                name: true,
+              },
+            },
           },
+          orderBy: (items, { asc: ascBy }) => [
+            ascBy(items.timeSlot),
+            ascBy(items.sortOrder),
+          ],
         },
       },
-      orderBy: [desc(stack.updatedAt)],
-      limit: 5,
     }),
     db.query.log.findMany({
       where: and(
@@ -87,7 +93,6 @@ export default async function DashboardPage() {
       },
       orderBy: [supplement.name],
     }),
-    getStackCompletionStatus(session.user.id, preferences.timezone),
     calculateStreak(session.user.id),
     getBiologicalState(session.user.id, {
       dismissedKeys,
@@ -100,6 +105,7 @@ export default async function DashboardPage() {
     }),
     getTimelineData(session.user.id),
     getSafetyHeadroom(session.user.id),
+    checkNeedsOnboarding(),
   ]);
 
   // Get interactions and ratio warnings for today's supplements
@@ -148,9 +154,6 @@ export default async function DashboardPage() {
   }
   const timingWarnings = Array.from(timingWarningsMap.values());
 
-  // Check if user needs onboarding (no stacks)
-  const needsOnboarding = userStacks.length === 0;
-
   // Get last log timestamp
   const lastLogAt = todayLogs.length > 0 ? todayLogs[0]!.loggedAt : null;
 
@@ -169,27 +172,7 @@ export default async function DashboardPage() {
     },
   }));
 
-  // Transform stacks with items for optimistic logging
-  const userStacksWithItems: Array<{
-    id: string;
-    name: string;
-    items: StackItem[];
-  }> = userStacks.map((s) => ({
-    id: s.id,
-    name: s.name,
-    items: s.items.map((item) => ({
-      supplementId: item.supplementId,
-      dosage: item.dosage,
-      unit: item.unit,
-      supplement: {
-        id: item.supplement.id,
-        name: item.supplement.name,
-        isResearchChemical: item.supplement.isResearchChemical ?? false,
-        route: item.supplement.route,
-        form: item.supplement.form,
-      },
-    })),
-  }));
+  const hasProtocolItems = (userProtocol?.items.length ?? 0) > 0;
 
   return (
     <>
@@ -198,12 +181,11 @@ export default async function DashboardPage() {
       <DashboardClient
         todayLogs={formattedLogs}
         allSupplements={allSupplements}
-        stackCompletion={stackCompletion}
-        userStacksWithItems={userStacksWithItems}
+        protocol={userProtocol ?? null}
         streak={streak}
         lastLogAt={lastLogAt}
         needsOnboarding={needsOnboarding}
-        hasStacks={userStacks.length > 0}
+        hasProtocolItems={hasProtocolItems}
         biologicalState={biologicalState}
         timelineData={timelineData}
         safetyHeadroom={safetyHeadroom}

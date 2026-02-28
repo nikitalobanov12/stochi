@@ -75,6 +75,7 @@ export function InteractionsStep({
       form: supp.form,
       dosage: suggestion.dosage,
       unit: suggestion.unit,
+      timeSlot: "morning",
     });
   }
 
