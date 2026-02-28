@@ -47,7 +47,7 @@ func main() {
 	// Create server
 	server := &http.Server{
 		Addr:         ":" + cfg.Port,
-		Handler:      corsMiddleware(mux),
+		Handler:      corsMiddleware(mux, cfg.AllowedOrigins),
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
 		IdleTimeout:  60 * time.Second,
@@ -77,15 +77,28 @@ func main() {
 }
 
 // corsMiddleware adds CORS headers for cross-origin requests
-func corsMiddleware(next http.Handler) http.Handler {
+func corsMiddleware(next http.Handler, allowedOrigins []string) http.Handler {
+	allowedOriginSet := make(map[string]struct{}, len(allowedOrigins))
+	for _, origin := range allowedOrigins {
+		allowedOriginSet[origin] = struct{}{}
+	}
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Allow requests from the web app
 		origin := r.Header.Get("Origin")
 		if origin != "" {
-			w.Header().Set("Access-Control-Allow-Origin", origin)
-			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Internal-Key, X-User-ID")
-			w.Header().Set("Access-Control-Allow-Credentials", "true")
+			_, isAllowed := allowedOriginSet[origin]
+			if isAllowed {
+				w.Header().Set("Access-Control-Allow-Origin", origin)
+				w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+				w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Internal-Key, X-User-ID")
+				w.Header().Set("Access-Control-Allow-Credentials", "true")
+			} else {
+				log.Printf("CORS rejected origin=%s method=%s path=%s", origin, r.Method, r.URL.Path)
+				if r.Method == http.MethodOptions {
+					w.WriteHeader(http.StatusForbidden)
+					return
+				}
+			}
 		}
 
 		if r.Method == "OPTIONS" {
