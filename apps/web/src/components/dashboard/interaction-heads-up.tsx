@@ -21,6 +21,7 @@ import {
   TimingCard,
   RatioCard,
 } from "~/components/interactions/interaction-card";
+import { buildSafetyActionBuckets } from "~/components/dashboard/safety-actions";
 import type {
   InteractionWarning,
   TimingWarning,
@@ -94,6 +95,13 @@ export function InteractionHeadsUp({
   // Determine status
   const status: "nominal" | "warning" | "critical" =
     criticalCount > 0 ? "critical" : totalWarnings > 0 ? "warning" : "nominal";
+
+  const actionBuckets = buildSafetyActionBuckets({
+    interactions,
+    ratioWarnings,
+    timingWarnings,
+    ratioEvaluationGaps,
+  });
 
   const statusConfig = {
     nominal: {
@@ -205,6 +213,34 @@ export function InteractionHeadsUp({
           {/* Expandable Content */}
           <CollapsibleContent>
             <div className="border-border/30 space-y-2 border-t p-3">
+              <div className="grid grid-cols-1 gap-2 text-xs md:grid-cols-3">
+                <div className="rounded border border-emerald-500/30 bg-emerald-500/10 p-2">
+                  <p className="font-mono text-[10px] tracking-wider text-emerald-300 uppercase">
+                    Do now ({actionBuckets.doNow.length})
+                  </p>
+                  <p className="text-muted-foreground mt-1 font-mono text-[11px]">
+                    {actionBuckets.doNow[0] ?? "No immediate positive actions."}
+                  </p>
+                </div>
+                <div className="rounded border border-red-500/30 bg-red-500/10 p-2">
+                  <p className="font-mono text-[10px] tracking-wider text-red-300 uppercase">
+                    Avoid now ({actionBuckets.avoidNow.length})
+                  </p>
+                  <p className="text-muted-foreground mt-1 font-mono text-[11px]">
+                    {actionBuckets.avoidNow[0] ?? "No critical avoid actions."}
+                  </p>
+                </div>
+                <div className="rounded border border-amber-500/30 bg-amber-500/10 p-2">
+                  <p className="font-mono text-[10px] tracking-wider text-amber-300 uppercase">
+                    Optimize later ({actionBuckets.optimizeLater.length})
+                  </p>
+                  <p className="text-muted-foreground mt-1 font-mono text-[11px]">
+                    {actionBuckets.optimizeLater[0] ??
+                      "No follow-up optimization actions."}
+                  </p>
+                </div>
+              </div>
+
               {/* Timing Warnings - Most time-sensitive */}
               {timingWarnings.map((warning) => (
                 <TimingCard
