@@ -121,7 +121,7 @@ const MODULE_COLORS: Record<FeedEntry["module"], string> = {
 const STATUS_COLORS: Record<FeedEntry["status"], string> = {
   OK: "text-emerald-500",
   WARN: "text-amber-500",
-  INFO: "text-white/50",
+  INFO: "text-white/70",
 };
 
 type MechanisticFeedProps = {
@@ -207,9 +207,11 @@ export function MechanisticFeed({
     <div className={cn("h-full", className)}>
       {/* Header */}
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-medium text-white/90">Mechanistic Feed</h3>
+        <h3 className="text-base font-semibold text-white/90">
+          Mechanistic Feed
+        </h3>
         <div className="flex items-center gap-2">
-          <span className="font-mono text-[10px] text-white/50">LIVE</span>
+          <span className="font-mono text-xs text-white/60">LIVE</span>
           <span
             className={cn(
               "h-1.5 w-1.5 rounded-full",
@@ -223,7 +225,7 @@ export function MechanisticFeed({
       {/* Terminal feed */}
       <div
         ref={containerRef}
-        className="h-[140px] overflow-hidden rounded-xl border border-white/10 bg-[#0A0A0A] p-3 font-mono text-[10px] leading-relaxed hover:overflow-y-auto"
+        className="h-[156px] overflow-hidden rounded-xl border border-white/10 bg-[#0A0A0A] p-3.5 text-xs leading-6 hover:overflow-y-auto"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
         role="log"
@@ -238,12 +240,18 @@ export function MechanisticFeed({
               "animate-in fade-in slide-in-from-bottom-1 duration-300",
             )}
           >
-            <span className="shrink-0 text-white/25">[{entry.timestamp}]</span>
-            <span className={cn("shrink-0", MODULE_COLORS[entry.module])}>
+            <span className="shrink-0 font-mono text-white/35">
+              [{entry.timestamp}]
+            </span>
+            <span
+              className={cn("shrink-0 font-mono", MODULE_COLORS[entry.module])}
+            >
               {entry.module}:
             </span>
-            <span className="text-white/60">{entry.message}</span>
-            <span className={cn("shrink-0", STATUS_COLORS[entry.status])}>
+            <span className="text-sm text-white/75">{entry.message}</span>
+            <span
+              className={cn("shrink-0 font-mono", STATUS_COLORS[entry.status])}
+            >
               [{entry.status}]
             </span>
           </div>
@@ -263,7 +271,7 @@ export function MechanisticFeed({
       </div>
 
       {/* Footer hint */}
-      <p className="mt-2 text-center text-[10px] text-white/30">
+      <p className="mt-2 text-center text-xs text-white/45">
         Hover to pause • Real-time pharmacokinetic analysis
       </p>
     </div>

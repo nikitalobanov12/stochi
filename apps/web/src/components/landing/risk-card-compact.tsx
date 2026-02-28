@@ -106,8 +106,10 @@ export function RiskCardCompact({
     <div className={cn("h-full", className)}>
       {/* Header */}
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-medium text-white/90">Risk Detection</h3>
-        <span className="rounded-full bg-red-500/10 px-2 py-0.5 font-mono text-[10px] text-red-400">
+        <h3 className="text-base font-semibold text-white/90">
+          Risk Detection
+        </h3>
+        <span className="rounded-full bg-red-500/10 px-2 py-0.5 font-mono text-xs text-red-400">
           {risks.filter((r) => r.severity === "danger").length} critical
         </span>
       </div>
@@ -127,7 +129,7 @@ export function RiskCardCompact({
       </div>
 
       {/* Footer */}
-      <p className="mt-3 text-center text-[10px] text-white/30">
+      <p className="mt-3 text-center text-xs text-white/45">
         Real-time pharmacokinetic analysis
       </p>
     </div>
@@ -166,7 +168,7 @@ function RiskItemCard({ risk, isExpanded, onToggle }: RiskItemCardProps) {
             >
               {styles.label}
             </span>
-            <span className="truncate text-[11px] font-medium text-white/90">
+            <span className="truncate text-sm font-semibold text-white/90">
               {risk.title}
             </span>
           </div>
@@ -182,17 +184,19 @@ function RiskItemCard({ risk, isExpanded, onToggle }: RiskItemCardProps) {
       {/* Expanded details */}
       {isExpanded && (
         <div className="animate-in fade-in slide-in-from-top-1 border-t border-white/10 px-2.5 pt-2 pb-2.5 duration-200">
-          <p className="mb-2 text-[11px] text-white/50">{risk.description}</p>
+          <p className="mb-2 text-sm text-white/70">{risk.description}</p>
 
           {/* Detection & Recommendation */}
-          <div className="space-y-1 rounded-lg border border-white/10 bg-white/[0.02] p-2 font-mono text-[10px]">
+          <div className="space-y-1 rounded-lg border border-white/10 bg-white/[0.02] p-2 text-xs">
             <div className="flex items-start gap-1.5">
               <span className={cn("shrink-0", styles.text)}>⚠</span>
-              <span className="text-white/80">{risk.detection}</span>
+              <span className="font-mono text-white/80">{risk.detection}</span>
             </div>
             <div className="flex items-start gap-1.5">
               <span className="shrink-0 text-emerald-400">→</span>
-              <span className="text-white/50">{risk.recommendation}</span>
+              <span className="text-sm text-white/70">
+                {risk.recommendation}
+              </span>
             </div>
           </div>
 

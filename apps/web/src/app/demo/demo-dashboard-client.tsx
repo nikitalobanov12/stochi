@@ -222,10 +222,10 @@ function DemoShowcasePanel() {
           <p className="text-muted-foreground text-xs font-medium tracking-[0.12em] uppercase">
             Start here
           </p>
-          <h2 className="text-foreground mt-2 text-2xl leading-tight font-semibold sm:text-[2rem]">
+          <h2 className="text-foreground mt-2 text-[1.75rem] leading-tight font-semibold sm:text-[2rem]">
             See the engine react in one simple flow.
           </h2>
-          <p className="text-muted-foreground mt-1.5 text-base leading-relaxed">
+          <p className="text-muted-foreground mt-2 text-base leading-7 font-medium">
             Log one entry, run one protocol, then watch timeline and safety
             signals update.
           </p>
@@ -241,17 +241,17 @@ function DemoShowcasePanel() {
 
         <div className="grid gap-1.5">
           <div className="bg-secondary/45 border-border/70 rounded-lg border px-3.5 py-2.5 text-left">
-            <p className="text-muted-foreground text-xs">
+            <p className="text-muted-foreground text-sm">
               1. Log one supplement in the command bar
             </p>
           </div>
           <div className="bg-secondary/45 border-border/70 rounded-lg border px-3.5 py-2.5 text-left">
-            <p className="text-muted-foreground text-xs">
+            <p className="text-muted-foreground text-sm">
               2. Then run one protocol
             </p>
           </div>
           <div className="bg-secondary/45 border-border/70 rounded-lg border px-3.5 py-2.5 text-left">
-            <p className="text-muted-foreground text-xs">
+            <p className="text-muted-foreground text-sm">
               3. Watch the timeline + alerts update
             </p>
           </div>

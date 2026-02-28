@@ -208,32 +208,32 @@ export function LiveConsoleFeed({
       <button
         type="button"
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="flex w-full items-center justify-between bg-black/30 px-3 py-2 transition-colors hover:bg-black/40"
+        className="bg-card/85 hover:bg-card flex w-full items-center justify-between px-3 py-2.5 transition-colors"
       >
         <div className="flex items-center gap-2">
           <Terminal className="h-3.5 w-3.5 text-emerald-500/70" />
-          <span className="text-muted-foreground font-mono text-[10px] tracking-wider uppercase">
+          <span className="text-muted-foreground font-mono text-xs tracking-wider uppercase">
             System Console
           </span>
           {/* Status badges */}
           {errorCount > 0 && (
-            <span className="rounded bg-red-500/20 px-1.5 py-0.5 font-mono text-[9px] text-red-400">
+            <span className="rounded bg-red-500/20 px-1.5 py-0.5 font-mono text-xs text-red-400">
               {errorCount} FAIL
             </span>
           )}
           {warnCount > 0 && (
-            <span className="rounded bg-amber-500/20 px-1.5 py-0.5 font-mono text-[9px] text-amber-400">
+            <span className="rounded bg-amber-500/20 px-1.5 py-0.5 font-mono text-xs text-amber-400">
               {warnCount} WARN
             </span>
           )}
           {errorCount === 0 && warnCount === 0 && entries.length > 0 && (
-            <span className="rounded bg-emerald-500/20 px-1.5 py-0.5 font-mono text-[9px] text-emerald-400">
+            <span className="rounded bg-emerald-500/20 px-1.5 py-0.5 font-mono text-xs text-emerald-400">
               ALL PASS
             </span>
           )}
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-muted-foreground font-mono text-[9px]">
+          <span className="text-muted-foreground font-mono text-xs">
             {entries.length} entries
           </span>
           {isCollapsed ? (
@@ -248,7 +248,7 @@ export function LiveConsoleFeed({
       {!isCollapsed && (
         <div
           ref={containerRef}
-          className="h-32 overflow-y-auto border-t border-white/10 bg-black/20 p-2 font-mono text-[10px] leading-relaxed"
+          className="bg-card/50 h-40 overflow-y-auto border-t border-white/10 p-2.5 font-mono text-xs leading-6"
         >
           {entries.map((entry, index) => (
             <div key={index} className="flex gap-2">

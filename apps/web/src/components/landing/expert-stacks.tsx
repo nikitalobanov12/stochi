@@ -125,10 +125,12 @@ export function ExpertStacks({ className, limit = 4 }: ExpertStacksProps) {
     <div className={cn("h-full", className)}>
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-sm font-medium text-white/90">Expert Protocols</h3>
+        <h3 className="text-base font-semibold text-white/90">
+          Expert Protocols
+        </h3>
         <div className="flex items-center gap-1.5">
-          <Beaker className="h-3.5 w-3.5 text-white/30" />
-          <span className="font-mono text-[10px] text-white/30">
+          <Beaker className="h-3.5 w-3.5 text-white/45" />
+          <span className="font-mono text-xs text-white/45">
             {stacks.length} stacks
           </span>
         </div>
@@ -149,7 +151,7 @@ export function ExpertStacks({ className, limit = 4 }: ExpertStacksProps) {
       </div>
 
       {/* Footer CTA hint */}
-      <p className="mt-3 text-center text-[10px] text-white/30">
+      <p className="mt-3 text-center text-xs text-white/45">
         One-click import • Interaction analysis included
       </p>
     </div>
@@ -183,7 +185,7 @@ function ExpertStackCard({
         <div className="flex items-center gap-2">
           <span className="text-white/50">{stack.icon}</span>
           <div>
-            <span className="text-sm font-medium text-white/90">
+            <span className="text-base font-semibold text-white/90">
               {stack.name}
             </span>
             <div className="mt-0.5 flex items-center gap-2">
@@ -195,7 +197,7 @@ function ExpertStackCard({
               >
                 {SOURCE_BADGE_LABELS[stack.sourceType]}
               </span>
-              <span className="text-[10px] text-white/30">{stack.source}</span>
+              <span className="text-xs text-white/45">{stack.source}</span>
             </div>
           </div>
         </div>
@@ -210,13 +212,13 @@ function ExpertStackCard({
 
       {/* Collapsed summary */}
       {!isExpanded && (
-        <p className="mt-2 text-[11px] text-white/30">{stack.description}</p>
+        <p className="mt-2 text-sm text-white/70">{stack.description}</p>
       )}
 
       {/* Expanded details */}
       {isExpanded && (
         <div className="animate-in fade-in slide-in-from-top-1 mt-3 duration-200">
-          <p className="mb-2 text-[11px] text-white/50">{stack.description}</p>
+          <p className="mb-2 text-sm text-white/70">{stack.description}</p>
 
           {/* Supplements */}
           <div className="space-y-1 rounded-lg border border-white/10 bg-white/[0.02] p-2">
@@ -225,8 +227,8 @@ function ExpertStackCard({
                 key={supp.name}
                 className="flex items-center justify-between"
               >
-                <span className="text-[11px] text-white/50">{supp.name}</span>
-                <span className="font-mono text-[10px] text-white/30">
+                <span className="text-sm text-white/70">{supp.name}</span>
+                <span className="font-mono text-xs text-white/55">
                   {supp.dosage}
                 </span>
               </div>
@@ -234,13 +236,13 @@ function ExpertStackCard({
           </div>
 
           {/* Meta info */}
-          <div className="mt-2 flex items-center justify-between text-[10px]">
+          <div className="mt-2 flex items-center justify-between text-xs">
             <span className="text-emerald-500">
               {stack.synergies}{" "}
               {stack.synergies === 1 ? "synergy" : "synergies"} detected
             </span>
             {stack.timing && (
-              <span className="text-white/30">{stack.timing}</span>
+              <span className="text-white/60">{stack.timing}</span>
             )}
           </div>
         </div>

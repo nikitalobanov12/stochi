@@ -248,7 +248,7 @@ export function LandingPage() {
 
                 {/* Subhead - Authority with specific scientific risks */}
                 <motion.p
-                  className="mt-6 max-w-xl text-base leading-relaxed text-white/50 sm:text-lg"
+                  className="text-foreground/80 mt-6 max-w-xl text-base leading-8 font-medium sm:text-lg"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{
