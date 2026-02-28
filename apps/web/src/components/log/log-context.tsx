@@ -17,8 +17,10 @@ import {
   type CreateLogResult,
 } from "~/server/actions/logs";
 import { logStack } from "~/server/actions/stacks";
+import { logProtocolSlot } from "~/server/actions/protocol";
 import { retryWithBackoff } from "~/lib/retry";
 import type { SafetyCheckResult } from "~/server/services/safety";
+import type { timeSlotEnum } from "~/server/db/schema";
 
 // ============================================================================
 // Types
@@ -48,6 +50,18 @@ export type StackItem = {
     isResearchChemical?: boolean;
     route?: string | null;
     form?: string | null;
+  };
+};
+
+type TimeSlot = (typeof timeSlotEnum.enumValues)[number];
+
+export type ProtocolLogItem = {
+  supplementId: string;
+  dosage: number;
+  unit: string;
+  supplement: {
+    id: string;
+    name: string;
   };
 };
 
@@ -83,6 +97,12 @@ type LogContextValue = {
     items: StackItem[],
     loggedAt?: Date,
   ) => Promise<{ success: boolean }>;
+  /** Log a protocol time slot optimistically, returns server count */
+  logProtocolSlotOptimistic: (
+    timeSlot: TimeSlot,
+    items: ProtocolLogItem[],
+    loggedAt?: Date,
+  ) => Promise<{ success: boolean; logged: number }>;
 };
 
 // ============================================================================
@@ -258,6 +278,52 @@ export function LogProvider({ children, initialLogs }: LogProviderProps) {
     });
   };
 
+  const logProtocolSlotOptimistic: LogContextValue["logProtocolSlotOptimistic"] = (
+    timeSlot,
+    items,
+    loggedAt,
+  ) => {
+    const logTime = loggedAt ?? new Date();
+
+    const optimisticLogs: LogEntry[] = items.map((item) => ({
+      id: crypto.randomUUID(),
+      loggedAt: logTime,
+      dosage: item.dosage,
+      unit: item.unit,
+      supplement: {
+        id: item.supplement.id,
+        name: item.supplement.name,
+        isResearchChemical: false,
+        route: null,
+        category: null,
+      },
+    }));
+
+    return new Promise<{ success: boolean; logged: number }>((resolve) => {
+      startTransition(async () => {
+        dispatchOptimistic({ type: "add_many", logs: optimisticLogs });
+
+        try {
+          const result = await retryWithBackoff(() =>
+            logProtocolSlot(timeSlot, logTime),
+          );
+          if (!result.success) {
+            toast.error("Failed to log protocol slot");
+            router.refresh();
+            resolve({ success: false, logged: 0 });
+            return;
+          }
+
+          resolve({ success: true, logged: result.data.logged });
+        } catch {
+          toast.error("Failed to log protocol slot");
+          router.refresh();
+          resolve({ success: false, logged: 0 });
+        }
+      });
+    });
+  };
+
   return (
     <LogContext.Provider
       value={{
@@ -266,6 +332,7 @@ export function LogProvider({ children, initialLogs }: LogProviderProps) {
         createLogOptimistic,
         deleteLogOptimistic,
         logStackOptimistic,
+        logProtocolSlotOptimistic,
       }}
     >
       {children}

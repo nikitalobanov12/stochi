@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useMemo, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronRight, Clock, Loader2 } from "lucide-react";
 
@@ -8,6 +8,7 @@ import { Button } from "~/components/ui/button";
 import { TodayLogList } from "~/components/log/today-log-list";
 import {
   LogProvider,
+  useLogContext,
   type LogEntry,
   type StackItem,
 } from "~/components/log/log-context";
@@ -28,20 +29,13 @@ import { OptimizationHUD } from "~/components/dashboard/optimization-hud";
 import { BioScoreCard } from "~/components/dashboard/bio-score-card";
 import {
   MicroKPIRow,
-  type SafetyHeadroom,
 } from "~/components/dashboard/micro-kpi-row";
 import { LiveConsoleFeed } from "~/components/dashboard/live-console-feed";
 
-import type {
-  InteractionWarning,
-  RatioEvaluationGap,
-  RatioWarning,
-  TimingWarning,
-} from "~/server/actions/interactions";
-import type {
-  BiologicalState,
-  TimelineDataPoint,
-} from "~/server/services/biological-state";
+import {
+  deriveOptimisticDashboardState,
+  type DashboardRuleSnapshot,
+} from "~/lib/dashboard/optimistic-dashboard";
 
 // Re-export types for convenience
 export type { LogEntry, StackItem };
@@ -87,17 +81,7 @@ type DashboardClientProps = {
   lastLogAt: Date | null;
   needsOnboarding: boolean;
   hasProtocolItems: boolean;
-
-  // Biological State
-  biologicalState: BiologicalState;
-  timelineData: TimelineDataPoint[];
-  safetyHeadroom: SafetyHeadroom[];
-
-  // Interactions
-  interactions: InteractionWarning[];
-  ratioWarnings: RatioWarning[];
-  ratioEvaluationGaps: RatioEvaluationGap[];
-  timingWarnings: TimingWarning[];
+  ruleSnapshot: DashboardRuleSnapshot;
 };
 
 export function DashboardClient({
@@ -108,13 +92,7 @@ export function DashboardClient({
   lastLogAt,
   needsOnboarding,
   hasProtocolItems,
-  biologicalState,
-  timelineData,
-  safetyHeadroom,
-  interactions,
-  ratioWarnings,
-  ratioEvaluationGaps,
-  timingWarnings,
+  ruleSnapshot,
 }: DashboardClientProps) {
   return (
     <LogProvider initialLogs={todayLogs}>
@@ -125,14 +103,7 @@ export function DashboardClient({
         lastLogAt={lastLogAt}
         needsOnboarding={needsOnboarding}
         hasProtocolItems={hasProtocolItems}
-        biologicalState={biologicalState}
-        timelineData={timelineData}
-        safetyHeadroom={safetyHeadroom}
-        interactions={interactions}
-        ratioWarnings={ratioWarnings}
-        ratioEvaluationGaps={ratioEvaluationGaps}
-        timingWarnings={timingWarnings}
-        initialLogCount={todayLogs.length}
+        ruleSnapshot={ruleSnapshot}
       />
     </LogProvider>
   );
@@ -146,20 +117,30 @@ function DashboardContent({
   lastLogAt,
   needsOnboarding,
   hasProtocolItems,
-  biologicalState,
-  timelineData,
-  safetyHeadroom,
-  interactions,
-  ratioWarnings,
-  ratioEvaluationGaps,
-  timingWarnings,
-  initialLogCount,
-}: Omit<DashboardClientProps, "todayLogs"> & { initialLogCount: number }) {
-  // Import log context to get current log count for conditional rendering
-  // We use initialLogCount for server-side conditions since optimistic updates
-  // shouldn't change what sections are shown (e.g., empty states)
+  ruleSnapshot,
+}: Omit<DashboardClientProps, "todayLogs">) {
+  const { logs, logProtocolSlotOptimistic } = useLogContext();
 
-  const activeCompounds = biologicalState.activeCompounds.filter(
+  const derived = useMemo(
+    () =>
+      deriveOptimisticDashboardState({
+        logs,
+        snapshot: ruleSnapshot,
+      }),
+    [logs, ruleSnapshot],
+  );
+
+  const currentLogCount = derived.todayLogCount;
+  const currentLastLogAt = derived.lastLogAt;
+  const currentBiologicalState = derived.biologicalState;
+  const currentTimelineData = derived.timelineData;
+  const currentInteractions = derived.interactions;
+  const currentRatioWarnings = derived.ratioWarnings;
+  const currentRatioEvaluationGaps = derived.ratioEvaluationGaps;
+  const currentTimingWarnings = derived.timingWarnings;
+  const currentSafetyHeadroom = derived.safetyHeadroom;
+
+  const activeCompounds = currentBiologicalState.activeCompounds.filter(
     (c) => c.phase !== "cleared",
   );
 
@@ -167,26 +148,31 @@ function DashboardContent({
     <div className="space-y-5">
       <SystemStatus
         streak={streak}
-        todayLogCount={initialLogCount}
-        lastLogAt={lastLogAt}
+        todayLogCount={currentLogCount}
+        lastLogAt={currentLastLogAt ?? lastLogAt}
       />
 
       <DashboardCommandBar supplements={allSupplements} />
 
-      {protocol && <DailyProtocolCard protocol={protocol} />}
+      {protocol && (
+        <DailyProtocolCard
+          protocol={protocol}
+          onLogSlotOptimistic={logProtocolSlotOptimistic}
+        />
+      )}
 
-      {initialLogCount > 0 && (
+      {currentLogCount > 0 && (
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
           <div className="space-y-5 lg:col-span-8">
-            {timelineData.length > 0 && (
+            {currentTimelineData.length > 0 && (
               <div>
                 <h2 className="text-muted-foreground mb-2 font-mono text-[10px] tracking-wider uppercase">
                   Biological Timeline
                 </h2>
                 <div className="bg-card border-border rounded-xl border p-4 shadow-[var(--elevation-1)]">
                   <BiologicalTimeline
-                    timelineData={timelineData}
-                    activeCompounds={biologicalState.activeCompounds}
+                    timelineData={currentTimelineData}
+                    activeCompounds={currentBiologicalState.activeCompounds}
                     currentTime={new Date().toISOString()}
                   />
                 </div>
@@ -198,8 +184,8 @@ function DashboardContent({
                 Next Actions
               </h2>
               <OptimizationHUD
-                exclusionZones={biologicalState.exclusionZones}
-                optimizations={biologicalState.optimizations}
+                exclusionZones={currentBiologicalState.exclusionZones}
+                optimizations={currentBiologicalState.optimizations}
               />
             </div>
 
@@ -209,10 +195,10 @@ function DashboardContent({
               </summary>
               <div className="mt-3">
                 <LiveConsoleFeed
-                  interactions={interactions}
-                  ratioWarnings={ratioWarnings}
-                  ratioEvaluationGaps={ratioEvaluationGaps}
-                  timingWarnings={timingWarnings}
+                  interactions={currentInteractions}
+                  ratioWarnings={currentRatioWarnings}
+                  ratioEvaluationGaps={currentRatioEvaluationGaps}
+                  timingWarnings={currentTimingWarnings}
                 />
               </div>
             </details>
@@ -220,9 +206,9 @@ function DashboardContent({
 
           <div className="space-y-5 lg:col-span-4">
             <BioScoreCard
-              score={biologicalState.bioScore}
-              exclusionZones={biologicalState.exclusionZones}
-              optimizations={biologicalState.optimizations}
+              score={currentBiologicalState.bioScore}
+              exclusionZones={currentBiologicalState.exclusionZones}
+              optimizations={currentBiologicalState.optimizations}
             />
 
             <div>
@@ -231,9 +217,9 @@ function DashboardContent({
               </h2>
               <div className="bg-card border-border rounded-xl border p-4 shadow-[var(--elevation-1)]">
                 <MicroKPIRow
-                  ratioWarnings={ratioWarnings}
-                  safetyHeadroom={safetyHeadroom}
-                  exclusionZones={biologicalState.exclusionZones}
+                  ratioWarnings={currentRatioWarnings}
+                  safetyHeadroom={currentSafetyHeadroom}
+                  exclusionZones={currentBiologicalState.exclusionZones}
                 />
               </div>
             </div>
@@ -252,7 +238,7 @@ function DashboardContent({
         </div>
       )}
 
-      {initialLogCount > 0 && (
+      {currentLogCount > 0 && (
         <details className="bg-card border-border group rounded-xl border p-4 shadow-[var(--elevation-1)]">
           <summary className="text-muted-foreground hover:text-foreground cursor-pointer list-none font-mono text-[10px] tracking-wider uppercase">
             Recent Activity
@@ -267,7 +253,7 @@ function DashboardContent({
       )}
 
       {/* Empty State - No logs today but has protocol items */}
-      {initialLogCount === 0 && hasProtocolItems && (
+      {currentLogCount === 0 && hasProtocolItems && (
         <div className="bg-card border-border rounded-xl border border-dashed py-12 text-center shadow-[var(--elevation-1)]">
           <Clock className="text-muted-foreground/30 mx-auto mb-3 h-6 w-6" />
           <p className="text-muted-foreground font-mono text-xs">

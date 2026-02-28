@@ -1,22 +1,11 @@
-import { eq, and, gte, lt, asc, desc } from "drizzle-orm";
+import { eq, and, gte, lt, desc } from "drizzle-orm";
 
 import { db } from "~/server/db";
-import { log, supplement, userGoal, protocol } from "~/server/db/schema";
+import { log, supplement, protocol } from "~/server/db/schema";
 import { getSession } from "~/server/better-auth/server";
-import {
-  checkInteractions,
-  checkTimingWarnings,
-  type TimingWarning,
-} from "~/server/actions/interactions";
 import { getUserPreferences } from "~/server/actions/preferences";
-import { getDismissedSuggestionKeys } from "~/server/actions/dismissed-suggestions";
 import { WelcomeFlow } from "~/components/onboarding/welcome-flow";
 import { checkNeedsOnboarding } from "~/server/actions/onboarding";
-import {
-  getBiologicalState,
-  getTimelineData,
-  getSafetyHeadroom,
-} from "~/server/services/biological-state";
 import { getStartOfDayInTimezone } from "~/lib/utils";
 
 import {
@@ -29,31 +18,20 @@ export default async function DashboardPage() {
   if (!session) return null;
 
   // Fetch preferences first (needed for timezone-aware "today" calculation)
-  const [preferences, dismissedKeys] = await Promise.all([
-    getUserPreferences(),
-    getDismissedSuggestionKeys(),
-  ]);
+  const preferences = await getUserPreferences();
 
   // Calculate "today" in user's timezone
   const todayStart = getStartOfDayInTimezone(preferences.timezone);
-
-  // Fetch user goals for goal-based suggestion filtering
-  const userGoals = await db.query.userGoal.findMany({
-    where: eq(userGoal.userId, session.user.id),
-    orderBy: [asc(userGoal.priority)],
-    columns: { goal: true },
-  });
-  const userGoalKeys = userGoals.map((g) => g.goal);
 
   const [
     userProtocol,
     todayLogs,
     allSupplements,
     streak,
-    biologicalState,
-    timelineData,
-    safetyHeadroom,
     needsOnboarding,
+    interactionRules,
+    ratioRules,
+    timingRules,
   ] = await Promise.all([
     db.query.protocol.findFirst({
       where: eq(protocol.userId, session.user.id),
@@ -90,69 +68,53 @@ export default async function DashboardPage() {
         name: true,
         form: true,
         defaultUnit: true,
+        safetyCategory: true,
+        peakMinutes: true,
+        halfLifeMinutes: true,
+        kineticsType: true,
+        vmax: true,
+        km: true,
+        rdaAmount: true,
+        bioavailabilityPercent: true,
+        category: true,
+        isResearchChemical: true,
+        route: true,
       },
       orderBy: [supplement.name],
     }),
     calculateStreak(session.user.id),
-    getBiologicalState(session.user.id, {
-      dismissedKeys,
-      showAddSuggestions: preferences.showAddSuggestions,
-      userGoals: userGoalKeys,
-      timezone: preferences.timezone,
-      experienceLevel: preferences.experienceLevel,
-      suggestionFilterLevel: preferences.suggestionFilterLevel,
-      showConditionalSupplements: preferences.showConditionalSupplements,
-    }),
-    getTimelineData(session.user.id),
-    getSafetyHeadroom(session.user.id),
     checkNeedsOnboarding(),
+    db.query.interaction.findMany({
+      with: {
+        source: {
+          columns: { id: true, name: true, form: true },
+        },
+        target: {
+          columns: { id: true, name: true, form: true },
+        },
+      },
+    }),
+    db.query.ratioRule.findMany({
+      with: {
+        sourceSupplement: {
+          columns: { id: true, name: true, form: true },
+        },
+        targetSupplement: {
+          columns: { id: true, name: true, form: true },
+        },
+      },
+    }),
+    db.query.timingRule.findMany({
+      with: {
+        sourceSupplement: {
+          columns: { id: true, name: true },
+        },
+        targetSupplement: {
+          columns: { id: true, name: true },
+        },
+      },
+    }),
   ]);
-
-  // Get interactions and ratio warnings for today's supplements
-  const todaySupplementIds = [
-    ...new Set(todayLogs.map((l) => l.supplement.id)),
-  ];
-
-  // Build dosage data for ratio calculations
-  const dosageMap = new Map<
-    string,
-    { id: string; dosage: number; unit: string }
-  >();
-  for (const l of todayLogs) {
-    dosageMap.set(l.supplement.id, {
-      id: l.supplement.id,
-      dosage: l.dosage,
-      unit: l.unit,
-    });
-  }
-  const dosages = Array.from(dosageMap.values());
-
-  const { interactions, ratioWarnings, ratioEvaluationGaps } = await checkInteractions(
-    todaySupplementIds,
-    dosages,
-  );
-
-  // Check timing warnings for today's logs
-  const timingWarningsPromises = todayLogs.map((logEntry) =>
-    checkTimingWarnings(
-      session.user.id,
-      logEntry.supplement.id,
-      new Date(logEntry.loggedAt),
-    ),
-  );
-  const timingWarningsArrays = await Promise.all(timingWarningsPromises);
-
-  // Flatten and dedupe timing warnings
-  const timingWarningsMap = new Map<string, TimingWarning>();
-  for (const warningsArr of timingWarningsArrays) {
-    for (const warning of warningsArr) {
-      const key = [warning.source.id, warning.target.id].sort().join("-");
-      if (!timingWarningsMap.has(key)) {
-        timingWarningsMap.set(key, warning);
-      }
-    }
-  }
-  const timingWarnings = Array.from(timingWarningsMap.values());
 
   // Get last log timestamp
   const lastLogAt = todayLogs.length > 0 ? todayLogs[0]!.loggedAt : null;
@@ -174,6 +136,26 @@ export default async function DashboardPage() {
 
   const hasProtocolItems = (userProtocol?.items.length ?? 0) > 0;
 
+  const ruleSnapshot = {
+    supplements: allSupplements.map((s) => ({
+      id: s.id,
+      name: s.name,
+      form: s.form,
+      safetyCategory: s.safetyCategory,
+      peakMinutes: s.peakMinutes,
+      halfLifeMinutes: s.halfLifeMinutes,
+      kineticsType: s.kineticsType,
+      vmax: s.vmax,
+      km: s.km,
+      rdaAmount: s.rdaAmount,
+      bioavailabilityPercent: s.bioavailabilityPercent,
+      category: s.category,
+    })),
+    interactionRules,
+    ratioRules,
+    timingRules,
+  };
+
   return (
     <>
       <WelcomeFlow open={needsOnboarding} supplements={allSupplements} />
@@ -186,13 +168,7 @@ export default async function DashboardPage() {
         lastLogAt={lastLogAt}
         needsOnboarding={needsOnboarding}
         hasProtocolItems={hasProtocolItems}
-        biologicalState={biologicalState}
-        timelineData={timelineData}
-        safetyHeadroom={safetyHeadroom}
-        interactions={interactions}
-        ratioWarnings={ratioWarnings}
-        ratioEvaluationGaps={ratioEvaluationGaps}
-        timingWarnings={timingWarnings}
+        ruleSnapshot={ruleSnapshot}
       />
     </>
   );

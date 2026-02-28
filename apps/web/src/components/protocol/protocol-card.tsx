@@ -24,6 +24,7 @@ import {
   type frequencyEnum,
   type dosageUnitEnum,
 } from "~/server/db/schema";
+import type { ProtocolLogItem } from "~/components/log/log-context";
 
 type TimeSlot = (typeof timeSlotEnum.enumValues)[number];
 type Frequency = (typeof frequencyEnum.enumValues)[number];
@@ -58,6 +59,11 @@ type Protocol = {
 
 type ProtocolCardProps = {
   protocol: Protocol;
+  onLogSlotOptimistic?: (
+    slot: TimeSlot,
+    items: ProtocolLogItem[],
+    loggedAt?: Date,
+  ) => Promise<{ success: boolean; logged: number }>;
 };
 
 const TIME_SLOT_CONFIG: Record<
@@ -130,7 +136,10 @@ function getItemsForToday(items: ProtocolItem[]): ProtocolItem[] {
   });
 }
 
-export function ProtocolCard({ protocol }: ProtocolCardProps) {
+export function ProtocolCard({
+  protocol,
+  onLogSlotOptimistic,
+}: ProtocolCardProps) {
   const router = useRouter();
   const [isNavigating, startNavTransition] = useTransition();
   const [loggingSlot, setLoggingSlot] = useState<TimeSlot | null>(null);
@@ -170,11 +179,27 @@ export function ProtocolCard({ protocol }: ProtocolCardProps) {
     e.stopPropagation();
     setLoggingSlot(slot);
     try {
-      const result = await logProtocolSlot(slot);
+      const slotItems: ProtocolLogItem[] = todayBySlot[slot].map((item) => ({
+        supplementId: item.supplementId,
+        dosage: item.dosage,
+        unit: item.unit,
+        supplement: {
+          id: item.supplement.id,
+          name: item.supplement.name,
+        },
+      }));
+
+      const result = onLogSlotOptimistic
+        ? await onLogSlotOptimistic(slot, slotItems)
+        : await logProtocolSlot(slot);
+
       toast.success(
         `Logged ${result.logged} supplement${result.logged !== 1 ? "s" : ""}`,
       );
-      router.refresh();
+
+      if (!onLogSlotOptimistic) {
+        router.refresh();
+      }
     } catch (error) {
       console.error("Failed to log slot:", error);
       toast.error(
