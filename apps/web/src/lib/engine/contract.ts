@@ -32,6 +32,13 @@ type SafetyContractPayload = {
   synergies?: BasicInteraction[] | null;
   ratioWarnings?: BasicRatioWarning[] | null;
   timingWarnings?: BasicTimingWarning[] | null;
+  ratioEvaluationGaps?:
+    | Array<{
+        sourceSupplementId: string;
+        targetSupplementId: string;
+        reason: string;
+      }>
+    | null;
 };
 
 function normalizeInteractions(payload: SafetyContractPayload): string[] {
@@ -89,6 +96,15 @@ function normalizeTimingWarnings(payload: SafetyContractPayload): string[] {
     .sort();
 }
 
+function normalizeRatioEvaluationGaps(payload: SafetyContractPayload): string[] {
+  const gaps = payload.ratioEvaluationGaps ?? [];
+  return gaps
+    .map((gap) =>
+      [gap.sourceSupplementId, gap.targetSupplementId, gap.reason].join("|"),
+    )
+    .sort();
+}
+
 function isArrayEqual(left: string[], right: string[]): boolean {
   if (left.length !== right.length) {
     return false;
@@ -121,5 +137,11 @@ export function areSafetyContractsEquivalent(
 
   const tsTimingWarnings = normalizeTimingWarnings(tsPayload);
   const goTimingWarnings = normalizeTimingWarnings(goPayload);
-  return isArrayEqual(tsTimingWarnings, goTimingWarnings);
+  if (!isArrayEqual(tsTimingWarnings, goTimingWarnings)) {
+    return false;
+  }
+
+  const tsRatioEvaluationGaps = normalizeRatioEvaluationGaps(tsPayload);
+  const goRatioEvaluationGaps = normalizeRatioEvaluationGaps(goPayload);
+  return isArrayEqual(tsRatioEvaluationGaps, goRatioEvaluationGaps);
 }

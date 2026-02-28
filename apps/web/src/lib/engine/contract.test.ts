@@ -112,4 +112,30 @@ describe("areSafetyContractsEquivalent", () => {
 
     assert.equal(areSafetyContractsEquivalent(tsOutput, goOutput), false);
   });
+
+  it("returns false when ratio evaluation gaps drift", () => {
+    const tsOutput = {
+      warnings: [],
+      ratioEvaluationGaps: [
+        {
+          sourceSupplementId: "zn",
+          targetSupplementId: "cu",
+          reason: "missing_dosage",
+        },
+      ],
+    };
+
+    const goOutput = {
+      warnings: [],
+      ratioEvaluationGaps: [
+        {
+          sourceSupplementId: "zn",
+          targetSupplementId: "cu",
+          reason: "normalization_failed",
+        },
+      ],
+    };
+
+    assert.equal(areSafetyContractsEquivalent(tsOutput, goOutput), false);
+  });
 });
