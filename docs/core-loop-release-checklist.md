@@ -15,6 +15,7 @@ cd apps/engine && go test ./...
 cd apps/web && bun run check
 cd /home/nikita/stochi
 bun test apps/web/src/lib/engine/contract.test.ts
+bun test apps/web/src/lib/engine/contract-fixtures.test.ts
 bun test apps/web/src/lib/engine/timing.test.ts
 bun test apps/web/src/lib/engine/telemetry.test.ts
 bun test apps/web/src/components/dashboard/safety-actions.test.ts
