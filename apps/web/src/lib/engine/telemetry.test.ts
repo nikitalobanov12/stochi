@@ -23,6 +23,16 @@ describe("engine telemetry", () => {
     assert.equal(reason, "network_error");
   });
 
+  it("classifies engine non-2xx errors from client wrapper message", () => {
+    const engineError = new Error(
+      "Engine timing check failed: 503 service unavailable",
+    );
+
+    const reason = classifyEngineRequestError(engineError);
+
+    assert.equal(reason, "non_ok_response");
+  });
+
   it("returns non_ok_response when engine responds with non-2xx", () => {
     const reason = resolveEngineFallbackReason({
       engineConfigured: true,

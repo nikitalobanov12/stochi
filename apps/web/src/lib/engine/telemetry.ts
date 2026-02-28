@@ -15,13 +15,21 @@ type ResolveEngineFallbackReasonParams = {
 
 export function classifyEngineRequestError(
   error: unknown,
-): Exclude<EngineFallbackReason, "not_configured" | "no_session" | "non_ok_response"> {
+): Exclude<EngineFallbackReason, "not_configured" | "no_session"> {
   if (error instanceof DOMException && error.name === "TimeoutError") {
     return "timeout";
   }
 
   if (error instanceof Error) {
     const normalizedMessage = error.message.toLowerCase();
+
+    if (
+      normalizedMessage.startsWith("engine request failed:") ||
+      normalizedMessage.startsWith("engine timing check failed:")
+    ) {
+      return "non_ok_response";
+    }
+
     if (
       normalizedMessage.includes("timeout") ||
       normalizedMessage.includes("timed out") ||
