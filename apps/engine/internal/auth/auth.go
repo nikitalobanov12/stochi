@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/subtle"
 	"errors"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -79,7 +80,10 @@ func (m *Middleware) Protect(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, err := m.ValidateRequest(r)
 		if err != nil {
-			http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+			log.Printf("auth rejected request method=%s path=%s reason=%v", r.Method, r.URL.Path, err)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
+			_, _ = w.Write([]byte(`{"error":"unauthorized"}`))
 			return
 		}
 

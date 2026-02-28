@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -64,4 +65,31 @@ func TestValidateRequest(t *testing.T) {
 			t.Fatalf("expected ErrInvalidUserID, got %v", err)
 		}
 	})
+}
+
+func TestProtect_UnauthorizedResponseShape(t *testing.T) {
+	middleware := NewMiddleware("super-secret")
+
+	protected := middleware.Protect(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	req := httptest.NewRequest(http.MethodPost, "/api/analyze", nil)
+	req.Header.Set("X-Internal-Key", "wrong-key")
+	req.Header.Set("X-User-ID", "user_123")
+	rr := httptest.NewRecorder()
+
+	protected.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusUnauthorized {
+		t.Fatalf("expected 401, got %d", rr.Code)
+	}
+
+	if rr.Header().Get("Content-Type") != "application/json" {
+		t.Fatalf("expected JSON content type, got %s", rr.Header().Get("Content-Type"))
+	}
+
+	if strings.TrimSpace(rr.Body.String()) != `{"error":"unauthorized"}` {
+		t.Fatalf("unexpected body: %s", rr.Body.String())
+	}
 }
