@@ -403,17 +403,30 @@ func (h *Handler) checkTimingForSupplement(ctx context.Context, userID string, s
 	return warnings, nil
 }
 
+type timingRuleRecord struct {
+	ID                 string
+	SourceSupplementID string
+	TargetSupplementID string
+	MinHoursApart      float32
+	Reason             string
+	Severity           models.Severity
+	SourceName         string
+	SourceForm         *string
+	TargetName         string
+	TargetForm         *string
+}
+
 func (h *Handler) checkTimingWarnings(ctx context.Context, userID string, supplementIDs []string) ([]models.TimingWarning, error) {
 	// Get timing rules for the supplements
 	rulesQuery := `
-		SELECT tr.id, tr.source_supplement_id, tr.target_supplement_id, 
+		SELECT tr.id, tr.source_supplement_id, tr.target_supplement_id,
 		       tr.min_hours_apart, tr.reason, tr.severity,
 		       s1.name as source_name, s1.form as source_form,
 		       s2.name as target_name, s2.form as target_form
 		FROM timing_rule tr
 		JOIN supplement s1 ON tr.source_supplement_id = s1.id
 		JOIN supplement s2 ON tr.target_supplement_id = s2.id
-		WHERE tr.source_supplement_id = ANY($1) 
+		WHERE tr.source_supplement_id = ANY($1)
 		  AND tr.target_supplement_id = ANY($1)
 	`
 
@@ -423,23 +436,11 @@ func (h *Handler) checkTimingWarnings(ctx context.Context, userID string, supple
 	}
 	defer rows.Close()
 
-	var warnings []models.TimingWarning
-	now := time.Now()
-	dayStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	rules := make([]timingRuleRecord, 0)
+	supplementIDSet := make(map[string]struct{})
 
 	for rows.Next() {
-		var rule struct {
-			ID                 string
-			SourceSupplementID string
-			TargetSupplementID string
-			MinHoursApart      float32
-			Reason             string
-			Severity           models.Severity
-			SourceName         string
-			SourceForm         *string
-			TargetName         string
-			TargetForm         *string
-		}
+		var rule timingRuleRecord
 
 		if err := rows.Scan(
 			&rule.ID, &rule.SourceSupplementID, &rule.TargetSupplementID,
@@ -450,37 +451,58 @@ func (h *Handler) checkTimingWarnings(ctx context.Context, userID string, supple
 			return nil, err
 		}
 
-		// Check today's logs for timing violations
-		logsQuery := `
-			SELECT supplement_id, logged_at
-			FROM log
-			WHERE user_id = $1 
-			  AND supplement_id IN ($2, $3)
-			  AND logged_at >= $4
-			ORDER BY logged_at
-		`
+		rules = append(rules, rule)
+		supplementIDSet[rule.SourceSupplementID] = struct{}{}
+		supplementIDSet[rule.TargetSupplementID] = struct{}{}
+	}
 
-		logRows, err := h.pool.Query(ctx, logsQuery, userID, rule.SourceSupplementID, rule.TargetSupplementID, dayStart)
-		if err != nil {
+	if len(rules) == 0 {
+		return nil, nil
+	}
+
+	now := time.Now()
+	dayStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+
+	logSupplementIDs := make([]string, 0, len(supplementIDSet))
+	for supplementID := range supplementIDSet {
+		logSupplementIDs = append(logSupplementIDs, supplementID)
+	}
+
+	logsQuery := `
+		SELECT supplement_id, logged_at
+		FROM log
+		WHERE user_id = $1
+		  AND supplement_id = ANY($2)
+		  AND logged_at >= $3
+		ORDER BY logged_at
+	`
+
+	logRows, err := h.pool.Query(ctx, logsQuery, userID, logSupplementIDs, dayStart)
+	if err != nil {
+		return nil, err
+	}
+	defer logRows.Close()
+
+	logsBySupplementID := make(map[string][]time.Time)
+	for logRows.Next() {
+		var supplementID string
+		var loggedAt time.Time
+		if err := logRows.Scan(&supplementID, &loggedAt); err != nil {
 			continue
 		}
+		logsBySupplementID[supplementID] = append(logsBySupplementID[supplementID], loggedAt)
+	}
 
-		var sourceLogs, targetLogs []time.Time
-		for logRows.Next() {
-			var supplementID string
-			var loggedAt time.Time
-			if err := logRows.Scan(&supplementID, &loggedAt); err != nil {
-				continue
-			}
-			if supplementID == rule.SourceSupplementID {
-				sourceLogs = append(sourceLogs, loggedAt)
-			} else {
-				targetLogs = append(targetLogs, loggedAt)
-			}
-		}
-		logRows.Close()
+	return buildTimingWarningsFromRuleLogs(rules, logsBySupplementID), nil
+}
 
-		// Check for timing violations
+func buildTimingWarningsFromRuleLogs(rules []timingRuleRecord, logsBySupplementID map[string][]time.Time) []models.TimingWarning {
+	warnings := make([]models.TimingWarning, 0)
+
+	for _, rule := range rules {
+		sourceLogs := logsBySupplementID[rule.SourceSupplementID]
+		targetLogs := logsBySupplementID[rule.TargetSupplementID]
+
 		for _, sourceTime := range sourceLogs {
 			for _, targetTime := range targetLogs {
 				hoursApart := float32(abs(targetTime.Sub(sourceTime).Hours()))
@@ -511,7 +533,7 @@ func (h *Handler) checkTimingWarnings(ctx context.Context, userID string, supple
 		}
 	}
 
-	return warnings, nil
+	return warnings
 }
 
 func (h *Handler) supplementToInfo(s models.Supplement) models.SupplementInfo {
