@@ -25,6 +25,8 @@ make test
 
 - `PORT` - server port (default: 8080)
 - `DATABASE_URL` - PostgreSQL connection string
+- `INTERNAL_KEY` - shared secret for web-to-engine internal requests
+- `ALLOWED_ORIGINS` - comma-separated CORS allowlist for the web app
 
 ## API endpoints
 
@@ -38,13 +40,22 @@ Analyze interactions (protected):
 
 ```text
 POST /api/analyze
-Authorization: Bearer <session_token>
+X-Internal-Key: <internal_service_key>
+X-User-ID: <authenticated_user_id>
 
 {
   "supplementIds": ["uuid1", "uuid2"],
-  "includeTiming": true
+  "dosages": [
+    {
+      "supplementId": "uuid1",
+      "amount": 400,
+      "unit": "mg"
+    }
+  ]
 }
 ```
+
+The engine is not a public user-authenticated API. The Next.js web app authenticates the user, then forwards internal service requests to the engine with shared-key auth and the user id header.
 
 ## Deployment (Fly.io)
 

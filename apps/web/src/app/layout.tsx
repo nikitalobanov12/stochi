@@ -26,7 +26,7 @@ const APP_NAME = "Stochi";
 const APP_DEFAULT_TITLE = "stochi_ | Balance your chemistry";
 const APP_TITLE_TEMPLATE = "%s | stochi_";
 const APP_DESCRIPTION =
-  "The stoichiometric engine for bio-optimization. Track supplements, detect interactions, and optimize your stack.";
+  "Build safer supplement protocols with a live timeline, interaction warnings, and engine-backed analysis.";
 
 const metadataBase = new URL(
   process.env.NEXT_PUBLIC_SITE_URL ??

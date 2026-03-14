@@ -14,7 +14,13 @@ This doc is a quick evaluator guide for technical reviewers, hiring managers, an
 - It mixes UX and compute concerns: users get clear guidance from dense biological-state logic.
 - It has architectural resilience: Go engine + TypeScript fallback.
 
-## 3) Evidence In Code
+## 3) What Is Real In The Demo
+
+- The command bar, protocol execution, timeline, score, and system feed are interactive.
+- The demo uses seeded data so employers can evaluate the loop quickly without account setup.
+- Demo actions do not write to a persistent personal account; sign-up is required for saved protocols and logs.
+
+## 4) Evidence In Code
 
 - Interaction/timing/ratio actions: `apps/web/src/server/actions/interactions.ts`
 - Biological state + timeline services: `apps/web/src/server/services/biological-state.ts`
@@ -22,15 +28,15 @@ This doc is a quick evaluator guide for technical reviewers, hiring managers, an
 - Dashboard composition: `apps/web/src/app/dashboard/dashboard-client.tsx`
 - Database schema + migrations: `apps/web/src/server/db/schema.ts`, `apps/web/drizzle/`
 
-## 4) Engineering Signals
+## 5) Engineering Signals
 
 - Typed server boundaries and explicit domain models
 - Migration-first DB workflow
-- Lint + typecheck gate (`bun run check`)
+- Lint + typecheck gate (`bun run check`) plus GitHub Actions quality checks
 - Practical UX tradeoffs (dense data, staged disclosure via collapsible panels)
 
-## 5) Suggested Portfolio Talking Points
+## 6) Suggested Portfolio Talking Points
 
-- "I built a domain-specific analysis product, not a template app."
+- "I built a supplement protocol intelligence product, not a template app."
 - "I designed for both expert users and first-time evaluators via a focused demo flow."
 - "I implemented resilient architecture where advanced compute can fail gracefully."
