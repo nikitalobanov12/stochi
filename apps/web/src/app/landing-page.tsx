@@ -284,25 +284,7 @@ export function LandingPage() {
                       <Link href="/auth/sign-up">Create Your Account</Link>
                     </Button>
                   </div>
-                  <span className="text-xs tracking-wide text-white/30">
-                    Employers can validate the product in under two minutes.
-                  </span>
                 </motion.div>
-                <motion.p
-                  className="mt-4 max-w-xl text-sm leading-6 text-white/45"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    duration: 0.8,
-                    ease: [0.25, 0.46, 0.45, 0.94],
-                    delay: 0.5,
-                  }}
-                >
-                  What employers can verify in 2 minutes: command-bar logging,
-                  one-tap protocol execution, timeline changes, and
-                  citation-linked safety output. Demo data is interactive but
-                  resettable.
-                </motion.p>
               </div>
 
               {/* Right: Hero Visual (5 columns = ~42%) */}

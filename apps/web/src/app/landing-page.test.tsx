@@ -46,7 +46,17 @@ describe("landing page editorial contract", () => {
     assert.equal(hero.includes("1,423"), false);
     assert.equal(hero.includes("47ms"), false);
     assert.equal(page.includes("Execute 15+ supplements in 300ms"), false);
-    assert.equal(page.includes("What employers can verify in 2 minutes"), true);
+    assert.equal(page.includes("What employers can verify in 2 minutes"), false);
+    assert.equal(
+      page.includes("Built to make the safety model legible at a glance."),
+      false,
+    );
+    assert.equal(page.includes("timing pressure"), false);
+    assert.equal(page.includes("stack drift"), false);
+    assert.equal(
+      page.includes("without committing anything to your protocol"),
+      false,
+    );
     assert.equal(hero.includes("Demo trace based on seeded interaction rules"), true);
   });
 });
