@@ -4,7 +4,7 @@ Stochi is a supplement protocol intelligence app for building safer routines and
 
 Live demo: <https://stochi.vercel.app/demo>
 App: <https://stochi.vercel.app>
-Repo: <https://github.com/nikitalobanov12/stochi>
+Repo: <https://github.com/nikitalbnv/stochi>
 
 ---
 
@@ -74,7 +74,7 @@ Prereqs:
 Setup:
 
 ```bash
-git clone https://github.com/nikitalobanov12/stochi.git
+git clone https://github.com/nikitalbnv/stochi.git
 cd stochi
 bun install
 cp apps/web/.env.example apps/web/.env
@@ -115,4 +115,4 @@ GitHub Actions also runs the visible repo quality gate on pushes and pull reques
 ## Author
 
 Nikita Lobanov
-<https://github.com/nikitalobanov12>
+<https://github.com/nikitalbnv>

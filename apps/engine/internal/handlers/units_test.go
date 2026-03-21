@@ -4,7 +4,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/nikitalobanov12/stochi/apps/engine/internal/models"
+	"github.com/nikitalbnv/stochi/apps/engine/internal/models"
 )
 
 // Helper to compare floats with tolerance

@@ -9,10 +9,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/nikitalobanov12/stochi/apps/engine/internal/auth"
-	"github.com/nikitalobanov12/stochi/apps/engine/internal/config"
-	"github.com/nikitalobanov12/stochi/apps/engine/internal/db"
-	"github.com/nikitalobanov12/stochi/apps/engine/internal/handlers"
+	"github.com/nikitalbnv/stochi/apps/engine/internal/auth"
+	"github.com/nikitalbnv/stochi/apps/engine/internal/config"
+	"github.com/nikitalbnv/stochi/apps/engine/internal/db"
+	"github.com/nikitalbnv/stochi/apps/engine/internal/handlers"
 )
 
 func main() {

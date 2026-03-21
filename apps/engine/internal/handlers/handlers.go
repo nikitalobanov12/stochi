@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/nikitalobanov12/stochi/apps/engine/internal/auth"
-	"github.com/nikitalobanov12/stochi/apps/engine/internal/models"
+	"github.com/nikitalbnv/stochi/apps/engine/internal/auth"
+	"github.com/nikitalbnv/stochi/apps/engine/internal/models"
 )
 
 // Handler holds the dependencies for HTTP handlers

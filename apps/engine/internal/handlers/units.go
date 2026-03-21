@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/nikitalobanov12/stochi/apps/engine/internal/models"
+	"github.com/nikitalbnv/stochi/apps/engine/internal/models"
 )
 
 // UnitConversion provides functions for converting between dosage units

@@ -1,4 +1,4 @@
-module github.com/nikitalobanov12/stochi/apps/engine
+module github.com/nikitalbnv/stochi/apps/engine
 
 go 1.23
 

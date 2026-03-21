@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nikitalobanov12/stochi/apps/engine/internal/models"
+	"github.com/nikitalbnv/stochi/apps/engine/internal/models"
 )
 
 func TestBuildTimingWarningsFromRuleLogs(t *testing.T) {

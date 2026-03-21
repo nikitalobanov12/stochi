@@ -3,7 +3,7 @@ package handlers
 import (
 	"testing"
 
-	"github.com/nikitalobanov12/stochi/apps/engine/internal/models"
+	"github.com/nikitalbnv/stochi/apps/engine/internal/models"
 )
 
 func ratioPtr(value float32) *float32 {
